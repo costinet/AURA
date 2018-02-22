@@ -3,6 +3,8 @@ clc;
 
 plotIterWF = 1;
 
+
+addpath('testConverters');
 converter = "HybridDickson";
 
 simulator = SMPSim();

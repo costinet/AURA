@@ -49,14 +49,13 @@ classdef SMPSim < handle
         
         
         %% Test functions        
-        function loadTestConverter(obj,matfile)
+        function loadTestConverter(obj,dotmatfile)
             try
-                load(matfile, 'As','Bs','Cs','Ds','u','ts');
+                load(dotmatfile, 'As','Bs','Cs','Ds','u','ts');
 %                 params = load(matfile);
             catch err
                 ME = MException('resultisNaN:noSuchVariable', ...
-                       ['test converter file' matfile ' does not contain all requred variables'...
-                       'Required variables are As, Bs, Cs, Ds, ts, and u']);
+                       'Error: test converter file does not contain all requred variables. Required variables are As, Bs, Cs, Ds, ts, and u');
                 throw(ME);
             end
             
