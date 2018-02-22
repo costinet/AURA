@@ -1,4 +1,4 @@
-function [ Xs] = SS_Soln( As, Bs, ts, u, Xi, Bi, tryOpt)
+function [ Xs] = SS_Soln(obj, Xi, Bi)
 % Steady-state solution of switched system using state-space matrices
 %
 % [ Xs] = SS_Soln( As, Bs, ts, u, Xi, Bi) finds the state values Xs in
@@ -26,8 +26,16 @@ function [ Xs] = SS_Soln( As, Bs, ts, u, Xi, Bi, tryOpt)
 % intervals.  The first and last column of Xs should be identical,
 % corresponding to a valid steady-state solution.
 
-if(nargin ==6) 
+
+As = obj.As;
+Bs = obj.Bs;
+ts = obj.ts;
+u = obj.u;
+
+if(nargin == 1)
     tryOpt = 0;
+else
+    tryOpt = obj.tryOpt;
 end
 
 n = size(As,3);
@@ -123,10 +131,12 @@ end
 
 if sum(isnan(Xss))
     ME = MException('resultisNaN:noSuchVariable', ...
-                       'Waveform reconstruction resulted in NaN');
+                       'Waveform steady-state solution resulted in NaN');
     throw(ME);
 end
 
+obj.Xs = Xs;
 
 
+end
 

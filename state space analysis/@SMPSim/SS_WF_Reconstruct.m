@@ -1,4 +1,4 @@
-function [ xs, t, ys ] = SS_WF_Reconstruct( Xss, As, Bs, ts, u, Cs, Ds, tsteps)
+function [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
 % Steady-state waveform reconstruction for periodic switched systems
 %
 % [ xs, t, ys ] = SS_WF_Reconstruct( Xss, As, Bs, ts, u, Cs, Ds ) produces
@@ -32,6 +32,14 @@ function [ xs, t, ys ] = SS_WF_Reconstruct( Xss, As, Bs, ts, u, Cs, Ds, tsteps)
 %
 
 
+Xss = obj.Xs;
+As = obj.As;
+Bs = obj.Bs;
+ts = obj.ts;
+u = obj.u;
+Cs = obj.Cs;
+Ds = obj.Ds;
+
 try
     %wrapped in try block for debugging purposes
     Ts = sum(ts);
@@ -40,15 +48,15 @@ try
     nsub = size(As,3);
     n = size(As,1);
     
-    if nargin < 8
+    if nargin == 1
         tsteps = min(max(Ts/min(ts)*100, 10e3),100e3);
     end
-    if nargin < 7
-        Ds = zeros(1,1,nsub);
-    end
-    if nargin < 6
-        Cs = ones(1,n, nsub);
-    end
+%     if nargin < 7
+%         Ds = zeros(1,1,nsub);
+%     end
+%     if nargin < 6
+%         Cs = ones(1,n, nsub);
+%     end
     
     t = linspace(0,Ts,tsteps);
 
