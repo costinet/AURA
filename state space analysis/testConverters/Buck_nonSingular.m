@@ -53,4 +53,18 @@ end
 Xi = [Vg, 0, Io, V];
 Bi = [.9 .9 .9 .9];
 
-save('Buck_nonSingular.mat', 'As','Bs','Cs','Ds','u','ts', 'Xi', 'Bi');
+% save('Buck_nonSingular.mat', 'As','Bs','Cs','Ds','u','ts', 'Xi', 'Bi');
+
+top = SMPStopology();
+top.setSS(As, Bs, Cs, Ds);
+top.Xi = Xi;
+top.Bi = Bi;
+top.stateLabels =  {'V_{p}', 'i_L', 'V_{out}'};
+top.outputLabels = {'i_g'};
+
+conv = SMPSconverter();
+conv.topology = top;
+conv.ts = ts;
+conv.u = u;
+
+save('Buck_nonSingular.mat', 'conv');

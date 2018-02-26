@@ -29,8 +29,6 @@ function [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
 % tsteps is the number of timesteps in one period, which is auto-selected
 % if left blank, to be between 10k and 100k while trying to keep at least
 % 100 steps per switching subinterval
-%
-
 
 Xss = obj.Xs;
 As = obj.As;

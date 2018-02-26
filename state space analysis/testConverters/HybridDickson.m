@@ -142,5 +142,20 @@ end
 Xi = [Vg/4, Vg/2, 3*Vg/4, 6*M Io];
 Bi = [.9 .9 .9 .9 .9];
 
-save('HybridDickson.mat', 'As','Bs','Cs','Ds','u','ts', 'Xi', 'Bi');
+top = SMPStopology();
+top.setSS(As, Bs, Cs, Ds);
+top.Xi = Xi;
+top.Bi = Bi;
+top.stateLabels =  {'V_{C1}', 'V_{C2}', 'V_{C3}', 'V_{out}', 'I_L'};
+top.outputLabels = {'i_g'};
+
+conv = SMPSconverter();
+conv.topology = top;
+conv.ts = ts;
+conv.u = u;
+
+
+
+% save('HybridDickson.mat', 'As','Bs','Cs','Ds','u','ts', 'Xi', 'Bi');
+save('HybridDickson.mat', 'conv');
     

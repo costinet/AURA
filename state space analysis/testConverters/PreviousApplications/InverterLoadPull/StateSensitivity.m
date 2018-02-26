@@ -1,18 +1,20 @@
-function [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
-%UNTITLED3 Summary of this function goes here
-%   Detailed explanation goes here
+function [ dXs ] = StateSensitivity( As, Bs, ts, u, varToPerturb, pI, dX, cI, HCM)
+%   As, Bs, ts, u = state space matrix representation
+%   varToPerturb = string for variable to perturb
+%   pI = index of value to perturb in variable
+%   dX = magnitude of perturbation
+%   cI = index of variable to compensate (e.g. time compensation if
+%       interval is perturbed to keep Ts)
+%   HCM = half-cycle identity matrix (if used)
 
-As = obj.As;
-Bs = obj.Bs;
-ts = obj.ts;
-u = obj.u;
-
-if(nargin == 4)
+if(nargin == 7)
     cI = pI;
     dX2 = 0;
-elseif(nargin == 5)
-    dX2 = -dX;
+% elseif(nargin == 8)
+%     dX2 = -dX;
 end
+dX2 = -dX;
+
 
 if(varToPerturb(1:2) == 'As')
     As(pI(1), pI(2), pI(3)) = As(pI(1), pI(2), pI(3)) + dX;
@@ -31,8 +33,11 @@ else
     error('Variable to perturb not found');
 end
 
-[ dXs] = obj.SS_Soln();
-
+if nargin < 9
+    [ dXs] = SS_Soln( As, Bs, ts, u);
+else
+    [ dXs] = SS_Soln( As, Bs, ts, u, HCM);
+end
     
 
 end

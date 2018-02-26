@@ -1,16 +1,11 @@
-function [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
+function [ dXs ] = StateSensitivity( As, Bs, ts, u, varToPerturb, pI, dX, cI)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
-As = obj.As;
-Bs = obj.Bs;
-ts = obj.ts;
-u = obj.u;
-
-if(nargin == 4)
+if(nargin == 7)
     cI = pI;
     dX2 = 0;
-elseif(nargin == 5)
+elseif(nargin == 8)
     dX2 = -dX;
 end
 
@@ -31,7 +26,7 @@ else
     error('Variable to perturb not found');
 end
 
-[ dXs] = obj.SS_Soln();
+[ dXs] = SS_Soln( As, Bs, ts, u);
 
     
 

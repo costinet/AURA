@@ -5,10 +5,14 @@ classdef SMPSim < handle
     properties (Access = private)
         LSQoptions = optimoptions('lsqlin','algorithm','trust-region-reflective','Display','none');
         tryOpt = 1;
-        condThreshold = 1e11;
+        condThreshold = 1e9;
+        gmin = 1/100e6;
+        
+        converter;
         
         % speedup varaibles -> solution memory
         oldAs;
+        oldts;
         oldIntEAt;
     end
     
@@ -38,6 +42,10 @@ classdef SMPSim < handle
         [ Xs] = SS_Soln(obj, Xi, Bi)    
         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
+        plotAllStates(obj, fn)
+        
+        [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)
+        [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
         
         
         %% Locally-defined methods
@@ -55,7 +63,8 @@ classdef SMPSim < handle
         
         function setmodulation(obj, ts)
             obj.ts = ts;
-            
+            obj.oldts = zeros(size(ts));
+
             obj.Xs = [];
         end
         
@@ -65,11 +74,16 @@ classdef SMPSim < handle
             obj.Xs = [];
         end
         
+        function sn = getstatenames(obj)
+            sn = obj.converter.topology.stateLabels;
+        end
+        
         
         %% Test functions        
         function loadTestConverter(obj,dotmatfile)
             try
-                load(dotmatfile, 'As','Bs','Cs','Ds','u','ts');
+                load(dotmatfile, 'conv');
+                obj.converter = conv;
 %                 params = load(matfile);
             catch err
                 ME = MException('resultisNaN:noSuchVariable', ...
@@ -77,9 +91,9 @@ classdef SMPSim < handle
                 throw(ME);
             end
             
-            obj.settopology(As, Bs, Cs, Ds);
-            obj.setmodulation(ts);
-            obj.setinputs(u);
+            obj.settopology(conv.topology.As, conv.topology.Bs, conv.topology.Cs, conv.topology.Ds);
+            obj.setmodulation(conv.ts);
+            obj.setinputs(conv.u);
             
             obj.Xs = [];
         end

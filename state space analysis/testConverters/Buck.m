@@ -9,7 +9,7 @@ CHS = 3.4874e-10;
 CLS = 3.4874e-10;
 
 Rl =  .01;
-dt = Ts/1000;%50e-9;
+dt = Ts/4;%50e-9;
 Vdr = 5;
 ronHS = .05;
 ronLS = .05;
@@ -66,4 +66,19 @@ end
 Xi = [Vg, 0, Io, V];
 Bi = [.9 .9 .9 .9];
 
-save('Buck.mat', 'As','Bs','Cs','Ds','u','ts', 'Xi', 'Bi');
+% save('Buck.mat', 'As','Bs','Cs','Ds','u','ts', 'Xi', 'Bi');
+
+
+top = SMPStopology();
+top.setSS(As, Bs, Cs, Ds);
+top.Xi = Xi;
+top.Bi = Bi;
+top.stateLabels =  {'V_{Chs}', 'V_{Cls}', 'i_L', 'V_{out}'};
+top.outputLabels = {'i_g'};
+
+conv = SMPSconverter();
+conv.topology = top;
+conv.ts = ts;
+conv.u = u;
+
+save('Buck.mat', 'conv');
