@@ -1,8 +1,9 @@
-function [A,B,C,D,StateNames] = nodeloop(NL,NLnets)
+function [A,B,C,D,StateNames] = nodeloop(NL,NLnets,K)
 % nodeloop creates the state matricies A,B,C,D from a specific node input
 % matrix
 %
-% Notes: Needs to be more general, broken up into a few more functions, implementation of transformers 
+% Notes: Needs to be more general, broken up into a few more functions,
+% implementation of transformers
 % 
 
 
@@ -42,20 +43,9 @@ CoTree = setdiff(Ba,Tree);
 
 %% Orders Tree and CoTree indicies correctly: E R G J
 
-numV = 1;
-% BV = 2;
-numC = 2;
-numR = 3;
-numL = 4;
-numI = 5;
-% BI = 6;
-numD = 6;
-numM = 7;
-numB = 8;
 
-%{
 
-For Transformers:
+% For Transformers:
 
 numV = 1;
 numBV = 2;
@@ -96,15 +86,15 @@ tosortcotree = [SortedRows(CoTree(:),:),CoTree(:)];
 for i = 1:1:RowCoTree
     
     switch tosortcotree(i,1)
-        case 4
+        case numR
             tosortcotree(i,1) = 6;
-        case 3
+        case numC
             tosortcotree(i,1) = 7;
-        case 5
+        case numL
             tosortcotree(i,1) = 8;
-        case 6
+        case numBI
             tosortcotree(i,1) = 9;
-        case 7
+        case numI
             tosortcotree(i,1) = 10;
     end
    
@@ -112,7 +102,7 @@ end
 SortedCoTree = sortrows(tosortcotree,1);
 CoTree = SortedCoTree(:,5);
 
-%}
+%{
 
 % Branch Identification numbers:
 % E  E-C  E-L  R  G  J-C  J-L  J
@@ -154,7 +144,7 @@ end
 SortedCoTree = sortrows(tosortcotree,1);
 CoTree = SortedCoTree(:,5);
 
-
+%}
 
 %% Finding A, B, and D Matrix
 A_a = [incidence(:,Tree(:)),incidence(:,CoTree(:))]; % Complete incidence matrix
@@ -170,7 +160,25 @@ B = [B_T,eye(temp)]; % Fundamental Loop Matrix
 [row,col]=size(D_L);
 
 %% Finding size of Z and G Matrices
-hey = find(SortedTree(:,1)==4,1); % find first index of R term
+
+% New Index Values
+% Branch Identification numbers:
+% E  E-B  E-C  E-L  R   G   J-C  J-L  J-B  J
+% 1   2    3   4    5   6    7   8     9   10
+
+numE = 1;
+numEB = 2;
+numEC = 3;
+numEL = 4;
+numR = 5;
+numG = 6;
+numJC = 7;
+numJL = 8;
+numJB = 9;
+numJ = 10;
+
+
+hey = find(SortedTree(:,1)==numR,1); % find first index of R term
 if isempty(hey) % if there are no R in tree then set to zero 
    R = row+1; 
    Z_R = 0;
@@ -188,7 +196,7 @@ else
 
 end
  
-ya = find(SortedCoTree(:,1)==5,1,'last');
+ya = find(SortedCoTree(:,1)==numG,1,'last');
 if isempty(ya) % if there are no resistors in cotree then set to zero
    G = 0;
    Y_G = 0;
@@ -306,6 +314,7 @@ end
 
 % H matrix including voltage sources
 almost_H = [H_EE,H_EJ;H_JE,H_JJ];
+%[H,s]=hybridparse(almost_H,K,SortedTree,SortedCoTree)
 
 % find and remove voltage sources to find h and s matrix
 
@@ -329,30 +338,29 @@ end
 
 % Creat identity matrix along with H and almost H matrix in order to find
 % correct orentation of state and output matrix
-[H_row,H_col] = size(H);
-[almostH_row,~] = size(almost_H);
-Htemp = [eye(H_row),H,s];
-almostHtemp = [eye(almostH_row),almost_H];
+[H_row,H_col] = size(H); % Get size of Hybrid Matrix without s
+[almostH_row,~] = size(almost_H); % Get size of full Hybrid Matrix
+Htemp = [eye(H_row),H,s]; % Create Mx = Ax + Bu form
+almostHtemp = [eye(almostH_row),almost_H]; % Create Mx = Ax + Bu form
 
 temps = [SortedTree(:,:);SortedCoTree(:,:)];
-cir = temps(:,1)~=4 & temps(:,1)~=5; % find position of elements in almost H
-cir_state = find(temps(:,1)~=4 & temps(:,1)~=5 & temps(:,1)~=1 & temps(:,1)~=8); % find postitin of elements in H
+cir = temps(:,1)~=numR & temps(:,1)~=numG; % find position of elements in almost H
+cir_state = find(temps(:,1)~=numR & temps(:,1)~=numG & temps(:,1)~=numE & temps(:,1)~=numJ); % find postitin of elements in H
 
-OrderedNamesnum = temps(cir_state,4);
-OutputNames = NLnets(OrderedNamesnum,1);
+OrderedNamesnum = temps(cir_state,4); % Find the index for the output state names
+OutputNames = NLnets(OrderedNamesnum,1); % Find the list of output names
 DependentNames = {};
 
 OrderedNameselement = temps(cir_state,1);
-loop = length(OrderedNameselement)+1;
-i = 1;
-j = 0;
-k = 0;
+loop = length(OrderedNameselement)+1; % Set while loop index
 
 % break somewhere in here to separate diffent solves for AB matrix and CD
 % matrix
 
+% For loop to switch i and v in the hybrid matrix to ensure all caps have
+% an output current and all inductors have an output voltage: 
 for i = 1:1:length(OrderedNameselement)
- if OrderedNameselement(i)==3 || OrderedNameselement(i)==6
+ if OrderedNameselement(i)==numEL || OrderedNameselement(i)==numJC
         [H_row2,~]=size(Htemp);
         move=Htemp(:,i);
         move2 = Htemp(:,i+H_row2);
@@ -360,6 +368,12 @@ for i = 1:1:length(OrderedNameselement)
         Htemp(:,i+H_row2) = -move;
  end
 end
+
+% Pluggs in all the C and L values to from M*x_dot = Ax+Bu equations
+% Basically if the number exits in the M matrix then the entire row gets
+% devided by that elements either L or C
+% The position for that element however does not since it forms either
+% di/dt or dv/dt
 
 for i = 1:1:length(OrderedNameselement)
     for j = 1:1:length(OrderedNameselement)
@@ -379,14 +393,18 @@ while i<loop
 %for i = 1:1:length(OrderedNameselement)
     % need to switch if caps were in cotree or inductors in tree
     k = k+1;
-    if OrderedNameselement(k)==3 || OrderedNameselement(k)==6
+    if OrderedNameselement(k)==numEL || OrderedNameselement(k)==numJC
         
-        DependentNames(j+1,:) = OutputNames(i);
-        OutputNames(i) = [];
+        DependentNames(j+1,:) = OutputNames(i); % Assigns name to dependent row status
+        OutputNames(i) = []; % Deletes name from Output names list
         
-        j = j+1;
+        j = j+1; % J is number of dependent elements
+        
+        % Set up so each depends row is a linear combination of the
+        % independent state remaining:
         depends(j,:)=Htemp(i,H_row2+1:2*H_row2);
         depends(j,i) = 0;
+        
         Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*Htemp(:,i);
         Htemp(i,:)=[];
         Htemp(:,i+H_row2) = [];
@@ -396,7 +414,7 @@ while i<loop
         i = i-1;
         loop = loop - 1;
         J = 5829758239;
-        
+        [H_row2,~] = size(Htemp);
         
     end
     i= i+1;
@@ -418,6 +436,7 @@ syms(OutputNames);
     
 % end
 
+% Cannot do this for large matrix (will have to do after eval)
 Htemp = rref(Htemp);
 
 OutputHtemp = Htemp;

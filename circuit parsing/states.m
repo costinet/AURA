@@ -4,15 +4,14 @@ function [NL,NLnets] = states(NL,NLnets,state,i,switches)
 
 % Index values for components (will pass as variable):
 numV = 1;
-% BV = 2;
-numC = 2;
-numR = 3;
-numL = 4;
-numI = 5;
-% BI = 6;
-numD = 6;
-numM = 7;
-numB = 8;
+numBV = 2;
+numC = 3;
+numR = 4;
+numL = 5;
+numBI = 6;
+numI = 7;
+numD = 8;
+numM = 9;
 
 
 for j = 1:1:length(switches)

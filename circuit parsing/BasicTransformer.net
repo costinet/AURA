@@ -1,0 +1,8 @@
+* C:\Users\jared\Documents\Graduate Reserach\LTSpice\BasicTransformer.asc
+V1 N001 0 SINE(0 1 100k) Rser=1
+L1 N001 0 100µ
+L2 N002 0 900µ
+K1 L1 L2 1
+.tran .1
+.backanno
+.end

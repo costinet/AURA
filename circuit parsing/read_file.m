@@ -1,4 +1,4 @@
-function [ALL,NL,NL3,incidence] = read_file(filename)
+function [ALL,NL,NL3,K] = read_file(filename)
 % 
 % The code reads the NETlist file from LTSpice to be used in finding ABCD
 %
@@ -13,13 +13,13 @@ function [ALL,NL,NL3,incidence] = read_file(filename)
 % NL3: 1st column provides a list of the components in the circuit
 % corresponding the the following legend
 % Voltage Source: 1
-% Capacitor: 2
-% Resistor: 3
-% Inductor: 4
-% Current Source: 5
-% Diode: 6
-% FET: 7
-% Dependent Voltage Source: 8
+% Dependent Voltage Source: 2
+% Capacitor: 3
+% Resistor: 4
+% Inductor: 5
+% Current Source: 6
+% Diode: 7
+% FET: 8
 % Dependent Current Source: 9
 % 
 % 2nd and 3rd column provide the nodes the corressponding element described
@@ -32,19 +32,37 @@ function [ALL,NL,NL3,incidence] = read_file(filename)
 % NETlist to be opened
 %
 % Example: 'BoostConverter.net'
-% 
+%
+
+%     %%%%%%   %      %  %%%%%%%    %%%%%% 
+%    %      %  %      %  %      %  %      %
+%    %      %  %      %  %      %  %      %
+%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
+%    %      %  %      %  %%        %      %
+%    %      %  %      %  % %       %      %
+%    %      %  %      %  %  %      %      %
+%    %      %  %      %  %   %     %      %
+%    %      %   %    %   %    %    %      %
+%    %      %    %%%%    %     %   %      %
 
 
 
 
 
-if exist(filename,'file') == 2
+%---------------------------------------------------------
+% Need to replace length() with [a,b]=size() and use a or b 
+% (Problem with small circuits)
+%---------------------------------------------------------
+ 
+%% Open File
+
+if exist(filename,'file') == 2 % if the file exists
     
-    fid=fopen(filename);
+    fid=fopen(filename); % open file
     tline = [];
     i=0;
     
-    % Open file and read into cell array:
+    % Read file into cell array:
     while ~feof(fid)
         tline = fgetl(fid);
         string = cellstr(tline);
@@ -61,26 +79,28 @@ if exist(filename,'file') == 2
     end
     
 else
+    % If file does not exist display error
     error(['Error: ',filename,' Does Not Exist'])
 end
 
 % Key for elements:
 % Value     1   2   3   4   5   6   7   8
-pattern = {'V','C','R','L','I','D','M','B'};
+pattern = {'V','C','R','L','I','D','M','K'};
 
 numV = 1;
-% BV = 2;
 numC = 2;
 numR = 3;
 numL = 4;
 numI = 5;
-% BI = 6;
 numD = 6;
 numM = 7;
-numB = 8;
+numK = 8;
 
 
 m = 0;
+
+
+%% Parse data from file
 
 for i = 1:1:length(NLraw) % Step though netlist
     cell = NLraw(i); % Take each row of the netlist
@@ -94,34 +114,28 @@ for i = 1:1:length(NLraw) % Step though netlist
                 ALL(i,j) = Net(j);
             end
         else
-            for j = 1:1:length(Net) 
-                ALL(i,j) = Net(j);  % Add contents of row to all array
-                NL(1+m,j) = Net(j); % Add contents of row to character netlist only array array
-                NL2(1+m,:) = [k;Net(2);Net(3);1+m]; % Change letter to number add contents to numerical netlist array
-                if k == 7 % Fix FET Nodes
-                    NL2(1+m,3)= Net(5); % Re assign nodes for fets to have drain and source in rows 2 and 3
-                end
-                
-                %%%%%%%%% Start New
-                
-                if k == 8 && j==4 
-                    
-                    temp = Net{j};
-                    
-                    if strcmp(temp(1),'I')
-                        NL2(1+m,1)={9};
+            if strcmp(pattern{k},'K') % Check to see if there is a transformer
+                IndtoTrans = Net(2:end-1); % If true then get inductors that are a part of transformer
+                MutInd = Net(end); % Get mutual inductance value for transformer
+                m = m - 1;
+            else
+                for j = 1:1:length(Net)
+                    ALL(i,j) = Net(j);  % Add contents of row to all array
+                    NL(1+m,j) = Net(j); % Add contents of row to character netlist only array array
+                    NL2(1+m,:) = [k;Net(2);Net(3);1+m]; % Change letter to number add contents to numerical netlist array
+                    if k == numM % Fix FET Nodes
+                        NL2(1+m,3)= Net(5); % Re assign nodes for fets to have drain and source in rows 2 and 3
                     end
                     
                 end
-                
-                %%%%%%% End new
-                
             end
             m = m+1;
         end
     end
 end
-    
+
+%% Set 0 node to be ground
+
 List = NL2(:,2:3); % list contains only the nodes
 gndpt = cellfun(@(s) contains('0', s), List); % find points where there is a ground
 gndpt = [gndpt(:,1);gndpt(:,2)];    % Put all values in one column
@@ -141,6 +155,7 @@ num = length(new_list)/2;
 % Fix output in the form [component type, node1, node2]
 NL3 = [cell2mat(NL2(:,1)),new_list(1:num,:),new_list(num+1:length(new_list),:),cell2mat(NL2(:,4))]; 
 
+%{
 % Initally sort rows into normal tree priorety 
 % NL3 = sortrows(NL3,1);
 
@@ -150,9 +165,42 @@ for i = 1:1:length(NL3)
     incidence(NL3(i,2),i) = 1;
     incidence(NL3(i,3),i) = -1;
 end
-    
-if isempty(NL3) || isempty(incidence)
+  
+  %}
+if isempty(NL3) %|| isempty(incidence)
     error('WARNING: No valid elements found in circuit');
 end
 
+K = [];
 
+
+
+%% Transformers
+
+% Set new index:
+numV = 1;
+numBV = 2;
+numC = 3;
+numR = 4;
+numL = 5;
+numBI = 6;
+numI = 7;
+numD = 8;
+numM = 9;
+
+% Implements index above:
+NL3(:,1)=NL3(:,1)+(NL3(:,1)>1);
+NL3(:,1)=NL3(:,1)+(NL3(:,1)>5);
+
+%{
+% Find and set transformers
+if ~isempty(IndtoTrans) || ~isempty(MutInd)
+[NL,NL3,K]=transformers(NL,NL3,IndtoTrans,MutInd);
+end
+
+[NL3,NL,MeasureFlags] = addmeasure(NL3,NL);
+
+J = 89704895734895;
+
+
+%}
