@@ -5,7 +5,7 @@
 [filename,path]=uigetfile % opens gui to select file
 %}
 
-filename = 'Boost.net';
+filename = 'Buck.net';
 
 [Statename]=ABCD(filename);
 
@@ -129,7 +129,3 @@ filename = 'Boost.net';
 %     
   
   %}
-
-
-
-

@@ -1,4 +1,4 @@
-function [A,B,C,D,StateNames] = ABCD(filename)
+function [StateName] = ABCD(filename)
 % ABCD creates takes a NETlist file from LTSpice and creates the
 % associated ABCD matrices.
 
@@ -21,13 +21,15 @@ function [A,B,C,D,StateNames] = ABCD(filename)
 
 numV = 1;
 numBV = 2;
-numC = 3;
-numR = 4;
-numL = 5;
-numBI = 6;
-numI = 7;
-numD = 8;
-numM = 9;
+numMV = 3;
+numC = 4;
+numR = 5;
+numL = 6;
+numMI = 7;
+numBI = 8;
+numI = 9;
+numD = 10;
+numM = 11;
 
 
 switches = [];
@@ -77,8 +79,67 @@ for i = 1:1:number_of_states
 
     [NewNL,NewNLnets]=states(NL,NLnets,state,i,switches);
     %circuitplot(NewNL,NewNLnets);
-    [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),StateNames] = nodeloop(NewNL,NewNLnets,K);
+    [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),StateName(:,i)] = nodeloop(NewNL,NewNLnets,K);
 
     J = 9572839;
 end
+%{
+    C = [eye(4)];
+    D = [zeros(4,1)];
+    L3 = 16e-6;
+    C1 = 40e-6;
+    R1 = 10;
+    M1_C = 1e-9;
+    D1_C = 1e-9;
+    M1_R = 0.01;
+    D1_R = 0.01;
+    R2 = 0.001;
     
+    % Switch cases for Flyback converter
+    
+    switch i
+        case 1 % M and D off
+            %  Inital condidtions
+            % V_D1  V_C1 L_3  V_M1 
+            
+            X = [25 25 0 25];
+                        
+        case 2 % M on D off
+            
+            X = [25 25 0 25];
+            
+        case 3 % M off D on
+            
+            X = [25 25 0 25];
+            
+        case 4 % M and D on
+            
+             X = [25 50 0 -25];
+            
+    end
+    
+    
+    %sys  = ss(eval(A),eval(B),eval(C),eval(D)); % Create state space
+    sys  = ss(eval(A(:,:,i)),eval(B(:,:,i)),C,D);
+    sys.StateName = StateName(:,i);
+    sys.OutputName = StateName(:,i);
+    
+    % Create input and time:
+    t = linspace(0,10e-6,100000);
+    u = 25*ones(size(t));
+    
+    Y = lsim(sys,u,t,X);
+    
+    figure
+    h = lsimplot(sys,u,t,X);
+    p = getoptions(h);
+    p.YLim(1) = {[min(Y(100:end,1)) max(Y(100:end,1))]};
+    p.YLim(2) = {[min(Y(100:end,2)) max(Y(100:end,2))]};
+    p.YLim(3) = {[min(Y(100:end,3)) max(Y(100:end,3))]};
+    p.YLim(4) = {[min(Y(100:end,4)) max(Y(100:end,4))]};
+    setoptions(h,p);
+    
+%}
+    J = 5782975892;
+    
+end

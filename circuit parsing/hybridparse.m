@@ -1,4 +1,4 @@
-function [H,s] = hybridparse(preH,k,SortedTree,SortedCoTree)
+function [H,s] = hybridparse(preH,K,SortedTree,SortedCoTree)
 %hybridparse parses the hybird matrix 
 %   Detailed explanation goes here
 
@@ -36,27 +36,158 @@ What it will be: Assume input tree is in the form:
 
 numE = 1;
 numEB = 2;
-numEC = 3;
-numEL = 4;
-numR = 5;
-numG = 6;
-numJC = 7;
-numJL = 8;
-numJB = 9;
-numJ = 10;
+numEM = 3;
+numEC = 4;
+numEL = 5;
+numR = 6;
+numG = 7;
+numJC = 8;
+numJL = 9;
+numJM = 10;
+numJB = 11;
+numJ = 12;
 
+SortedTreeR = SortedTree;
+SortedCoTreeG = SortedCoTree;
+
+SortedCoTree(SortedCoTree(:,1)==numG,:)=[];
+SortedTree(SortedTree(:,1)==numR,:)=[];
+
+DT = size(SortedTree);
+DCT = size(SortedCoTree);
 
 lastE = find(SortedTree(:,1)==numE,1,'last');
 lastEB = find(SortedTree(:,1)==numEB,1,'last');
 % lastESC = find(SortedTree(:,1)==numESC,1,'last');
 
 
-
 % firstJOC = find(SortedCoTree(:,1)==numJOC,1,'first');
 firstJB = find(SortedCoTree(:,1)==numJB,1,'first');
 firstJ = find(SortedCoTree(:,1)==numJ,1,'first');
 
+test=preH;
 
+%% Sorts Indexes in tree
+
+Ecol = preH(:,1:lastE);
+
+if isempty(Ecol)
+EBcol = preH(:,1:lastEB);
+else
+EBcol = preH(:,lastE+1:lastEB);
+end
+
+if isempty(EBcol)
+    if isempty(Ecol)
+        E_state = preH(:,1:DT(1));
+    else
+        E_state = preH(:,lastE+1:DT(1));
+
+    end
+else
+    E_state = preH(:,lastEB+1:DT(1));
+end
+
+%% Sorts Indexes in cotree
+
+Jcol = preH(:,firstJ+DT(1):end);
+
+if isempty(Jcol)
+JBcol = preH(:,firstJB+DT(1):end);
+else
+JBcol = preH(:,firstJB+DT(1):firstJB+DT(1)-1);
+end
+
+if isempty(JBcol)
+    if isempty(Jcol)
+        J_state = preH(:,DT(1)+1:end);
+    else
+        J_state = preH(:,DT(1)+1:DT(1)+firstJ-1);
+
+    end
+else
+    J_state = preH(:,DT(1)+1:DT(1)+firstJB-1);
+end
+
+const = [Ecol,Jcol];
+depent = [EBcol,JBcol];
+measure = [EBcol,JBcol];
+state = [E_state,J_state];
+
+preH = [state,depent,const]';
+
+%% Sorts Indexes in tree
+
+Ecol = preH(:,1:lastE);
+
+if isempty(Ecol)
+EBcol = preH(:,1:lastEB);
+else
+EBcol = preH(:,lastE+1:lastEB);
+end
+
+if isempty(EBcol)
+    if isempty(Ecol)
+        E_state = preH(:,1:DT(1));
+    else
+        E_state = preH(:,lastE+1:DT(1));
+
+    end
+else
+    E_state = preH(:,lastEB+1:DT(1));
+end
+
+%% Sorts Indexes in cotree
+
+Jcol = preH(:,firstJ+DT(1):end);
+
+if isempty(Jcol)
+JBcol = preH(:,firstJB+DT(1):end);
+else
+JBcol = preH(:,firstJB+DT(1):firstJB+DT(1)-1);
+end
+
+if isempty(JBcol)
+    if isempty(Jcol)
+        J_state = preH(:,DT(1)+1:end);
+    else
+        J_state = preH(:,DT(1)+1:DT(1)+firstJ-1);
+
+    end
+else
+    J_state = preH(:,DT(1)+1:DT(1)+firstJB-1);
+end
+
+const = [Ecol,Jcol];
+depent = [EBcol,JBcol];
+measure = [EBcol,JBcol];
+state = [E_state,J_state];
+
+preH = [state,depent,const]';
+
+
+
+%% Organize
+
+size_state = size(state);
+size_depent = size(depent);
+size_measure = size(measure);
+size_const = size(const);
+H_11 = state(1:size_state(2),:);
+H_14 = const(1:size_state(2),:);
+H_12 = depent(1:size_state(2),:);
+H_31 = state(size_state(2)+1:size_state(1)-size_const(2),:); % will need to alter after measure fix
+H_34 = const(size_state(2)+1:size_const(1)-size_const(2),:); % will need to alter after measure fix
+H_32 = depent(size_state(2)+1:size_const(1)-size_const(2),:); % will need to alter after measure fix
+
+%{
+if isempty(lastEB) && isempty(firstJB)
+    newH = [preH(:,1:lastE),preH(:,firstJ:end)];
+    D=length(newH);
+    H = almost_H(D(2)+1:end,D(2)+1:end);
+    s = almost_H(D(2)+1:end,1:D(2));
+end
+    
 if isempty(lastE) && isempty(firstJ)
     H_41 = 0;
     H_42 = 0;
@@ -72,12 +203,19 @@ if isempty(lastEB) && isempty(firstJB)
     H_23 = 0;
     H_24 = 0;
 end
+%}
 
 
 
-H = H11+H12*((1-K*H32)^-1)*K*H31;
-s = H14+H12*((1-K*H32)^-1)*K*H34;
+F = K*H_32;
+if isempty(F)
+    H = H_11;
+    s = H_14;
+else
+    H = H_11+H_12*((eye(size(F))-F)^-1)*K*H_31;
+    s = H_14+H_12*((eye(size(F))-F)^-1)*K*H_34;
+end
+J = 89208923;
 
-outputArg2 = inputArg2;
 end
 

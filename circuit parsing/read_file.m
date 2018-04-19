@@ -98,6 +98,8 @@ numK = 8;
 
 
 m = 0;
+IndtoTrans = [];
+MutInd = [];
 
 
 %% Parse data from file
@@ -177,6 +179,9 @@ K = [];
 
 %% Transformers
 
+
+%{
+
 % Set new index:
 numV = 1;
 numBV = 2;
@@ -188,19 +193,48 @@ numI = 7;
 numD = 8;
 numM = 9;
 
-% Implements index above:
-NL3(:,1)=NL3(:,1)+(NL3(:,1)>1);
-NL3(:,1)=NL3(:,1)+(NL3(:,1)>5);
 
-%{
+% Value     1   2   3   4   5   6   7   8
+pattern = {'V','C','R','L','I','D','M','K'};
+
+%}
+
+% new code
+numV = 1;
+numBV = 2;
+numMV = 3;
+numC = 4;
+numR = 5;
+numL = 6;
+numMI = 7;
+numBI = 8;
+numI = 9;
+numD = 10;
+numM = 11;
+
+% Implements index above:
+NL3(:,1)=NL3(:,1)+(NL3(:,1)>4);
+NL3(:,1)=NL3(:,1)+(NL3(:,1)>4);
+NL3(:,1)=NL3(:,1)+(NL3(:,1)>1);
+NL3(:,1)=NL3(:,1)+(NL3(:,1)>1);
+
+
+% Find location of Transfomer elements in NL
+D = size(IndtoTrans);
+position = zeros(D);
+for i = 1:1:D(1)
+    for j = 1:1:D(2)
+        found=strcmp(NL(:,1),IndtoTrans(i,j));
+        position(i,j)=find(found,1);
+    end
+end
+        
+[NL3,NL] = addmeasure(NL3,NL);
 % Find and set transformers
 if ~isempty(IndtoTrans) || ~isempty(MutInd)
-[NL,NL3,K]=transformers(NL,NL3,IndtoTrans,MutInd);
+[NL,NL3,K]=transformers(NL,NL3,IndtoTrans,MutInd,position);
 end
 
-[NL3,NL,MeasureFlags] = addmeasure(NL3,NL);
 
 J = 89704895734895;
 
-
-%}

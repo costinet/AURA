@@ -45,8 +45,67 @@ CoTree = setdiff(Ba,Tree);
 
 
 
-% For Transformers:
 
+
+
+numV = 1;
+numBV = 2;
+numMV = 3;
+numC = 4;
+numR = 5;
+numL = 6;
+numMI = 7;
+numBI = 8;
+numI = 9;
+
+
+
+% Branch Identification numbers:
+% E  E-B  E-M  E-C  E-L  R  G   J-C  J-L J-M  J-B  J
+% 1   2    3    4    5   6  7    8    9   10   11  12
+
+
+tosorttree = [SortedRows(Tree(:),:),Tree(:)];
+[RowTree,~]=size(tosorttree);
+for i = 1:1:RowTree
+    
+    switch tosorttree(i,1)
+        case numL
+            tosorttree(i,1) = 5;
+        case numR
+            tosorttree(i,1) = 6;
+    end
+   
+end
+SortedTree = sortrows(tosorttree,1);
+Tree = SortedTree(:,5);
+
+tosortcotree = [SortedRows(CoTree(:),:),CoTree(:)];
+[RowCoTree,~]=size(tosortcotree);
+for i = 1:1:RowCoTree
+    
+    switch tosortcotree(i,1)
+        case numR
+            tosortcotree(i,1) = 7;
+        case numC
+            tosortcotree(i,1) = 8;
+        case numL
+            tosortcotree(i,1) = 9;
+        case numMI
+            tosortcotree(i,1) = 10;
+        case numBI
+            tosortcotree(i,1) = 11;
+        case numI
+            tosortcotree(i,1) = 12;
+    end
+   
+end
+SortedCoTree = sortrows(tosortcotree,1);
+CoTree = SortedCoTree(:,5);
+
+
+% For Transformers:
+%{
 numV = 1;
 numBV = 2;
 numC = 3;
@@ -55,16 +114,9 @@ numL = 5;
 numBI = 6;
 numI = 7;
 
-
-
-
-
 % Branch Identification numbers:
 % E  E-B  E-C  E-L  R   G   J-C  J-L  J-B  J
 % 1   2    3   4    5   6    7   8     9   10
-
-
-
 
 tosorttree = [SortedRows(Tree(:),:),Tree(:)];
 [RowTree,~]=size(tosorttree);
@@ -101,7 +153,7 @@ for i = 1:1:RowCoTree
 end
 SortedCoTree = sortrows(tosortcotree,1);
 CoTree = SortedCoTree(:,5);
-
+%}
 %{
 
 % Branch Identification numbers:
@@ -168,14 +220,16 @@ B = [B_T,eye(temp)]; % Fundamental Loop Matrix
 
 numE = 1;
 numEB = 2;
-numEC = 3;
-numEL = 4;
-numR = 5;
-numG = 6;
-numJC = 7;
-numJL = 8;
-numJB = 9;
-numJ = 10;
+numEM = 3;
+numEC = 4;
+numEL = 5;
+numR = 6;
+numG = 7;
+numJC = 8;
+numJL = 9;
+numJM = 10;
+numJB = 11;
+numJ = 12;
 
 
 hey = find(SortedTree(:,1)==numR,1); % find first index of R term
@@ -314,10 +368,16 @@ end
 
 % H matrix including voltage sources
 almost_H = [H_EE,H_EJ;H_JE,H_JJ];
-%[H,s]=hybridparse(almost_H,K,SortedTree,SortedCoTree)
+[H,s]=hybridparse(almost_H,K,SortedTree,SortedCoTree);
 
+% Eventual Function to find outputs
+[A,B,C,D,Htemp,depends]=loopfixAB(H,s,NLnets,SortedTree,SortedCoTree);
+[C,D,Htemp,depends]=loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree);
+
+StateNames = 8897;
+
+%{
 % find and remove voltage sources to find h and s matrix
-
 lastvsource = find(SortedTree(:,1)==1,1,'last');
 firstisource = find(SortedCoTree(:,1)==8,1,'first');
 
@@ -328,14 +388,14 @@ else
     H = almost_H(lastvsource+1:end,lastvsource+1:end);
     s = almost_H(lastvsource+1:end,1:lastvsource);
 end
-
+%}
 %{
 if ~isempty(firstisource)
     H = H(1:firstisource-1,1:firstisource-1
     
 end
 %}
-
+%{
 % Creat identity matrix along with H and almost H matrix in order to find
 % correct orentation of state and output matrix
 [H_row,H_col] = size(H); % Get size of Hybrid Matrix without s
@@ -345,7 +405,7 @@ almostHtemp = [eye(almostH_row),almost_H]; % Create Mx = Ax + Bu form
 
 temps = [SortedTree(:,:);SortedCoTree(:,:)];
 cir = temps(:,1)~=numR & temps(:,1)~=numG; % find position of elements in almost H
-cir_state = find(temps(:,1)~=numR & temps(:,1)~=numG & temps(:,1)~=numE & temps(:,1)~=numJ); % find postitin of elements in H
+cir_state = find(temps(:,1)~=numR & temps(:,1)~=numG & temps(:,1)~=numE & temps(:,1)~=numJ & temps(:,1)~=numEB & temps(:,1)~=numJB); % find postitin of elements in H
 
 OrderedNamesnum = temps(cir_state,4); % Find the index for the output state names
 OutputNames = NLnets(OrderedNamesnum,1); % Find the list of output names
@@ -421,6 +481,9 @@ while i<loop
 % end
 end
 
+% Need to format output how i want it
+
+
 
 [H_row2,~] = size(Htemp);
 H_row2 = H_row2+1;
@@ -477,7 +540,7 @@ C = [OutputHtemp(:,H_row2:2*(H_row2-1)).*OutputNames,zeros(H_row2-1,j);outstated
 
 D = [OutputHtemp(:,(2*(H_row2-1))+1:end).*OutputNames;outstatedependsconst];
 
-
+%}
 
 
 J = 7825782;
