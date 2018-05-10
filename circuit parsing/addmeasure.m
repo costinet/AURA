@@ -25,10 +25,7 @@ numM = 11;
 
 
 
-Voltage = [2 1
-    4 6
-    7 2
-    3 4];
+
 
 % if max(max(Voltage))>max(max(NL(:,2:3)))
 %     toohigh = max(max(Voltage));
@@ -36,8 +33,22 @@ Voltage = [2 1
 %     error(['Error: ',high,' is not a valid node number'])
 % end
 
+Voltage = {'V1'
+    'L1'
+    'M1'
+    'D1'
+    'C1'
+    'R1'};
 
-Voltage = {'V1','M1','L1'};
+
+Current = {'V1'
+    'L1'
+    'M1'
+    'D1'
+    'C1'
+    'R1'};
+
+%Voltage = {'V1','M1','L1'};
 
 % List of Currentes to Measusre
 % Currents listed as going from Node 1 to Node 2 and Node 4 to Node 3
@@ -57,9 +68,8 @@ Voltage = {'V1','M1','L1'};
 %     error(['Error: ',high,' is not a valid node number'])
 % end
 
-Current = {'V1'
-    'M1'
-    'L1'};
+% Current = {};
+ Voltage = {};
 
 
 %{
@@ -79,10 +89,12 @@ end
 % There is a long ways to go with this one
 %}
 
+    
+    
 for i = 1:1:length(Voltage)
     
     row = strcmp(NLnets(:,1),Voltage(i));
-    NLnets(end+1,:) = [strcat(Voltage(i),'_Voltage'), NLnets(sum(row.*NL(:,4)),2:end)];
+    NLnets(end+1,:) = [strcat(Voltage(i),' V'), NLnets(sum(row.*NL(:,4)),2:end)];
     NL(end+1,:)= [numMI,sum(row.*NL(:,2:3)),NL(end,4)+1];
     
 end
@@ -98,7 +110,7 @@ for i = 1:1:length(Current)
     Node = NLnets(sum(row.*NL(:,4)),2);
     
     NLnets(sum(row.*NL(:,4)),2) = New_Node;
-    NLnets(end+1,:) = [strcat(Current(i),'_Current'),Node,New_Node,NLnets(sum(row.*NL(:,4)),4:end)];
+    NLnets(end+1,:) = [strcat(Current(i),' A'),Node,New_Node,NLnets(sum(row.*NL(:,4)),4:end)];
    
     NL(sum(row.*NL(:,4)),2)=new_node;
     NL(end+1,:)= [numMV,node,new_node,NL(end,4)+1];
@@ -109,11 +121,6 @@ for i = 1:1:length(Current)
 
     
 end
-
-
-
-
-
 
 %{
 D=size(Voltage);
@@ -134,8 +141,7 @@ end
 
 %}
 
+
 J = 85932045;
-
-
 end
 

@@ -1,18 +1,11 @@
 % This script tests the circuit parsing code for the boost converter
 % "Boost.net"
-
-%{
-[filename,path]=uigetfile % opens gui to select file
-%}
-
+clear
 filename = 'Boost.net';
 
-[Statename]=ABCD(filename);
+[A,B,C,D,NLnets,StateNameAB,StateNameCD]=ABCD(filename);
 
-%{
-
-    %C = [eye(4)];
-    %D = [zeros(4,1)];
+for i=1:1:size(A,3)
     L1 = 16e-6;
     C1 = 40e-6;
     R1 = 10;
@@ -46,10 +39,10 @@ filename = 'Boost.net';
     end
     
     
-    sys  = ss(eval(A),eval(B),eval(C),eval(D)); % Create state space
+    sys  = ss(eval(A(:,:,i)),eval(B(:,:,i)),eval(C(:,:,i)),eval(D(:,:,i))); % Create state space
     %sys  = ss(eval(A),eval(B),C,D);
-    sys.StateName = StateName;
-    sys.OutputName = StateName;
+%     sys.StateName = StateName;
+     sys.OutputName = StateNameCD(:,i);
     
     % Create input and time:
     t = linspace(0,10e-6,100000);
@@ -60,13 +53,23 @@ filename = 'Boost.net';
     figure
     h = lsimplot(sys,u,t,X);
     p = getoptions(h);
-    p.YLim(1) = {[min(Y(100:end,1)) max(Y(100:end,1))]};
-    p.YLim(2) = {[min(Y(100:end,2)) max(Y(100:end,2))]};
-    p.YLim(3) = {[min(Y(100:end,3)) max(Y(100:end,3))]};
-    p.YLim(4) = {[min(Y(100:end,4)) max(Y(100:end,4))]};
+    for j = 1:1:size(Y,2)
+        if Y(1,j) ~= Y(end,j)
+        p.YLim(j) = {[min(Y(100:end,j)) max(Y(100:end,j))]};
+        end
+    end
+    switch i
+        case 1 % M and D off
+            p.Title.String='M1-OFF and D1-OFF';
+        case 2 % M on D off
+            p.Title.String='M1-ON and D1-OFF';
+        case 3 % M off D on
+            p.Title.String='M1-OFF and D1-ON';
+        case 4 % M and D on
+            p.Title.String='M1-ON and D1-ON';
+    end
     setoptions(h,p);
-    %}
-%{
+end
 %     
 %     
 %     figure
@@ -126,10 +129,8 @@ filename = 'Boost.net';
 %     p(2).LineWidth = 2;
 %     
 %     clear time VN001SW IC1 IC2 IC3
-%     
-  
-  %}
-
-
-
-
+    
+    
+    
+    
+    

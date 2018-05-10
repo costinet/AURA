@@ -1,4 +1,4 @@
-function [A,B,C,D,Htemp,depends] = loopfixAB(H,s,NLnets,SortedTree,SortedCoTree)
+function [A,B,C,D,Htemp,depends,StateNames] = loopfixAB(H,s,NLnets,SortedTree,SortedCoTree)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 numE = 1;
@@ -139,7 +139,7 @@ end
 H_row2 = H_row2+1;
 
 % Multiply columns times the state variables
-syms(OutputNames);
+%syms(OutputNames);
 
 % for i = 1:1:length(OutputNames)
 

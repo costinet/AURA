@@ -1,24 +1,14 @@
 function [H,s] = hybridparse(preH,K,SortedTree,SortedCoTree)
 %hybridparse parses the hybird matrix 
-%   Detailed explanation goes here
+%   hybridparse uses 
 
-%{
-What it will be: Assume input tree is in the form:
-% E  E-B  E-SC  E-C  E-L  R    G   J-C   J-L  J-OC   J-B   J
-% 1   2    3     4    5   6    7    8     9    10    11  12
-
-% 
-% ##### What it is today: New Index Values $$$$$$$
-% Branch Identification numbers:
-% E  E-B  E-C  E-L  R   G   J-C  J-L  J-B  J
-% 1   2    3   4    5   6    7   8     9   10
+% __________Tree__________  _________CoTree__________
+% E  E-B  E-M  E-C  E-L  R  G   J-C  J-L J-M  J-B  J
+% 1   2    3    4    5   6  7    8    9   10   11  12
 
 
-%}
 
 
-% For now assume measurement and dependent states are the same rows 2 is
-% row 3
 
 
 % Matrix (preH) is now of the form:
@@ -32,7 +22,10 @@ What it will be: Assume input tree is in the form:
 % | W_4 |     | H_41  H_42  H_43  H_44 |  | X_4 |  Independent Sources
 %  _   _       _                      _    _   _
 
+% For now assume measurement and dependent states are the same
+% i.e. row 2 is row 3, W_2 = W_3, X_2 = X_3
 
+%% Set up variables
 
 numE = 1;
 numEB = 2;
@@ -66,8 +59,11 @@ firstJB = find(SortedCoTree(:,1)==numJB,1,'first');
 firstJ = find(SortedCoTree(:,1)==numJ,1,'first');
 
 test=preH;
+preH = test';
 
-%% Sorts Indexes in tree
+%% Sorts Indexes in preH
+
+% Sorts Indexes in tree columns
 
 Ecol = preH(:,1:lastE);
 
@@ -88,7 +84,7 @@ else
     E_state = preH(:,lastEB+1:DT(1));
 end
 
-%% Sorts Indexes in cotree
+% Sorts Indexes in cotree columns
 
 Jcol = preH(:,firstJ+DT(1):end);
 
@@ -116,7 +112,7 @@ state = [E_state,J_state];
 
 preH = [state,depent,const]';
 
-%% Sorts Indexes in tree
+% Sorts Indexes in tree rows 
 
 Ecol = preH(:,1:lastE);
 
@@ -137,7 +133,7 @@ else
     E_state = preH(:,lastEB+1:DT(1));
 end
 
-%% Sorts Indexes in cotree
+% Sorts Indexes in cotree rows
 
 Jcol = preH(:,firstJ+DT(1):end);
 
@@ -164,7 +160,6 @@ measure = [EBcol,JBcol];
 state = [E_state,J_state];
 
 preH = [state,depent,const]';
-
 
 
 %% Organize

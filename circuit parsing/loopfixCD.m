@@ -1,4 +1,4 @@
-function [C,D,Htemp,depends] = loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree)
+function [C,D,Htemp,depends,OutNames] = loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -66,8 +66,9 @@ DependentNames = {};
 OrderedNameselement = temps(cir_state,1);
 loop = length(OrderedNameselement)+1; % Set while loop index
 
-% break somewhere in here to separate diffent solves for AB matrix and CD
-% matrix
+% Output String Names
+OutNames=NLnets(temps(((temps(:,1)==3)|(temps(:,1)==10)),4),1);
+
 
 % For loop to switch i and v in the hybrid matrix to ensure all caps have
 % an output current and all inductors have an output voltage: 
@@ -142,7 +143,7 @@ end
 H_row2 = H_row2+1;
 
 % Multiply columns times the state variables
-syms(OutputNames);
+% syms(OutputNames);
 
 % for i = 1:1:length(OutputNames)
 
@@ -171,7 +172,7 @@ Htemp = rref(Htemp);
 OutputHtemp = Htemp;
 
 
-C = Htemp(:,size(Htemp,1)+1:end-size(s,2));
+C = [Htemp(:,size(Htemp,1)+1:end-size(s,2)),zeros(size(Htemp,1),j)];
 D = Htemp(:,end-size(s,2)+1:end);
 
 % % statedepends = [];

@@ -13,19 +13,19 @@ function [ALL,NL,NL3,K] = read_file(filename)
 % NL3: 1st column provides a list of the components in the circuit
 % corresponding the the following legend
 % Voltage Source: 1
-% Dependent Voltage Source: 2
-% Capacitor: 3
-% Resistor: 4
-% Inductor: 5
-% Current Source: 6
-% Diode: 7
-% FET: 8
-% Dependent Current Source: 9
+% Dependent Voltage Source (Transformer): 2
+% Measurement Voltage Source: 3
+% Capacitor: 4
+% Resistor: 5
+% Inductor: 6
+% Measurement Current Source: 7
+% Dependent Current Source (Transformer): 8
+% Current Source: 9
+% Diode: 10
+% FET: 11
 % 
 % 2nd and 3rd column provide the nodes the corressponding element described
 % in 1st column
-% 
-% Incidence: Provides and incidence matrix of the elements in the circuit
 %
 %
 % filename is a character vector or string scalar that is the name of the
@@ -45,14 +45,6 @@ function [ALL,NL,NL3,K] = read_file(filename)
 %    %      %   %    %   %    %    %      %
 %    %      %    %%%%    %     %   %      %
 
-
-
-
-
-%---------------------------------------------------------
-% Need to replace length() with [a,b]=size() and use a or b 
-% (Problem with small circuits)
-%---------------------------------------------------------
  
 %% Open File
 
@@ -177,29 +169,13 @@ K = [];
 
 
 
-%% Transformers
+%% Transformers and Measurements
 
+% Set new index
+% Name:       V BV MV  C  R  L MI BI  I  D  M
+% Identifier: 1  2  3  4  5  6  7  8  9 10 11
 
-%{
-
-% Set new index:
-numV = 1;
-numBV = 2;
-numC = 3;
-numR = 4;
-numL = 5;
-numBI = 6;
-numI = 7;
-numD = 8;
-numM = 9;
-
-
-% Value     1   2   3   4   5   6   7   8
-pattern = {'V','C','R','L','I','D','M','K'};
-
-%}
-
-% new code
+% Set New Index code
 numV = 1;
 numBV = 2;
 numMV = 3;

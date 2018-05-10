@@ -1,4 +1,4 @@
-function [A,B,C,D,StateNames] = nodeloop(NL,NLnets,K)
+function [A,B,C,D,StateNamesAB,StateNamesCD] = nodeloop(NL,NLnets,K)
 % nodeloop creates the state matricies A,B,C,D from a specific node input
 % matrix
 %
@@ -9,10 +9,10 @@ function [A,B,C,D,StateNames] = nodeloop(NL,NLnets,K)
 
 %% Find incidence matricies
 SortedRows = sortrows(NL,1); % sorts rows in prefered tree order
-incidence = zeros(max(max(NL(:,2:3))),length(NL)); % initialize incidence matrix
+incidence = zeros(max(max(NL(:,2:3))),size(NL,1)); % initialize incidence matrix
 
 % Find Complete Incidence Matrix
-for i = 1:1:length(SortedRows)
+for i = 1:1:size(SortedRows,1)
     incidence(SortedRows(i,2),i) = 1;
     incidence(SortedRows(i,3),i) = -1;
 end
@@ -43,11 +43,6 @@ CoTree = setdiff(Ba,Tree);
 
 %% Orders Tree and CoTree indicies correctly: E R G J
 
-
-
-
-
-
 numV = 1;
 numBV = 2;
 numMV = 3;
@@ -59,12 +54,19 @@ numBI = 8;
 numI = 9;
 
 
+% Adjust Branch Identification numbers from:
+% V BV MV  C  R  L MI BI  I
+% 1  2  3  4  5  6  7  8  9
+
+% to
 
 % Branch Identification numbers:
+% __________Tree__________  _________CoTree__________
 % E  E-B  E-M  E-C  E-L  R  G   J-C  J-L J-M  J-B  J
 % 1   2    3    4    5   6  7    8    9   10   11  12
 
 
+% Finds coomponents in tree and reassigns component identifiers:
 tosorttree = [SortedRows(Tree(:),:),Tree(:)];
 [RowTree,~]=size(tosorttree);
 for i = 1:1:RowTree
@@ -80,6 +82,8 @@ end
 SortedTree = sortrows(tosorttree,1);
 Tree = SortedTree(:,5);
 
+
+% Finds coomponents in CoTree and reassigns component identifiers:
 tosortcotree = [SortedRows(CoTree(:),:),CoTree(:)];
 [RowCoTree,~]=size(tosortcotree);
 for i = 1:1:RowCoTree
@@ -215,8 +219,9 @@ B = [B_T,eye(temp)]; % Fundamental Loop Matrix
 
 % New Index Values
 % Branch Identification numbers:
-% E  E-B  E-C  E-L  R   G   J-C  J-L  J-B  J
-% 1   2    3   4    5   6    7   8     9   10
+% __________Tree__________  _________CoTree__________
+% E  E-B  E-M  E-C  E-L  R  G   J-C  J-L J-M  J-B  J
+% 1   2    3    4    5   6  7    8    9   10   11  12
 
 numE = 1;
 numEB = 2;
@@ -232,42 +237,40 @@ numJB = 11;
 numJ = 12;
 
 
-hey = find(SortedTree(:,1)==numR,1); % find first index of R term
-if isempty(hey) % if there are no R in tree then set to zero 
-   R = row+1; 
-   Z_R = 0;
-   Y_R = 0;
-else
-   R = hey;
-   syms(NLnets(SortedTree(hey:end,4),1));
-   syms 'Z_R';
-   for i = 1:1:row-R+1
-       Z_R(i,i) = NLnets(SortedTree(R+i-1,4),1);
-   end
-   %Z_R = eye(row-R+1);
-%    Z_R = eye(row-R+1).*0.01;
-   Y_R = inv(Z_R);
-
+hey = find(SortedTree(:,1)==numR,1); % find first index of resistor (R) in tree
+if isempty(hey) % if there are no R in tree then set to zero
+    R = row+1;
+    Z_R = 0;
+    Y_R = 0;
+else % if there are resistors in tree
+    % Create symbolic values for all resistor names:
+    R = hey;
+    syms(NLnets(SortedTree(hey:end,4),1));
+    syms 'Z_R';
+    % Create symbolic resistor matrix for Tree:
+    for i = 1:1:row-R+1
+        Z_R(i,i) = NLnets(SortedTree(R+i-1,4),1);
+    end
+    % Find inverse of symbolic resistor matrix for Tree:
+    Y_R = inv(Z_R);
 end
- 
-ya = find(SortedCoTree(:,1)==numG,1,'last');
+
+ya = find(SortedCoTree(:,1)==numG,1,'last'); % find last index of resistor (R) in tree
 if isempty(ya) % if there are no resistors in cotree then set to zero
-   G = 0;
-   Y_G = 0;
-   Z_G = 0;
-else
-   G = ya;
-   syms(NLnets(SortedCoTree(1:ya,4),1));
-   syms 'Z_G';
-   for i = 1:1:G
-   Z_G(i,i) = NLnets(SortedCoTree(i,4),1);
-   end
-   
-   Y_G = inv(Z_G);
-%    Y_G = eye(G)./0.01;
-%    Y_G(1,1)=1/30;
-%    Y_G(2,2)=1/0.02;
-%    Y_G(3,3)=1/0.005;
+    G = 0;
+    Y_G = 0;
+    Z_G = 0;
+else % if there are resistors in cotree
+    % Create symbolic values for all resistor names:
+    G = ya;
+    syms(NLnets(SortedCoTree(1:ya,4),1));
+    syms 'Z_G';
+    % Create symbolic resistor matrix for CoTree:
+    for i = 1:1:G
+        Z_G(i,i) = NLnets(SortedCoTree(i,4),1);
+    end
+    % Find inverse of symbolic resistor matrix for CoTree:
+    Y_G = inv(Z_G);
 end
 
 %% Parsing D_L Matrix
@@ -327,7 +330,7 @@ else
     inv_Y = inv(Y);
 end
 
-%% Find H sub Matrix
+%% Find H Sub Matrix
 
 % Add more cases as needed for now
 
@@ -361,9 +364,6 @@ else
     end
 end
 
-
-
-
 %% Find H and s Matrix
 
 % H matrix including voltage sources
@@ -371,10 +371,9 @@ almost_H = [H_EE,H_EJ;H_JE,H_JJ];
 [H,s]=hybridparse(almost_H,K,SortedTree,SortedCoTree);
 
 % Eventual Function to find outputs
-[A,B,C,D,Htemp,depends]=loopfixAB(H,s,NLnets,SortedTree,SortedCoTree);
-[C,D,Htemp,depends]=loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree);
+[A,B,C,D,Htemp,depends,StateNamesAB]=loopfixAB(H,s,NLnets,SortedTree,SortedCoTree);
+[C,D,Htemp,depends,StateNamesCD]=loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree);
 
-StateNames = 8897;
 
 %{
 % find and remove voltage sources to find h and s matrix
