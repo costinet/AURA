@@ -31,12 +31,13 @@ for i = 1:1:D(1)
     for j = 1:1:D(2)
         p = position(i,j);
         if j==1
-            NL(p,1) = numBV;
-            NLnets(p,:) = [strcat(NLnets(p,1),'_BV'), NLnets(p,2:end)];
-            Values(end+1) = sip2num(NLnets{p,4});
-        else
             NL(p,1) = numBI;
             NLnets(p,:) = [strcat(NLnets(p,1),'_BI'), NLnets(p,2:end)];
+            Values(end+1) = sip2num(NLnets{p,4});
+            
+        else
+            NL(p,1) = numBV;
+            NLnets(p,:) = [strcat(NLnets(p,1),'_BV'), NLnets(p,2:end)];
             Values(end+1) = sip2num(NLnets{p,4});
         end
     end
@@ -85,21 +86,22 @@ end
 
 % Note on Transformers:
 %  Np/Ns = Vp/Vs
-%  Np/Ns = Is/Ip
-%  Vp*Ip = Vs*Is
+%  For two legs transformer: Vp*Ip = Vs*Is
 %  (Np/Ns)^2 = Lp/Ls
 %  Np/Ns = sqrt(Lp/Ls)
+%  nI+nI+nI=0
 
 % First Inductor Listed is Primary Coil
 
 for i = 2:1:length(Values)
-    Turns(i,i-1) = sqrt(Values(1)/Values(i));
-    Turns_syms(i,i-1) = sqrt(mutual2(1)/mutual2(i));
+    %Turns(i,i-1) = sqrt(Values(1)/Values(i));
+    Turns_syms(i-1,length(Values)) = sqrt(mutual2(i)/mutual2(1));
+    Turns_syms(length(Values),i-1) = -sqrt(mutual2(i)/mutual2(1));
 end
 
 
-Turns(1,end+1) = Turns(2,1);
-Turns_syms(1,end+1) = Turns_syms(2,1);
+%Turns(1,end+1) = Turns(2,1);
+%Turns_syms(end+1,1) = Turns_syms(2,1);
 
 K = Turns_syms;
 

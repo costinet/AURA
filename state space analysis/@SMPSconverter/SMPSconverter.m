@@ -6,6 +6,8 @@ classdef SMPSconverter < handle
         topology
         ts
         u
+        % NetList (Numerical)
+        % NetList (Cells)
         
         
     end

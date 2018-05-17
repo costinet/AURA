@@ -84,7 +84,8 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
     %% Hacky solution when result is off because (eye(ns) - cumProdExp(:,:,n)) is non-invertable
     % Use optimization to solve without inversion through error minimization
     % --> Still needs tweaking
-    if(tryOpt)
+    %{
+if(tryopt)
         if(abs(Xss(1) - Xi(1)) > 2)
             warning(['Unable to find SS solution directly for Xi = ' num2str(Xi)]);
             Xss = Xi;
@@ -94,7 +95,7 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
             Xss = lsqlin(A, b, [],[],[],[], Xi.*Bi, Xi.*(2-Bi), Xss, options);
         end
     end
-
+%}
     %% from steady-state solution, go through and find states at each subinterval
     Xs(:,1) = Xss;
     for i=1:n

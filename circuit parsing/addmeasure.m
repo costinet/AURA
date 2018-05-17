@@ -33,20 +33,14 @@ numM = 11;
 %     error(['Error: ',high,' is not a valid node number'])
 % end
 
-Voltage = {'V1'
-    'L1'
-    'M1'
-    'D1'
-    'C1'
-    'R1'};
+Voltage = {'L1'
+    'L2'
+    'L3'};
 
 
-Current = {'V1'
-    'L1'
-    'M1'
-    'D1'
-    'C1'
-    'R1'};
+Current = {'L1'
+    'L2'
+    'L3'};
 
 %Voltage = {'V1','M1','L1'};
 
@@ -68,8 +62,8 @@ Current = {'V1'
 %     error(['Error: ',high,' is not a valid node number'])
 % end
 
-% Current = {};
- Voltage = {};
+%  Current = {};
+%  Voltage = {};
 
 
 %{

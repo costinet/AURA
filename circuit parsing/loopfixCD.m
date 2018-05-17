@@ -53,6 +53,7 @@ end
 [H_row,H_col] = size(H); % Get size of Hybrid Matrix without s
 %[almostH_row,~] = size(almost_H); % Get size of full Hybrid Matrix
 Htemp = [eye(H_row),H,s]; % Create Mx = Ax + Bu form
+Htemp = sym(Htemp);
 %almostHtemp = [eye(almostH_row),almost_H]; % Create Mx = Ax + Bu form
 
 temps = [SortedTree(:,:);SortedCoTree(:,:)];
@@ -101,7 +102,7 @@ end
 i = 1;
 j = 0;
 k = 0;
-saved = [];
+syms 'saved';
 
 while i<loop
 %depends = [];
@@ -122,7 +123,10 @@ while i<loop
         
         % Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*Htemp(:,i);
         Htemp(:,i+H_row2) = [];
-        saved = Htemp(:,i);
+        if j == 1
+            saved=Htemp(:,i);
+        end
+        saved(:,j) = Htemp(:,i);
         saved(i,:) = [];
         Htemp(i,:)=[];
         Htemp(:,i)=[];

@@ -1,7 +1,7 @@
 clear all; 
 clc;
 
-WFanalysis = 0;
+WFanalysis = 1;
 plotIterWF = 1;
 
 testDir = [erase(mfilename('fullpath'), mfilename) 'testConverters'];
@@ -12,6 +12,7 @@ converter = 'Buck';
         %HybridDickson
         %Buck
         %Buck_nonSingular
+        %Buck_parse
 
 simulator = SMPSim();
 simulator.loadTestConverter(converter);
@@ -29,8 +30,13 @@ elseif strcmp(converter, 'Buck')
 elseif strcmp(converter, 'Buck_nonSingular')
     Ioloc = 2;
     Vgloc = 1;
-    Iorange = logspace(log10(.5), log10(5), 25);
+    Iorange = logspace(log10(.5), log10(18), 25);
     Voutloc = 3;
+elseif strcmp(converter, 'Buck_parse')
+    Ioloc = 2;
+    Vgloc = 1;
+    Iorange = logspace(log10(.5), log10(18), 25);
+    Voutloc = 2;
 end
 
 zeroAlloc = zeros(size(Iorange));

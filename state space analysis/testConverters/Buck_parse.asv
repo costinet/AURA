@@ -1,0 +1,82 @@
+Vg = 5;
+L = 230e-9;
+Cout = 4040e-9;
+fs = 2e6;
+Ts = 1/fs;
+V = 1.8;
+Io = 1;
+CHS = 3.4874e-10;
+CLS = 3.4874e-10;
+
+Rl =  .01;
+dt = Ts/4;%50e-9;
+Vdr = 5;
+ronHS = .05;
+ronLS = .05;
+
+ts = [Ts*.5-dt dt Ts*.5-dt dt];
+
+
+%% Waveform reconstruction
+% x = [Vhs Vls Il Vo] old 
+% x = [Vhs Vo Il -Vls] new
+u = [Vg Io]';
+
+    L1 = L;
+    C1 = Cout;
+    M1_C = CHS;
+    D1_C = CLS;
+    M1_R = ronHS;
+    D1_R = ronLS;
+
+[A,B,C,D,NLnets,StateNamesAB,StateNamesCD] = ABCD('Buck2.net');
+
+A(:,4,:) = [];
+A(4,:,:) = [];
+A(:,4,:) = [];
+A(4,:,:) = [];
+
+top = SMPStopology();
+
+A1 = eval(A(:,:,2));
+A2 = eval(A(:,:,1));
+A3 = eval(A(:,:,3));
+
+B1 = eval(B(:,:,2));
+B2 = eval(B(:,:,1));
+B3 = eval(B(:,:,3));
+
+C1 = eval(C(:,:,2));
+C2 = eval(C(:,:,1));
+C3 = eval(C(:,:,3));
+
+D1 = eval(D(:,:,2));
+D2 = eval(D(:,:,1));
+D3 = eval(D(:,:,3));
+
+As = cat(3, A1, A2, A3, A2);
+Bs = cat(3, B1, B2, B3, B2);
+Cs = cat(3, C1, C2, C3, C2);
+Ds = cat(3, D1, D2, D3, D2);
+     
+
+
+Xi = [Vg, V, Io, 0];
+Bi = [.9 .9 .9 .9];
+
+% save('Buck.mat', 'As','Bs','Cs','Ds','u','ts', 'Xi', 'Bi');
+
+
+top = SMPStopology();
+top.setSS(As, Bs, Cs, Ds);
+top.Xi = Xi;
+top.Bi = Bi;
+top.stateLabels =  StateNamesAB(:,:,1);
+top.outputLabels = StateNamesCD(:,:,1);
+
+conv = SMPSconverter();
+conv.topology = top;
+conv.ts = ts;
+conv.u = u;
+
+save('Buck_parse.mat', 'conv');

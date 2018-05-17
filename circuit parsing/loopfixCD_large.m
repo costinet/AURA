@@ -1,6 +1,11 @@
-function [A,B,C,D,Htemp,depends,StateNames] = loopfixAB(H,s,NLnets,SortedTree,SortedCoTree)
+function [C,D,Htemp,depends,OutNames] = loopfixCD_large(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
+
+% Add Htemp, SortedTrees and Cotrees to output
+% Rely on C and D matrix from loopfixAB will need to pass through those
+% values or incorperate into class
+
 numE = 1;
 numEB = 2;
 numEM = 3;
@@ -24,11 +29,28 @@ SortedTrees(SortedTrees(:,1)==numE,:)=[];
 SortedCoTrees(SortedCoTrees(:,1)==numJB,:)=[];
 SortedTrees(SortedTrees(:,1)==numEB,:)=[];
 
-% Only include the state values for the H and s matrix:
-H = H(sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10),sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10));
-s = s(sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10),:);
+%H = H(sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10),sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10));
+%s = s(sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10));
 
+%{
+% find and remove voltage sources to find h and s matrix
+lastvsource = find(SortedTree(:,1)==1,1,'last');
+firstisource = find(SortedCoTree(:,1)==8,1,'first');
 
+if isempty(lastvsource)
+    H = almost_H;
+    s = 0;
+else
+    H = almost_H(lastvsource+1:end,lastvsource+1:end);
+    s = almost_H(lastvsource+1:end,1:lastvsource);
+end
+%}
+%{
+if ~isempty(firstisource)
+    H = H(1:firstisource-1,1:firstisource-1
+    
+end
+%}
 
 % Creat identity matrix along with H and almost H matrix in order to find
 % correct orentation of state and output matrix
@@ -40,7 +62,7 @@ Htemp = sym(Htemp);
 
 temps = [SortedTree(:,:);SortedCoTree(:,:)];
 cir = temps(:,1)~=numR & temps(:,1)~=numG; % find position of elements in almost H
-cir_state = find(temps(:,1)~=numR & temps(:,1)~=numG & temps(:,1)~=numE & temps(:,1)~=numJ & temps(:,1)~=numEB & temps(:,1)~=numJB & temps(:,1)~=numEM & temps(:,1)~=numJM); % find postitin of elements in H
+cir_state = find(temps(:,1)~=numR & temps(:,1)~=numG & temps(:,1)~=numE & temps(:,1)~=numJ & temps(:,1)~=numEB & temps(:,1)~=numJB); % find postitin of elements in H
 
 OrderedNamesnum = temps(cir_state,4); % Find the index for the output state names
 OutputNames = NLnets(OrderedNamesnum,1); % Find the list of output names
@@ -49,8 +71,9 @@ DependentNames = {};
 OrderedNameselement = temps(cir_state,1);
 loop = length(OrderedNameselement)+1; % Set while loop index
 
-% break somewhere in here to separate diffent solves for AB matrix and CD
-% matrix
+% Output String Names
+OutNames=NLnets(temps(((temps(:,1)==3)|(temps(:,1)==10)),4),1);
+
 
 % For loop to switch i and v in the hybrid matrix to ensure all caps have
 % an output current and all inductors have an output voltage: 
@@ -65,23 +88,25 @@ for i = 1:1:length(OrderedNameselement)
 end
 
 % Pluggs in all the C and L values to from M*x_dot = Ax+Bu equations
-% If the number exits in the M matrix then the entire row gets
+% Basically if the number exits in the M matrix then the entire row gets
 % devided by that elements either L or C
 % The position for that element however does not since it forms either
 % di/dt or dv/dt
 
+%{
 for i = 1:1:length(OrderedNameselement)
     for j = 1:1:length(OrderedNameselement)
         if Htemp(i,j)~=0
             Htemp(i,:)=Htemp(i,:)./OutputNames(j);
-            Htemp(i,j) = Htemp(i,j).*OutputNames(j);
+            Htemp(i,j) = Htemp(i,j).* OutputNames(j);
         end 
     end
 end
-
+%}
 i = 1;
 j = 0;
 k = 0;
+syms 'saved';
 
 while i<loop
 %depends = [];
@@ -97,14 +122,17 @@ while i<loop
         
         % Set up so each depends row is a linear combination of the
         % independent state remaining:
-        % depends does not include DC sorces because dv/dt of DC source is
-        % zero
         depends(j,:)=Htemp(i,H_row2+1:2*H_row2);
         depends(j,i) = 0;
         
-        Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*Htemp(:,i);
-        Htemp(i,:)=[];
+        % Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*Htemp(:,i);
         Htemp(:,i+H_row2) = [];
+        if j == 1
+            saved=Htemp(:,i);
+        end
+        saved(:,j) = Htemp(:,i);
+        saved(i,:) = [];
+        Htemp(i,:)=[];
         Htemp(:,i)=[];
         depends(:,i)=[];
         
@@ -123,9 +151,25 @@ end
 H_row2 = H_row2+1;
 
 % Multiply columns times the state variables
-%syms(OutputNames);
+% syms(OutputNames);
 
 % for i = 1:1:length(OutputNames)
+
+% Delete measure states
+Htemp(:,2*(H_row2-1)-sum(SortedCoTrees(:,1)==10)+1:2*(H_row2-1))=[];
+Htemp(:,H_row2:H_row2+sum(SortedTrees(:,1)==3)-1)=[];
+
+
+%{
+
+for i = 1:1:size(saved,2)
+    Htemp(:,H_row2:end-size(s,2)) = Htemp(:,H_row2:end-size(s,2)) + repmat(C(end-size(saved,2)+i,1:end-size(saved,2)),H_row2-1,1).*-saved(:,i);
+    Htemp(:,end+1-size(s,2):end) = Htemp(:,end+1-size(s,2):end) + repmat(D(end-size(saved,2)+i,:),H_row2-1,1).*-saved(:,i);
+end
+
+% Delete state outputs:
+Htemp(sum(SortedTrees(:,1)==3)+1:H_row2-1-sum(SortedCoTrees(:,1)==10),:) = [];
+Htemp(:,sum(SortedTrees(:,1)==3)+1:H_row2-1-sum(SortedCoTrees(:,1)==10)) = [];
 
 
 
@@ -138,11 +182,15 @@ Htemp = rref(Htemp);
 
 OutputHtemp = Htemp;
 
+
+C = [Htemp(:,size(Htemp,1)+1:end-size(s,2)),zeros(size(Htemp,1),j)];
+D = Htemp(:,end-size(s,2)+1:end);
+
 % % statedepends = [];
 % % statedependsconst = [];
 % % outstatedepends = [];
 % % outstatedependsconst = [];
-
+%{
 for i = 1:1:j
     dependstate = depends(i,:)'.*Htemp(:,H_row2:2*(H_row2-1));
     dependsconst = depends(i,:)'.*Htemp(:,(2*(H_row2-1))+1:end);
@@ -151,30 +199,11 @@ for i = 1:1:j
     % add all columns of matrix to get equation that goes in state equation
 end
 
-A = [Htemp(:,H_row2:2*(H_row2-1)),zeros(H_row2-1,j);statedepends(:,:),zeros(j,j)];
+C = [Htemp(:,H_row2:2*(H_row2-1)),zeros(H_row2-1,j);statedepends(:,:),zeros(j,j)];
 
 % fix B
-B = [Htemp(:,(2*(H_row2-1))+1:end);statedependsconst];
-
-
-
-OutputHtemp = rref(OutputHtemp);
-
-StateNames = [OutputNames;DependentNames];
-
-
-for i = 1:1:j
-    outdependstate = depends(i,:)'.*Htemp(:,H_row2:2*(H_row2-1));
-    outdependsconst = depends(i,:)'.*Htemp(:,(2*(H_row2-1))+1:end);
-    outstatedependsconst(i,:) = sum(outdependsconst).*DependentNames(i);
-    outstatedepends(i,:)=sum(outdependstate).*DependentNames(i);
-    % add all columns of matrix to get equation that goes in state equation
+D = [Htemp(:,(2*(H_row2-1))+1:end);statedependsconst];
+%}
 end
 
-C = [OutputHtemp(:,H_row2:2*(H_row2-1)).*OutputNames,zeros(H_row2-1,j);outstatedepends(:,:),zeros(j,j)];
-
-D = [OutputHtemp(:,(2*(H_row2-1))+1:end).*OutputNames;outstatedependsconst];
-
-
-end
-
+%}

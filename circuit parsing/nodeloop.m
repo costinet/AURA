@@ -334,14 +334,16 @@ end
 
 % Add more cases as needed for now
 
+
 if Flag_RJ == 0 && Flag_RG == 0 && Flag_EG == 0 && Flag_EJ == 0
     % Normal Case
     H_EE = -(D_EG*inv_Z*(D_EG.'));
     H_EJ = D_EG*inv_Z*(D_RG.')*Z_R*D_RJ-D_EJ;
     H_JE = (D_EJ.')-((D_RJ.')*inv_Y*D_RG*Y_G*(D_EG.'));
     H_JJ = -((D_RJ.')*inv_Y*D_RJ);
+    almost_H = [H_EE,H_EJ;H_JE,H_JJ];
 else
-    if Flag_RJ == 1 && Flag_RG == 1
+    if Flag_RJ == 1 && Flag_RG == 1 && Flag_EG == 0 && Flag_EJ == 0
         % Correct H_JJ if there are no resistors in the tree
         H_EE = -(D_EG*inv_Z*(D_EG.'));
         H_EJ = -D_EJ;
@@ -349,8 +351,9 @@ else
         [~,H_EJ_col]=size(H_EJ);
         [H_JE_row,~]=size(H_JE);
         H_JJ = zeros(H_JE_row,H_EJ_col);
+        almost_H = [H_EE,H_EJ;H_JE,H_JJ];
     else
-        if  Flag_EG == 1 && Flag_RG == 1
+        if  Flag_EG == 1 && Flag_RG == 1 && Flag_RJ == 0 && Flag_EJ == 0
             % Correct H_EE if there are no resistors in the cotree
             H_JJ = -((D_RJ.')*inv_Y*D_RJ);
             H_EJ = -D_EJ;
@@ -358,8 +361,19 @@ else
             [H_EJ_row,~]=size(H_EJ);
             [~,H_JE_col]=size(H_JE);
             H_EE = zeros(H_EJ_row,H_JE_col);
+            almost_H = [H_EE,H_EJ;H_JE,H_JJ];
         else
-            error('Unknown combination of elements')
+            if Flag_RJ == 1 && Flag_RG == 1 && Flag_EG == 1 && Flag_EJ == 0
+                H_EJ = -D_EJ;
+                H_JE = (D_EJ.');
+                [H_EJ_row,H_EJ_col]=size(H_EJ);
+                [H_JE_row,H_JE_col]=size(H_JE);
+                H_JJ = zeros(H_JE_row,H_EJ_col);
+                H_EE = zeros(H_EJ_row,H_JE_col);
+                almost_H = [H_EE,H_EJ;H_JE,H_JJ];
+            else
+                error('Unknown combination of elements')
+            end
         end
     end
 end

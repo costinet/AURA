@@ -1,0 +1,17 @@
+* C:\Users\jared\Documents\Graduate Reserach\LTSpice\From H Drive\Buck2.asc
+V1 N001 0 10
+L1 N003 out 20m
+M1 N001 NC_01 N002 N002 BSC032NE2LS
+C1 out 0 10µ
+D1 0 N002 RB060MM-40
+I1 out 0 2
+R1 N003 N002 1
+.model D D
+.lib C:\Users\jared\Documents\LTspiceXVII\lib\cmp\standard.dio
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\jared\Documents\LTspiceXVII\lib\cmp\standard.mos
+.tran 1
+.ic V(out)=20 I(L1)=-10
+.backanno
+.end
