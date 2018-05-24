@@ -4,14 +4,13 @@
 %{
 [filename,path]=uigetfile % opens gui to select file
 %}
-
+clear
 filename = 'Forward.net';
-
 [A,B,C,D,NLnets,StateNameAB,StateNameCD]=ABCD(filename);
 
 for i=1:1:size(A,3)
     L1 = 1e-3;
-    L2 = 2e-3;
+    L2 = 4e-3;
     L3 = 1e-3;
     L4 = 0.5e-3;
     L5 = 2e-3;
@@ -32,9 +31,9 @@ for i=1:1:size(A,3)
     switch i
         case 1 % M and D off
             %  Inital condidtions
-            % V_M1 V_D2 V_D3 V_C1 I_L4 I_L5 V_D1
+            % V_D1 V_D2 V_C1 I_L4 I_L5 V_M1 V_D3
             
-            X = [20 10 10 10 0.5 1 20];
+            X = [-20 0 10 0.5 1 0 0];
             
         case 2 % M on D off
             

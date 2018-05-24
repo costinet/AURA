@@ -1,4 +1,4 @@
-function [ output_args ] = adjustTiming( Voloc, V,  )
+function [ output_args ] = adjustTiming( Voloc, V)
 %UNTITLED8 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -94,4 +94,3 @@ while (nattempts < 100) && sum(sum(modelError))
 end
 
 end
-

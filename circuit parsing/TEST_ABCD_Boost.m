@@ -1,9 +1,20 @@
 % This script tests the circuit parsing code for the boost converter
 % "Boost.net"
 clear
+testDir = [erase(mfilename('fullpath'), mfilename) 'NetLists'];
+addpath(testDir);
 filename = 'Boost.net';
+parse = NetListParse();
+parse.filename = filename;
+parse.ABCD();
 
-[A,B,C,D,NLnets,StateNameAB,StateNameCD]=ABCD(filename);
+A = parse.Asym;
+B = parse.Bsym;
+C = parse.Csym;
+D = parse.Dsym;
+
+StateNameAB = parse.StateNames;
+StateNameCD = parse.OutputNames;
 
 for i=1:1:size(A,3)
     L1 = 16e-6;

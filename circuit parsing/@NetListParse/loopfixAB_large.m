@@ -1,4 +1,4 @@
-function [A,B,C,D,Htemp,depends,StateNames] = loopfixAB_large(H,s,NLnets,SortedTree,SortedCoTree)
+function [] = loopfixAB_large(obj,state)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -17,6 +17,8 @@ numJL = 9;
 numJM = 10;
 numJB = 11;
 numJ = 12;
+
+%{
 
 SortedTrees = SortedTree;
 SortedCoTrees = SortedCoTree;
@@ -121,6 +123,11 @@ while i<loop
     i= i+1;
 % end
 end
+%}
+
+depends=obj.dependsAB;
+Htemp = obj.HtempAB;
+DependentNames = obj.DependentNames;
 
 % Need to format output how i want it
 [H_row2,~] = size(Htemp);
@@ -138,7 +145,7 @@ H_row2 = H_row2+1;
 % end
 
 % Cannot do this for large matrix (will have to do after eval)
-%{
+
 
 Htemp = rref(Htemp);
 
@@ -183,4 +190,4 @@ D = [OutputHtemp(:,(2*(H_row2-1))+1:end).*OutputNames;outstatedependsconst];
 
 
 end
-}%
+

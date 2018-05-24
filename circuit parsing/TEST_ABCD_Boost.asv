@@ -1,17 +1,10 @@
 % This script tests the circuit parsing code for the boost converter
 % "Boost.net"
-
-%{
-[filename,path]=uigetfile % opens gui to select file
-%}
 clear
-
-
-filename = 'Buck.net';
-
+filename = 'Boost.net';
+parse = NetListParse();
+parse.filename = filename;
 [A,B,C,D,NLnets,StateNameAB,StateNameCD]=ABCD(filename);
-
-
 
 for i=1:1:size(A,3)
     L1 = 16e-6;
@@ -30,7 +23,7 @@ for i=1:1:size(A,3)
             %  Inital condidtions
             % V_M1  V_C1  I_L1  V_D1
             
-            X = [0 25 9 -50];
+            X = [50 50 9 0];
                         
         case 2 % M on D off
             
@@ -54,7 +47,7 @@ for i=1:1:size(A,3)
     
     % Create input and time:
     t = linspace(0,10e-6,100000);
-    u = 50*ones(size(t));
+    u = 25*ones(size(t));
     
     Y = lsim(sys,u,t,X);
     
@@ -62,7 +55,9 @@ for i=1:1:size(A,3)
     h = lsimplot(sys,u,t,X);
     p = getoptions(h);
     for j = 1:1:size(Y,2)
-        p.YLim(i) = {[min(Y(100:end,i)) max(Y(100:end,i))]};
+        if Y(1,j) ~= Y(end,j)
+        p.YLim(j) = {[min(Y(100:end,j)) max(Y(100:end,j))]};
+        end
     end
     switch i
         case 1 % M and D off
@@ -75,9 +70,7 @@ for i=1:1:size(A,3)
             p.Title.String='M1-ON and D1-ON';
     end
     setoptions(h,p);
-    
 end
-%{
 %     
 %     
 %     figure
@@ -137,6 +130,8 @@ end
 %     p(2).LineWidth = 2;
 %     
 %     clear time VN001SW IC1 IC2 IC3
-%     
-  
-  %}
+    
+    
+    
+    
+    

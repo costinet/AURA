@@ -25,23 +25,7 @@ classdef SMPStopology < handle
         outputLabels
         inputLabels
 
-        % Htemp for AB and CD matrix for large converters
-        
-        % Store indexing values hear as well
-        
-        % Diode placement from ABCD matrix
-        
-        % Identify topology and converter from name of netlist file
-        
-        % Create void fuction that when called takes Htemp and creates
-        % numerical ABCD matrix
-        
-        % Have ABCD symbolic Matrix 
-        
-        % Have a public class and function to input measured states in cell
-        % format maybe place in converter class???
-        
-        % etc...????
+
         
     end
     

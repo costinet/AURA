@@ -1,27 +1,27 @@
-function [A,B,C,D,NLnets,StateNamesAB,StateNamesCD] = ABCD(filename)
+function [] = ABCD(obj)
 % ABCD creates takes a NETlist file from LTSpice and creates the associated
 % ABCD matrices.
-% 
-% 
+%
+%
 % filename contians a string of the netlist filename from LTSpice Example:
 % boost.net
-% 
+%
 % A,B,C,D are the coefficents for the state space equation:
 %     x(n+1) = A*x(n)+B*u y = C*x(n)+D*u
-% 
+%
 % NLnets contains a cell array of strings desribing all of the elements in
 % the circuit
 %
 % StateName is the name of the output variables y from the state equations
-% 
+%
 % 'Diodes' contains the position for all of the diodes in the circuit.
 % These are sorted by:
 %  Anodes in the 1st column Cathodes in the 2nd column
 % Therefore for every row, there can not be a positive voltage from the
 % node in the 1st column to the node in the second column
-% 
+%
 
-%     %%%%%%   %      %  %%%%%%%    %%%%%% 
+%     %%%%%%   %      %  %%%%%%%    %%%%%%
 %    %      %  %      %  %      %  %      %
 %    %      %  %      %  %      %  %      %
 %    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
@@ -33,11 +33,14 @@ function [A,B,C,D,NLnets,StateNamesAB,StateNamesCD] = ABCD(filename)
 %    %      %    %%%%    %     %   %      %
 
 
+%% Creat Parse Class
+
+%file = NetListParse();
+
 %% Read in file:
-[NLwhole,NLnets,NL,K]=read_file(filename);
+obj.read_file;
 
-
-%% Set 
+%% Set Variables
 
 numV = 1;
 numBV = 2;
@@ -53,10 +56,13 @@ numM = 11;
 
 %% Find Diodes and Switches
 
+NL = obj.NL;
+NLnets = obj.NLnets;
+
 switches = [];
 Diodes = [];
 for i = 1:1:size(NL,1)
-    if NL(i,1) == numD 
+    if NL(i,1) == numD
         switches(end+1) = i;
         Diodes(end+1,:)  = NL(i,2:3);
     end
@@ -65,6 +71,9 @@ for i = 1:1:size(NL,1)
         Diodes(end+1,:)  = [NL(i,3),NL(i,2)];
     end
 end
+
+obj.Diodes = Diodes;
+obj.Switches = switches;
 
 %% Get binary representation of number of states to change R and C for D and M
 
@@ -82,20 +91,30 @@ state = bin;
 %     end
 %      nodeloop(NL,NLnets);
 %     %[NL1(:,:,i),ST(:,:,i)] = Tree(NL,NLnets);
-% 
+%
 % end
 
 %% Cycle through all possible states
 
 for i = 1:1:number_of_states
 
-    [NewNL,NewNLnets]=states(NL,NLnets,state,i,switches);
+    [NewNL,NewNLnets]=obj.states(state,i,switches);
     %circuitplot(NewNL,NewNLnets);
-    [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i)] = nodeloop(NewNL,NewNLnets,K);
+    [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),HtempAB(:,:,i),dependsAB(:,:,i),HtempCD(:,:,i),dependsCD(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i),DependentNames(:,1)] = obj.nodeloop(NewNL,NewNLnets);
 
     J = 9572839;
 end
 
+
+obj.Asym = A;
+obj.Bsym = B;
+obj.Csym = C;
+obj.Dsym = D;
+obj.StateNames = StateNamesAB;
+obj.OutputNames = StateNamesCD;
+obj.DependentNames = DependentNames;
+
+
     J = 5782975892;
-    
+
 end

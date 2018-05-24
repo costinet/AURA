@@ -1,4 +1,4 @@
-function [A,B,C,D,StateNamesAB,StateNamesCD] = nodeloop(NL,NLnets,K)
+function [A,B,C,D,HtempAB,dependsAB,HtempCD,dependsCD,StateNamesAB,StateNamesCD,DependentNames] = nodeloop(obj,NL,NLnets)
 % nodeloop creates the state matricies A,B,C,D from a specific node input
 % matrix
 %
@@ -382,12 +382,12 @@ end
 
 % H matrix including voltage sources
 almost_H = [H_EE,H_EJ;H_JE,H_JJ];
-[H,s]=hybridparse(almost_H,K,SortedTree,SortedCoTree);
+[H,s]=obj.hybridparse(almost_H,SortedTree,SortedCoTree);
 
 % Eventual Function to find outputs
-[A,B,C,D,Htemp,depends,StateNamesAB]=loopfixAB(H,s,NLnets,SortedTree,SortedCoTree);
-[C,D,Htemp,depends,StateNamesCD]=loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree);
+[A,B,C,D,HtempAB,dependsAB,StateNamesAB,DependentNames]=obj.loopfixAB(H,s,NLnets,SortedTree,SortedCoTree);
 
+[C,D,HtempCD,dependsCD,StateNamesCD]=obj.loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree);
 
 %{
 % find and remove voltage sources to find h and s matrix

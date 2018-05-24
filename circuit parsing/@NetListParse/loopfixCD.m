@@ -1,4 +1,4 @@
-function [C,D,Htemp,depends,OutNames] = loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree)
+function [C,D,Htemp,depends,OutNames] = loopfixCD(obj,A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 

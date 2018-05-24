@@ -1,4 +1,4 @@
-function [H,s] = hybridparse(preH,K,SortedTree,SortedCoTree)
+function [H,s] = hybridparse(obj,preH,SortedTree,SortedCoTree)
 %hybridparse parses the hybird matrix 
 %   hybridparse uses 
 
@@ -39,6 +39,8 @@ numJL = 9;
 numJM = 10;
 numJB = 11;
 numJ = 12;
+
+K = obj.K;
 
 SortedTreeR = SortedTree;
 SortedCoTreeG = SortedCoTree;

@@ -1,4 +1,4 @@
-function [A,B,C,D,Htemp,depends,StateNames] = loopfixAB(H,s,NLnets,SortedTree,SortedCoTree)
+function [A,B,C,D,Htemp,depends,StateNames,DependentNames] = loopfixAB(obj,H,s,NLnets,SortedTree,SortedCoTree)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 numE = 1;
@@ -134,6 +134,7 @@ H_row2 = H_row2+1;
 % end
 
 % Cannot do this for large matrix (will have to do after eval)
+
 Htemp = rref(Htemp);
 
 OutputHtemp = Htemp;

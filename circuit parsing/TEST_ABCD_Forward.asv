@@ -5,33 +5,36 @@
 [filename,path]=uigetfile % opens gui to select file
 %}
 clear
-
-
-filename = 'Buck.net';
-
+filename = 'Forward.net';
 [A,B,C,D,NLnets,StateNameAB,StateNameCD]=ABCD(filename);
 
-
-
 for i=1:1:size(A,3)
-    L1 = 16e-6;
-    C1 = 40e-6;
+    L1 = 1e-3;
+    L2 = 1e-3;
+    L3 = 1e-3;
+    L4 = 0.5e-3;
+    L5 = 2e-3;
+    C1 = 5e-6;
     R1 = 10;
     M1_C = 1e-9;
     D1_C = 1e-9;
     M1_R = 0.01;
     D1_R = 0.01;
+    D2_C = 1e-9;
+    D3_C = 1e-9;
+    D2_R = 0.01;
+    D3_R = 0.01;
     R2 = 0.001;
     
-    % Switch cases for Boost converter
+    % Switch cases for Forward converter
     
     switch i
         case 1 % M and D off
             %  Inital condidtions
-            % V_M1  V_C1  I_L1  V_D1
+            % V_D1 V_D2 V_C1 I_L4 I_L5 V_M1 V_D3
             
-            X = [0 25 9 -50];
-                        
+            X = [-20 0 10 10 0.5 1 -20];
+            
         case 2 % M on D off
             
             X = [0.09 50 9 -49.91];
@@ -42,8 +45,58 @@ for i=1:1:size(A,3)
             
         case 4 % M and D on
             
-             X = [25 50 0 -25];
+            X = [25 50 0 -25];
+        case 5 % M and D off
+            %  Inital condidtions
+            % V_M1 V_D2 V_D3 V_C1 I_L4 I_L5 V_D1
             
+            X = [20 10 10 10 9 2 20];
+            
+        case 6 % M on D off
+            
+            X = [0.09 50 9 -49.91];
+            
+        case 7 % M off D on
+            
+            X = [50 50 9 0];
+            
+        case 8 % M and D on
+            
+            X = [25 50 0 -25];
+        case 9 % M and D off
+            %  Inital condidtions
+            % V_M1 V_D2 V_D3 V_C1 I_L4 I_L5 V_D1
+            
+            X = [20 10 10 10 9 2 20];
+            
+        case 10 % M on D off
+            
+            X = [0.09 50 9 -49.91];
+            
+        case 11 % M off D on
+            
+            X = [50 50 9 0];
+            
+        case 12 % M and D on
+            
+            X = [25 50 0 -25];
+        case 13 % M and D off
+            %  Inital condidtions
+            % V_M1 V_D2 V_D3 V_C1 I_L4 I_L5 V_D1
+            
+            X = [20 10 10 10 9 2 20];
+            
+        case 14 % M on D off
+            
+            X = [0.09 50 9 -49.91];
+            
+        case 15 % M off D on
+            
+            X = [50 50 9 0];
+            
+        case 16 % M and D on
+            
+            X = [25 50 0 -25];
     end
     
     
@@ -54,7 +107,7 @@ for i=1:1:size(A,3)
     
     % Create input and time:
     t = linspace(0,10e-6,100000);
-    u = 50*ones(size(t));
+    u = 20*ones(size(t));
     
     Y = lsim(sys,u,t,X);
     
@@ -62,7 +115,9 @@ for i=1:1:size(A,3)
     h = lsimplot(sys,u,t,X);
     p = getoptions(h);
     for j = 1:1:size(Y,2)
-        p.YLim(i) = {[min(Y(100:end,i)) max(Y(100:end,i))]};
+        if Y(1,j) ~= Y(end,j)
+        p.YLim(j) = {[min(Y(100:end,j)) max(Y(100:end,j))]};
+        end
     end
     switch i
         case 1 % M and D off
@@ -75,7 +130,6 @@ for i=1:1:size(A,3)
             p.Title.String='M1-ON and D1-ON';
     end
     setoptions(h,p);
-    
 end
 %{
 %     

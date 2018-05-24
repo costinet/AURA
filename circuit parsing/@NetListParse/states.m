@@ -1,4 +1,4 @@
-function [NL,NLnets] = states(NL,NLnets,state,i,switches) 
+function [NL,NLnets] = states(obj,state,i,switches) 
 % this function finds the states and sets the net list for nodeloop
 %
 
@@ -15,6 +15,8 @@ numI = 9;
 numD = 10;
 numM = 11;
 
+NL = obj.NL;
+NLnets = obj.NLnets;
 
 for j = 1:1:length(switches)
     

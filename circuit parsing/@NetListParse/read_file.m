@@ -1,4 +1,4 @@
-function [ALL,NL,NL3,K] = read_file(filename)
+function [] = read_file(obj)
 % 
 % The code reads the NETlist file from LTSpice to be used in finding ABCD
 %
@@ -47,6 +47,8 @@ function [ALL,NL,NL3,K] = read_file(filename)
 
  
 %% Open File
+
+filename = obj.filename;
 
 if exist(filename,'file') == 2 % if the file exists
     
@@ -205,10 +207,14 @@ for i = 1:1:D(1)
     end
 end
         
-[NL3,NL] = addmeasure(NL3,NL);
+obj.NL = NL3;
+obj.NLnets = NL;
+obj.NLwhole = ALL;
+
+obj.addmeasure;
 % Find and set transformers
 if ~isempty(IndtoTrans) || ~isempty(MutInd)
-[NL,NL3,K]=transformers(NL,NL3,IndtoTrans,MutInd,position);
+obj.transformers(IndtoTrans,MutInd,position);
 end
 
 

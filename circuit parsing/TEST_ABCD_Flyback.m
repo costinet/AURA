@@ -1,21 +1,18 @@
 % This script tests the circuit parsing code for the boost converter
-% "Boost.net"
-
-%{
-[filename,path]=uigetfile % opens gui to select file
-%}
+% "Flyback.net"
 clear
-
-
-filename = 'Buck.net';
-
-[A,B,C,D,NLnets,StateNameAB,StateNameCD]=ABCD(filename);
-
-
+testDir = [erase(mfilename('fullpath'), mfilename) 'NetLists'];
+addpath(testDir);
+filename = 'Flyback.net';
+parse = NetListParse();
+parse.filename = filename;
+[A,B,C,D,NLnets,StateNameAB,StateNameCD]=parse.ABCD();
 
 for i=1:1:size(A,3)
-    L1 = 16e-6;
-    C1 = 40e-6;
+    L1 = 1e-3;
+    L2 = 4e-3;
+    L3 = 0.5e-3;
+    C1 = 10e-6;
     R1 = 10;
     M1_C = 1e-9;
     D1_C = 1e-9;
@@ -28,21 +25,21 @@ for i=1:1:size(A,3)
     switch i
         case 1 % M and D off
             %  Inital condidtions
-            % V_M1  V_C1  I_L1  V_D1
+            % V_M1  V_D1  I_L3  V_C1
             
-            X = [0 25 9 -50];
+            X = [0 -70 0.5 20];
                         
         case 2 % M on D off
             
-            X = [0.09 50 9 -49.91];
+            X = [0 -70 0.5 20];
             
         case 3 % M off D on
             
-            X = [50 50 9 0];
+            X = [35 0 3 0];
             
         case 4 % M and D on
             
-             X = [25 50 0 -25];
+             X = [0 0 3 0];
             
     end
     
@@ -54,7 +51,7 @@ for i=1:1:size(A,3)
     
     % Create input and time:
     t = linspace(0,10e-6,100000);
-    u = 50*ones(size(t));
+    u = 20*ones(size(t));
     
     Y = lsim(sys,u,t,X);
     
@@ -62,7 +59,9 @@ for i=1:1:size(A,3)
     h = lsimplot(sys,u,t,X);
     p = getoptions(h);
     for j = 1:1:size(Y,2)
-        p.YLim(i) = {[min(Y(100:end,i)) max(Y(100:end,i))]};
+        if Y(1,j) ~= Y(end,j)
+        p.YLim(j) = {[min(Y(100:end,j)) max(Y(100:end,j))]};
+        end
     end
     switch i
         case 1 % M and D off
@@ -75,9 +74,7 @@ for i=1:1:size(A,3)
             p.Title.String='M1-ON and D1-ON';
     end
     setoptions(h,p);
-    
 end
-%{
 %     
 %     
 %     figure
@@ -137,6 +134,8 @@ end
 %     p(2).LineWidth = 2;
 %     
 %     clear time VN001SW IC1 IC2 IC3
-%     
-  
-  %}
+    
+    
+    
+    
+    
