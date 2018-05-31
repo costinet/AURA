@@ -1,4 +1,4 @@
-function [C,D,Htemp,depends,OutNames] = loopfixCD(obj,A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree)
+function [C,D,Htemp,saved,OutNames] = loopfixCD(obj,A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -25,32 +25,10 @@ SortedTrees(SortedTrees(:,1)==numE,:)=[];
 SortedCoTrees(SortedCoTrees(:,1)==numJB,:)=[];
 SortedTrees(SortedTrees(:,1)==numEB,:)=[];
 
-%H = H(sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10),sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10));
-%s = s(sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10));
-
-%{
-% find and remove voltage sources to find h and s matrix
-lastvsource = find(SortedTree(:,1)==1,1,'last');
-firstisource = find(SortedCoTree(:,1)==8,1,'first');
-
-if isempty(lastvsource)
-    H = almost_H;
-    s = 0;
-else
-    H = almost_H(lastvsource+1:end,lastvsource+1:end);
-    s = almost_H(lastvsource+1:end,1:lastvsource);
-end
-%}
-%{
-if ~isempty(firstisource)
-    H = H(1:firstisource-1,1:firstisource-1
-    
-end
-%}
 
 % Creat identity matrix along with H and almost H matrix in order to find
 % correct orentation of state and output matrix
-[H_row,H_col] = size(H); % Get size of Hybrid Matrix without s
+[H_row,~] = size(H); % Get size of Hybrid Matrix without s
 %[almostH_row,~] = size(almost_H); % Get size of full Hybrid Matrix
 Htemp = [eye(H_row),H,s]; % Create Mx = Ax + Bu form
 Htemp = sym(Htemp);
@@ -83,22 +61,7 @@ for i = 1:1:length(OrderedNameselement)
  end
 end
 
-% Pluggs in all the C and L values to from M*x_dot = Ax+Bu equations
-% Basically if the number exits in the M matrix then the entire row gets
-% devided by that elements either L or C
-% The position for that element however does not since it forms either
-% di/dt or dv/dt
 
-%{
-for i = 1:1:length(OrderedNameselement)
-    for j = 1:1:length(OrderedNameselement)
-        if Htemp(i,j)~=0
-            Htemp(i,:)=Htemp(i,:)./OutputNames(j);
-            Htemp(i,j) = Htemp(i,j).* OutputNames(j);
-        end 
-    end
-end
-%}
 i = 1;
 j = 0;
 k = 0;
@@ -146,55 +109,25 @@ end
 [H_row2,~] = size(Htemp);
 H_row2 = H_row2+1;
 
-% Multiply columns times the state variables
-% syms(OutputNames);
-
-% for i = 1:1:length(OutputNames)
-
 % Delete measure states
 Htemp(:,2*(H_row2-1)-sum(SortedCoTrees(:,1)==10)+1:2*(H_row2-1))=[];
 Htemp(:,H_row2:H_row2+sum(SortedTrees(:,1)==3)-1)=[];
 
-for i = 1:1:size(saved,2)
-    Htemp(:,H_row2:end-size(s,2)) = Htemp(:,H_row2:end-size(s,2)) + repmat(C(end-size(saved,2)+i,1:end-size(saved,2)),H_row2-1,1).*-saved(:,i);
-    Htemp(:,end+1-size(s,2):end) = Htemp(:,end+1-size(s,2):end) + repmat(D(end-size(saved,2)+i,:),H_row2-1,1).*-saved(:,i);
-end
-
-% Delete state outputs:
-Htemp(sum(SortedTrees(:,1)==3)+1:H_row2-1-sum(SortedCoTrees(:,1)==10),:) = [];
-Htemp(:,sum(SortedTrees(:,1)==3)+1:H_row2-1-sum(SortedCoTrees(:,1)==10)) = [];
-
-
-
-%Htemp(:,1:H_row2-1) = OutputNames(:)'.*Htemp(:,1:H_row2-1);
+if ~isempty(C)
     
-% end
-
-% Cannot do this for large matrix (will have to do after eval)
-Htemp = rref(Htemp);
-
-OutputHtemp = Htemp;
-
-
-C = [Htemp(:,size(Htemp,1)+1:end-size(s,2)),zeros(size(Htemp,1),j)];
-D = Htemp(:,end-size(s,2)+1:end);
-
-% % statedepends = [];
-% % statedependsconst = [];
-% % outstatedepends = [];
-% % outstatedependsconst = [];
-%{
-for i = 1:1:j
-    dependstate = depends(i,:)'.*Htemp(:,H_row2:2*(H_row2-1));
-    dependsconst = depends(i,:)'.*Htemp(:,(2*(H_row2-1))+1:end);
-    statedependsconst(i,:) = sum (dependsconst);
-    statedepends(i,:)=sum(dependstate);
-    % add all columns of matrix to get equation that goes in state equation
+    for i = 1:1:size(saved,2)
+        Htemp(:,H_row2:end-size(s,2)) = Htemp(:,H_row2:end-size(s,2)) + repmat(C(end-size(saved,2)+i,1:end-size(saved,2)),H_row2-1,1).*-saved(:,i);
+        Htemp(:,end+1-size(s,2):end) = Htemp(:,end+1-size(s,2):end) + repmat(D(end-size(saved,2)+i,:),H_row2-1,1).*-saved(:,i);
+    end
+    
+    % Delete state outputs:
+    Htemp(sum(SortedTrees(:,1)==3)+1:H_row2-1-sum(SortedCoTrees(:,1)==10),:) = [];
+    Htemp(:,sum(SortedTrees(:,1)==3)+1:H_row2-1-sum(SortedCoTrees(:,1)==10)) = [];
+    
+    
+    Htemp = rref(Htemp);
+    
+    C = [Htemp(:,size(Htemp,1)+1:end-size(s,2)),zeros(size(Htemp,1),j)];
+    D = Htemp(:,end-size(s,2)+1:end);
 end
-
-C = [Htemp(:,H_row2:2*(H_row2-1)),zeros(H_row2-1,j);statedepends(:,:),zeros(j,j)];
-
-% fix B
-D = [Htemp(:,(2*(H_row2-1))+1:end);statedependsconst];
-%}
 end

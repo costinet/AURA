@@ -40,40 +40,9 @@ function [] = ABCD(obj)
 %% Read in file:
 obj.read_file;
 
-%% Set Variables
-
-numV = 1;
-numBV = 2;
-numMV = 3;
-numC = 4;
-numR = 5;
-numL = 6;
-numMI = 7;
-numBI = 8;
-numI = 9;
-numD = 10;
-numM = 11;
-
 %% Find Diodes and Switches
 
-NL = obj.NL;
-NLnets = obj.NLnets;
-
-switches = [];
-Diodes = [];
-for i = 1:1:size(NL,1)
-    if NL(i,1) == numD
-        switches(end+1) = i;
-        Diodes(end+1,:)  = NL(i,2:3);
-    end
-    if NL(i,1) == numM
-        switches(end+1) = i;
-        Diodes(end+1,:)  = [NL(i,3),NL(i,2)];
-    end
-end
-
-obj.Diodes = Diodes;
-obj.Switches = switches;
+[switches]=obj.findDM;
 
 %% Get binary representation of number of states to change R and C for D and M
 
@@ -81,27 +50,15 @@ number_of_states = 2^length(switches);
 bin=de2bi(0:number_of_states-1);
 state = bin;
 
-% state = bin+2;
-% ST = [];
-
-% for i = 1:1:number_of_states
-%     for j = 1:1:length(switches)
-%         NL(switches(j),1) = state(i,j);
-%         % each row is a different state
-%     end
-%      nodeloop(NL,NLnets);
-%     %[NL1(:,:,i),ST(:,:,i)] = Tree(NL,NLnets);
-%
-% end
 
 %% Cycle through all possible states
-
-for i = 1:1:number_of_states
-
+SortedTree=zeros(2*size(obj.NL,1),5,1); 
+SortedCoTree=zeros(2*size(obj.NL,1),5,1);
+for i = 1:1:1 %number_of_states
+    
     [NewNL,NewNLnets]=obj.states(state,i,switches);
-    %circuitplot(NewNL,NewNLnets);
-    [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),HtempAB(:,:,i),dependsAB(:,:,i),HtempCD(:,:,i),dependsCD(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i),DependentNames(:,1)] = obj.nodeloop(NewNL,NewNLnets);
-
+    [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),HtempAB(:,:,i),dependsAB(:,:,i),HtempCD(:,:,i),savedCD(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i),OutputNames(:,i),DependentNames(:,i),SortedTree(:,:,i),SortedCoTree(:,:,i)] = obj.nodeloop(NewNL,NewNLnets);
+    
     J = 9572839;
 end
 
@@ -110,10 +67,16 @@ obj.Asym = A;
 obj.Bsym = B;
 obj.Csym = C;
 obj.Dsym = D;
+obj.HtempAB = HtempAB;
+obj.HtempCD = HtempCD;
+obj.dependsAB = dependsAB;
+obj.savedCD = savedCD;
 obj.StateNames = StateNamesAB;
-obj.OutputNames = StateNamesCD;
+obj.OutputNamesCD = StateNamesCD;
 obj.DependentNames = DependentNames;
-
+obj.OutputNames = OutputNames;
+obj.SortedTree = SortedTree;
+obj.SortedCoTree = SortedCoTree;
 
     J = 5782975892;
 

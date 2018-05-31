@@ -1,6 +1,8 @@
-function [A,B,C,D,Htemp,depends,StateNames,DependentNames] = loopfixAB(obj,H,s,NLnets,SortedTree,SortedCoTree)
+function [A,B,C,D,Htemp,depends,StateNames,OutputNames,DependentNames] = loopfixAB(obj,H,s,NLnets,SortedTree,SortedCoTree)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
+
+
 numE = 1;
 numEB = 2;
 numEM = 3;
@@ -28,15 +30,11 @@ SortedTrees(SortedTrees(:,1)==numEB,:)=[];
 H = H(sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10),sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10));
 s = s(sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10),:);
 
-
-
 % Creat identity matrix along with H and almost H matrix in order to find
 % correct orentation of state and output matrix
-[H_row,H_col] = size(H); % Get size of Hybrid Matrix without s
-%[almostH_row,~] = size(almost_H); % Get size of full Hybrid Matrix
+[H_row,~] = size(H); % Get size of Hybrid Matrix without s
 Htemp = [eye(H_row),H,s]; % Create Mx = Ax + Bu form
-Htemp = sym(Htemp);
-%almostHtemp = [eye(almostH_row),almost_H]; % Create Mx = Ax + Bu form
+Htemp = sym(Htemp); % Ensure Htemp is a symbolic matrix
 
 temps = [SortedTree(:,:);SortedCoTree(:,:)];
 cir = temps(:,1)~=numR & temps(:,1)~=numG; % find position of elements in almost H
@@ -44,13 +42,10 @@ cir_state = find(temps(:,1)~=numR & temps(:,1)~=numG & temps(:,1)~=numE & temps(
 
 OrderedNamesnum = temps(cir_state,4); % Find the index for the output state names
 OutputNames = NLnets(OrderedNamesnum,1); % Find the list of output names
-DependentNames = {};
+DependentNames = {}; % Initallize dependent Names
 
 OrderedNameselement = temps(cir_state,1);
 loop = length(OrderedNameselement)+1; % Set while loop index
-
-% break somewhere in here to separate diffent solves for AB matrix and CD
-% matrix
 
 % For loop to switch i and v in the hybrid matrix to ensure all caps have
 % an output current and all inductors have an output voltage: 
@@ -115,67 +110,60 @@ while i<loop
         
     end
     i= i+1;
-% end
 end
+
+
 
 % Need to format output how i want it
 [H_row2,~] = size(Htemp);
 H_row2 = H_row2+1;
 
-% Multiply columns times the state variables
-%syms(OutputNames);
-
-% for i = 1:1:length(OutputNames)
 
 
+%% For small number of state variables solve ABCD
 
-%Htemp(:,1:H_row2-1) = OutputNames(:)'.*Htemp(:,1:H_row2-1);
-    
-% end
-
-% Cannot do this for large matrix (will have to do after eval)
-
-Htemp = rref(Htemp);
-
-OutputHtemp = Htemp;
-
-% % statedepends = [];
-% % statedependsconst = [];
-% % outstatedepends = [];
-% % outstatedependsconst = [];
-
-for i = 1:1:j
-    dependstate = depends(i,:)'.*Htemp(:,H_row2:2*(H_row2-1));
-    dependsconst = depends(i,:)'.*Htemp(:,(2*(H_row2-1))+1:end);
-    statedependsconst(i,:) = sum (dependsconst);
-    statedepends(i,:)=sum(dependstate);
-    % add all columns of matrix to get equation that goes in state equation
-end
-
-A = [Htemp(:,H_row2:2*(H_row2-1)),zeros(H_row2-1,j);statedepends(:,:),zeros(j,j)];
-
-% fix B
-B = [Htemp(:,(2*(H_row2-1))+1:end);statedependsconst];
-
-
-
-OutputHtemp = rref(OutputHtemp);
-
+A  = [];
+B  = [];
+C  = [];
+D  = [];
 StateNames = [OutputNames;DependentNames];
 
+if H_row2 < 0
+    
+    Htemp = rref(Htemp);
+    
+    OutputHtemp = Htemp;
 
-for i = 1:1:j
-    outdependstate = depends(i,:)'.*Htemp(:,H_row2:2*(H_row2-1));
-    outdependsconst = depends(i,:)'.*Htemp(:,(2*(H_row2-1))+1:end);
-    outstatedependsconst(i,:) = sum(outdependsconst).*DependentNames(i);
-    outstatedepends(i,:)=sum(outdependstate).*DependentNames(i);
-    % add all columns of matrix to get equation that goes in state equation
+    for i = 1:1:j
+        dependstate = depends(i,:)'.*Htemp(:,H_row2:2*(H_row2-1));
+        dependsconst = depends(i,:)'.*Htemp(:,(2*(H_row2-1))+1:end);
+        statedependsconst(i,:) = sum (dependsconst);
+        statedepends(i,:)=sum(dependstate);
+        % add all columns of matrix to get equation that goes in state equation
+    end
+    
+    A = [Htemp(:,H_row2:2*(H_row2-1)),zeros(H_row2-1,j);statedepends(:,:),zeros(j,j)];
+    
+    B = [Htemp(:,(2*(H_row2-1))+1:end);statedependsconst];
+    
+    
+    
+    %OutputHtemp = rref(OutputHtemp);
+    
+    
+    for i = 1:1:j
+        outdependstate = depends(i,:)'.*Htemp(:,H_row2:2*(H_row2-1));
+        outdependsconst = depends(i,:)'.*Htemp(:,(2*(H_row2-1))+1:end);
+        outstatedependsconst(i,:) = sum(outdependsconst).*DependentNames(i);
+        outstatedepends(i,:)=sum(outdependstate).*DependentNames(i);
+        % add all columns of matrix to get equation that goes in state equation
+    end
+    
+    C = [Htemp(:,H_row2:2*(H_row2-1)).*OutputNames,zeros(H_row2-1,j);outstatedepends(:,:),zeros(j,j)];
+    
+    D = [Htemp(:,(2*(H_row2-1))+1:end).*OutputNames;outstatedependsconst];
+    
 end
-
-C = [OutputHtemp(:,H_row2:2*(H_row2-1)).*OutputNames,zeros(H_row2-1,j);outstatedepends(:,:),zeros(j,j)];
-
-D = [OutputHtemp(:,(2*(H_row2-1))+1:end).*OutputNames;outstatedependsconst];
-
 
 end
 

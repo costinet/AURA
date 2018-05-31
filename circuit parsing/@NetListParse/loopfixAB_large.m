@@ -1,10 +1,10 @@
-function [] = loopfixAB_large(obj,state)
+function [A,B,C,D] = loopfixAB_large(obj,Htemp,depends,OutputNames,DependentNames)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
 % Need to pass H_row2 as well
 % Delete ABCD
-
+%{
 numE = 1;
 numEB = 2;
 numEM = 3;
@@ -17,144 +17,17 @@ numJL = 9;
 numJM = 10;
 numJB = 11;
 numJ = 12;
-
-%{
-
-SortedTrees = SortedTree;
-SortedCoTrees = SortedCoTree;
-
-SortedCoTrees(SortedCoTrees(:,1)==numG,:)=[];
-SortedTrees(SortedTrees(:,1)==numR,:)=[];
-SortedCoTrees(SortedCoTrees(:,1)==numJ,:)=[];
-SortedTrees(SortedTrees(:,1)==numE,:)=[];
-SortedCoTrees(SortedCoTrees(:,1)==numJB,:)=[];
-SortedTrees(SortedTrees(:,1)==numEB,:)=[];
-
-% Only include the state values for the H and s matrix:
-H = H(sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10),sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10));
-s = s(sum(SortedTrees(:,1)==3)+1:size(SortedTrees,1)+size(SortedCoTrees,1)-sum(SortedCoTrees(:,1)==10),:);
-
-
-
-% Creat identity matrix along with H and almost H matrix in order to find
-% correct orentation of state and output matrix
-[H_row,H_col] = size(H); % Get size of Hybrid Matrix without s
-%[almostH_row,~] = size(almost_H); % Get size of full Hybrid Matrix
-Htemp = [eye(H_row),H,s]; % Create Mx = Ax + Bu form
-Htemp = sym(Htemp);
-%almostHtemp = [eye(almostH_row),almost_H]; % Create Mx = Ax + Bu form
-
-temps = [SortedTree(:,:);SortedCoTree(:,:)];
-cir = temps(:,1)~=numR & temps(:,1)~=numG; % find position of elements in almost H
-cir_state = find(temps(:,1)~=numR & temps(:,1)~=numG & temps(:,1)~=numE & temps(:,1)~=numJ & temps(:,1)~=numEB & temps(:,1)~=numJB & temps(:,1)~=numEM & temps(:,1)~=numJM); % find postitin of elements in H
-
-OrderedNamesnum = temps(cir_state,4); % Find the index for the output state names
-OutputNames = NLnets(OrderedNamesnum,1); % Find the list of output names
-DependentNames = {};
-
-OrderedNameselement = temps(cir_state,1);
-loop = length(OrderedNameselement)+1; % Set while loop index
-
-% break somewhere in here to separate diffent solves for AB matrix and CD
-% matrix
-
-% For loop to switch i and v in the hybrid matrix to ensure all caps have
-% an output current and all inductors have an output voltage: 
-for i = 1:1:length(OrderedNameselement)
- if OrderedNameselement(i)==numEL || OrderedNameselement(i)==numJC
-        [H_row2,~]=size(Htemp);
-        move=Htemp(:,i);
-        move2 = Htemp(:,i+H_row2);
-        Htemp(:,i)=-move2;
-        Htemp(:,i+H_row2) = -move;
- end
-end
-
-% Pluggs in all the C and L values to from M*x_dot = Ax+Bu equations
-% If the number exits in the M matrix then the entire row gets
-% devided by that elements either L or C
-% The position for that element however does not since it forms either
-% di/dt or dv/dt
-
-for i = 1:1:length(OrderedNameselement)
-    for j = 1:1:length(OrderedNameselement)
-        if Htemp(i,j)~=0
-            Htemp(i,:)=Htemp(i,:)./OutputNames(j);
-            Htemp(i,j) = Htemp(i,j).*OutputNames(j);
-        end 
-    end
-end
-
-i = 1;
-j = 0;
-k = 0;
-
-while i<loop
-%depends = [];
-%for i = 1:1:length(OrderedNameselement)
-    % need to switch if caps were in cotree or inductors in tree
-    k = k+1;
-    if OrderedNameselement(k)==numEL || OrderedNameselement(k)==numJC
-        
-        DependentNames(j+1,:) = OutputNames(i); % Assigns name to dependent row status
-        OutputNames(i) = []; % Deletes name from Output names list
-        
-        j = j+1; % J is number of dependent elements
-        
-        % Set up so each depends row is a linear combination of the
-        % independent state remaining:
-        % depends does not include DC sorces because dv/dt of DC source is
-        % zero
-        depends(j,:)=Htemp(i,H_row2+1:2*H_row2);
-        depends(j,i) = 0;
-        
-        Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*Htemp(:,i);
-        Htemp(i,:)=[];
-        Htemp(:,i+H_row2) = [];
-        Htemp(:,i)=[];
-        depends(:,i)=[];
-        
-        i = i-1;
-        loop = loop - 1;
-        J = 5829758239;
-        [H_row2,~] = size(Htemp);
-        
-    end
-    i= i+1;
-% end
-end
 %}
 
-depends=obj.dependsAB;
-Htemp = obj.HtempAB;
-DependentNames = obj.DependentNames;
+j = size(DependentNames,1);
 
-% Need to format output how i want it
 [H_row2,~] = size(Htemp);
 H_row2 = H_row2+1;
 
-% Multiply columns times the state variables
-%syms(OutputNames);
-
-% for i = 1:1:length(OutputNames)
-
-
-
-%Htemp(:,1:H_row2-1) = OutputNames(:)'.*Htemp(:,1:H_row2-1);
-    
-% end
-
-% Cannot do this for large matrix (will have to do after eval)
-
-
-Htemp = rref(Htemp);
+Htemp = rref(Htemp,0.9);
 
 OutputHtemp = Htemp;
 
-% % statedepends = [];
-% % statedependsconst = [];
-% % outstatedepends = [];
-% % outstatedependsconst = [];
 
 for i = 1:1:j
     dependstate = depends(i,:)'.*Htemp(:,H_row2:2*(H_row2-1));
@@ -166,14 +39,11 @@ end
 
 A = [Htemp(:,H_row2:2*(H_row2-1)),zeros(H_row2-1,j);statedepends(:,:),zeros(j,j)];
 
-% fix B
+
 B = [Htemp(:,(2*(H_row2-1))+1:end);statedependsconst];
 
 
-
-OutputHtemp = rref(OutputHtemp);
-
-StateNames = [OutputNames;DependentNames];
+%StateNames = [OutputNames;DependentNames];
 
 
 for i = 1:1:j

@@ -1,4 +1,4 @@
-function [val,spl,sgf,tkn] = sip2num(str,uni)
+function [val,spl,sgf,tkn] = sip2num(obj,str,uni)
 % Convert a metric-prefixed string into numeric values. (SI/engineering)
 %
 % (c) 2017 Stephen Cobeldick
@@ -126,7 +126,7 @@ sep = '|';
 sfx = '';
 %
 % Determine the prefix+unit combination:
-if nargin<2||(isnumeric(uni)&&isempty(uni))
+if nargin<3||(isnumeric(uni)&&isempty(uni))
 	% Name/symbol prefix, any units.
 elseif ischar(uni)&&isrow(uni)
 	% Units are the given string:

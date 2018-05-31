@@ -1,30 +1,59 @@
-% This script tests the circuit parsing code for the boost converter
-% "Boost.net"
-clear
-testDir = [erase(mfilename('fullpath'), mfilename) 'NetLists'];
-addpath(testDir);
-filename = 'Boost.net';
-parse = NetListParse();
-parse.filename = filename;
-parse.ABCD();
+function [] = TEST_ABCD_Boost(parse)
 
 A = parse.Asym;
 B = parse.Bsym;
 C = parse.Csym;
 D = parse.Dsym;
 
-StateNameAB = parse.StateNames;
-StateNameCD = parse.OutputNames;
+SortedTree = parse.SortedTree;
+SortedCoTree = parse.SortedCoTree;
 
-for i=1:1:size(A,3)
-    L1 = 16e-6;
-    C1 = 40e-6;
-    R1 = 10;
-    M1_C = 1e-9;
-    D1_C = 1e-9;
-    M1_R = 0.01;
-    D1_R = 0.01;
-    R2 = 0.001;
+L1 = 16e-6;
+C1 = 40e-6;
+R1 = 10;
+M1_C = 1e-9;
+D1_C = 1e-9;
+M1_R = 0.01;
+D1_R = 0.01;
+R2 = 0.001;
+
+if isempty(A)
+    for k = 1:1:size(parse.HtempAB,3)
+        HtempAB(:,:,k) = eval(parse.HtempAB(:,:,k));
+        HtempCD(:,:,k) = eval(parse.HtempCD(:,:,k));
+        dependsAB(:,:,k) = eval(parse.dependsAB(:,:,k));
+        savedCD(:,:,k) = eval(parse.savedCD(:,:,k));
+        for j = 1:1:size(parse.DependentNames(:,k),1)
+            DependentNames(j,k) = eval(parse.DependentNames{j,k});
+        end
+        for j = 1:1:size(parse.OutputNames(:,k),1)
+            OutputNames(j,k) = eval(parse.OutputNames{j,k});
+        end
+    end
+    for k = 1:1:size(parse.HtempAB,3)
+        [A,B,C,D] = parse.loopfixAB_large(HtempAB(:,:,k),dependsAB(:,:,k),OutputNames(:,k),DependentNames(:,k));
+        [C,D] = parse.loopfixCD_large(B,C,D,HtempCD(:,:,k),savedCD(:,:,k),DependentNames(:,k),SortedTree(:,:,k),SortedCoTree(:,:,k));
+        parse.Anum(:,:,k)=A;
+        parse.Bnum(:,:,k)=B;
+        parse.Cnum(:,:,k)=C;
+        parse.Dnum(:,:,k)=D;
+    end
+    
+else
+    for k = 1:1:size(A,3)
+        parse.Anum(:,:,k) = eval(A(:,:,k));
+        parse.Bnum(:,:,k) = eval(B(:,:,k));
+        parse.Cnum(:,:,k) = eval(C(:,:,k));
+        parse.Dnum(:,:,k) = eval(D(:,:,k));
+    end
+end
+
+
+for i=1:1:size(parse.Anum,3)
+    
+    
+    sys  = ss(parse.Anum(:,:,i),parse.Bnum(:,:,i),parse.Cnum(:,:,i),parse.Dnum(:,:,i)); % Create state space
+    
     
     % Switch cases for Boost converter
     
@@ -33,40 +62,43 @@ for i=1:1:size(A,3)
             %  Inital condidtions
             % V_M1  V_C1  I_L1  V_D1
             
-            X = [50 50 9 0];
-                        
+            X0 = [50 50 9 0];
+            
         case 2 % M on D off
             
-            X = [0.09 50 9 -49.91];
+            X0 = [0.09 50 9 -49.91];
             
         case 3 % M off D on
             
-            X = [50 50 9 0];
+            X0 = [50 50 9 0];
             
         case 4 % M and D on
             
-             X = [25 50 0 -25];
+            X0 = [25 50 0 -25];
             
     end
     
     
-    sys  = ss(eval(A(:,:,i)),eval(B(:,:,i)),eval(C(:,:,i)),eval(D(:,:,i))); % Create state space
+    
     %sys  = ss(eval(A),eval(B),C,D);
-%     sys.StateName = StateName;
-     sys.OutputName = StateNameCD(:,i);
+    %     sys.StateName = StateName;
+    sys.OutputName = parse.OutputNamesCD(:,i);
     
     % Create input and time:
     t = linspace(0,10e-6,100000);
     u = 25*ones(size(t));
     
-    Y = lsim(sys,u,t,X);
+    [check] = parse.real_circuit(i,u,t,X0);
+    
+    [Y,T,X] = lsim(sys,u,t,X0);
+    
     
     figure
-    h = lsimplot(sys,u,t,X);
+    h = lsimplot(sys,u,t,X0);
     p = getoptions(h);
     for j = 1:1:size(Y,2)
         if Y(1,j) ~= Y(end,j)
-        p.YLim(j) = {[min(Y(100:end,j)) max(Y(100:end,j))]};
+            p.YLim(j) = {[min(Y(100:end,j)) max(Y(100:end,j))]};
         end
     end
     switch i
@@ -81,8 +113,9 @@ for i=1:1:size(A,3)
     end
     setoptions(h,p);
 end
-%     
-%     
+
+%
+%
 %     figure
 %     p = plot(time,VN001SW,t,Y(:,3));
 %     title('Inductor Voltage (L1)','FontSize',14);
@@ -96,7 +129,7 @@ end
 %     p(2).LineStyle = ':';
 %     p(1).LineWidth = 2;
 %     p(2).LineWidth = 2;
-%     
+%
 %     figure
 %     p = plot(time,IC2,t,Y(:,1));
 %     title('FET Capacitor Current (C2)','FontSize',14);
@@ -110,7 +143,7 @@ end
 %     p(2).LineStyle = ':';
 %     p(1).LineWidth = 2;
 %     p(2).LineWidth = 2;
-%     
+%
 %     figure
 %     p = plot(time,IC1,t,Y(:,2));
 %     title('Output Capacitor Current (C1)','FontSize',14);
@@ -124,7 +157,7 @@ end
 %     p(2).LineStyle = ':';
 %     p(1).LineWidth = 2;
 %     p(2).LineWidth = 2;
-% 
+%
 %     figure
 %     p = plot(time,-IC3,t,Y(:,4));
 %     title('Diode Capacitor Current (C3)','FontSize',14);
@@ -138,10 +171,9 @@ end
 %     p(2).LineStyle = ':';
 %     p(1).LineWidth = 2;
 %     p(2).LineWidth = 2;
-%     
+%
 %     clear time VN001SW IC1 IC2 IC3
-    
-    
-    
-    
-    
+
+
+
+

@@ -1,7 +1,7 @@
 function [] = transformers(obj,mutual,value,position)
 %transformers creates dependent sources in place of inductors given in K
 %statements
-%   Transfomers takes an input of 
+%   Transfomers takes an input of the the mutual 
 
 % Set index
 % Name:       V BV MV  C  R  L MI BI  I  D  M
@@ -36,45 +36,15 @@ for i = 1:1:D(1)
         if j==1
             NL(p,1) = numBI;
             NLnets(p,:) = [strcat(NLnets(p,1),'_BI'), NLnets(p,2:end)];
-            Values(end+1) = sip2num(NLnets{p,4});
+            Values(end+1) = obj.sip2num(NLnets{p,4});
             
         else
             NL(p,1) = numBV;
             NLnets(p,:) = [strcat(NLnets(p,1),'_BV'), NLnets(p,2:end)];
-            Values(end+1) = sip2num(NLnets{p,4});
+            Values(end+1) = obj.sip2num(NLnets{p,4});
         end
     end
 end
-
-%{
-D=size(NL);
-
-DD = size(mutual);
-
-Values = [];
-
-for j = 1:1:DD(2)
-    for i = 1:1:D(1)
-        
-        emptyish = strfind(NLnets{i,1},mutual{j});
-        if ~isempty(emptyish) % if there was componenets
-            if j==1
-                
-                NL(i,1) = numBV;
-                NLnets(i,:) = [strcat(NLnets(i,1),'_BV'), NLnets(i,2:end)];
-                Values(end+1) = sip2num(NLnets{i,4});
-            else
-                
-                NL(i,1) = numBI;
-                NLnets(i,:) = [strcat(NLnets(i,1),'_BI'), NLnets(i,2:end)];
-                Values(end+1) = sip2num(NLnets{i,4});
-            end
-            
-        end
-    end
-
-end
-%}
 
 %% Create K Matrix
 
@@ -102,13 +72,15 @@ for i = 2:1:length(Values)
     Turns_syms(length(Values),i-1) = -sqrt(mutual2(i)/mutual2(1));
 end
 
-
-%Turns(1,end+1) = Turns(2,1);
-%Turns_syms(end+1,1) = Turns_syms(2,1);
-
 K = Turns_syms;
 
 obj.NL = NL;
 obj.NLnets = NLnets;
 obj.K = K;
 J = 795723;
+
+end
+
+
+
+

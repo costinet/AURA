@@ -1,39 +1,98 @@
-% This script tests the circuit parsing code for the boost converter
-% "Boost.net"
+function [] = TEST_ABCD_Dickson(parse)
 
-%{
-[filename,path]=uigetfile % opens gui to select file
-%}
-clear
-filename = 'Forward.net';
-[A,B,C,D,NLnets,StateNameAB,StateNameCD]=ABCD(filename);
+A = parse.Asym;
+B = parse.Bsym;
+C = parse.Csym;
+D = parse.Dsym;
 
-for i=1:1:size(A,3)
-    L1 = 1e-3;
-    L2 = 1e-3;
-    L3 = 1e-3;
-    L4 = 0.5e-3;
-    L5 = 2e-3;
-    C1 = 5e-6;
-    R1 = 10;
-    M1_C = 1e-9;
-    D1_C = 1e-9;
-    M1_R = 0.01;
-    D1_R = 0.01;
-    D2_C = 1e-9;
-    D3_C = 1e-9;
-    D2_R = 0.01;
-    D3_R = 0.01;
-    R2 = 0.001;
+StateNameAB = parse.StateNames;
+StateNameCD = parse.OutputNames;
+
+SortedTree = parse.SortedTree;
+SortedCoTree = parse.SortedCoTree;
+
+L1 = 16e-6;
+C1 = 40e-6;
+R1 = 10;
+M1_C = 1e-9;
+M2_C = 1e-9;
+M3_C = 1e-9;
+M4_C = 1e-9;
+M5_C = 1e-9;
+M6_C = 1e-9;
+M7_C = 1e-9;
+M8_C = 1e-9;
+M9_C = 1e-9;
+M10_C = 1e-9;
+M11_C = 1e-9;
+M12_C = 1e-9;
+M1_R = 0.01;
+M2_R = 0.01;
+M3_R = 0.01;
+M4_R = 0.01;
+M5_R = 0.01;
+M6_R = 0.01;
+M7_R = 0.01;
+M8_R = 0.01;
+M9_R = 0.01;
+M10_R = 0.01;
+M11_R = 0.01;
+M12_R = 0.01;
+C2 = 40e-6;
+C3 = 40e-6;
+C4 = 40e-6;
+C5 = 40e-6;
+C6 = 40e-6;
+C7 = 40e-6;
+C8 = 40e-6;
+
+
+if isempty(A)
+    for k = 1:1:size(parse.HtempAB,3)
+        HtempAB(:,:,k) = eval(parse.HtempAB(:,:,k));
+        HtempCD(:,:,k) = eval(parse.HtempCD(:,:,k));
+        dependsAB(:,:,k) = eval(parse.dependsAB(:,:,k));
+        savedCD(:,:,k) = eval(parse.savedCD(:,:,k));
+        for j = 1:1:size(parse.DependentNames(:,k),1)
+            DependentNames(j,k) = eval(parse.DependentNames{j,k});
+        end
+        for j = 1:1:size(parse.OutputNames(:,k),1)
+            OutputNames(j,k) = eval(parse.OutputNames{j,k});
+        end
+    end
+    for k = 1:1:size(parse.HtempAB,3)
+        [A,B,C,D] = parse.loopfixAB_large(HtempAB(:,:,k),dependsAB(:,:,k),OutputNames(:,k),DependentNames(:,k));
+        [C,D] = parse.loopfixCD_large(B,C,D,HtempCD(:,:,k),savedCD(:,:,k),DependentNames(:,k),SortedTree(:,:,k),SortedCoTree(:,:,k));
+        parse.Anum(:,:,k)=A;
+        parse.Bnum(:,:,k)=B;
+        parse.Cnum(:,:,k)=C;
+        parse.Dnum(:,:,k)=D;
+    end
     
-    % Switch cases for Forward converter
+else
+    for k = 1:1:size(A,3)
+        parse.Anum(:,:,k) = eval(A(:,:,k));
+        parse.Bnum(:,:,k) = eval(B(:,:,k));
+        parse.Cnum(:,:,k) = eval(C(:,:,k));
+        parse.Dnum(:,:,k) = eval(D(:,:,k));
+    end
+end
+
+
+for i=1:1:size(parse.Anum,3)
+    
+    
+    sys  = ss(parse.Anum(:,:,i),parse.Bnum(:,:,i),parse.Cnum(:,:,i),parse.Dnum(:,:,i)); % Create state space
+    
+    
+    % Switch cases for Boost converter
     
     switch i
         case 1 % M and D off
             %  Inital condidtions
-            % V_D1 V_D2 V_C1 I_L4 I_L5 V_M1 V_D3
+            % V_M1  V_C1  I_L1  V_D1
             
-            X = [-20 0 10 10 0.5 1 -20];
+            X = [50 50 9 0];
             
         case 2 % M on D off
             
@@ -46,77 +105,29 @@ for i=1:1:size(A,3)
         case 4 % M and D on
             
             X = [25 50 0 -25];
-        case 5 % M and D off
-            %  Inital condidtions
-            % V_M1 V_D2 V_D3 V_C1 I_L4 I_L5 V_D1
             
-            X = [20 10 10 10 9 2 20];
-            
-        case 6 % M on D off
-            
-            X = [0.09 50 9 -49.91];
-            
-        case 7 % M off D on
-            
-            X = [50 50 9 0];
-            
-        case 8 % M and D on
-            
-            X = [25 50 0 -25];
-        case 9 % M and D off
-            %  Inital condidtions
-            % V_M1 V_D2 V_D3 V_C1 I_L4 I_L5 V_D1
-            
-            X = [20 10 10 10 9 2 20];
-            
-        case 10 % M on D off
-            
-            X = [0.09 50 9 -49.91];
-            
-        case 11 % M off D on
-            
-            X = [50 50 9 0];
-            
-        case 12 % M and D on
-            
-            X = [25 50 0 -25];
-        case 13 % M and D off
-            %  Inital condidtions
-            % V_M1 V_D2 V_D3 V_C1 I_L4 I_L5 V_D1
-            
-            X = [20 10 10 10 9 2 20];
-            
-        case 14 % M on D off
-            
-            X = [0.09 50 9 -49.91];
-            
-        case 15 % M off D on
-            
-            X = [50 50 9 0];
-            
-        case 16 % M and D on
-            
-            X = [25 50 0 -25];
     end
     
     
-    sys  = ss(eval(A(:,:,i)),eval(B(:,:,i)),eval(C(:,:,i)),eval(D(:,:,i))); % Create state space
+    
     %sys  = ss(eval(A),eval(B),C,D);
-%     sys.StateName = StateName;
-     sys.OutputName = StateNameCD(:,i);
+    %     sys.StateName = StateName;
+    sys.OutputName = parse.OutputNamesCD(:,i);
     
     % Create input and time:
     t = linspace(0,10e-6,100000);
-    u = 20*ones(size(t));
+    u = 25*ones(size(t));
     
-    Y = lsim(sys,u,t,X);
+    [Y] = lsim(sys,u,t,X);
+    
+    
     
     figure
     h = lsimplot(sys,u,t,X);
     p = getoptions(h);
     for j = 1:1:size(Y,2)
         if Y(1,j) ~= Y(end,j)
-        p.YLim(j) = {[min(Y(100:end,j)) max(Y(100:end,j))]};
+            p.YLim(j) = {[min(Y(100:end,j)) max(Y(100:end,j))]};
         end
     end
     switch i
@@ -131,9 +142,8 @@ for i=1:1:size(A,3)
     end
     setoptions(h,p);
 end
-%{
-%     
-%     
+%
+%
 %     figure
 %     p = plot(time,VN001SW,t,Y(:,3));
 %     title('Inductor Voltage (L1)','FontSize',14);
@@ -147,7 +157,7 @@ end
 %     p(2).LineStyle = ':';
 %     p(1).LineWidth = 2;
 %     p(2).LineWidth = 2;
-%     
+%
 %     figure
 %     p = plot(time,IC2,t,Y(:,1));
 %     title('FET Capacitor Current (C2)','FontSize',14);
@@ -161,7 +171,7 @@ end
 %     p(2).LineStyle = ':';
 %     p(1).LineWidth = 2;
 %     p(2).LineWidth = 2;
-%     
+%
 %     figure
 %     p = plot(time,IC1,t,Y(:,2));
 %     title('Output Capacitor Current (C1)','FontSize',14);
@@ -175,7 +185,7 @@ end
 %     p(2).LineStyle = ':';
 %     p(1).LineWidth = 2;
 %     p(2).LineWidth = 2;
-% 
+%
 %     figure
 %     p = plot(time,-IC3,t,Y(:,4));
 %     title('Diode Capacitor Current (C3)','FontSize',14);
@@ -189,8 +199,9 @@ end
 %     p(2).LineStyle = ':';
 %     p(1).LineWidth = 2;
 %     p(2).LineWidth = 2;
-%     
+%
 %     clear time VN001SW IC1 IC2 IC3
-%     
-  
-  %}
+
+
+
+

@@ -3,37 +3,42 @@ classdef NetListParse < handle
     %   Detailed explanation goes here
     
     properties
-        % Symbolic Matrix of ABCD 
+        % Symbolic Matrix of ABCD
         Asym
         Bsym
         Csym
         Dsym
         
-        % Htemp of ABCD
+        % Numerical Matrix of ABCD
+        Anum
+        Bnum
+        Cnum
+        Dnum
+        
+        % Htemp of ABCD (used when unable to solve rref(sym))
         HtempAB
         HtempCD
-        
-        % Measurement Voltage and Current Nodes
-        Meas_Voltage
-        Meas_Current
+        dependsAB
+        savedCD
         
         % Find Switch and Diode Position
         Diodes
         Switches
         
         % Names of State, Input, and Output Variables
-        StateNames
-        OutputNames
-        InputNames
-        DependentNames
+        StateNames % All state variables [OutputNames;DependentNames]
+        OutputNamesCD % Names of Measurements
+        InputNames % Such as Vg
+        DependentNames % Dependent states in circuit
+        OutputNames % Independent states in circuit
         
         % Netlist files
-        NL
-        NLnets
-        NLwhole
+        NL % Numerical Representation of net list
+        NLnets % Cell Representation of net list
+        NLwhole % Net list file as it is received
         
-        % Filename
-        filename
+        SortedTree % Elements in Tree
+        SortedCoTree % Elements in CoTree
         
         % K value for inductors
         K
@@ -55,11 +60,58 @@ classdef NetListParse < handle
         % etc...????
     end
     
+    
+    
+    properties (Access = private)
+        
+        % Measurement Voltage and Current Nodes
+        Meas_Voltage
+        Meas_Current
+        filename
+        
+    end
     methods
         
-        
-        
-        
+        function initialize(obj,Filename,Voltage,Current)
+            % This function checks to see if 
+            if ~exist(Filename,'file')
+                error('File %s not found',Filename)
+            end
+            
+            if ischar(Filename)
+                obj.filename=Filename;
+            else
+                error('Filename must be of type char \nCurrent class of filename: %s',class(Filename))
+            end            
+            if nargin == 2
+                obj.Meas_Voltage = {};
+                obj.Meas_Current = {};
+                return
+            end            
+            if nargin == 3
+                warning('Only voltage measurements detected')
+                Current = {};
+            end            
+            if iscell(Voltage)
+                if size(Voltage,1)==1||size(Voltage,2)==1||isempty(Voltage)
+                    obj.Meas_Voltage = Voltage;
+                else
+                    error('Voltage is not the correct dimension')
+                end
+            else
+                error('Voltage must be of type cell \nCurrent class of Voltage: %s',class(Voltage))
+            end
+            if iscell(Current)
+                if size(Current,1)==1||size(Current,2)==1||isempty(Current)
+                    obj.Meas_Current = Current;
+                else
+                    error('Current is not the correct dimension')
+                end
+            else
+                error('Current must be of type cell \nCurrent class of Current: %s',class(Current))
+
+            end
+        end
     end
 end
 

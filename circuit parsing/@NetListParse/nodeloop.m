@@ -1,4 +1,4 @@
-function [A,B,C,D,HtempAB,dependsAB,HtempCD,dependsCD,StateNamesAB,StateNamesCD,DependentNames] = nodeloop(obj,NL,NLnets)
+function [A,B,C,D,HtempAB,dependsAB,HtempCD,savedCD,StateNamesAB,StateNamesCD,OutputNames,DependentNames,SortedTree1,SortedCoTree1] = nodeloop(obj,NL,NLnets)
 % nodeloop creates the state matricies A,B,C,D from a specific node input
 % matrix
 %
@@ -385,9 +385,15 @@ almost_H = [H_EE,H_EJ;H_JE,H_JJ];
 [H,s]=obj.hybridparse(almost_H,SortedTree,SortedCoTree);
 
 % Eventual Function to find outputs
-[A,B,C,D,HtempAB,dependsAB,StateNamesAB,DependentNames]=obj.loopfixAB(H,s,NLnets,SortedTree,SortedCoTree);
+[A,B,C,D,HtempAB,dependsAB,StateNamesAB,OutputNames,DependentNames]=obj.loopfixAB(H,s,NLnets,SortedTree,SortedCoTree);
 
-[C,D,HtempCD,dependsCD,StateNamesCD]=obj.loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree);
+[C,D,HtempCD,savedCD,StateNamesCD]=obj.loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree);
+
+SortedTree1=zeros(2*size(obj.NL,1),5,1); 
+SortedCoTree1=zeros(2*size(obj.NL,1),5,1);
+SortedTree1(1:size(SortedTree,1),1:5) = SortedTree;
+SortedCoTree1(1:size(SortedCoTree,1),1:5) = SortedCoTree;
+end
 
 %{
 % find and remove voltage sources to find h and s matrix
@@ -556,5 +562,5 @@ D = [OutputHtemp(:,(2*(H_row2-1))+1:end).*OutputNames;outstatedependsconst];
 %}
 
 
-J = 7825782;
+
 

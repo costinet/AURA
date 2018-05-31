@@ -49,38 +49,8 @@ numM = 11;
 
 NL = obj.NL;
 NLnets = obj.NLnets;
-
-Voltage = {'V1'
-    'M1'
-    'L1'
-    'L2'
-    'L3'
-    'D1'
-    'C1'
-    'R1'};
-
-
-Current = {'V1'
-    'M1'
-    'L1'
-    'L2'
-    'L3'
-    'D1'
-    'C1'
-    'R1'};
-Voltage = {};
-
-if ~exist('Voltage','var') || ~exist('Current','var')
-
-    warning('Voltage and Current measurement nodes not set')
-    return
-end
-    
-n = ~iscell(Voltage) || ~iscell(Current);
-if n
-    warning('Both Voltage and Current input must be a cell array \n Class of Voltage: %s \n Class of Current: %s \nFunction addmeasure returned with no adjustments to net lists\n',class(Voltage), class(Current));
-    return
-end
+Voltage = obj.Meas_Voltage;
+Current = obj.Meas_Current;
 
 %% Set Voltage Measurement Elements
 

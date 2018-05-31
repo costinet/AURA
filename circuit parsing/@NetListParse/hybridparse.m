@@ -1,16 +1,17 @@
 function [H,s] = hybridparse(obj,preH,SortedTree,SortedCoTree)
 %hybridparse parses the hybird matrix 
-%   hybridparse uses 
-
+%   hybridparse takes an input of the Hybrid Matrix, Sorted Tree and Sorted
+%   Cotree variables and outputs the H and s matrix for the converter
+%
+%
 % __________Tree__________  _________CoTree__________
 % E  E-B  E-M  E-C  E-L  R  G   J-C  J-L J-M  J-B  J
 % 1   2    3    4    5   6  7    8    9   10   11  12
-
-
-
-
-
-
+%
+%
+%
+%
+%
 % Matrix (preH) is now of the form:
 %  _   _       _                      _    _   _
 % | W_1 |     | H_11  H_12  H_13  H_14 |  | X_1 |  State Variables
@@ -21,7 +22,8 @@ function [H,s] = hybridparse(obj,preH,SortedTree,SortedCoTree)
 % |     |     |                        |  |     |
 % | W_4 |     | H_41  H_42  H_43  H_44 |  | X_4 |  Independent Sources
 %  _   _       _                      _    _   _
-
+%
+%
 % For now assume measurement and dependent states are the same
 % i.e. row 2 is row 3, W_2 = W_3, X_2 = X_3
 
@@ -107,6 +109,7 @@ else
     J_state = preH(:,DT(1)+1:DT(1)+firstJB-1);
 end
 
+% Collect sub-matricies
 const = [Ecol,Jcol];
 depent = [EBcol,JBcol];
 measure = [EBcol,JBcol];
@@ -156,6 +159,7 @@ else
     J_state = preH(:,DT(1)+1:DT(1)+firstJB-1);
 end
 
+% Collect sub-matricies
 const = [Ecol,Jcol];
 depent = [EBcol,JBcol];
 measure = [EBcol,JBcol];
@@ -202,9 +206,17 @@ if isempty(lastEB) && isempty(firstJB)
 end
 %}
 
-
-
+ 
 F = K*H_32;
+
+if cond(eye(size(F))-F) == Inf
+    error('Singular Matrix when trying to solve for transformer integration in solver.')
+end
+
+
+% If F is empty, meaning there are no transformers in the circuit, then H
+% and s matrix do not need to be calculated.
+
 if isempty(F)
     H = H_11;
     s = H_14;
@@ -212,7 +224,7 @@ else
     H = H_11+H_12*((eye(size(F))-F)^-1)*K*H_31;
     s = H_14+H_12*((eye(size(F))-F)^-1)*K*H_34;
 end
-J = 89208923;
+
 
 end
 

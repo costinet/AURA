@@ -130,6 +130,10 @@ for i = 1:1:length(NLraw) % Step though netlist
     end
 end
 
+if isempty(NL2)
+    error('No branches found in %s',filename)
+end
+
 %% Set 0 node to be ground
 
 List = NL2(:,2:3); % list contains only the nodes
