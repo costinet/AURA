@@ -39,7 +39,7 @@ for i = 1:1:size(dependname,1)
         if strcmp(dependname{i},measurename{j})
             if contains(dependname{i},'L')
                 if strcmp(remain{j},' A')
-                    elementcheck = true;
+                    elem
                     if round(Y(1,j),9)==round(X(1,index+i),9)
                         fprintf('Inital Condition %s is correct\n',obj.DependentNames{i,1})
                     else
@@ -52,7 +52,6 @@ for i = 1:1:size(dependname,1)
                 end   
             else
                 if strcmp(remain{j},' V')
-                    elementcheck = true;
                     if round(Y(1,j),9)==round(X(1,index+i),9)
                         fprintf('Inital Condition %s is correct\n',obj.DependentNames{i,1})
                     else
@@ -65,9 +64,6 @@ for i = 1:1:size(dependname,1)
                 end
             end
         end
-    end
-    if ~elementcheck
-        fprintf('State %s was unable to be checked\n',obj.StateNames{i+index,1})
     end
 end
 

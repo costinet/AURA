@@ -54,7 +54,7 @@ state = bin;
 %% Cycle through all possible states
 SortedTree=zeros(2*size(obj.NL,1),5,1); 
 SortedCoTree=zeros(2*size(obj.NL,1),5,1);
-for i = 1:1:1 %number_of_states
+for i = 1:1:number_of_states
     
     [NewNL,NewNLnets]=obj.states(state,i,switches);
     [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),HtempAB(:,:,i),dependsAB(:,:,i),HtempCD(:,:,i),savedCD(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i),OutputNames(:,i),DependentNames(:,i),SortedTree(:,:,i),SortedCoTree(:,:,i)] = obj.nodeloop(NewNL,NewNLnets);

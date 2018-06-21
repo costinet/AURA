@@ -112,6 +112,12 @@ classdef NetListParse < handle
 
             end
         end
+        
+        function [StateNames]=getStateNames(obj)
+            StateNames = obj.StateNames;
+        end
+            
+        
     end
 end
 

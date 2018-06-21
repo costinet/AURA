@@ -88,10 +88,11 @@ for i=1:1:size(parse.Anum,3)
     t = linspace(0,10e-6,100000);
     u = 25*ones(size(t));
     
-    [check] = parse.real_circuit(i,u,t,X0);
+
     
     [Y,T,X] = lsim(sys,u,t,X0);
     
+    [check] = parse.real_circuit(X,Y);  
     
     figure
     h = lsimplot(sys,u,t,X0);
