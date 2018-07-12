@@ -173,8 +173,6 @@ end
 
 K = [];
 
-
-
 %% Transformers and Measurements
 
 % Set new index
@@ -221,6 +219,4 @@ if ~isempty(IndtoTrans) || ~isempty(MutInd)
 obj.transformers(IndtoTrans,MutInd,position);
 end
 
-
-J = 89704895734895;
-
+end % That's all Folks

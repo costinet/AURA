@@ -41,10 +41,10 @@ for i = 1:1:size(dependname,1)
                 if strcmp(remain{j},' A')
                     elementcheck = true;
                     if round(Y(1,j),9)==round(X(1,index+i),9)
-                        fprintf('Inital Condition %s is correct\n',obj.DependentNames{i,1})
+                        %fprintf('Inital Condition %s is correct\n',obj.DependentNames{i,1})
                     else
                         warning('The intial conditions given violate either KVL or KCL')
-                        fprintf('State: %s \n   Given: %9f\n   Implementation: %9f\n',obj.StateNames{i+index,1},X(1,index+i),Y(1,j))
+                        fprintf('State Variable: %s \n   Given: %9f\n   Implementation: %9f\n',obj.StateNames{i+index,1},X(1,index+i),Y(1,j))
                         difference = X(1,i+index)-Y(1,j);
                         fprintf('   Difference = %5e\n',difference)
                         check = false;
@@ -54,10 +54,10 @@ for i = 1:1:size(dependname,1)
                 if strcmp(remain{j},' V')
                     elementcheck = true;
                     if round(Y(1,j),9)==round(X(1,index+i),9)
-                        fprintf('Inital Condition %s is correct\n',obj.DependentNames{i,1})
+                        %fprintf('Inital Condition %s is correct\n',obj.DependentNames{i,1})
                     else
                         warning('The intial conditions given violate either KVL or KCL')
-                        fprintf('State: %s \n   Given: %9f\n   Implementation: %9f\n',obj.StateNames{i+index,1},X(1,index+i),Y(1,j))
+                        fprintf('State Variable: %s \n   Given: %9f\n   Implementation: %9f\n',obj.StateNames{i+index,1},X(1,index+i),Y(1,j))
                         difference = X(1,i+index)-Y(1,j);
                         fprintf('   Difference = %5e\n',difference)
                         check = false;

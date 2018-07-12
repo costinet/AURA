@@ -1,4 +1,4 @@
-function [] = optim_time_Boost(parse)
+function [] = optim_time_Boost_time(parse)
 %optim_time_Boost tests the time it takes for eval() to update the
 %number of the listed elements values given in changed_values
 % It takes a NetListParse class that has been solved using Test_Parse.m
@@ -9,13 +9,13 @@ log_output = false;
 
 % Enable diary and echo for log
 if log_output
-    delete testeval.txt
-    diary testeval.txt
+    delete testeval_time.txt
+    diary testeval_time.txt
     echo on all
 end
 
 % Set the number of iterations to update
-number_of_iterations = 100;
+number_of_iterations = 1;
 
 % Variable ranges for Boost converter example
 L1a = 13e-6;
@@ -67,20 +67,34 @@ if isempty(parse.Asym)
         D1_C = D1_Cx(i);
         D1_R = D1_Rx(i);
         
+        toc
+        
         % Iterate trough each possible switching combination given
         for k = 1:1:size(parse.HtempAB,3)
+            tic
             HtempAB(:,:,k) = eval(parse.HtempAB(:,:,k));
+            toc
+            tic
             HtempCD(:,:,k) = eval(parse.HtempCD(:,:,k));
+            toc
+            tic
             dependsAB(:,:,k) = eval(parse.dependsAB(:,:,k));
+            toc
+            tic
             savedCD(:,:,k) = eval(parse.savedCD(:,:,k));
+            toc
             for j = 1:1:size(parse.DependentNames(:,k),1)
+                tic
                 DependentNames(j,k) = eval(parse.DependentNames{j,k});
+                toc
             end
             for j = 1:1:size(parse.OutputNames(:,k),1)
+                tic
                 OutputNames(j,k) = eval(parse.OutputNames{j,k});
+                toc
             end
         end
-        
+        tic
         % Solve ABCD and update NetListParse class
         for k = 1:1:size(parse.HtempAB,3)
             [A,B,C,D] = parse.loopfixAB_large(HtempAB(:,:,k),dependsAB(:,:,k),OutputNames(:,k),DependentNames(:,k));
@@ -92,7 +106,7 @@ if isempty(parse.Asym)
         end
         
         % Record time it took to go through one update
-        evaltime(end+1) = toc;
+        toc
         
     end
 else % If the symbolic matrix has been solve and is in class
@@ -112,25 +126,32 @@ else % If the symbolic matrix has been solve and is in class
         D1_C = D1_Cx(i);
         D1_R = D1_Rx(i);
         
+        toc
+        
         % Update NetListParse
         for k = 1:1:size(parse.Asym,3)
+            tic
             parse.Anum(:,:,k) = eval(parse.Asym(:,:,k));
+            toc
+            tic
             parse.Bnum(:,:,k) = eval(parse.Bsym(:,:,k));
+            toc
+            tic
             parse.Cnum(:,:,k) = eval(parse.Csym(:,:,k));
+            toc
+            tic
             parse.Dnum(:,:,k) = eval(parse.Dsym(:,:,k));
+            toc
+
             
         end
     end
     % Record time it took to go through one update
-    evaltime(end+1) = toc;
+    %evaltime(end+1) = toc;
 end
 
 % Calculate metrics for time
-evaltime_mean=mean(evaltime)
-evaltime_range=range(evaltime)
-evaltime_max=max(evaltime)
-evaltime_min=min(evaltime)
-evaltime_std=std(evaltime)
+%
 
 % Turn off echo and diary for log
 if log_output

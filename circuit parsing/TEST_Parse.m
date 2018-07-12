@@ -14,7 +14,7 @@ addpath(testDir);
 %% User Input
 
 % Select .net file
-filename = 'Boost.net';
+filename = 'Buck.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -24,7 +24,7 @@ filename = 'Boost.net';
 % Forward.net
 
 % Select test case file
-testcase = 'TEST_ABCD_Boost';
+testcase = 'TEST_ABCD_Buck';
 % Current options for testcase:
 % TEST_ABCD_Boost
 % TEST_ABCD_Buck

@@ -1,5 +1,5 @@
-function [NL,NLnets] = states(obj,state,i,switches) 
-% this function finds the states and sets the net list for nodeloop
+function [NL,NLnets] = states(obj,state,i,switches)
+% states finds the states of a converter and sets the net list for nodeloop
 %
 
 % Index values for components (will pass as variable):
@@ -19,13 +19,13 @@ NL = obj.NL;
 NLnets = obj.NLnets;
 
 for j = 1:1:length(switches)
-    
+
     % OPEN switch is replaced with cap
     if state(i,j) == 0
         NL(switches(j),1) = numC;
         NLnets(switches(j),:) = [strcat(NLnets(switches(j),1),'_C'), NLnets(switches(j),2:end)];
     end
-    
+
     % CLOSED switch is replaced with cap and resistor
     if state(i,j) == 1
         NL(switches(j),1) = numC;
@@ -34,9 +34,11 @@ for j = 1:1:length(switches)
         NLnets(row_NL+1,:) = [strcat(NLnets(switches(j),1),'_R'), NLnets(switches(j),2:end)];
         NLnets(switches(j),:) = [strcat(NLnets(switches(j),1),'_C'), NLnets(switches(j),2:end)];
     end
-    
+
     if state(i,j) ~= 1 && state(i,j) ~= 0
         error('Invalid State Detected')
     end
-    
+
 end
+
+end % That's all Folks
