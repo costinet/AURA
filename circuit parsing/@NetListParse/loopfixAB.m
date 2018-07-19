@@ -1,7 +1,11 @@
 function [A,B,C,D,Htemp,depends,StateNames,OutputNames,DependentNames] = loopfixAB(obj,H,s,NLnets,SortedTree,SortedCoTree)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%loopfixAB computes the ABCD matrix 
+%   This function either computes symbolic Htemp matrix or the ABCD matrix
+%   The 
 
+% if the number of state variables is greater than sym_comput, sym AB
+% matrix will not be computed
+sym_comput = 0;
 
 numE = 1;
 numEB = 2;
@@ -128,7 +132,7 @@ C  = [];
 D  = [];
 StateNames = [OutputNames;DependentNames];
 
-if H_row2 < 0
+if H_row2 < sym_comput
     
     Htemp = rref(Htemp);
     

@@ -3,28 +3,17 @@ classdef SMPStopology < handle
     %   Detailed explanation goes here
     
     properties
+
+        Parse
         As
         Bs
         Cs
         Ds
         
-        Asym
-        Bsym
-        Csym
-        Dsym
-        
-        Meas_Voltage
-        Meas_Current
-        
-        
-        
         Xi
         Bi
         
         stateLabels
-        outputLabels
-        inputLabels
-
 
         
     end
@@ -46,7 +35,9 @@ classdef SMPStopology < handle
                 obj.Ds = zeros(1,size(Bs,1));
             end
         end
+        
+        
+
     end
-    
 end
 

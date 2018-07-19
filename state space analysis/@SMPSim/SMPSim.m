@@ -24,6 +24,11 @@ classdef SMPSim < handle
         ts
         u
         
+        Aw
+        Bw
+        Cw
+        Dw
+        
         Xs
     end
     
@@ -79,15 +84,15 @@ classdef SMPSim < handle
         end
         
         
-        %% Test functions        
+        %% Test functions
         function loadTestConverter(obj,dotmatfile)
             try
                 load(dotmatfile, 'conv');
                 obj.converter = conv;
-%                 params = load(matfile);
+                %                 params = load(matfile);
             catch err
                 ME = MException('resultisNaN:noSuchVariable', ...
-                       'Error: test converter file does not contain all requred variables. Required variables are As, Bs, Cs, Ds, ts, and u');
+                    'Error: test converter file does not contain all requred variables. Required variables are As, Bs, Cs, Ds, ts, and u');
                 throw(ME);
             end
             
@@ -97,6 +102,56 @@ classdef SMPSim < handle
             
             obj.Xs = [];
         end
+        
+        %% Test functions
+        % for TEST_PARSE_SOLN_DIODE
+        function loadTestConverter2(obj,conv)
+            %{
+ try
+                load(dotmatfile, 'conv');
+                obj.converter = conv;
+                %                 params = load(matfile);
+            catch err
+                ME = MException('resultisNaN:noSuchVariable', ...
+                    'Error: test converter file does not contain all requred variables. Required variables are As, Bs, Cs, Ds, ts, and u');
+                throw(ME);
+            end
+            %}
+            
+            % To ensure matrix is probably statistically not likely to not be
+            % invertable (remove dependent states before solve) and puts
+            % states in order
+            
+             n = size(conv.topology.Parse.OutputNames,1);
+            A = conv.topology.Parse.Anum(1:n,1:n,:);
+            B = conv.topology.Parse.Bnum(1:n,:,:);
+            C = conv.topology.Parse.Cnum(1:n,:,:);
+            D = conv.topology.Parse.Dnum(1:n,:,:);
+            
+            Ass = cat(3,A(:,:,2),A(:,:,1),A(:,:,3),A(:,:,3));
+            Bss = cat(3,B(:,:,2),B(:,:,1),B(:,:,3),B(:,:,3));
+            Css = cat(3,C(:,:,2),C(:,:,1),C(:,:,3),C(:,:,3));
+            Dss = cat(3,D(:,:,2),D(:,:,1),D(:,:,3),D(:,:,3));
+            
+            obj.settopology(Ass,Bss,Css,Dss);
+            obj.setmodulation(conv.ts);
+            obj.setinputs(conv.u);
+            
+            obj.Xs = [];
+            
+
+            Ax = conv.topology.Parse.Anum;
+            Bx = conv.topology.Parse.Bnum;
+            Cx = conv.topology.Parse.Cnum;
+            Dx = conv.topology.Parse.Dnum;
+            
+            obj.Aw = cat(3,Ax(:,:,2),Ax(:,:,1),Ax(:,:,3),Ax(:,:,1));
+            obj.Bw = cat(3,Bx(:,:,2),Bx(:,:,1),Bx(:,:,3),Bx(:,:,1));
+            obj.Cw = cat(3,Cx(:,:,2),Cx(:,:,1),Cx(:,:,3),Cx(:,:,1));
+            obj.Dw = cat(3,Dx(:,:,2),Dx(:,:,1),Dx(:,:,3),Dx(:,:,1));
+            
+        end
+        
     end
     
 end

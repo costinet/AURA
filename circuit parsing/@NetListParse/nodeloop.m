@@ -1,10 +1,10 @@
 function [A,B,C,D,HtempAB,dependsAB,HtempCD,savedCD,StateNamesAB,StateNamesCD,OutputNames,DependentNames,SortedTree1,SortedCoTree1] = nodeloop(obj,NL,NLnets)
-% nodeloop creates the state matricies A,B,C,D from a specific node input
+% nodeloop creates the state matrices A,B,C,D from a specific node input
 % matrix
 %
 % Notes: Needs to be more general, broken up into a few more functions,
-% implementation of transformers
-% 
+%
+%
 
 
 %% Find incidence matricies
@@ -29,7 +29,7 @@ REF = rref(incidence_1);
 Tree = 0;
 
 %% Find the Normal Tree and CoTree
-% Find the first one (1) in each row 
+% Find the first one (1) in each row
 % The columns where these ones (1) occur are the braches within the normal
 % tree
 for i = 1:1:temp
@@ -41,7 +41,7 @@ end
 Ba = 1:Ba;
 CoTree = setdiff(Ba,Tree);
 
-%% Orders Tree and CoTree indicies correctly: E R G J
+%% Orders Tree and CoTree indices correctly: E R G J
 
 numV = 1;
 numBV = 2;
@@ -70,14 +70,14 @@ numI = 9;
 tosorttree = [SortedRows(Tree(:),:),Tree(:)];
 [RowTree,~]=size(tosorttree);
 for i = 1:1:RowTree
-    
+
     switch tosorttree(i,1)
         case numL
             tosorttree(i,1) = 5;
         case numR
             tosorttree(i,1) = 6;
     end
-   
+
 end
 SortedTree = sortrows(tosorttree,1);
 Tree = SortedTree(:,5);
@@ -87,7 +87,7 @@ Tree = SortedTree(:,5);
 tosortcotree = [SortedRows(CoTree(:),:),CoTree(:)];
 [RowCoTree,~]=size(tosortcotree);
 for i = 1:1:RowCoTree
-    
+
     switch tosortcotree(i,1)
         case numR
             tosortcotree(i,1) = 7;
@@ -102,7 +102,7 @@ for i = 1:1:RowCoTree
         case numI
             tosortcotree(i,1) = 12;
     end
-   
+
 end
 SortedCoTree = sortrows(tosortcotree,1);
 CoTree = SortedCoTree(:,5);
@@ -125,14 +125,14 @@ numI = 7;
 tosorttree = [SortedRows(Tree(:),:),Tree(:)];
 [RowTree,~]=size(tosorttree);
 for i = 1:1:RowTree
-    
+
     switch tosorttree(i,1)
         case numL
             tosorttree(i,1) = 4;
         case numR
             tosorttree(i,1) = 5;
     end
-   
+
 end
 SortedTree = sortrows(tosorttree,1);
 Tree = SortedTree(:,5);
@@ -140,7 +140,7 @@ Tree = SortedTree(:,5);
 tosortcotree = [SortedRows(CoTree(:),:),CoTree(:)];
 [RowCoTree,~]=size(tosortcotree);
 for i = 1:1:RowCoTree
-    
+
     switch tosortcotree(i,1)
         case numR
             tosortcotree(i,1) = 6;
@@ -153,7 +153,7 @@ for i = 1:1:RowCoTree
         case numI
             tosortcotree(i,1) = 10;
     end
-   
+
 end
 SortedCoTree = sortrows(tosortcotree,1);
 CoTree = SortedCoTree(:,5);
@@ -170,14 +170,14 @@ CoTree = SortedCoTree(:,5);
 tosorttree = [SortedRows(Tree(:),:),Tree(:)];
 [RowTree,~]=size(tosorttree);
 for i = 1:1:RowTree
-    
+
     switch tosorttree(i,1)
         case 4
             tosorttree(i,1) = 3;
         case 3
             tosorttree(i,1) = 4;
     end
-   
+
 end
 SortedTree = sortrows(tosorttree,1);
 Tree = SortedTree(:,5);
@@ -185,7 +185,7 @@ Tree = SortedTree(:,5);
 tosortcotree = [SortedRows(CoTree(:),:),CoTree(:)];
 [RowCoTree,~]=size(tosortcotree);
 for i = 1:1:RowCoTree
-    
+
     switch tosortcotree(i,1)
         case 5
             tosortcotree(i,1) = 8;
@@ -389,7 +389,7 @@ almost_H = [H_EE,H_EJ;H_JE,H_JJ];
 
 [C,D,HtempCD,savedCD,StateNamesCD]=obj.loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree);
 
-SortedTree1=zeros(2*size(obj.NL,1),5,1); 
+SortedTree1=zeros(2*size(obj.NL,1),5,1);
 SortedCoTree1=zeros(2*size(obj.NL,1),5,1);
 SortedTree1(1:size(SortedTree,1),1:5) = SortedTree;
 SortedCoTree1(1:size(SortedCoTree,1),1:5) = SortedCoTree;
@@ -411,12 +411,12 @@ end
 %{
 if ~isempty(firstisource)
     H = H(1:firstisource-1,1:firstisource-1
-    
+
 end
 %}
 %{
-% Creat identity matrix along with H and almost H matrix in order to find
-% correct orentation of state and output matrix
+% Create identity matrix along with H and almost H matrix in order to find
+% correct orientation of state and output matrix
 [H_row,H_col] = size(H); % Get size of Hybrid Matrix without s
 [almostH_row,~] = size(almost_H); % Get size of full Hybrid Matrix
 Htemp = [eye(H_row),H,s]; % Create Mx = Ax + Bu form
@@ -433,11 +433,11 @@ DependentNames = {};
 OrderedNameselement = temps(cir_state,1);
 loop = length(OrderedNameselement)+1; % Set while loop index
 
-% break somewhere in here to separate diffent solves for AB matrix and CD
+% break somewhere in here to separate different solves for AB matrix and CD
 % matrix
 
 % For loop to switch i and v in the hybrid matrix to ensure all caps have
-% an output current and all inductors have an output voltage: 
+% an output current and all inductors have an output voltage:
 for i = 1:1:length(OrderedNameselement)
  if OrderedNameselement(i)==numEL || OrderedNameselement(i)==numJC
         [H_row2,~]=size(Htemp);
@@ -459,7 +459,7 @@ for i = 1:1:length(OrderedNameselement)
         if Htemp(i,j)~=0
             Htemp(i,:)=Htemp(i,:)./OutputNames(j);
             Htemp(i,j) = Htemp(i,j).* OutputNames(j);
-        end 
+        end
     end
 end
 
@@ -473,28 +473,28 @@ while i<loop
     % need to switch if caps were in cotree or inductors in tree
     k = k+1;
     if OrderedNameselement(k)==numEL || OrderedNameselement(k)==numJC
-        
+
         DependentNames(j+1,:) = OutputNames(i); % Assigns name to dependent row status
         OutputNames(i) = []; % Deletes name from Output names list
-        
+
         j = j+1; % J is number of dependent elements
-        
+
         % Set up so each depends row is a linear combination of the
         % independent state remaining:
         depends(j,:)=Htemp(i,H_row2+1:2*H_row2);
         depends(j,i) = 0;
-        
+
         Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*Htemp(:,i);
         Htemp(i,:)=[];
         Htemp(:,i+H_row2) = [];
         Htemp(:,i)=[];
         depends(:,i)=[];
-        
+
         i = i-1;
         loop = loop - 1;
         J = 5829758239;
         [H_row2,~] = size(Htemp);
-        
+
     end
     i= i+1;
 % end
@@ -515,7 +515,7 @@ syms(OutputNames);
 
 
 %Htemp(:,1:H_row2-1) = OutputNames(:)'.*Htemp(:,1:H_row2-1);
-    
+
 % end
 
 % Cannot do this for large matrix (will have to do after eval)
@@ -560,7 +560,3 @@ C = [OutputHtemp(:,H_row2:2*(H_row2-1)).*OutputNames,zeros(H_row2-1,j);outstated
 D = [OutputHtemp(:,(2*(H_row2-1))+1:end).*OutputNames;outstatedependsconst];
 
 %}
-
-
-
-

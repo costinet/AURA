@@ -1,5 +1,5 @@
 clear all; 
-clc;
+%clc;
 
 WFanalysis = 1;
 plotIterWF = 1;
@@ -7,7 +7,7 @@ plotIterWF = 1;
 testDir = [erase(mfilename('fullpath'), mfilename) 'testConverters'];
 
 addpath(testDir);
-converter = 'Buck_parse';
+converter = 'Buck';
     %possible options
         %HybridDickson
         %Buck

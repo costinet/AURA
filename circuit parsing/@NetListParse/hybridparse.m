@@ -1,5 +1,5 @@
 function [H,s] = hybridparse(obj,preH,SortedTree,SortedCoTree)
-%hybridparse parses the hybird matrix 
+%hybridparse parses the hybrid matrix
 %   hybridparse takes an input of the Hybrid Matrix, Sorted Tree and Sorted
 %   Cotree variables and outputs the H and s matrix for the converter
 %
@@ -109,7 +109,7 @@ else
     J_state = preH(:,DT(1)+1:DT(1)+firstJB-1);
 end
 
-% Collect sub-matricies
+% Collect sub-matrices
 const = [Ecol,Jcol];
 depent = [EBcol,JBcol];
 measure = [EBcol,JBcol];
@@ -117,7 +117,7 @@ state = [E_state,J_state];
 
 preH = [state,depent,const]';
 
-% Sorts Indexes in tree rows 
+% Sorts Indexes in tree rows
 
 Ecol = preH(:,1:lastE);
 
@@ -159,7 +159,7 @@ else
     J_state = preH(:,DT(1)+1:DT(1)+firstJB-1);
 end
 
-% Collect sub-matricies
+% Collect sub-matrices
 const = [Ecol,Jcol];
 depent = [EBcol,JBcol];
 measure = [EBcol,JBcol];
@@ -181,32 +181,7 @@ H_31 = state(size_state(2)+1:size_state(1)-size_const(2),:); % will need to alte
 H_34 = const(size_state(2)+1:size_const(1)-size_const(2),:); % will need to alter after measure fix
 H_32 = depent(size_state(2)+1:size_const(1)-size_const(2),:); % will need to alter after measure fix
 
-%{
-if isempty(lastEB) && isempty(firstJB)
-    newH = [preH(:,1:lastE),preH(:,firstJ:end)];
-    D=length(newH);
-    H = almost_H(D(2)+1:end,D(2)+1:end);
-    s = almost_H(D(2)+1:end,1:D(2));
-end
-    
-if isempty(lastE) && isempty(firstJ)
-    H_41 = 0;
-    H_42 = 0;
-    H_43 = 0;
-    H_44 = 0;
-end
 
-
-
-if isempty(lastEB) && isempty(firstJB)
-    H_21 = 0;
-    H_22 = 0;
-    H_23 = 0;
-    H_24 = 0;
-end
-%}
-
- 
 F = K*H_32;
 
 if cond(eye(size(F))-F) == Inf
@@ -226,5 +201,4 @@ else
 end
 
 
-end
-
+end % That's all Folks

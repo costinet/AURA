@@ -26,8 +26,8 @@ SortedCoTrees(SortedCoTrees(:,1)==numJB,:)=[];
 SortedTrees(SortedTrees(:,1)==numEB,:)=[];
 
 
-% Creat identity matrix along with H and almost H matrix in order to find
-% correct orentation of state and output matrix
+% Create identity matrix along with H and almost H matrix in order to find
+% correct orientation of state and output matrix
 [H_row,~] = size(H); % Get size of Hybrid Matrix without s
 %[almostH_row,~] = size(almost_H); % Get size of full Hybrid Matrix
 Htemp = [eye(H_row),H,s]; % Create Mx = Ax + Bu form
@@ -50,7 +50,7 @@ OutNames=NLnets(temps(((temps(:,1)==3)|(temps(:,1)==10)),4),1);
 
 
 % For loop to switch i and v in the hybrid matrix to ensure all caps have
-% an output current and all inductors have an output voltage: 
+% an output current and all inductors have an output voltage:
 for i = 1:1:length(OrderedNameselement)
  if OrderedNameselement(i)==numEL || OrderedNameselement(i)==numJC
         [H_row2,~]=size(Htemp);
@@ -73,17 +73,17 @@ while i<loop
     % need to switch if caps were in cotree or inductors in tree
     k = k+1;
     if OrderedNameselement(k)==numEL || OrderedNameselement(k)==numJC
-        
+
         DependentNames(j+1,:) = OutputNames(i); % Assigns name to dependent row status
         OutputNames(i) = []; % Deletes name from Output names list
-        
+
         j = j+1; % J is number of dependent elements
-        
+
         % Set up so each depends row is a linear combination of the
         % independent state remaining:
         depends(j,:)=Htemp(i,H_row2+1:2*H_row2);
         depends(j,i) = 0;
-        
+
         % Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*Htemp(:,i);
         Htemp(:,i+H_row2) = [];
         if j == 1
@@ -94,12 +94,12 @@ while i<loop
         Htemp(i,:)=[];
         Htemp(:,i)=[];
         depends(:,i)=[];
-        
+
         i = i-1;
         loop = loop - 1;
         J = 5829758239;
         [H_row2,~] = size(Htemp);
-        
+
     end
     i= i+1;
 % end
@@ -114,19 +114,19 @@ Htemp(:,2*(H_row2-1)-sum(SortedCoTrees(:,1)==10)+1:2*(H_row2-1))=[];
 Htemp(:,H_row2:H_row2+sum(SortedTrees(:,1)==3)-1)=[];
 
 if ~isempty(C)
-    
+
     for i = 1:1:size(saved,2)
         Htemp(:,H_row2:end-size(s,2)) = Htemp(:,H_row2:end-size(s,2)) + repmat(C(end-size(saved,2)+i,1:end-size(saved,2)),H_row2-1,1).*-saved(:,i);
         Htemp(:,end+1-size(s,2):end) = Htemp(:,end+1-size(s,2):end) + repmat(D(end-size(saved,2)+i,:),H_row2-1,1).*-saved(:,i);
     end
-    
+
     % Delete state outputs:
     Htemp(sum(SortedTrees(:,1)==3)+1:H_row2-1-sum(SortedCoTrees(:,1)==10),:) = [];
     Htemp(:,sum(SortedTrees(:,1)==3)+1:H_row2-1-sum(SortedCoTrees(:,1)==10)) = [];
-    
-    
+
+
     Htemp = rref(Htemp);
-    
+
     C = [Htemp(:,size(Htemp,1)+1:end-size(s,2)),zeros(size(Htemp,1),j)];
     D = Htemp(:,end-size(s,2)+1:end);
 end

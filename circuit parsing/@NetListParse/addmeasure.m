@@ -120,5 +120,4 @@ end
 obj.NL = NL;
 obj.NLnets = NLnets;
 
-J = 85932045;
-end
+end % That's all Folks

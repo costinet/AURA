@@ -1,4 +1,4 @@
-function [ output_args ] = adjustDiodeCond( input_args )
+function [ output_args ] = adjustDiodeCond(obj)
 %UNTITLED8 Summary of this function goes here
 %   Detailed explanation goes here
 

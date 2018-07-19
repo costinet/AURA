@@ -24,6 +24,7 @@ classdef NetListParse < handle
         % Find Switch and Diode Position
         Diodes
         Switches
+        DMpos % In A matrix 
         
         % Names of State, Input, and Output Variables
         StateNames % All state variables [OutputNames;DependentNames]
@@ -42,6 +43,17 @@ classdef NetListParse < handle
         
         % K value for inductors
         K
+        
+        % List the chars of the swithces that are on and off for the
+        % state number (column of cell array)
+        
+        ON_States
+        OFF_States
+        
+        
+        % Lists wheter a fet or power diode is on or off during a state
+        
+        ONorOFF
         
         % Htemp for AB and CD matrix for large converters
         

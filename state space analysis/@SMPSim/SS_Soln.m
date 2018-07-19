@@ -43,12 +43,21 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
 
     condAs= zeros(1,n);
 
+    % Compute expAS = e^(A_i*t_i)
+    % where A_i is A matrix for state i period
+    % t_i is the length of time in state i in period
+    % states are in order i = 1,2,3...
     expAs = zeros(ns,ns,n);
     for i=1:n
-        condAs(i) = cond(As(:,:,i));
-        expAs(:,:,i) = expm(As(:,:,i)*ts(i));
+        condAs(i) = cond(As(:,:,i)); % check the condition of inversion for A matrix
+        expAs(:,:,i) = expm(As(:,:,i)*ts(i)); % e^(A*t)
     end
 
+    
+    % Compute cumProdExp = e^(A_(i) * t_(i)) * e^(A_(i-1) * t_(i-1))
+    % ... e^(A_(1) * t_(1)) * I
+    
+    % I is the identity matrix
     cumProdExp = zeros(ns,ns,n);
     for i=1:n
         cumProdExp(:,:,i) = eye(ns);
@@ -56,6 +65,10 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
             cumProdExp(:,:,i) = expAs(:,:,k)*cumProdExp(:,:,i);
         end
     end
+
+    
+    % Compute cumProdExpRev = e^(A_(n) * t_(n)) * e^(A_(i+2) * t_(i+2))
+    % ... e^(A_(i+1) * t_(i+1)) * I
 
     cumProdExpRev = zeros(ns,ns,n);
     for i=1:n

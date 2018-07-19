@@ -36,6 +36,10 @@ state = bin;
 %% Cycle through all possible states
 SortedTree=zeros(2*size(obj.NL,1),5,1);
 SortedCoTree=zeros(2*size(obj.NL,1),5,1);
+
+obj.ON_States = cell(length(switches),number_of_states);
+obj.OFF_States = cell(length(switches),number_of_states);
+
 for i = 1:1:number_of_states
 
     [NewNL,NewNLnets]=obj.states(state,i,switches);

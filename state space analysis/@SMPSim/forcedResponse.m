@@ -8,7 +8,7 @@ function [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
         storeResult = 0;
     end
     
-    % Check if this has already been calculated
+    % Check if foced response has already been calculated
     if(storeResult)
         index = find(sum(sum(bsxfun(@eq,obj.oldAs, A))) == numel(A),1,'first');
         if(index)
@@ -21,7 +21,7 @@ function [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
     if index
         intEAt = obj.oldIntEAt(:,:,index);
     elseif(cond(full(A)) < obj.condThreshold) % not ill-conditioned, use matrix inverse
-        intEAt = A\(expA-eye(ns));
+        intEAt = A\(expA-eye(ns)); % inv(A)*(e^(A*t)-I)
     else % As(i) is ill-conditioned
        intEAt = zeros(ns,ns);
      
@@ -73,6 +73,6 @@ function [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
             end  
        end
     end
-    fresp = intEAt*(B*u);
+    fresp = intEAt*(B*u); % inv(A)*(e^(A*t)-I)*B*u
 end
 

@@ -1,7 +1,7 @@
 function [] = transformers(obj,mutual,value,position)
 %transformers creates dependent sources in place of inductors given in K
 %statements
-%   Transfomers takes an input of the the mutual 
+%   Transfomers takes an input of the mutual
 
 % Set index
 % Name:       V BV MV  C  R  L MI BI  I  D  M
@@ -19,7 +19,7 @@ numI = 9;
 numD = 10;
 numM = 11;
 
-% position: rows are different k statments and columns are the index in the
+% position: rows are different k statements and columns are the index in the
 % NL where the inductors are for a particular k statement
 
 NL = obj.NL;
@@ -37,7 +37,7 @@ for i = 1:1:D(1)
             NL(p,1) = numBI;
             NLnets(p,:) = [strcat(NLnets(p,1),'_BI'), NLnets(p,2:end)];
             Values(end+1) = obj.sip2num(NLnets{p,4});
-            
+
         else
             NL(p,1) = numBV;
             NLnets(p,:) = [strcat(NLnets(p,1),'_BV'), NLnets(p,2:end)];
@@ -80,7 +80,3 @@ obj.K = K;
 J = 795723;
 
 end
-
-
-
-
