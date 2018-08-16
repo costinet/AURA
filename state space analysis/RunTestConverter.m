@@ -49,8 +49,14 @@ etaWF = zeroAlloc;
 
 tic
 for j = 1:length(Iorange)
-    simulator.u(Ioloc) = Iorange(j);
+    simulator.u(Ioloc) = Iorange(j); % Edited
     Xss = simulator.SS_Soln();
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   
+    simulator.Baxter_adjustDiodeCond();
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
      if(WFanalysis)
         [xs, t, y] = simulator.SS_WF_Reconstruct();

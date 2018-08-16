@@ -123,15 +123,15 @@ classdef SMPSim < handle
             % states in order
             
              n = size(conv.topology.Parse.OutputNames,1);
-            A = conv.topology.Parse.Anum(1:n,1:n,:);
-            B = conv.topology.Parse.Bnum(1:n,:,:);
-            C = conv.topology.Parse.Cnum(1:n,:,:);
-            D = conv.topology.Parse.Dnum(1:n,:,:);
+            A = conv.topology.Parse.Anum(:,:,:);
+            B = conv.topology.Parse.Bnum(:,:,:);
+            C = conv.topology.Parse.Cnum(:,:,:);
+            D = conv.topology.Parse.Dnum(:,:,:);
             
-            Ass = cat(3,A(:,:,2),A(:,:,1),A(:,:,3),A(:,:,3));
-            Bss = cat(3,B(:,:,2),B(:,:,1),B(:,:,3),B(:,:,3));
-            Css = cat(3,C(:,:,2),C(:,:,1),C(:,:,3),C(:,:,3));
-            Dss = cat(3,D(:,:,2),D(:,:,1),D(:,:,3),D(:,:,3));
+            Ass = cat(3,A(:,:,2),A(:,:,1),A(:,:,3),A(:,:,1));
+            Bss = cat(3,B(:,:,2),B(:,:,1),B(:,:,3),B(:,:,1));
+            Css = cat(3,C(:,:,2),C(:,:,1),C(:,:,3),C(:,:,1));
+            Dss = cat(3,D(:,:,2),D(:,:,1),D(:,:,3),D(:,:,1));
             
             obj.settopology(Ass,Bss,Css,Dss);
             obj.setmodulation(conv.ts);

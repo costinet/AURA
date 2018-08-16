@@ -69,6 +69,7 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
     
     % Compute cumProdExpRev = e^(A_(n) * t_(n)) * e^(A_(i+2) * t_(i+2))
     % ... e^(A_(i+1) * t_(i+1)) * I
+    % Unless i = n then cumProdExpRev = I
 
     cumProdExpRev = zeros(ns,ns,n);
     for i=1:n
@@ -82,7 +83,7 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
 
     RHSsum = zeros(ns,1);
 
-    fresp = zeros(ns,1,n); %% Forced response: A^-1(expm(A*T)-eye)*B*u
+    fresp = zeros(ns,1,n); % Forced response: A^-1(expm(A*T)-eye)*B*u
         for i=1:n
            [frespNew, intEAt] = obj.forcedResponse(As(:,:,i), expAs(:,:,i), Bs(:,:,i), u, ts(i), 1);
            fresp(:,:,i) = frespNew;
@@ -93,7 +94,20 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
         end
 
     Xss = (eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
-
+    
+    hi = -9;
+    
+    % This effectivly places a large shut resistor on all caps and series
+    % resistors on all all inductors:
+    if sum(isnan(Xss)) || sum(isinf(Xss))
+        Xss = ((1-exp(hi))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
+%         while ~sum(isnan(Xss)) || ~sum(isinf(Xss))
+%         hi = hi-1;
+%         Xss = ((1-exp(hi))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
+%         end
+%         Xss = ((1-exp(hi+1))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
+    end
+        
     %% Hacky solution when result is off because (eye(ns) - cumProdExp(:,:,n)) is non-invertable
     % Use optimization to solve without inversion through error minimization
     % --> Still needs tweaking

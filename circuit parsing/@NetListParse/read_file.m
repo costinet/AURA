@@ -72,9 +72,35 @@ if exist(filename,'file') == 2 % if the file exists
         error(['Error: ',filename,' Not Properly Closed'])
     end
 
+elseif exist(filename,'file') == 4
+    % If file is a simulink file
+    obj.PLECS_extract();
+    fprintf('Simulink file uploaded');
+    return
 else
-    % If file does not exist display error
-    error(['Error: ',filename,' Does Not Exist'])
+    % If the file was not initially recognized then return what it is:
+    switch exist(filename)
+        case 0
+            error(['Error: ',filename,' does not exist or cannot be found'])
+        case 1
+            error(['Error: ',filename,' is a variable'])
+        case 2
+            error(['Error: ',filename,' was not a valid file a few lines ago and is now not one?!?'])
+        case 3
+            error(['Error: ',filename,' is a MEX-file'])
+        case 4
+            error(['Error: ',filename,' was not a valid Simulink file a few lines ago and is now not one?!?'])
+        case 5
+            error(['Error: ',filename,' is a built-in MATLAB function'])
+        case 6
+            error(['Error: ',filename,' is a P-code file'])
+        case 7
+            error(['Error: ',filename,' is a folder'])
+        case 8
+            error(['Error: ',filename,' is a class'])
+        otherwise
+            error(['MATLAB exist function is broken or has changed'])
+    end
 end
 
 % Key for elements:
@@ -98,6 +124,14 @@ MutInd = [];
 
 %% Parse data from file
 
+% Check NetList file to see if it has a proper header:
+First_Line=NLraw{1};
+First_Letter=First_Line(1);
+if ~(strcmp(First_Letter,'*'))
+    error(['Netlist file does not have a proper heading'])
+end
+
+% Loop to parse data from file:
 for i = 1:1:length(NLraw) % Step though netlist
     cell = NLraw(i); % Take each row of the netlist
     chars = char(cell); % Convert to chars

@@ -1,7 +1,7 @@
 function [] = ABCD(obj)
 % ABCD creates takes a NETlist file from LTSpice and creates the associated
 % ABCD matrices or the associated matrices need to get ABCD if a symbolic
-% formulation cannon be solved in a descent amount of time.
+% formulation cannot be solved in a descent amount of time.
 %
 % A NetListParse class is required with the associated filename defined
 %
@@ -24,8 +24,12 @@ function [] = ABCD(obj)
 %% Read in file:
 obj.read_file;
 
-%% Find Diodes and Switches
+% If this is a simulink file then return without parsing circuit
+if isempty(obj.NL)
+  return
+end
 
+%% Find Diodes and Switches
 [switches]=obj.findDM;
 
 %% Get binary representation of number of states to change R and C for D and M
@@ -33,12 +37,19 @@ number_of_states = 2^length(switches);
 bin=de2bi(0:number_of_states-1);
 state = bin;
 
-%% Cycle through all possible states
+% Pre-set number of possible Tree and Cotree matrices
+%  This is needed to efficiently pass these variables through for each time
+%  interval
 SortedTree=zeros(2*size(obj.NL,1),5,1);
 SortedCoTree=zeros(2*size(obj.NL,1),5,1);
 
+% Pre-set number of possible ON and OFF states
+%  This is needed to efficiently pass these variables through for each time
+%  interval
 obj.ON_States = cell(length(switches),number_of_states);
 obj.OFF_States = cell(length(switches),number_of_states);
+
+%% Cycle through all possible states
 
 for i = 1:1:number_of_states
 

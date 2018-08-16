@@ -9,7 +9,7 @@ j = size(DependentNames,1);
 [H_row2,~] = size(Htemp);
 H_row2 = H_row2+1;
 
-
+% RREF Htemp with custom tolerance value
 Htemp = rref(Htemp,0.9);
 
 OutputHtemp = Htemp;

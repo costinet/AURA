@@ -36,7 +36,12 @@ classdef SMPStopology < handle
             end
         end
         
-        
+        function SetABCD(obj,parse)
+            obj.As = parse.Anum;
+            obj.Bs = parse.Bnum;
+            obj.Cs = parse.Cnum;
+            obj.Ds = parse.Dnum;
+        end
 
     end
 end

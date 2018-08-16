@@ -27,7 +27,7 @@ elseif(varToPerturb(1) == 'u')
     u(pI) = u(pI) + dX;
     u(cI) = u(cI) + dX2;
 else
-    display('Variable to perturb not found');
+    disp('Variable to perturb not found');
     error('Variable to perturb not found');
 end
 

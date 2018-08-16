@@ -15,7 +15,7 @@ C1 = 4040e-9; %Cout
 fs = 2e6;
 Ts = 1/fs;
 V = 1.8;
-Io = 1;
+Io = 1; % was 1
 M1_C = 3.4874e-10; % CHS
 D1_C = 3.4874e-10; % LHS
 
@@ -71,6 +71,10 @@ Current = {'V1'
 % Current = {'C1'
 %     'D2'
 %     'R3'};
+
+%%% Note All Swithch, Inductor, and Capaictor elements will be included in
+%%% the C and D matrix whether they are placed in the above cell array or
+%%% not.
 
 
 %% Run functions
@@ -130,6 +134,8 @@ if isempty(A)
         parse.Dnum(:,:,k)=D;
     end
     
+elseif ~isempty(parse.Anum)
+    fprintf('Confirm Plecs used');
 else
     for k = 1:1:size(A,3)
         parse.Anum(:,:,k) = eval(A(:,:,k));
@@ -143,6 +149,9 @@ simulator.loadTestConverter2(conv);
 Xss = simulator.SS_Soln();
 
 %% Reconstruction of Dependent variables
+% Dont need anymore due to fix of SS_Soln.m
+% Dependent variables are calculated with independent variables
+%{
 Xss(end+1,:) = zeros(size(parse.DependentNames,1),size(Xss,2));
 
 
@@ -152,7 +161,7 @@ for i = 2:1:size(Xss,2)
     Xss(size(OutputNames,1)+1:end,i) = simulator.Cw(8,:,i-1)*Xss(:,i)+simulator.Dw(8,:,i-1)*u;
     Xss(:,1) = Xss(:,end);
 end
-
+%}
 
 %% adjustDiodeCond
 
@@ -168,49 +177,17 @@ Order = [2 1 3 1];
 
 parse.find_diode(Order);
 
+check = parse.VfwdIrev(Xs,u,Order);
 
-% If FET is on then voltage should not be 
+% Have two conditions to check physical validity of diodes
+% Check to see if make sure they have no negative current (should be blocking)
+% Check to see if the voltage exceeds the forward voltage of the diode.
+% These do not need to know what the state of anything is wheter fet or
+% power diode
 
 
-for i = 1:1:size(Xs,1)
-    for j = 2:1:size(Xs,2)
-        if parse.ONorOFF(i,j-1) ~=0 % if FET or Diode
-            
-            if parse.DMpos(i,2)==1 % if diode
-                if parse.ONorOFF(i,j-1) == 1 % if diode ON
-                    if Xss(i,j) < 0
-                        fprintf('Violation of %s in state %.0f \n',parse.StateNames{i,1},j-1)
-                    end
-                elseif parse.ONorOFF(i,j-1) == -1 % if diode off
-                    if Xss(i,j) > 0
-                        fprintf('Violation of %s in state %.0f \n',parse.StateNames{i,1},j-1)
-                    end
-                else
-                    fprintf('Messed up')
-                end
-            elseif parse.DMpos(i,3)==1 % if FET
-                if parse.ONorOFF(i,j-1) == 1 % if FET ON
-                    if Xss(i,j) < 0
-                        fprintf('Violation of %s in state %.0f \n',parse.StateNames{i,1},j-1)
-                    end
-                elseif parse.ONorOFF(i,j-1) == -1 % if FET off
-                    if Xss(i,j) < 0
-                        fprintf('Violation of %s in state %.0f \n',parse.StateNames{i,1},j-1)
-                    end
-                else
-                    fprintf('Messed up')
-                end
-                
-                
-            else
-                fprintf('Found a FET or Diode that wasn''t a FET or Diode')
-            end
-            
-            
-        end
-        
-    end
-end
+simulator.Baxter_adjustDiodeCond();
+
 
 
 

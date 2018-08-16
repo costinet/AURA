@@ -1,8 +1,22 @@
 function [NL,NLnets] = states(obj,state,i,switches)
-% states finds the states of a converter and sets the net list for nodeloop
-%
+% STATES finds the different switch positions of the netlist file converter
+% and sets the net list for nodeloop by changing open switches to caps and
+% on switches to caps in parallel with an on resistance.
 
-% Index values for components (will pass as variable):
+
+%     %%%%%%   %      %  %%%%%%%    %%%%%%
+%    %      %  %      %  %      %  %      %
+%    %      %  %      %  %      %  %      %
+%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
+%    %      %  %      %  %%        %      %
+%    %      %  %      %  % %       %      %
+%    %      %  %      %  %  %      %      %
+%    %      %  %      %  %   %     %      %
+%    %      %   %    %   %    %    %      %
+%    %      %    %%%%    %     %   %      %
+
+
+% Index values for components (will pass as variable... eventually):
 numV = 1;
 numBV = 2;
 numMV = 3;
@@ -43,13 +57,14 @@ for j = 1:1:length(switches)
         ON_States(ON_index,1) = NLnets(switches(j),1);
         ON_index = ON_index+1;
     end
-    
+
     if state(i,j) ~= 1 && state(i,j) ~= 0
         error('Invalid State Detected')
     end
 
 end
 
+% Update classes
 obj.ON_States(:,i)=ON_States;
 obj.OFF_States(:,i)=OFF_States;
 
