@@ -20,6 +20,9 @@ function [check] = VfwdIrev(obj,Xs,u,order)
 % For a FET there can be a reverse current if the FET is ON
 
 ron = .05;
+Anum = obj.Anum;
+Bnum = obj.Bnum;
+
 
 % Variable Declaration:
 
@@ -100,8 +103,10 @@ end
 ONorOFF = obj.ONorOFF;
 
 for i = 1:1:size(Xs,1) % Cycle through state variables  
-    for j = 2:1:size(Xs,2) % Cycle through time intervals
-        if ONorOFF(i,j-1) ~=0 % if FET or Diode
+    for j = 2:1:size(Xs,2) % Cycle through time intervals 
+        j;% is time interval for Xss
+        k = j-1; % k is time interval for everything else
+        if ONorOFF(i,k) ~=0 % if FET or Diode
             
             Current_StateName = strsplit(obj.StateNames{i,1},'_'); % Separte
             Voltage_pos = strcmp(repmat(Current_StateName{1},10,1),measurename) & contains(remain, ' V'); % Find position of selected state variable voltage measurement
@@ -109,13 +114,40 @@ for i = 1:1:size(Xs,1) % Cycle through state variables
             Voltage = Y.*Voltage_pos; % Set Voltage of switching element
             Current = Y.*Current_pos; % Set Current of swithcing element
             
+            if k == 1
+                DeltaV = Voltage(:,:,k)-Voltage(:,:,end);
+                DeltaC = Current(:,:,k)-Current(:,:,end);
+                StartDeriv=Anum(i,:,k)*Xs(:,j-1)+Bnum(i,:,k)*u;
+                EndDeriv=Anum(i,:,k)*Xs(:,j)+Bnum(i,:,k)*u;
+            else
+                DeltaV = Voltage(:,:,k)-Voltage(:,:,k-1);
+                DeltaC = Current(:,:,k)-Current(:,:,k-1);
+                StartDeriv=Anum(i,:,k)*Xs(:,j-1)+Bnum(i,:,k)*u;
+                EndDeriv=Anum(i,:,k)*Xs(:,j)+Bnum(i,:,k)*u;
+            end
+            
+            % Initally set start time equal to zero
+            time = 0;
+            data = [];
+            %%% Attempt to find local max or min of voltage for diode %%%
+            
+            for n = 100:1:200
+            dxdt = Anum(:,:,k)*expm(Anum(:,:,k)*time)*Xs(:,j)+expm(Anum(:,:,k)*time)*Bnum(:,:,k)*u;
+            time = time+1/n*dxdt(i,1);
+            data(end+1) = time;
+            end
+            
+            
+            
             if obj.DMpos(i,2)==1 % if diode
-                if ONorOFF(i,j-1) == 1 % if diode ON
-                    if sum(Voltage(:,:,j-1)) < 0
+                
+                if ONorOFF(i,k) == 1 % if diode ON
+                    if sum(Voltage(:,:,k)) < 0
                         fprintf('Violation of %s in state %.0f \n',obj.StateNames{i,1},j-1)
+
                     end
                 elseif ONorOFF(i,j-1) == -1 % if diode off
-                    if sum(Current(:,:,j-1)) > 0
+                    if sum(Current(:,:,k)) > 0
                         fprintf('Violation of %s in state %.0f \n',obj.StateNames{i,1},j-1)
                     end
                 else
@@ -137,7 +169,7 @@ for i = 1:1:size(Xs,1) % Cycle through state variables
                     
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     % Find if FET turns on next
-                    if size(ONorOFF,2) == j
+                    if size(ONorOFF,2)+1 == j
                         if ONorOFF(i,2) == 1
                             if Voltage < -10*ron*2
                                 fprintf('Hard swithcing for %s in time interval j\n')

@@ -49,12 +49,12 @@ etaWF = zeroAlloc;
 
 tic
 for j = 1:length(Iorange)
-    simulator.u(Ioloc) = Iorange(j); % Edited
+    simulator.u(Ioloc) = 1; % Edited
     Xss = simulator.SS_Soln();
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    
-    simulator.Baxter_adjustDiodeCond();
+   % simulator.Baxter_adjustDiodeCond();
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     

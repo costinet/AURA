@@ -91,21 +91,25 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
            obj.oldIntEAt(:,:,i) = intEAt;
            obj.oldts(i) = ts(i);
            RHSsum = RHSsum +  cumProdExpRev(:,:,i)*frespNew;
-        end
-
-    Xss = (eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
-    
-    hi = -9;
+        end    
+    hi = -6; % Intial guess (might be able to educated guess this)
     
     % This effectivly places a large shut resistor on all caps and series
     % resistors on all all inductors:
-    if sum(isnan(Xss)) || sum(isinf(Xss))
-        Xss = ((1-exp(hi))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
-%         while ~sum(isnan(Xss)) || ~sum(isinf(Xss))
-%         hi = hi-1;
-%         Xss = ((1-exp(hi))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
-%         end
-%         Xss = ((1-exp(hi+1))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
+    if cond(eye(ns) - cumProdExp(:,:,n))>1*10^9 % 10^-9 is an educated guess 
+        Xss = ((1-10^(hi))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum; % Calculate the educated guess value
+
+        %%%% Use cond() to see where how 'able' the matrix is to converge %%%%
+        %%% Can also try and use optimization commented out below %%%%
+        
+        % Loop through increaseing hi until the condition of the inverted
+        % matrix reaches a 'large' value
+        while cond((1-10^(hi))*eye(ns) - cumProdExp(:,:,n))<1*10^9
+            hi = hi-1;
+            Xss = ((1-10^(hi))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
+        end
+    else
+        Xss = (eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
     end
         
     %% Hacky solution when result is off because (eye(ns) - cumProdExp(:,:,n)) is non-invertable
