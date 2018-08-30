@@ -22,7 +22,7 @@ function [check] = VfwdIrev(obj,Xs,u,order)
 ron = .05;
 Anum = obj.Anum;
 Bnum = obj.Bnum;
-
+debug = 1;
 
 % Variable Declaration:
 
@@ -129,15 +129,31 @@ for i = 1:1:size(Xs,1) % Cycle through state variables
             % Initally set start time equal to zero
             time = 0;
             data = [];
+            J = zeros(size(Xs,1),size(Xs,1));
+            J(i,i) = 1;
+            syms t
+            % Create symbolic equation 0 = Ax+Bu
+            eqn = zeros(size(Xs,1),1) == J*(Anum(:,:,k)*expm(Anum(:,:,k).*t)*Xs(:,j)+expm(Anum(:,:,k).*t)*Bnum(:,:,k)*u);
+            the_answer=vpasolve(eqn,t,[0 50e-9]); % numerically solve in given time interval
+            stack = [];
+            
+            % Plot dx/dt if debug
+            if debug
+            t1 = linspace(0,5e-9,1000);
+            for counts = 1:1:length(t1)
+                eqn2 = J*(Anum(:,:,k)*expm(Anum(:,:,k).*t1(counts))*Xs(:,j)+expm(Anum(:,:,k).*t1(counts))*Bnum(:,:,k)*u);
+                stack(end+1) = eqn2(1,:);
+            end
+            plot(t1,stack)
             %%% Attempt to find local max or min of voltage for diode %%%
             
-            for n = 100:1:200
-            dxdt = Anum(:,:,k)*expm(Anum(:,:,k)*time)*Xs(:,j)+expm(Anum(:,:,k)*time)*Bnum(:,:,k)*u;
-            time = time+1/n*dxdt(i,1);
-            data(end+1) = time;
+%             for n = 100:1:200
+%             dxdt = Anum(:,:,k)*expm(Anum(:,:,k)*time)*Xs(:,j)+expm(Anum(:,:,k)*time)*Bnum(:,:,k)*u;
+%             time = time+1/n*dxdt(i,1);
+%             data(end+1) = time;
+%             end
+%             
             end
-            
-            
             
             if obj.DMpos(i,2)==1 % if diode
                 

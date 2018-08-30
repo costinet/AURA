@@ -20,7 +20,7 @@ M1_C = 3.4874e-10; % CHS
 D1_C = 3.4874e-10; % LHS
 
 R1 =  .01; % Rl
-dt = Ts/1000;%50e-9;
+dt = Ts/1000;%5e-10;
 Vdr = 5;
 M1_R = .05; % ronHS
 D1_R = .05; % ronLS
