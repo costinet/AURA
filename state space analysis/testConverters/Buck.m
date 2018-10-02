@@ -49,8 +49,6 @@ C3 = [-1/ronLS, 0, 1, 0];
 D3 = [1/ronLS, 0];
 
 
-
-
 K = [CHS 0 0 0; 0 CLS 0 0; 0 0 L 0 ; 0 0 0 Cout]; 
 
 As = cat(3, A1, A2, A3, A2);
@@ -77,7 +75,7 @@ top.stateLabels =  {'V_{Chs}', 'V_{Cls}', 'i_L', 'V_{out}'};
 top.outputLabels = {'i_g'};
 
 conv = SMPSconverter();
-conv.topology = top;
+conv.Topology = top;
 conv.ts = ts;
 conv.u = u;
 

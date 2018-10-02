@@ -55,7 +55,7 @@ Voerr = mean(Xs(3,:)) - V;
 % From there can determine what states need to be checked and pull these
 % measurement nodes from C and D already calcualted
 
-% Remember that FETs volage is from 
+% Remember that FETs volage is from drain to source
 
 
 
@@ -77,6 +77,7 @@ modelError = [(abs(Voerr)>maxVoErr) 0 0;
  
 nattempts = 0;
 
+% Rewrite this to use y instead of x
 while (nattempts < 10) && sum(sum(modelError))
 	if(debug)
        [xs, t, y] = obj.SS_WF_Reconstruct();

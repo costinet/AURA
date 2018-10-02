@@ -24,7 +24,7 @@ dt = Ts/1000;%5e-10;
 Vdr = 5;
 M1_R = .05; % ronHS
 D1_R = .05; % ronLS
-
+Order = [2 1 3 1];
 ts = [Ts*.5-dt dt Ts*.5-dt dt];
 
 
@@ -92,12 +92,13 @@ end
 u = [Vg Io]';
 
 top = SMPStopology();
-top.Parse = parse;
-
+top.Parser = parse;
+top.stateLabels = parse.StateNames(:,1);
 conv = SMPSconverter();
-conv.topology = top;
+conv.Topology = top;
 conv.ts = ts;
 conv.u = u;
+conv.order = Order;
 
 simulator = SMPSim();
 
@@ -173,11 +174,11 @@ Vopos = 2;
 Xs = Xss;
 ron = M1_R;
 
-Order = [2 1 3 1];
+
 
 parse.find_diode(Order);
 
-check = parse.VfwdIrev(Xs,u,Order);
+check = simulator.VfwdIrev();
 
 % Have two conditions to check physical validity of diodes
 % Check to see if make sure they have no negative current (should be blocking)

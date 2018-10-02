@@ -2,27 +2,33 @@ function [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
 %UNTITLED9 Summary of this function goes here
 %   Detailed explanation goes here
 
-    ns = size(B,1);
-    
-    if(nargin ==6)
-        storeResult = 0;
+ns = size(B,1);
+
+if(nargin ==6)
+    storeResult = 0;
+end
+
+% Check if foced response has already been calculated
+if(storeResult)
+    index = find(sum(sum(bsxfun(@eq,obj.oldAs, A))) == numel(A),1,'first');
+    if(index)
+        index = index*(obj.oldts(index) == t);
     end
+else
+    index = 0;
+end
+
+if index
+    intEAt = obj.oldIntEAt(:,:,index);
+elseif(cond(full(A)) < obj.condThreshold) % not ill-conditioned, use matrix inverse
+    intEAt = A\(expA-eye(ns)); % inv(A)*(e^(A*t)-I)
+else % As(i) is ill-conditioned
     
-    % Check if foced response has already been calculated
-    if(storeResult)
-        index = find(sum(sum(bsxfun(@eq,obj.oldAs, A))) == numel(A),1,'first');
-        if(index)
-            index = index*(obj.oldts(index) == t);
-        end
-    else
-        index = 0;
-    end
+    % Dr. Costinett's adjustments October 2, 2018
+    M = expm(t*[A, eye(length(A)); zeros(size(A,1), 2*size(A,2))]);
+    intEAt = M(1:size(A,1), size(A,2)+1:end);
     
-    if index
-        intEAt = obj.oldIntEAt(:,:,index);
-    elseif(cond(full(A)) < obj.condThreshold) % not ill-conditioned, use matrix inverse
-        intEAt = A\(expA-eye(ns)); % inv(A)*(e^(A*t)-I)
-    else % As(i) is ill-conditioned
+    %{
        intEAt = zeros(ns,ns);
      
        %So far, this has never worked.
@@ -39,7 +45,7 @@ function [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
        else
 
            % Try iterative summation
-           % NOTE: may be useful to store Ai^k for 1<k<100 
+           % NOTE: may be useful to store Ai^k for 1<k<100
            % NOTE: significant convergence issues may need to be addressed.
            %  This seems to work if t^k/k! decreases faster than A^k blows
            %  up for k smaller than that where A^k overflows floating point
@@ -47,9 +53,9 @@ function [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
            k = 0;
            while sum(sum(~isfinite(A^k))) == 0 && k < 100
                convError = 1/prod(1:k+1)*A^k*t^(k+1);
-               intEAt = intEAt + convError;           
+               intEAt = intEAt + convError;
                k = k+1;
-           end 
+           end
 %            max(max(A))^(k-1)*t^k/factorial(k) <1  % estimate if it converged
 
             % Didn't work, try lsim approach (numerical integration)
@@ -70,9 +76,10 @@ function [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
                    syms s t
                    intEAt = eval(subs(vpa(ilaplace(((s*eye(ns)-A)^-1)/s)), t, ti));
                end
-            end  
+            end
        end
-    end
-    fresp = intEAt*(B*u); % inv(A)*(e^(A*t)-I)*B*u
+    %}
+end
+fresp = intEAt*(B*u); % inv(A)*(e^(A*t)-I)*B*u
 end
 

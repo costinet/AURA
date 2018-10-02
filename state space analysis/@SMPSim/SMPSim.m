@@ -23,11 +23,14 @@ classdef SMPSim < handle
         Ds
         ts
         u
+        Converter % Converter
+        order
         
-        Aw
-        Bw
-        Cw
-        Dw
+        
+        %         Aw
+        %         Bw
+        %         Cw
+        %         Dw
         
         Xs
     end
@@ -44,32 +47,32 @@ classdef SMPSim < handle
         end
         
         %% Methods from external files
-        [ Xs] = SS_Soln(obj, Xi, Bi)    
+        [ Xs] = SS_Soln(obj, Xi, Bi)
         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
         plotAllStates(obj, fn)
-        
+        [check] = VfwdIrev(obj)
         [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)
         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
         
         
         %% Locally-defined methods
         function settopology(obj, As, Bs, Cs, Ds)
-           obj.As = As;
-           obj.Bs = Bs;
-           obj.Cs = Cs;
-           obj.Ds = Ds;
-           
-           obj.oldAs = zeros(size(As));
-           obj.oldIntEAt = zeros(size(As));
-           
-           obj.Xs = [];
+            obj.As = As;
+            obj.Bs = Bs;
+            obj.Cs = Cs;
+            obj.Ds = Ds;
+            
+            obj.oldAs = zeros(size(As));
+            obj.oldIntEAt = zeros(size(As));
+            
+            obj.Xs = [];
         end
         
         function setmodulation(obj, ts)
             obj.ts = ts;
             obj.oldts = zeros(size(ts));
-
+            
             obj.Xs = [];
         end
         
@@ -80,7 +83,7 @@ classdef SMPSim < handle
         end
         
         function sn = getstatenames(obj)
-            sn = obj.converter.topology.stateLabels;
+            sn = obj.Converter.Topology.stateLabels;
         end
         
         
@@ -88,7 +91,7 @@ classdef SMPSim < handle
         function loadTestConverter(obj,dotmatfile)
             try
                 load(dotmatfile, 'conv');
-                obj.converter = conv;
+                obj.Converter = conv;
                 %                 params = load(matfile);
             catch err
                 ME = MException('resultisNaN:noSuchVariable', ...
@@ -96,7 +99,7 @@ classdef SMPSim < handle
                 throw(ME);
             end
             
-            obj.settopology(conv.topology.As, conv.topology.Bs, conv.topology.Cs, conv.topology.Ds);
+            obj.settopology(conv.Topology.As, conv.Topology.Bs, conv.Topology.Cs, conv.Topology.Ds);
             obj.setmodulation(conv.ts);
             obj.setinputs(conv.u);
             
@@ -122,33 +125,42 @@ classdef SMPSim < handle
             % invertable (remove dependent states before solve) and puts
             % states in order
             
-             n = size(conv.topology.Parse.OutputNames,1);
-            A = conv.topology.Parse.Anum(:,:,:);
-            B = conv.topology.Parse.Bnum(:,:,:);
-            C = conv.topology.Parse.Cnum(:,:,:);
-            D = conv.topology.Parse.Dnum(:,:,:);
+%             n = size(conv.topology.Parse.OutputNames,1);
+%             A = conv.topology.Parse.Anum(:,:,:);
+%             B = conv.topology.Parse.Bnum(:,:,:);
+%             C = conv.topology.Parse.Cnum(:,:,:);
+%             D = conv.topology.Parse.Dnum(:,:,:);
+            obj.order = conv.order;
+            switchorder = obj.order;
             
-            Ass = cat(3,A(:,:,2),A(:,:,1),A(:,:,3),A(:,:,1));
-            Bss = cat(3,B(:,:,2),B(:,:,1),B(:,:,3),B(:,:,1));
-            Css = cat(3,C(:,:,2),C(:,:,1),C(:,:,3),C(:,:,1));
-            Dss = cat(3,D(:,:,2),D(:,:,1),D(:,:,3),D(:,:,1));
+            obj.As = [];
+            obj.Bs = [];
+            obj.Cs = [];
+            obj.Ds = [];
             
-            obj.settopology(Ass,Bss,Css,Dss);
-            obj.setmodulation(conv.ts);
-            obj.setinputs(conv.u);
+            obj.As = conv.Topology.Parser.Anum(:,:,switchorder);
+            obj.Bs = conv.Topology.Parser.Bnum(:,:,switchorder);
+            obj.Cs = conv.Topology.Parser.Cnum(:,:,switchorder);
+            obj.Ds = conv.Topology.Parser.Dnum(:,:,switchorder);
             
+            %obj.settopology(Ass,Bss,Css,Dss);
+            obj.ts = conv.ts;
+            obj.u = conv.u;
+            obj.oldAs = zeros(size(obj.As));
+            obj.oldIntEAt = zeros(size(obj.As));
             obj.Xs = [];
+            obj.Converter = conv;
             
-
-            Ax = conv.topology.Parse.Anum;
-            Bx = conv.topology.Parse.Bnum;
-            Cx = conv.topology.Parse.Cnum;
-            Dx = conv.topology.Parse.Dnum;
             
-            obj.Aw = cat(3,Ax(:,:,2),Ax(:,:,1),Ax(:,:,3),Ax(:,:,1));
-            obj.Bw = cat(3,Bx(:,:,2),Bx(:,:,1),Bx(:,:,3),Bx(:,:,1));
-            obj.Cw = cat(3,Cx(:,:,2),Cx(:,:,1),Cx(:,:,3),Cx(:,:,1));
-            obj.Dw = cat(3,Dx(:,:,2),Dx(:,:,1),Dx(:,:,3),Dx(:,:,1));
+            %             Ax = conv.topology.Parse.Anum;
+            %             Bx = conv.topology.Parse.Bnum;
+            %             Cx = conv.topology.Parse.Cnum;
+            %             Dx = conv.topology.Parse.Dnum;
+            %
+            %             obj.Aw = cat(3,Ax(:,:,2),Ax(:,:,1),Ax(:,:,3),Ax(:,:,1));
+            %             obj.Bw = cat(3,Bx(:,:,2),Bx(:,:,1),Bx(:,:,3),Bx(:,:,1));
+            %             obj.Cw = cat(3,Cx(:,:,2),Cx(:,:,1),Cx(:,:,3),Cx(:,:,1));
+            %             obj.Dw = cat(3,Dx(:,:,2),Dx(:,:,1),Dx(:,:,3),Dx(:,:,1));
             
         end
         

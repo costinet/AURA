@@ -3,10 +3,11 @@ classdef SMPSconverter < handle
     %   Detailed explanation goes here
     
     properties
-        topology
+        Topology
         ts
         u
-     
+        order
+        
     end
     
     methods

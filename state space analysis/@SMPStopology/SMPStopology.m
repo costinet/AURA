@@ -4,18 +4,21 @@ classdef SMPStopology < handle
     
     properties
 
-        Parse
+        Parser
         As
         Bs
         Cs
         Ds
         
-        Xi
-        Bi
+        Asym
+        Bsym
+        Csym
+        Dsym
         
         stateLabels
-
-        
+        Xi
+        Bi
+        outputLabels
     end
     
     methods

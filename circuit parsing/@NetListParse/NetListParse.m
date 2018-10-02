@@ -90,7 +90,8 @@ classdef NetListParse < handle
     methods
 
         function initialize(obj,Filename,Voltage,Current)
-            % This function checks to see if
+            % This function checks to see if all variables are of the
+            % correct class
             if ~exist(Filename,'file')
                 error('File %s not found',Filename)
             end
