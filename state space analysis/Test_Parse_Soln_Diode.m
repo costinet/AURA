@@ -15,12 +15,12 @@ C1 = 4040e-9; %Cout
 fs = 2e6;
 Ts = 1/fs;
 V = 1.8;
-Io = 1; % was 1
+Io = 10; % was 1
 M1_C = 3.4874e-10; % CHS
 D1_C = 3.4874e-10; % LHS
 
 R1 =  .01; % Rl
-dt = Ts/1000;%5e-10;
+dt = Ts/100;%5e-10;
 Vdr = 5;
 M1_R = .05; % ronHS
 D1_R = .05; % ronLS
@@ -150,6 +150,9 @@ simulator.loadTestConverter2(conv);
 Xss = simulator.SS_Soln();
 
 %% Reconstruction of Dependent variables
+parse.StateVarIndex();
+simulator.CorrectXs();
+
 % Dont need anymore due to fix of SS_Soln.m
 % Dependent variables are calculated with independent variables
 %{
@@ -177,7 +180,6 @@ ron = M1_R;
 
 
 parse.find_diode(Order);
-
 check = simulator.VfwdIrev();
 
 % Have two conditions to check physical validity of diodes

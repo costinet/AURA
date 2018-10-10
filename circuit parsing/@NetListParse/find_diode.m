@@ -103,6 +103,7 @@ if sum(sum(DMpos,2)==1)~=0
     fprintf('Either someone messed with this code or all logic in the world has been lost\n Let''s hope its the first one\n')
 end
 
+
 % Update class:
 obj.DMpos = DMpos;
 obj.ONorOFF = onoroff;

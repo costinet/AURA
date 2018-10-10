@@ -33,6 +33,7 @@ classdef SMPSim < handle
         %         Dw
         
         Xs
+        Xs_circuit
     end
     
     methods (Access = private)

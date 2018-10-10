@@ -77,6 +77,8 @@ modelError = [(abs(Voerr)>maxVoErr) 0 0;
  
 nattempts = 0;
 
+StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
+
 % Rewrite this to use y instead of x
 while (nattempts < 10) && sum(sum(modelError))
 	if(debug)
@@ -87,7 +89,7 @@ while (nattempts < 10) && sum(sum(modelError))
             for i=1:ns
                 subplot(10*ns,1,i*10-9:i*10)
                 hold on;
-                plot(t,xs(i,:), 'Linewidth', 3); 
+                plot(t,y(StateNumbers(i),:), 'Linewidth', 3); 
                 ylabel(obj.getstatenames{i})
                 box on
 

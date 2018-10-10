@@ -11,7 +11,7 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
     ts = obj.ts;
     u = obj.u;
     
-    tsmax = [0.4 0.001 0.4 0.001]; % JUST FOR TESTING
+    tsmax = [.6 .3 .3 .6]; % JUST FOR TESTING
     
     try
         debug = 1;

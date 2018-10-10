@@ -1,0 +1,35 @@
+function [] = CorrectXs(obj)
+%CORRECTXS Takes the given Xs and corrects dependent states to reflect
+%actual values that contain KVL and KCL rules
+%   Must come after StateVarIndex to get the index of dependent states
+%   outputs
+
+As = obj.As;
+Bs = obj.Bs;
+Cs = obj.Cs;
+Ds = obj.Ds;
+Xs = obj.Xs;
+u = obj.u;
+OutputNames = obj.Converter.Topology.Parser.OutputNames;
+% DependentNames = obj.Converter.Topology.Parser.DependentNames;
+StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
+
+%% Reconstruction of Dependent variables
+% Dont need anymore due to fix of SS_Soln.m
+% Dependent variables are calculated with independent variables
+
+%Xs(end+1,:) = zeros(size(DependentNames,1),size(Xs,2));
+
+
+% For now diode is 8th row in C and D will char match dependent variables
+% to find where they are in output and calculate
+start = size(OutputNames,1);
+for i = 2:1:size(Xs,2)
+    Xs(start+1:end,i) = Cs(StateNumbers(start+1:end),:,i-1)*Xs(:,i)+Ds(StateNumbers(start+1:end),:,i-1)*u;
+    Xs(:,1) = Xs(:,end);
+end
+
+obj.Xs_circuit = Xs;
+obj.Xs = Xs;
+end
+
