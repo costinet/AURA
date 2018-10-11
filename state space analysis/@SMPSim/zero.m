@@ -7,6 +7,18 @@ function [c,ceq] = zero(obj,t)
 %   wanting to find when one state is equal to zero. The other stats can be
 %   anything so they are not included in the constraints.
 
+%     %%%%%%   %      %  %%%%%%%    %%%%%%
+%    %      %  %      %  %      %  %      %
+%    %      %  %      %  %      %  %      %
+%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
+%    %      %  %      %  %%        %      %
+%    %      %  %      %  % %       %      %
+%    %      %  %      %  %  %      %      %
+%    %      %  %      %  %   %     %      %
+%    %      %   %    %   %    %    %      %
+%    %      %    %%%%    %     %   %      %
+
+
 global  I_solemnly_swear_that_I_am_up_to_no_good;
 
 i = I_solemnly_swear_that_I_am_up_to_no_good(1);
