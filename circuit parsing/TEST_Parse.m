@@ -14,7 +14,7 @@ addpath(testDir);
 %% User Input
 
 % Select .net file
-filename = 'Buck2.net';
+filename = 'Buck_Qual.net';
 % Current options for filename:
 % Boost.net
 % Buck.net

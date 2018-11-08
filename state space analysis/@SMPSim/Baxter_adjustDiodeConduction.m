@@ -5,13 +5,16 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
 % Xic = index to states (Xs) for discrete time interval which (may) contain
 % errors due to diode conduction (column index of Xs)
 % Sir = index to states (Xs) for the state in quesiton (row index of Xs)
+% Vmax is the voltage maximum for the state
+% Vmin is the voltage minimum for the state
+% This changes depending on if it is a diode or a FET!!!!!!!!!!!!
 
     As = obj.As;
     Bs = obj.Bs;
     ts = obj.ts;
     u = obj.u;
     
-    tsmax = [.6 .3 .3 .6]; % JUST FOR TESTING
+    tsmax = [.7 .3 .3 .7]; % JUST FOR TESTING
     
     try
         debug = 1;
@@ -31,17 +34,23 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
             throw(ME);
         end
 
-        Ti = Xic-1;
-        Tc = Ti+1;
+           
+        Ti = Xic-1; % Current index of time interval 
+        Tc = Ti+1; % Next time interval 
+        
+        % If the next time interval reaches the end of the defined period
+        % then restart at beginning (1)
         if(Tc == length(ts) + 1)
             Tc = 1;
         end
 
         dxsdt = zeros(size(Xs));
 
+        % Run lsim for given time period
         C = zeros(1,size(As,1), 1);
         SS = ss(As(:,:,Xic-1), Bs(:,:,Xic-1), C, 0);
         tsim = linspace(0, ts(Ti), 100);
+
         if ts(Ti)
             [~, ~, x] = lsim(SS, u*ones(size(tsim)), tsim, Xs(:,Xic-1));
             xdot = As(:,:,Xic-1)*x' + Bs(:,:,Xic-1)*u;
@@ -50,6 +59,7 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
             xdot = As(:,:,Xic-1)*x' + Bs(:,:,Xic-1)*u;
         end
 
+        % Determine if there is a slope change in 
         slopechange = find(diff(sign(xdot(1,:))));
 
         hardSwNecessary = 0;
@@ -58,6 +68,7 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
         Vmax = max(Vmax, Xs(Sir, Xic-1));
         Vmin = min(Vmin, Xs(Sir, Xic-1));
 
+        % Find if the value of voltage exceeds the 
         Vmaxcross = find(diff(x(:,Sir)>Vmax));
         Vmincross = find(diff(x(:,Sir)<Vmin));
 
@@ -74,7 +85,7 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
             %guaranteed to be > 0, so no need to check
             ts(Ti) = ts(Ti) + tdelta;
             ts(Tc) = ts(Tc) - tdelta;
-            if(debug), disp('Multicrossing found'); end
+            if(debug), disp('multcross || overresonant || massiveOvershoot found'); end
             return;
         else
 
@@ -83,7 +94,8 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
 
             %% check for ZVS where possible
             delta_DTs = max(min(ts)/100, sum(ts)/10000);
-            dXs = obj.StateSensitivity( 'ts', Ti, delta_DTs, Tc);
+            obj.Baxter_StateSensitivity( 'ts', Ti, delta_DTs, Tc);
+            dXs = obj.Xs;
             dxsdt = (dXs-Xs)/delta_DTs;
 
             if(xdot(Sir,end) > 0)
@@ -97,15 +109,21 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
                    % significantly to prevent oscillating
                    tdelta = sign(tdelta)*min(abs(tdelta), maxStep/10);
                 end
-                ts(Ti) = ts(Ti) + tdelta;
-                ts(Tc) = ts(Tc) - tdelta;
+                ts(Ti) = ts(Ti) - tdelta;
+                ts(Tc) = ts(Tc) + tdelta;
+                if(ts(Ti)<0)
+                    change = 1e-10;
+                    ts(Tc) = ts(Tc)-abs(ts(Ti))-change;
+                    ts(Ti) = change;
+                end
+                
                 if(debug), disp(['-- Vsw increasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
             elseif(xdot(Sir,end) < 0)
                 tdelta = (Vmin-Xs(Sir,Xic))/(dxsdt(Sir,Xic));
                 tdelta = min(max(tdelta, -ts(Ti) + delta_DTs), tsmax(Ti) - ts(Ti));
                 tdelta = sign(tdelta)*min(abs(tdelta), maxStep);
-                ts(Ti) = ts(Ti) + tdelta;
-                ts(Tc) = ts(Tc) - tdelta;
+                ts(Ti) = ts(Ti) - tdelta;
+                ts(Tc) = ts(Tc) + tdelta;
                 if(debug), disp(['-- Vsw decreasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
             end
 

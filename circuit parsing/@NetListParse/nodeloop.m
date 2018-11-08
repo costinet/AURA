@@ -32,9 +32,14 @@ Tree = 0;
 % Find the first one (1) in each row
 % The columns where these ones (1) occur are the braches within the normal
 % tree
-for i = 1:1:temp
-    Tree(i) = find(REF(i,:),1,'first');
+try
+    for i = 1:1:temp
+        Tree(i) = find(REF(i,:),1,'first');
+    end
+catch
+    error('Possible Singular Incidence Matrix. Check ground nodes in netlist (No isolation across transformer)')
 end
+
 
 % Find the remaining elements that are not in the normal tree
 % The branches are in the Cotree

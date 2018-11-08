@@ -9,22 +9,20 @@
 clear
 
 
-Vg = 5;
+Vg = 18;
 L1 = 230e-9; %L
 C1 = 4040e-9; %Cout
-fs = 2e6;
+fs = 100e3;
 Ts = 1/fs;
-V = 1.8;
+V = 1.2;
 Io = 10; % was 1
 M1_C = 3.4874e-10; % CHS
-M2_C = 3.4874e-10; % LHS
 D1_C = 3.4874e-10; % LHS
 
-R1 =  .01; % Rl also known as R1 (one or L (lowercase))
+R1 =  .01; % Rl
 dt = Ts/100;%5e-10;
 Vdr = 5;
 M1_R = .05; % ronHS
-M2_R = .05; % ronLS
 D1_R = .05; % ronLS
 Order = [2 1 3 1];
 ts = [Ts*.5-dt dt Ts*.5-dt dt];
@@ -35,15 +33,15 @@ TestparseWaveform = false;
 
 
 % Select .net file
-filename = 'Buck_Qual.net';
+filename = 'DAB.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
-% Buck2.net This is a buck with a series inductor resistance and current source output 
+% Buck2.net
 % Dickson.net
 % Flyback.net
 % Forward.net
-% Buck_Qual.net Synchronous buck with series inductor resistance
+% DAB.net (testing)
 
 % Select test case file
 testcase = 'TEST_ABCD_Buck_Diode';
@@ -58,12 +56,10 @@ testcase = 'TEST_ABCD_Buck_Diode';
 % Set Voltage and Current Nodes to add
 Voltage = {'V1'
     'C1'
-    'M1'
-    'M2'};
+    'M1'};
 Current = {'V1'
     'C1'
-    'M1'
-    'M2'};
+    'M1'};
 % Change Voltage and Current based on desired output measurements (C and D
 % matricies). Voltage and Current should be of type Cell 
 % Example:

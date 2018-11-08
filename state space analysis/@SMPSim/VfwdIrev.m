@@ -35,6 +35,14 @@ function [check] = VfwdIrev(obj)
 
 % Display Current Waveforms
 
+% These are variables that are being tested to put in the simulation class
+% or other classes to speed up the function
+output_Cap_pos = 2; % Position of the output capacitor
+Vo = 1.2; % Value of the output voltage
+
+close all
+
+
 counter = 0;
 debug = true;
 if debug
@@ -59,108 +67,142 @@ if debug
     
 end
 % while (counter<1) % only loop through diode stuff for now
-    counter = counter+1;
-    check = 0;
-    ron = .05;
-    As = obj.As;
-    Bs = obj.Bs;
-    Xs = obj.Xs;
-    u = obj.u;
-    
-    % Variable Declaration:
-    Max_Diode_Reverse_Current = -0.005; % Negative for reverse current
-    Max_Diode_Forward_Voltage = 0.7; % Maximum Forward voltage of diode
-    Max_FET_Forward_Voltage = 0.5; % Maximum Forward voltage of diode in FET
-    Max_FET_Reverse_Current = 0.005; % Positive due to polarity of current measurement for FET diode
-    
-    % Calculate the response of each time interval of the circuit
-    for i = 1:1:size(Xs,2)-1
-        Y(:,:,i) = obj.Cs(:,:,i)*Xs(:,i+1)+obj.Ds(:,:,i)*u;
-    end
-    
-    % Get measurement names and type of measurement Voltage (V) or Current (A)
-    [measurename,remain] = strtok(obj.Converter.Topology.Parser.OutputNamesCD(:,1));
-    
-    
-    %% Diode Current
-    % Find diode current measurement positions in C and D matrix
-    diode_current_pos = contains(measurename,'D') & contains(remain, ' A');
-    
-    % Get diode current measurements for each time interval
-    Diode_current = Y.*diode_current_pos;
-    
-    % Iterate through and check violation of reverse current in diode
-    for i = 1:1:size(Diode_current,3)
-        violations = measurename(Diode_current(:,:,i)<Max_Diode_Reverse_Current,1);
-        if ~isempty(violations)
-            for j = 1:1:length(violations)
-                fprintf('Reverse current violation of Diode %s at end of time interval %.0f \n', violations{j},i)
-            end
-            
+counter = counter+1;
+check = 0;
+ron = .05;
+As = obj.As;
+Bs = obj.Bs;
+Xs = obj.Xs;
+u = obj.u;
+ts = obj.ts;
+Voerr = mean(Xs(output_Cap_pos,:)) - Vo;
+
+% Variable Declaration:
+Max_Diode_Reverse_Current = -0.005; % Negative for reverse current
+Max_Diode_Forward_Voltage = 0.7; % Maximum Forward voltage of diode
+Max_FET_Forward_Voltage = 0.5; % Maximum Forward voltage of diode in FET
+Max_FET_Reverse_Current = 0.005; % Positive due to polarity of current measurement for FET diode
+
+% Calculate the response of each time interval of the circuit
+for i = 1:1:size(Xs,2)-1
+    Y(:,:,i) = obj.Cs(:,:,i)*Xs(:,i+1)+obj.Ds(:,:,i)*u;
+end
+
+% Get measurement names and type of measurement Voltage (V) or Current (A)
+[measurename,remain] = strtok(obj.Converter.Topology.Parser.OutputNamesCD(:,1));
+
+
+%% Diode Current
+% Find diode current measurement positions in C and D matrix
+diode_current_pos = contains(measurename,'D') & contains(remain, ' A');
+
+% Get diode current measurements for each time interval
+Diode_current = Y.*diode_current_pos;
+
+% Iterate through and check violation of reverse current in diode
+for i = 1:1:size(Diode_current,3)
+    violations = measurename(Diode_current(:,:,i)<Max_Diode_Reverse_Current,1);
+    if ~isempty(violations)
+        for j = 1:1:length(violations)
+            fprintf('Reverse current violation of Diode %s at end of time interval %.0f \n', violations{j},i)
         end
-    end
-    
-    
-    %% Diode Voltage
-    
-    % Find diode voltage measurement positions in C and D matrix
-    diode_voltage_pos = contains(measurename,'D') & contains(remain, ' V');
-    
-    % Get diode voltage measurements for each time interval
-    Diode_voltage = Y.*diode_voltage_pos;
-    
-    % Iterate through and check violation of forward voltage in diode
-    for i = 1:1:size(Diode_voltage,3)
-        violations = measurename(Diode_voltage(:,:,i)>Max_Diode_Forward_Voltage,1); % Positive because diode voltage is reported at anode to cathode
-        if ~isempty(violations)
-            for j = 1:1:length(violations)
-                fprintf('Forward voltage violation of Diode %s during time interval %.0f \n', violations{j},i)
-            end
-            
-            % Assume violation means that period is too long if there are no
-            % zero derivatives
-            
-            % Check for derivatives
-            % Below
-            
-            % Check that slope is in right direction
-            
-            % Need to converter from Y to X position using char
-            % Use parser.Stateposition???
-            
-            if sum(Diode_voltage(:,:,i)-Diode_voltage(:,:,i-1)>0)
-                % Reduce time of period (assume liner slope)
-                [tsnew, dxsdtd, hardSwNecessary_DT1] = obj.Baxter_adjustDiodeConduction(obj.Xs, i+1, 4, 5, 0, 1); % For now hard code Vin and Vout
-                %        introduced_Voerr = sum(dxsdtd(3,2:end).*(ts-tsnew));
-                ts = tsnew;
-                obj.ts = tsnew;
-                obj.SS_Soln();
-                obj.CorrectXs()
-                [xs, t, y] = obj.SS_WF_Reconstruct();
-                % nattempts
-                figure(1)
-                ns = size(xs,1);
-                for z=1:ns
-                    subplot(10*ns,1,z*10-9:z*10)
-                    hold on;
-                    plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
-                    ylabel(obj.getstatenames{z})
-                    box on
-                    
-                    if(z<ns)
-                        set(gca, 'Xticklabel', []);
-                    else
-                        xlabel('t')
-                    end
-                end
-            end
-        end
+        
     end
 end
-%% FET Voltage
 
+
+%% Diode Voltage
+num = 0;
+while num<5
+% Find diode voltage measurement positions in C and D matrix
+diode_voltage_pos = contains(measurename,'D') & contains(remain, ' V');
+
+% Get diode voltage measurements for each time interval
+Diode_voltage = Y.*diode_voltage_pos;
+
+
+% Iterate through and check violation of forward voltage in diode
+for i = 1:1:size(Diode_voltage,3)
+    violations = measurename(Diode_voltage(:,:,i)>Max_Diode_Forward_Voltage,1); % Positive because diode voltage is reported at anode to cathode
+    if ~isempty(violations)
+        for j = 1:1:length(violations)
+            fprintf('Forward voltage violation of Diode %s during time interval %.0f \n', violations{j},i)
+        end
+        
+        % Assume violation means that period is too long if there are no
+        % zero derivatives
+        
+        % Check for derivatives
+        % Below
+        
+        % Check that slope is in right direction
+        
+        % Need to converter from Y to X position using char
+        % Use parser.Stateposition???
+        
+        if sum(Diode_voltage(:,:,i)-Diode_voltage(:,:,i-1)>0)
+            % Reduce time of period (assume liner slope)
+            [tsnew, dxsdtd, hardSwNecessary_DT1] = obj.Baxter_adjustDiodeConduction(obj.Xs, i+1, 4, 5, 0, 1); % For now hard code Vin and Vout
+            tsnew
+            
+            introduced_Voerr = sum(dxsdtd(output_Cap_pos,2:end).*(ts-tsnew));
+            ts = tsnew;
+            obj.ts = tsnew;
+            obj.SS_Soln();
+            obj.CorrectXs()
+            [xs, t, y] = obj.SS_WF_Reconstruct();
+            % nattempts
+            figure(num+2)
+            ns = size(xs,1);
+            if i ==4
+            for z=1:ns
+                subplot(10*ns,1,z*10-9:z*10)
+                hold on;
+                plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
+                ylabel(obj.getstatenames{z})
+                box on
+                
+                if(z<ns)
+                    set(gca, 'Xticklabel', []);
+                else
+                    xlabel('t(s)')
+                end
+            end
+            end
+            % Determine output sensitivity to time 
+            delta_DTs = max(min(ts)/10, sum(ts)/10000);
+            obj.Baxter_StateSensitivity('ts', 1, delta_DTs,3);
+            dXs = obj.Xs;
+            dxsdt = (Xs - dXs)/delta_DTs;
+            dt = (Voerr+introduced_Voerr)/mean(dxsdt(output_Cap_pos,:));
+            
+            if(ts(3) - dt <0)
+                dt = ts(3);
+            elseif(ts(1) + dt < 0)
+                dt = -ts(1);
+            end
+            dt = dt*.5;
+            dt
+            ts(1) = ts(1) + dt;
+            ts(3) = ts(3) - dt;
+            
+            obj.ts = ts;
+            obj.SS_Soln();
+            obj.CorrectXs;
+            Xs = obj.Xs;
+            Voerr = mean(Xs(output_Cap_pos,:)) - Vo;
+        end
+    end
+    
+end
+num = num+1;
+end
+%end
+%% FET Voltage
+num = 0;
+while num<5
 % Find FET voltage measurement positions in C and D matrix
-FET_voltage_pos = contains(measurename,'M') & contains(remain, ' V');
+FET_voltage_pos = contains(measurename,'M2') & contains(remain, ' V');
 
 % Get FET voltage measurements for each time interval
 FET_voltage = Y.*FET_voltage_pos;
@@ -172,9 +214,64 @@ for i = 1:1:size(FET_voltage,3)
         for j = 1:1:length(violations)
             fprintf('Forward voltage violation of FET''s diode %s during time interval %.0f \n', violations{j},i)
         end
+        
+        
+        %if sum(FET_voltage(:,:,i)-FET_voltage(:,:,i-1)>0)
+            % Reduce time of period (assume liner slope)
+            [tsnew, dxsdtd, hardSwNecessary_DT1] = obj.Baxter_adjustDiodeConduction(obj.Xs, i+1, 4, 5, 0, 1); % For now hard code Vin and Vout
+            tsnew
+            i
+            introduced_Voerr = sum(dxsdtd(output_Cap_pos,2:end).*(ts-tsnew));
+            ts = tsnew;
+            obj.ts = tsnew;
+            obj.SS_Soln();
+            obj.CorrectXs()
+            [xs, t, y] = obj.SS_WF_Reconstruct();
+            % nattempts
+            figure(num+2)
+            ns = size(xs,1);
+            if i ==4
+            for z=1:ns
+                subplot(10*ns,1,z*10-9:z*10)
+                hold on;
+                plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
+                ylabel(obj.getstatenames{z})
+                box on
+                
+                if(z<ns)
+                    set(gca, 'Xticklabel', []);
+                else
+                    xlabel('t(s)')
+                end
+            end
+            end
+            % Determine output sensitivity to time 
+            delta_DTs = max(min(ts)/10, sum(ts)/10000);
+            obj.Baxter_StateSensitivity('ts', 1, delta_DTs,3);
+            dXs = obj.Xs;
+            dxsdt = (Xs - dXs)/delta_DTs;
+            dt = (Voerr+introduced_Voerr)/mean(dxsdt(output_Cap_pos,:));
+            
+            if(ts(3) - dt <0)
+                dt = ts(3);
+            elseif(ts(1) + dt < 0)
+                dt = -ts(1);
+            end
+            dt = dt*.5;
+            dt
+            ts(1) = ts(1) + dt;
+            ts(3) = ts(3) - dt;
+            
+            obj.ts = ts;
+            obj.SS_Soln();
+            obj.CorrectXs;
+            Xs = obj.Xs;
+            Voerr = mean(Xs(output_Cap_pos,:)) - Vo;
+       %end
     end
 end
-
+num = num+1;
+end
 
 %% FET Current
 ONorOFF = obj.Converter.Topology.Parser.ONorOFF;
@@ -231,39 +328,40 @@ for i = 1:1:size(Xs,1) % Cycle through state variables
             Current_pos = strcmp(repmat(Current_StateName{1},10,1),measurename) & contains(remain, ' A'); % Find position of selected state variable current measurement
             Voltage = Y.*Voltage_pos; % Set Voltage of switching element
             Current = Y.*Current_pos; % Set Current of switching element
+            %{
+%             if k == 1
+%                 DeltaV = Voltage(:,:,k)-Voltage(:,:,end);
+%                 DeltaC = Current(:,:,k)-Current(:,:,end);
+%                 StartDeriv=As(i,:,k)*Xs(:,j-1)+Bs(i,:,k)*u;
+%                 EndDeriv=As(i,:,k)*Xs(:,j)+Bs(i,:,k)*u;
+%             else
+%                 DeltaV = Voltage(:,:,k)-Voltage(:,:,k-1);
+%                 DeltaC = Current(:,:,k)-Current(:,:,k-1);
+%                 StartDeriv=As(i,:,k)*Xs(:,j-1)+Bs(i,:,k)*u;
+%                 EndDeriv=As(i,:,k)*Xs(:,j)+Bs(i,:,k)*u;
+%             end
             
-            if k == 1
-                DeltaV = Voltage(:,:,k)-Voltage(:,:,end);
-                DeltaC = Current(:,:,k)-Current(:,:,end);
-                StartDeriv=As(i,:,k)*Xs(:,j-1)+Bs(i,:,k)*u;
-                EndDeriv=As(i,:,k)*Xs(:,j)+Bs(i,:,k)*u;
-            else
-                DeltaV = Voltage(:,:,k)-Voltage(:,:,k-1);
-                DeltaC = Current(:,:,k)-Current(:,:,k-1);
-                StartDeriv=As(i,:,k)*Xs(:,j-1)+Bs(i,:,k)*u;
-                EndDeriv=As(i,:,k)*Xs(:,j)+Bs(i,:,k)*u;
-            end
-            
-            J = zeros(size(Xs,1),size(Xs,1));
-            J(i,i) = 1;
-            %  fun = @(t)((As(i,:,k)*expm(As(:,:,k).*t)*Xs(:,j)+expm(As(:,:,k).*t)*Bs(i,:,k)*u));
-            
-            I_solemnly_swear_that_I_am_up_to_no_good = [i,j,k];
-            x0 = 4e-6;
-            A = [];
-            B = [];
-            Aeq = [];
-            Beq = [];
-            LB = 0;
-            UB = 5e-6;
-            fun = @(t) t;
-            
-            options = optimoptions('fmincon','StepTolerance',1e-12,'ConstraintTolerance',1e-9);
-            if debug
-                options = optimoptions('fmincon','Display','off','StepTolerance',1e-65,'ConstraintTolerance',1e-3,'OptimalityTolerance',1e-5);
-            end
-            [X,FVAL,EXITFLAG,OUTPUT,LAMBDA,GRAD,HESSIAN] = fmincon(fun,x0,A,B,Aeq,Beq,LB,UB,@obj.zero,options);
-            
+%             J = zeros(size(Xs,1),size(Xs,1));
+%             J(i,i) = 1;
+%             %  fun = @(t)((As(i,:,k)*expm(As(:,:,k).*t)*Xs(:,j)+expm(As(:,:,k).*t)*Bs(i,:,k)*u));
+%
+%             I_solemnly_swear_that_I_am_up_to_no_good = [i,j,k];
+%             x0 = 4e-6;
+%             A = [];
+%             B = [];
+%             Aeq = [];
+%             Beq = [];
+%             LB = 0;
+%             UB = 5e-6;
+%             fun = @(t) t;
+%
+%             options = optimoptions('fmincon','StepTolerance',1e-12,'ConstraintTolerance',1e-9);
+%             if debug
+%                 options = optimoptions('fmincon','Display','off','StepTolerance',1e-65,'ConstraintTolerance',1e-3,'OptimalityTolerance',1e-5);
+%             end
+%             tic
+%             [X,FVAL,EXITFLAG,OUTPUT,LAMBDA,GRAD,HESSIAN] = fmincon(fun,x0,A,B,Aeq,Beq,LB,UB,@obj.zero,options);
+%             toc
             % Plot dx/dt if debug
             
             %{
@@ -284,7 +382,7 @@ for i = 1:1:size(Xs,1) % Cycle through state variables
             %             data(end+1) = time;
             %             end
             %end
-            
+            %}
             if obj.Converter.Topology.Parser.DMpos(i,2)==1 % if diode
                 
                 if ONorOFF(i,k) == 1 % if diode ON

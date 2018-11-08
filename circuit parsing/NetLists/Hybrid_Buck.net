@@ -1,0 +1,15 @@
+* C:\Users\jared\Downloads\Hybrid_Buck.asc
+Vg Vg 0 6
+L1 Vg Va 1µ
+Cfly Va Vb 10µ
+Cout Vout 0 100µ
+M1 Va N001 Vout Vout NTLMS4502N
+M2 Vout N002 Vb Vb NTLMS4502N
+M3 Vb N003 0 0 NTLMS4502N
+R1 Vout 0 0.8
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\jared\Documents\LTspiceXVII\lib\cmp\standard.mos
+.tran 1
+.backanno
+.end

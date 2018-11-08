@@ -55,22 +55,26 @@ numJM = 10;
 numJB = 11;
 numJ = 12;
 
-K = obj.K;
+K = obj.K; % Set K
 
-SortedTreeR = SortedTree;
-SortedCoTreeG = SortedCoTree;
+SortedTreeR = SortedTree; % Set Sorted Tree Reference
+SortedCoTreeG = SortedCoTree; % Set Sorted CoTree Reference
 
-SortedCoTree(SortedCoTree(:,1)==numG,:)=[];
-SortedTree(SortedTree(:,1)==numR,:)=[];
+SortedCoTree(SortedCoTree(:,1)==numG,:)=[]; % Manipulate Sorted CoTree to exclude resistors
+SortedTree(SortedTree(:,1)==numR,:)=[]; % Manipulate Sorted Tree to exclude resistors
 
+% Find the new size of each Sorted Matrix
 DT = size(SortedTree);
 DCT = size(SortedCoTree);
 
+% Find the last voltage component of independnet sources and dependent
+% sources
 lastE = find(SortedTree(:,1)==numE,1,'last');
 lastEB = find(SortedTree(:,1)==numEB,1,'last');
 % lastESC = find(SortedTree(:,1)==numESC,1,'last');
 
 
+% Find the first independent current source and dependent sources
 % firstJOC = find(SortedCoTree(:,1)==numJOC,1,'first');
 firstJB = find(SortedCoTree(:,1)==numJB,1,'first');
 firstJ = find(SortedCoTree(:,1)==numJ,1,'first');
@@ -209,6 +213,18 @@ if isempty(F)
     H = H_11;
     s = H_14;
 else
+    % Error out here for DAB converter due to H_31 not having 2 rows
+    
+    % New development: this only happens when there is an output current
+    % source instead of a resistor (need to figure that one out)
+    
+    % Confrim this happens with flyback when there is a current source on
+    % the output as well
+    
+    % Conclusion so far is that indexing is not performed properly when
+    % constant current sources are in the circuit (do not see it in non
+    % transformer converter because it does not matter for them)
+    
     H = H_11+H_12*((eye(size(F))-F)^-1)*K*H_31;
     s = H_14+H_12*((eye(size(F))-F)^-1)*K*H_34;
 end
