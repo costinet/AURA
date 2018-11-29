@@ -150,6 +150,13 @@ else
 end
 
 simulator.loadTestConverter2(conv);
+
+start_value = 5;
+end_value = 0;
+state_pos = 4;
+time_pos = 2;
+t = simulator.deadtimecalc(start_value,end_value,state_pos,time_pos);
+
 Xss = simulator.SS_Soln();
 
 %% Reconstruction of Dependent variables

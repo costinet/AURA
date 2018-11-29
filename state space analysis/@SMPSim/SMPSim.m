@@ -55,7 +55,7 @@ classdef SMPSim < handle
         [check] = VfwdIrev(obj)
         [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)
         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
-        
+        [t] = deadtimecalc(obj,start_value,end_value,state_pos,time_pos)
         
         %% Locally-defined methods
         function settopology(obj, As, Bs, Cs, Ds)
