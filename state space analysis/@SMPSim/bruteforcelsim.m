@@ -1,0 +1,166 @@
+function [check] = bruteforcelsim(obj,iterations)
+%BRUTEFORCELSIM Attempts to optimize the time intervals of a converter using lsim()
+%   iterations is the number of iterations that will be looped through to try and optimize the converter provided in the class
+%
+%     %%%%%%   %      %  %%%%%%%    %%%%%%
+%    %      %  %      %  %      %  %      %
+%    %      %  %      %  %      %  %      %
+%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
+%    %      %  %      %  %%        %      %
+%    %      %  %      %  % %       %      %
+%    %      %  %      %  %  %      %      %
+%    %      %  %      %  %   %     %      %
+%    %      %   %    %   %    %    %      %
+%    %      %    %%%%    %     %   %      %
+
+
+
+% VDmax is the limited forward voltage allowed on a diode
+% IDmax is the reverse current allowed on a diode
+% VMmax is the limited forward voltage allowed on a diode
+% IMmax is the reverse current allowed on a body diode (FET OFF)
+VDmax = 3;
+IDmax = -0.1;
+VMmax = -3;
+IMmax = 0.1;
+
+
+
+i = 0;
+Xs = obj.Xs;
+while i<=iterations
+    i = 1+1;
+
+    % Important set up stuff
+    debug = true;
+    [xs, t, y, time_interval] = obj.SS_WF_Reconstruct();
+    StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
+    StateNumbers_Opp = obj.Converter.Topology.Parser.StateNumbers_Opposite;
+    ONorOFF = obj.Converter.Topology.Parser.ONorOFF;
+
+    if debug
+        % What we are given
+        figure
+        ns = size(xs,1);
+        StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
+        for z=1:ns
+            subplot(10*ns,1,z*10-9:z*10)
+            hold on;
+            plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
+            ylabel(obj.getstatenames{z})
+            box on
+
+            if(z<ns)
+                set(gca, 'Xticklabel', []);
+            else
+                xlabel('t(s)')
+            end
+        end
+    end
+
+
+
+    for i = 1:1:size(Xs,1) % Cycle through state variables
+        %% Universal Constraints
+        if ONorOFF(i,1) ~=0 % if FET or Diode
+            if obj.Converter.Topology.Parser.DMpos(i,2)==1 % if diode
+                % Can never have voltage greater than forward voltage
+                if ~isempty(find(y(StateNumbers(i),:) > VDmax, 1))&&debug % Only finds first violation to improve speed
+                    fprintf('Universal Violation of diode forward voltage %s exceed %.2f V \n',obj.Converter.Topology.Parser.StateNames{i,1},VDmax)
+                end
+                % Can never have reverse current
+                if ~isempty(find(y(StateNumbers_Opp(i),:) < IDmax,1)) && debug % Only finds first violation to improve speed
+                    fprintf('Universal Violation of diode reverse current %s exceed %.2f A \n',obj.Converter.Topology.Parser.StateNames{i,1},IDmax)
+                end
+            end
+        elseif obj.Converter.Topology.Parser.DMpos(i,3)==1 % if FET
+            % Can never have voltage greater than forward voltage
+            if ~isempty(find(y(StateNumbers(i),:) < VMmax, 1))&&debug % Only finds first violation to improve speed
+                fprintf('Universal Violation of FET forward voltage %s exceed %.2f V \n',obj.Converter.Topology.Parser.StateNames{i,1},VMmax)
+            end
+            % Can have reverse current when FET is on will have to
+            % check when FET is off individually by time interval
+        end
+
+        %% Cycle through time intervals
+        for j = 2:1:size(Xs,2)
+            j;% is time interval for Xss
+            k = j-1; % k is time interval for everything else
+            if ONorOFF(i,k) ~=0 % if FET or Diode
+                if obj.Converter.Topology.Parser.DMpos(i,2)==1 % if diode
+                    % Determine if a state changes from the Diode
+                    % being on to being off or vice vera.
+                    if ONorOFF(i,k) == 1 % if diode ON
+                        if ~isempty(find(y(StateNumbers(i),time_interval(i):time_interval(i+1)) < 0,1)) && debug
+                            fprintf('State Violation (Diode turn off) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                        end
+                    elseif ONorOFF(i,j-1) == -1 % if diode off
+                        if ~isempty(find(y(StateNumbers_Opp(i),time_interval(i):time_interval(i+1)) > 0,1)) && debug
+                            fprintf('State Violation (Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                        end
+                    else
+                        fprintf('Messed up\n')
+                    end
+                elseif obj.Converter.Topology.Parser.DMpos(i,3)==1 % if FET
+                    if ONorOFF(i,j-1) == 1 % if FET ON
+                        if ~isempty(find(y(StateNumbers_Opp(i),time_interval(i):time_interval(i+1)) < 0,1)) && debug
+                            % Check if body diode conducts (time interval could be shortened)
+                            fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                        end
+
+                    elseif ONorOFF(i,j-1) == -1 % if FET off
+                        % Can not have positive ID
+                        if ~isempty(find(y(StateNumbers_Opp(i),time_interval(i):time_interval(i+1)) > IMmax,1)) && debug % Only finds first violation to improve speed
+                            fprintf('State Violation of FET reverse current %s exceed %.2f A \n',obj.Converter.Topology.Parser.StateNames{i,1},IDmax)
+                        end
+
+                        if ~isempty(find(y(StateNumbers_Opp(i),time_interval(i):time_interval(i+1)) < 0,1)) && debug
+                            fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                        end
+
+                        %                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        %                         % Find if FET turns on next
+                        %                         if size(ONorOFF,2)+1 == j
+                        %                             if ONorOFF(i,2) == 1
+                        %                                 if Voltage < -10*ron*2
+                        %                                     fprintf('Hard swithcing for %s in time interval j\n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                        %                                 end
+                        %                             end
+                        %
+                        %                         else
+                        %                             if ONorOFF(i,j) == 1
+                        %                                 if Voltage < -10*ron*2
+                        %                                     fprintf('Hard swithcing for %s in time interval j\n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                        %                                 end
+                        %                             end
+                        %                         end
+                        %                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    else
+                        fprintf('Messed up\n')
+                    end
+                else
+                    fprintf('Found a FET or Diode that wasn''t a FET or Diode\n Don''t panic\n')
+                end
+
+            end
+
+        end
+    end
+
+
+    %% Adjust Deadtimes
+
+    % Determine if it its possible to reach ideal value for soft switching (lsim for length of period)
+    % If it is possible to reach value then set the time to the first instance of that value
+    % If is not possible to reach value then step in direction by a certain percentage of initial guess.
+
+    %% Adjust Power times
+
+    % Start out with buck converter making a simple conversion ratio to test convergence.
+    % If more output voltage is needed then increase D
+    % If less output voltage is needed then decrease D
+    % (More sophisticated method need)
+
+end
+
+end % That's all Folks

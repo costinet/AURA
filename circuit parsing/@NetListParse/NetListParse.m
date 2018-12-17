@@ -1,7 +1,7 @@
 classdef NetListParse < handle
-    %UNTITLED3 Summary of this class goes here
-    %   Detailed explanation goes here
-
+    %NETLISTPARSE Holds all of the variables need to parse a netlist
+    %   Currently unit checks on initialize function
+    
     properties
         % Symbolic Matrix of ABCD
         Asym
@@ -35,7 +35,8 @@ classdef NetListParse < handle
         OutputNames % Independent states in circuit
         SwitchNames % Names of Switching elements (FETs and Diodes)
         StateNumbers % Number of either voltage or current measurement in Y output vector that corresponds to the state variable index
-
+        StateNumbers_Opposite % Number of either voltage and current source but is the opposite source as StateNumbers
+        
         %%% Need to change OutputNamesCD to OutputNames
         %%% Need to change OutputNames to MeasurementNames
         %%% For clarity %%%

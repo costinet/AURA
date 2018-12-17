@@ -1,4 +1,4 @@
-function [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
+function [ xs, t, ys, interval_end ] = SS_WF_Reconstruct(obj, tsteps)
 % Steady-state waveform reconstruction for periodic switched systems
 %
 % [ xs, t, ys ] = SS_WF_Reconstruct( Xss, As, Bs, ts, u, Cs, Ds ) produces
@@ -29,6 +29,9 @@ function [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
 % tsteps is the number of timesteps in one period, which is auto-selected
 % if left blank, to be between 10k and 100k while trying to keep at least
 % 100 steps per switching subinterval
+%
+% Jared Baxter edit on December 17, 2018
+% Edit to get length of subintervals for quality assurance.
 
 Xss = obj.Xs;
 As = obj.As;
@@ -60,7 +63,7 @@ try
 
     xs = zeros(n, length(t));
     xs(:,1) = Xss(:,1);
-    
+    interval_end = ones(1,nsub+1); % JB modified
     ys = zeros(size(Cs,1), length(t));
 
     for i = 1:nsub %for each subinterval
@@ -72,6 +75,8 @@ try
         elseif i == nsub
             ti = find(t<=tmax & t>=tmin);
         end
+        
+        interval_end(i+1)=max(ti);  % JB modified
 
         if length(ti) > 1
             SS = ss(As(:,:,i), Bs(:,:,i), Cs(:,:,i), Ds(:,:,i));

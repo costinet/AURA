@@ -151,12 +151,6 @@ end
 
 simulator.loadTestConverter2(conv);
 
-start_value = 5;
-end_value = 0;
-state_pos = 4;
-time_pos = 2;
-t = simulator.deadtimecalc(start_value,end_value,state_pos,time_pos);
-
 Xss = simulator.SS_Soln();
 
 %% Reconstruction of Dependent variables
@@ -177,6 +171,15 @@ for i = 2:1:size(Xss,2)
 end
 %}
 
+%% Attempt to solve for t directly
+
+start_value = simulator.Xs(:,2);
+end_value = simulator.Xs(:,2);
+end_value(1) = 5;
+end_value(4) = 0;
+time_pos = 2;
+% t = simulator.deadtimecalc(start_value,end_value,time_pos);
+
 %% adjustDiodeCond
 
 
@@ -188,9 +191,11 @@ Xs = Xss;
 ron = M1_R;
 
 
-
+iterations = 1;
 parse.find_diode(Order);
-check = simulator.VfwdIrev();
+[check] = simulator.bruteforcelsim(iterations);
+
+%check = simulator.VfwdIrev();
 
 % Have two conditions to check physical validity of diodes
 % Check to see if make sure they have no negative current (should be blocking)
@@ -291,8 +296,6 @@ while (nattempts < 100) && sum(sum(modelError))
     nattempts = nattempts + 1;
 
 end
-
-
 
 return
 

@@ -33,7 +33,7 @@ classdef SMPSim < handle
         %         Dw
         
         Xs
-        Xs_circuit
+        Xs_circuit % In current implementation this should be Xs if correctXs function is run to ensure the values do not violate KVL and KCL
     end
     
     methods (Access = private)
@@ -49,7 +49,7 @@ classdef SMPSim < handle
         
         %% Methods from external files
         [ Xs] = SS_Soln(obj, Xi, Bi)
-        [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
+        [ xs, t, ys, interval_end ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
         plotAllStates(obj, fn)
         [check] = VfwdIrev(obj)

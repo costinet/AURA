@@ -1,4 +1,4 @@
-function [t] = deadtimecalc(obj,start_value,end_value,state_pos,time_pos)
+function [t] = deadtimecalc(obj,start_values,end_values,time_pos)
 %deadtimecalc calculates the deadtime needed for a given A and B
 %matrix and an associated time inverval
 
@@ -14,8 +14,9 @@ ts = obj.ts;
 % Similar principle to SS_Soln.m for finding the natural response of
 % the circuit.
 
-hi = -6; % Intial guess (might be able to educated guess this)
+% hi = -6; % Intial guess (might be able to educated guess this)
 ns = size(As,1);
+%{ 
 if cond(As(:,:,time_pos))>1*10^9 % 10^9 is an educated guess
     invA = (As(:,:,time_pos)-(1-10^(hi))*eye(ns))^-1; % Calculate the educated guess value
     
@@ -29,12 +30,22 @@ if cond(As(:,:,time_pos))>1*10^9 % 10^9 is an educated guess
         invA = (As(:,:,time_pos)-(1-10^(hi))*eye(ns))^-1; % Calculate the educated guess value
     end
 else
-    invA = (As(:,:,time_pos)-(1-10^(hi))*eye(ns))^-1; % Calculate the educated guess value
+    invA = (As(:,:,time_pos))^-1; % Calculate the educated guess value
 end
 
 invA_select = invA(state_pos,:);
 B = Bs(:,:,time_pos);
 t = (log(end_value + invA_select*B*u)-log(start_value + invA_select*B*u))*invA_select;
+%}
+t1 = [];
+
+for i = 1:1:20
+hi = -i;
+invA = (As(:,:,time_pos)+(10^(hi))*eye(ns))^-1;
+invA_select = invA;
+B = Bs(:,:,time_pos);
+t1(:,i) = invA_select*(logm(end_values + invA_select*B*u)-logm(start_values - invA_select*B*u));
+end
 
 
 

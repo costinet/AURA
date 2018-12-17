@@ -22,7 +22,9 @@ for i=1:1:size(StateNames1,1)
     
     if contains(StateNames(i),'L')
         StateNumbers(i)=find(result==1,1,'first');
+        StateNumbers_Opp(i)=find(result==1,1,'last');
     elseif contains(StateNames(i),'C')
+        StateNumbers_Opp(i)=find(result==1,1,'first');
         StateNumbers(i)=find(result==1,1,'last');
     else
         fprintf('I don''t believe it.\n')
@@ -31,5 +33,6 @@ for i=1:1:size(StateNames1,1)
 end 
 
 obj.StateNumbers=StateNumbers;
+obj.StateNumbers_Opposite=StateNumbers_Opp;
 end
 
