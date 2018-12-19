@@ -190,8 +190,11 @@ Vopos = 2;
 Xs = Xss;
 ron = M1_R;
 
+simulator.dead_time_intervals = [2,4];
+simulator.dead_time_states = [4,1];
+simulator.dead_time_goals = [0,0];
 
-iterations = 1;
+iterations = 10;
 parse.find_diode(Order);
 [check] = simulator.bruteforcelsim(iterations);
 

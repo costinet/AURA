@@ -24,12 +24,13 @@ IDmax = -0.1;
 VMmax = -3;
 IMmax = 0.1;
 
+i = [];
 
-
-i = 0;
+the_counter = 0;
 Xs = obj.Xs;
-while i<=iterations
-    i = 1+1;
+while the_counter<=iterations
+    
+    the_counter = the_counter+1;
 
     % Important set up stuff
     debug = true;
@@ -39,6 +40,8 @@ while i<=iterations
     ONorOFF = obj.Converter.Topology.Parser.ONorOFF;
 
     if debug
+        fprintf('--------- \n')
+        fprintf('Iteration number %.0f \n',the_counter)
         % What we are given
         figure
         ns = size(xs,1);
@@ -154,13 +157,75 @@ while i<=iterations
     % If it is possible to reach value then set the time to the first instance of that value
     % If is not possible to reach value then step in direction by a certain percentage of initial guess.
 
+deadtimes = obj.dead_time_intervals ;
+deadstates = obj.dead_time_states;
+deadgoals = obj.dead_time_goals;
+    ts = obj.ts;
+    Ts = sum(ts);
+    time_ratio = Ts/time_interval(end);
+    
+% How do I translate between time in the SS_WF domain to the acutal
+% time lengths of each state that I need to set to run SSsoln.
+
+    for i = 1:1:length(deadtimes)
+        index = time_interval(deadtimes(i)):time_interval(deadtimes(i)+1);
+        waveform = round(y(StateNumbers(deadstates(i)),index),0);
+        [V,P] = find(waveform == deadgoals(i));
+
+            % If it is not already fairly close
+         if ~isempty(V)
+             ts(deadtimes(i))=time_ratio*P(1);
+             if size(obj.As,3)==deadtimes(i)
+                 ts(1) = ts(1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+             else
+             ts(deadtimes(i)+1) = ts(deadtimes(i)+1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+             end
+             % Set time for this interval to be this value if overshoot
+         else
+             % If not overshoot then test 
+             
+             [V,P]=min(abs(deadgoals(i)-round(waveform,3)));
+             ts(deadtimes(i))=time_ratio*P(1);
+             
+             if size(obj.As,3)==deadtimes(i)
+                 ts(1) = ts(1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+             else
+             ts(deadtimes(i)+1) = ts(deadtimes(i)+1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+             end
+             % Move towards the region of less error (reduce error)
+        end
+
+    end
+
     %% Adjust Power times
 
     % Start out with buck converter making a simple conversion ratio to test convergence.
     % If more output voltage is needed then increase D
     % If less output voltage is needed then decrease D
-    % (More sophisticated method need)
+    % (More sophisticated method needed)
 
+
+
+Vo_index = 2;
+Vo_ideal_value = 1.8;
+average = mean(y(StateNumbers(Vo_index),:));
+
+if average>Vo_ideal_value
+    ts(1) = ts(1)-0.15*1/the_counter*ts(1);
+    ts(3) = ts(1)+0.15*1/the_counter*ts(1);
 end
 
+
+if average<Vo_ideal_value
+    ts(1) = ts(1)+0.15*1/the_counter*ts(1);
+    ts(3) = ts(1)-0.15*1/the_counter*ts(1);
+end 
+
+obj.ts = ts;
+obj.SS_Soln();
+obj.CorrectXs();
+
+    
+end
+  
 end % That's all Folks

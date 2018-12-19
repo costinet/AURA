@@ -34,6 +34,14 @@ classdef SMPSim < handle
         
         Xs
         Xs_circuit % In current implementation this should be Xs if correctXs function is run to ensure the values do not violate KVL and KCL
+        
+        dead_time_intervals
+        dead_time_states
+        dead_time_goals
+        power_state
+        power_goal
+        power_
+        
     end
     
     methods (Access = private)
