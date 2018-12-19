@@ -8,7 +8,32 @@
 
 clear
 
+%% Boost converter
+%{
+V = 5;
+L1 = 230e-9; %L
+C1 = 4040e-9; %Cout
+fs = 2e6;
+Ts = 1/fs;
+Vg = 1.8;
+Io = 10; % was 1
+M1_C = 3.4874e-10; % CHS
+M2_C = 3.4874e-10; % LHS
+D1_C = 3.4874e-10; % LHS
 
+R1 =  5; % Output resistor
+dt = Ts/100;%5e-10;
+Vdr = 5;
+M1_R = .05; % ronHS
+M2_R = .05; % ronLS
+D1_R = .05; % ronLS
+Order = [2 1 3 1]; % The order that the states must go in after being parsed
+ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
+u = [Vg]';
+%}
+
+%% Buck Converter
+%%{
 Vg = 5;
 L1 = 230e-9; %L
 C1 = 4040e-9; %Cout
@@ -26,10 +51,10 @@ Vdr = 5;
 M1_R = .05; % ronHS
 M2_R = .05; % ronLS
 D1_R = .05; % ronLS
-Order = [2 1 3 1];
-ts = [Ts*.5-dt dt Ts*.5-dt dt];
-
-
+Order = [2 1 3 1]; % The order that the states must go in after being parsed
+ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
+u = [Vg Io]';
+%}
 TestparseWaveform = false;
 
 
@@ -58,12 +83,10 @@ testcase = 'TEST_ABCD_Buck_Diode';
 % Set Voltage and Current Nodes to add
 Voltage = {'V1'
     'C1'
-    'M1'
-    'M2'};
+    'M1'};
 Current = {'V1'
     'C1'
-    'M1'
-    'M2'};
+    'M1'};
 % Change Voltage and Current based on desired output measurements (C and D
 % matricies). Voltage and Current should be of type Cell 
 % Example:
@@ -90,9 +113,7 @@ testfun = str2func(testcase);
 testfun(parse);
 end
 
-%% DC code
-
-u = [Vg Io]';
+%% DC code (set up converter and topology classes)
 
 top = SMPStopology();
 top.Parser = parse;
@@ -194,8 +215,13 @@ simulator.dead_time_intervals = [2,4];
 simulator.dead_time_states = [4,1];
 simulator.dead_time_goals = [0,0];
 
+simulator.Vo_index = 2 ;
+simulator.Vo_ideal_value = V;
+simulator.Perturb1_index = 1; % Used for state sensitivity
+simulator.Perturb2_index = 3; % Used for state sensitivity
 iterations = 10;
 parse.find_diode(Order);
+% check = simulator.VfwdIrev();
 [check] = simulator.bruteforcelsim(iterations);
 
 %check = simulator.VfwdIrev();

@@ -41,7 +41,10 @@ classdef SMPSim < handle
         power_state
         power_goal
         power_
-        
+        Vo_index
+        Vo_ideal_value
+        Perturb1_index
+        Perturb2_index
     end
     
     methods (Access = private)
@@ -56,7 +59,7 @@ classdef SMPSim < handle
         end
         
         %% Methods from external files
-        [ Xs] = SS_Soln(obj, Xi, Bi)
+        [Xs] = SS_Soln(obj, As,Bs,ts,u)
         [ xs, t, ys, interval_end ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
         plotAllStates(obj, fn)
@@ -142,6 +145,9 @@ classdef SMPSim < handle
             obj.order = conv.order;
             switchorder = obj.order;
             
+            if max(conv.order)>size(conv.Topology.Parser.Anum,3)
+                error('Value of states order given is invalid (exceeds size of A matrix)\n')
+            end
             obj.As = [];
             obj.Bs = [];
             obj.Cs = [];
@@ -152,6 +158,9 @@ classdef SMPSim < handle
             obj.Cs = conv.Topology.Parser.Cnum(:,:,switchorder);
             obj.Ds = conv.Topology.Parser.Dnum(:,:,switchorder);
             
+            if length(conv.ts)~=length(switchorder)
+                error('The length of the states and time intervals do not match\n')
+            end
             %obj.settopology(Ass,Bss,Css,Dss);
             obj.ts = conv.ts;
             obj.u = conv.u;
@@ -160,6 +169,9 @@ classdef SMPSim < handle
             obj.Xs = [];
             obj.Converter = conv;
             
+            if size(obj.u,1)~=size(obj.Bs,2)
+                error('The size of B and u do not allow matrix multiplication\n')
+            end
             
             %             Ax = conv.topology.Parse.Anum;
             %             Bx = conv.topology.Parse.Bnum;

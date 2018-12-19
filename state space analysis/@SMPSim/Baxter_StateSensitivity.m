@@ -1,6 +1,22 @@
-function [] = Baxter_StateSensitivity(obj, varToPerturb, pI, dX, cI)
-%UNTITLED3 Summary of this function goes here
-%   Detailed explanation goes here
+function [dXs] = Baxter_StateSensitivity(obj, varToPerturb, pI, dX, cI)
+%Baxter_StateSensitivity Solves the state space for a slightly perturbed variable and solve for how that affects the steady state of the converter
+%   varToPerturb is on of the char arrays 'As','Bs','ts','u'
+%
+%   Pi sets the increase in dX value that is desired, if As or Bs then
+%   it needs to be a 1x3 double of the position of the value, if ts or
+%   u then a 1x1 double to indicate the time period or the contestant
+%   value index
+%
+%   dX is the amount by which the value referenced by varToPerturband
+%   and pI should be perturbed
+%
+%   cI is the variable that should be reduced in order to maintain
+%   constant energy in the circuit or switching frequency
+%
+%   For example: if time interval 2 is perturbed then time must be
+%   taken out of some other time interval in the circuit or a change
+%   in switching frequency will result
+
 
 As = obj.As;
 Bs = obj.Bs;
@@ -31,9 +47,8 @@ else
     error('Variable to perturb not found');
 end
 
-obj.SS_Soln();
-obj.CorrectXs;
-    
+[dXs] = obj.SS_Soln(As,Bs,ts,u);
+[dXs] = obj.CorrectXs(dXs);
+
 
 end
-

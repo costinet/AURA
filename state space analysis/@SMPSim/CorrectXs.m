@@ -1,15 +1,38 @@
-function [] = CorrectXs(obj)
+function [Xs] = CorrectXs(obj,Xs)
 %CORRECTXS Takes the given Xs and corrects dependent states to reflect
 %actual values that contain KVL and KCL rules
 %   Must come after StateVarIndex to get the index of dependent states
 %   outputs
+%
+%   Can input Xs put need to have associated Ds, Cs, and u in class 
+%
+%     %%%%%%   %      %  %%%%%%%    %%%%%%
+%    %      %  %      %  %      %  %      %
+%    %      %  %      %  %      %  %      %
+%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
+%    %      %  %      %  %%        %      %
+%    %      %  %      %  % %       %      %
+%    %      %  %      %  %  %      %      %
+%    %      %  %      %  %   %     %      %
+%    %      %   %    %   %    %    %      %
+%    %      %    %%%%    %     %   %      %
 
-As = obj.As;
-Bs = obj.Bs;
-Cs = obj.Cs;
-Ds = obj.Ds;
-Xs = obj.Xs;
-u = obj.u;
+if nargin==1
+    As = obj.As;
+    Bs = obj.Bs;
+    Cs = obj.Cs;
+    Ds = obj.Ds;
+    Xs = obj.Xs;
+    u = obj.u;
+    
+elseif nargin == 2
+    As = obj.As;
+    Bs = obj.Bs;
+    Cs = obj.Cs;
+    Ds = obj.Ds;
+    u = obj.u;
+end
+
 OutputNames = obj.Converter.Topology.Parser.OutputNames;
 % DependentNames = obj.Converter.Topology.Parser.DependentNames;
 StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
@@ -28,8 +51,10 @@ for i = 2:1:size(Xs,2)
     Xs(start+1:end,i) = Cs(StateNumbers(start+1:end),:,i-1)*Xs(:,i)+Ds(StateNumbers(start+1:end),:,i-1)*u;
     Xs(:,1) = Xs(:,end);
 end
-
-obj.Xs_circuit = Xs;
-obj.Xs = Xs;
+if nargin==1
+    obj.Xs_circuit = Xs;
+    obj.Xs = Xs;
 end
+
+end % That's all Folks
 
