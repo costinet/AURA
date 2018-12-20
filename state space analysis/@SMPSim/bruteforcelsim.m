@@ -29,7 +29,7 @@ i = [];
 the_counter = 0;
 Xs = obj.Xs;
 while the_counter<=iterations
-    
+    pause(1)
     the_counter = the_counter+1;
     
     % Important set up stuff
@@ -43,7 +43,7 @@ while the_counter<=iterations
         fprintf('--------- \n')
         fprintf('Iteration number %.0f \n',the_counter)
         % What we are given
-        figure
+        figure(1)
         ns = size(xs,1);
         StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
         for z=1:ns
@@ -59,6 +59,7 @@ while the_counter<=iterations
                 xlabel('t(s)')
             end
         end
+        drawnow;
     end
     
     
@@ -162,12 +163,12 @@ while the_counter<=iterations
         deadgoals = obj.dead_time_goals;
         ts = obj.ts;
         Ts = sum(ts);
-        time_ratio = Ts/time_interval(end);
         
         % How do I translate between time in the SS_WF domain to the acutal
         % time lengths of each state that I need to set to run SSsoln.
         
         for i = 1:1:length(deadtimes)
+            time_ratio = Ts/time_interval(end);
             index = time_interval(deadtimes(i))+1:time_interval(deadtimes(i)+1);
             waveform = round(y(StateNumbers(deadstates(i)),index),0);
             [V,P] = find(waveform == deadgoals(i));
@@ -182,22 +183,45 @@ while the_counter<=iterations
                 end
                 % Set time for this interval to be this value if overshoot
             else
-                % If not overshoot then test
                 
-                [V,P]=min(abs(deadgoals(i)-round(waveform,3)));
-                ts(deadtimes(i))=time_ratio*P(1);
-                
-                if size(obj.As,3)==deadtimes(i)
-                    ts(1) = ts(1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+                % Expand seach to a period length
+                As = obj.As;
+                Bs = obj.Bs;
+                Cs = obj.Cs;
+                Ds = obj.Ds;
+                u = obj.u;
+                test_t=sum(ts);
+                ti = linspace(0,test_t,10000);
+                SS = ss(As(:,:,deadstates(i)), Bs(:,:,deadstates(i)), Cs(:,:,deadstates(i)), Ds(:,:,deadstates(i)));
+                [y1, ~, ~] = lsim(SS, u*ones(size(ti)), ti, obj.Xs(:,i));
+                time_ratio = Ts/10000; % Ratio of time to index values
+                y1 = [y1'];
+                waveform = round(y(StateNumbers(deadstates(i)),:),0);
+                [V,P] = find(waveform == deadgoals(i));
+                if ~isempty(V)
+                    ts(deadtimes(i))=time_ratio*P(1);
+                    if size(obj.As,3)==deadtimes(i)
+                        ts(1) = ts(1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+                    else
+                        ts(deadtimes(i)+1) = ts(deadtimes(i)+1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+                    end
+                    % Set time for this interval to be this value if overshoot
                 else
-                    ts(deadtimes(i)+1) = ts(deadtimes(i)+1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+                    % If not overshoot then test
+                    [V,P]=min(abs(deadgoals(i)-round(waveform,3)));
+                    ts(deadtimes(i))=time_ratio*P(1);
+                    
+                    if size(obj.As,3)==deadtimes(i)
+                        ts(1) = ts(1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+                    else
+                        ts(deadtimes(i)+1) = ts(deadtimes(i)+1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+                    end
+                    % Move towards the region of less error (reduce error)
                 end
-                % Move towards the region of less error (reduce error)
+                
             end
             
         end
-   
-        
         
         
     else
