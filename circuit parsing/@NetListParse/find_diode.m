@@ -23,7 +23,7 @@ function [] = find_diode(obj,order)
 %   order = [2 1 3 1]
 
 % DMpos is the output
-% First column if 1 if it is a Diode or FET
+% First column is 1 if it is a Diode or FET
 % Second column is 1 if Diode
 % Third column is 1 if FET
 

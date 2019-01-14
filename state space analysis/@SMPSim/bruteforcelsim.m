@@ -47,12 +47,12 @@ while the_counter<=iterations
         ns = size(xs,1);
         StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
         for z=1:ns
-            subplot(10*ns,1,z*10-9:z*10)
+            ax = subplot(10*ns,1,z*10-9:z*10);
             hold on;
             plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
             ylabel(obj.getstatenames{z})
             box on
-            
+            ax.YLim = [min(y(StateNumbers(z),:))-0.5*min(y(StateNumbers(z),:)) max(y(StateNumbers(z),:))+0.5*max(y(StateNumbers(z),:))];
             if(z<ns)
                 set(gca, 'Xticklabel', []);
             else

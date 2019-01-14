@@ -60,7 +60,7 @@ TestparseWaveform = false;
 
 
 % Select .net file
-filename = 'Buck_Qual.net';
+filename = 'Buck.net';
 % Current options for filename:
 % Boost.net
 % Buck.net

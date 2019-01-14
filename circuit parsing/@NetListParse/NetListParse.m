@@ -25,6 +25,7 @@ classdef NetListParse < handle
         % Find Switch and Diode Position
         Diodes
         Switches
+        FETs
         DMpos % In A matrix
 
         % Names of State, Input, and Output Variables

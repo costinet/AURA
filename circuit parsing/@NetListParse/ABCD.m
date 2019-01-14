@@ -37,6 +37,10 @@ number_of_states = 2^length(switches);
 bin=de2bi(0:number_of_states-1);
 state = bin;
 
+[state] = obj.bodydiode_correction(switches,state);
+
+number_of_states = size(state,1);
+
 % Pre-set number of possible Tree and Cotree matrices
 %  This is needed to efficiently pass these variables through for each time
 %  interval

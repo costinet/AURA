@@ -142,7 +142,7 @@ for i = 1:1:length(Current)
         NLnets(sum(row.*NL(:,4)),2) = New_Node; % Adjust element beign measured node (cell net list)
         NLnets(end+1,:) = [strcat(Current(i),' A'),Node,New_Node,NLnets(sum(row.*NL(:,4)),4:end)]; % Create measurement node (cell net list)
 
-        NL(sum(row.*NL(:,4)),2)=new_node; % Adjust element beign measured node (numerical net list)
+        NL(sum(row.*NL(:,4)),2)=new_node; % Adjust element being measured node (numerical net list)
         NL(end+1,:)= [numMV,node,new_node,NL(end,4)+1]; % Create measurement node (numerical net list)
 
     else

@@ -57,12 +57,12 @@ for i = 1:1:size(NL,1)
     if NL(i,1) == numM
         switches(end+1) = i;
         Diodes(end+1,:)  = [NL(i,3),NL(i,2)];
+        switches(end+1) = i;
     end
 end
 
-% Update class
+% Update class (I'm don't think these hold any value after this)
 obj.Diodes = Diodes;
 obj.Switches = switches;
-
 
 end % That's all Folks
