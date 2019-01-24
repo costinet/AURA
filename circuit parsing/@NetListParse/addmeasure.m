@@ -129,7 +129,7 @@ end
 % circuit.
 
 for i = 1:1:length(Current)
-    row = strcmp(NLnets(:,1),Current(i)); % Find element that we are trying to measure the voltage of
+    row = strcmp(NLnets(:,1),Current(i)); % Find element that we are trying to measure the current of
 
     if sum(row) == 1
 

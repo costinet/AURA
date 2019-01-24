@@ -32,6 +32,7 @@ function [ xs, t, ys, interval_end ] = SS_WF_Reconstruct(obj, tsteps)
 %
 % Jared Baxter edit on December 17, 2018
 % Edit to get length of subintervals for quality assurance.
+% interval_end gives end step number of all of the time invervals
 
 Xss = obj.Xs;
 As = obj.As;

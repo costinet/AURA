@@ -37,6 +37,7 @@ classdef NetListParse < handle
         SwitchNames % Names of Switching elements (FETs and Diodes)
         StateNumbers % Number of either voltage or current measurement in Y output vector that corresponds to the state variable index
         StateNumbers_Opposite % Number of either voltage and current source but is the opposite source as StateNumbers
+        ConstantNames % Constant Inputs to the system such as Vg or the forward voltage of a diode
         
         %%% Need to change OutputNamesCD to OutputNames
         %%% Need to change OutputNames to MeasurementNames

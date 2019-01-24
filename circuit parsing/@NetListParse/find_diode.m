@@ -41,14 +41,15 @@ function [] = find_diode(obj,order)
 % In onoroff the columns are time intervals of the period and the rows are
 % the state variables
 
-%  1 is if the FET or diode is ON
+%  2 is if the FET is ON
+%  1 is if the FET body diode or diode are ON
 % -1 is if the FET or diode of OFF
 %  0 is if the state variable is not a switch
 
 % Example:
 % Time int  |   1     2     3     4
 %            ______________________
-%   M1      |   1    -1    -1    -1
+%   M1      |   2    -1    -1    -1
 %   C1      |   0     0     0     0
 %   L1      |   0     0     0     0
 %   D1      |  -1    -1     1    -1
@@ -86,14 +87,20 @@ end
 
 onoroff = zeros(num,length(order));
 
+
+
 for i = 1:1:length(order) % Iterate through number of states
     for j = 1:1:num % Iterate through number of states variables
         for k = 1:1:size(obj.ON_States,1)
-            if strcmp(obj.ON_States{k,order(i)},obj.StateNames(j,1))
+            [token,remain] = strtok(obj.ON_States{k,order(i)},'_');
+            if strcmp(token,strtok(obj.StateNames{j,order(i)},'_')) && strcmp(remain,'_R_D')
                 onoroff(j,i)=1;
             end
-            if strcmp(obj.OFF_States{k,order(i)},obj.StateNames(j,1))
+            if strcmp(token,strtok(obj.StateNames{j,order(i)},'_')) && strcmp(remain,'_R_OFF')
                 onoroff(j,i)=-1;
+            end
+            if strcmp(token,strtok(obj.StateNames{j,order(i)},'_')) && strcmp(remain,'_R_ON')
+                onoroff(j,i)=2;
             end
         end
     end

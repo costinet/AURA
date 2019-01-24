@@ -42,7 +42,7 @@ while the_counter<=iterations
     if debug
         fprintf('--------- \n')
         fprintf('Iteration number %.0f \n',the_counter)
-        % What we are given
+        % What we are given for this iteration
         figure(1)
         ns = size(xs,1);
         StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
@@ -52,7 +52,7 @@ while the_counter<=iterations
             plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
             ylabel(obj.getstatenames{z})
             box on
-            ax.YLim = [min(y(StateNumbers(z),:))-0.5*min(y(StateNumbers(z),:)) max(y(StateNumbers(z),:))+0.5*max(y(StateNumbers(z),:))];
+            %ax.YLim = [min(y(StateNumbers(z),:))-0.5*min(y(StateNumbers(z),:)) max(y(StateNumbers(z),:))+0.5*max(y(StateNumbers(z),:))];
             if(z<ns)
                 set(gca, 'Xticklabel', []);
             else
@@ -156,6 +156,13 @@ while the_counter<=iterations
     % Determine if it its possible to reach ideal value for soft switching (lsim for length of period)
     % If it is possible to reach value then set the time to the first instance of that value
     % If is not possible to reach value then step in direction by a certain percentage of initial guess.
+    
+    
+    if the_counter == 5
+        J=234;
+    end
+    
+    
     if mod(the_counter,2)
         %% Adjust Deadtimes
         deadtimes = obj.dead_time_intervals ;
@@ -168,54 +175,61 @@ while the_counter<=iterations
         % time lengths of each state that I need to set to run SSsoln.
         
         for i = 1:1:length(deadtimes)
-            time_ratio = Ts/time_interval(end);
-            index = time_interval(deadtimes(i))+1:time_interval(deadtimes(i)+1);
-            waveform = round(y(StateNumbers(deadstates(i)),index),0);
-            [V,P] = find(waveform == deadgoals(i));
+            time_ratio = Ts/time_interval(end); % Find the step value of the lsim that was done
+            index = time_interval(deadtimes(i))+1:time_interval(deadtimes(i)+1); % List all the index values within the givn deadtime
+            waveform = round(y(StateNumbers(deadstates(i)),index),0); % Round off the values of the lsim 
+            [V,P] = find(waveform == deadgoals(i)); % to try and find a value that is close to the goal deadtime value
             
             % If it is not already fairly close
-            if ~isempty(V)
-                ts(deadtimes(i))=time_ratio*P(1);
+            if ~isempty(V) % If there was a match close to the deadtime goal
+
                 if size(obj.As,3)==deadtimes(i)
-                    ts(1) = ts(1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+                    ts(1) = ts(1)+ts(deadtimes(i))-time_ratio*P(1); % Set the next time interval to be longer accounting for the adjusted deadtime (special exception when deadtime is last time interval in period)
                 else
-                    ts(deadtimes(i)+1) = ts(deadtimes(i)+1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+                    ts(deadtimes(i)+1) = ts(deadtimes(i)+1)+ts(deadtimes(i))-time_ratio*P(1); % Set the next time interval to be longer accounting for the adjusted deadtime
                 end
+                ts(deadtimes(i))=time_ratio*P(1); % Set the deadtime to the found value (multiply index times the time ratio)
+                
                 % Set time for this interval to be this value if overshoot
             else
-                
+
                 % Expand seach to a period length
-                As = obj.As;
+                As = obj.As; % get all the states from class
                 Bs = obj.Bs;
                 Cs = obj.Cs;
                 Ds = obj.Ds;
                 u = obj.u;
-                test_t=sum(ts);
-                ti = linspace(0,test_t,10000);
-                SS = ss(As(:,:,deadstates(i)), Bs(:,:,deadstates(i)), Cs(:,:,deadstates(i)), Ds(:,:,deadstates(i)));
-                [y1, ~, ~] = lsim(SS, u*ones(size(ti)), ti, obj.Xs(:,i));
-                time_ratio = Ts/10000; % Ratio of time to index values
+                test_t=sum(ts); % sum ts to find length of period
+                ti = linspace(0,test_t,10000); % form the linspace for lsim solve
+                SS = ss(As(:,:,deadstates(i)), Bs(:,:,deadstates(i)), Cs(:,:,deadstates(i)), Ds(:,:,deadstates(i))); % set up SS
+                [y1, ~, ~] = lsim(SS, u*ones(size(ti)), ti, obj.Xs(:,deadtimes(i))); % run lsim 
+                time_ratio1 = Ts/10000; % find new Ratio of time to index values
                 y1 = [y1'];
-                waveform = round(y(StateNumbers(deadstates(i)),:),0);
+                % Same as steps above (except now with a longer time
+                % interval), if the waveform is close to reaching the
+                % goal then set it to it
+                waveform = round(y1(StateNumbers(deadstates(i)),:),1);
                 [V,P] = find(waveform == deadgoals(i));
                 if ~isempty(V)
-                    ts(deadtimes(i))=time_ratio*P(1);
-                    if size(obj.As,3)==deadtimes(i)
-                        ts(1) = ts(1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
-                    else
-                        ts(deadtimes(i)+1) = ts(deadtimes(i)+1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
-                    end
-                    % Set time for this interval to be this value if overshoot
-                else
-                    % If not overshoot then test
-                    [V,P]=min(abs(deadgoals(i)-round(waveform,3)));
-                    ts(deadtimes(i))=time_ratio*P(1);
                     
                     if size(obj.As,3)==deadtimes(i)
-                        ts(1) = ts(1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+                        ts(1) = ts(1)+ts(deadtimes(i))-time_ratio1*P(1);
                     else
-                        ts(deadtimes(i)+1) = ts(deadtimes(i)+1)+time_ratio*(time_interval(deadtimes(i)+1)-time_interval(deadtimes(i))-P(1));
+                        ts(deadtimes(i)+1) = ts(deadtimes(i)+1)+ts(deadtimes(i))-time_ratio1*P(1);
                     end
+                    ts(deadtimes(i))=time_ratio1*P(1);
+                    % Set time for this interval to be this value if overshoot
+                else
+                    % If the value is not found then minimize error
+                    % from goal
+                    [V,P]=min(abs(deadgoals(i)-round(waveform,3)));
+
+                    if size(obj.As,3)==deadtimes(i)
+                        ts(1) = ts(1)+ts(deadtimes(i))-time_ratio1*P(1);
+                    else
+                        ts(deadtimes(i)+1) = ts(deadtimes(i)+1)+ts(deadtimes(i))-time_ratio1*P(1);
+                    end
+                    ts(deadtimes(i))=time_ratio*P(1);
                     % Move towards the region of less error (reduce error)
                 end
                 
@@ -229,19 +243,20 @@ while the_counter<=iterations
         
         Vo_index = obj.Vo_index;
         Vo_ideal_value = obj.Vo_ideal_value;
-        average = mean(y(StateNumbers(Vo_index),:));
-        Voerr = Vo_ideal_value-average;
+        average = mean(y(StateNumbers(Vo_index),:)); % average output voltage
+        Voerr = Vo_ideal_value-average; % Output voltage error
         Perturb1_index = obj.Perturb1_index;
         Perturb2_index = obj.Perturb2_index;
         
-        
+        % Preterb and observe approach using StateSensitivity.m
         delta_DTs = max(min(ts)/10, sum(ts)/10000);
-        [dXs]=obj.Baxter_StateSensitivity('ts', Perturb1_index, delta_DTs,Perturb2_index);
-        dxsdt = (dXs-obj.Xs)/delta_DTs;
-        dt = (Voerr)/mean(dxsdt(Vo_index,:));
+        [dXs]=obj.Baxter_StateSensitivity('ts', Perturb1_index, delta_DTs,Perturb2_index); % Determine how much states change when time is changes
+        dxsdt = (dXs-obj.Xs)/delta_DTs; % Find the change in states over the change in time (linear approximation of how changing ts will affect SS Xs)
+        dt = (Voerr)/mean(dxsdt(Vo_index,:)); % Find the appropriate dt for output error
         
-        ts(1) = ts(1)+0.5*dt;
-        ts(3) = ts(3)-0.5*dt;
+        % Implement the change
+        ts(1) = ts(1)+(iterations-the_counter)/iterations*dt;  
+        ts(3) = ts(3)-(iterations-the_counter)/iterations*dt;
         
     end
     

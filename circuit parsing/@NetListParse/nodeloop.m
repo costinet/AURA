@@ -1,4 +1,4 @@
-function [A,B,C,D,HtempAB,dependsAB,HtempCD,savedCD,StateNamesAB,StateNamesCD,OutputNames,DependentNames,SortedTree1,SortedCoTree1] = nodeloop(obj,NL,NLnets)
+function [A,B,C,D,HtempAB,dependsAB,HtempCD,savedCD,StateNamesAB,StateNamesCD,OutputNames,DependentNames,SortedTree1,SortedCoTree1,ConstantNames] = nodeloop(obj,NL,NLnets)
 % nodeloop creates the state matrices A,B,C,D from a specific node input
 % matrix
 %
@@ -390,7 +390,7 @@ almost_H = [H_EE,H_EJ;H_JE,H_JJ];
 [H,s]=obj.hybridparse(almost_H,SortedTree,SortedCoTree);
 
 % Eventual Function to find outputs
-[A,B,C,D,HtempAB,dependsAB,StateNamesAB,OutputNames,DependentNames]=obj.loopfixAB(H,s,NLnets,SortedTree,SortedCoTree);
+[A,B,C,D,HtempAB,dependsAB,StateNamesAB,OutputNames,DependentNames,ConstantNames]=obj.loopfixAB(H,s,NLnets,SortedTree,SortedCoTree);
 
 [C,D,HtempCD,savedCD,StateNamesCD]=obj.loopfixCD(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree);
 

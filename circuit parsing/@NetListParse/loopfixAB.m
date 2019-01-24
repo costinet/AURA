@@ -1,4 +1,4 @@
-function [A,B,C,D,Htemp,depends,StateNames,OutputNames,DependentNames] = loopfixAB(obj,H,s,NLnets,SortedTree,SortedCoTree)
+function [A,B,C,D,Htemp,depends,StateNames,OutputNames,DependentNames,ConstantNames] = loopfixAB(obj,H,s,NLnets,SortedTree,SortedCoTree)
 %loopfixAB computes the ABCD matrix
 %   This function either computes symbolic Htemp matrix or the ABCD matrix
 %   The
@@ -47,6 +47,7 @@ cir_state = find(temps(:,1)~=numR & temps(:,1)~=numG & temps(:,1)~=numE & temps(
 OrderedNamesnum = temps(cir_state,4); % Find the index for the output state names
 OutputNames = NLnets(OrderedNamesnum,1); % Find the list of output names
 DependentNames = {}; % Initallize dependent Names
+ConstantNames = NLnets(temps((temps(:,1)==numE | temps(:,1)==numJ),4),1); % Find Input names
 
 OrderedNameselement = temps(cir_state,1);
 loop = length(OrderedNameselement)+1; % Set while loop index

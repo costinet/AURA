@@ -48,19 +48,24 @@ D1_C = 3.4874e-10; % LHS
 R1 =  .01; % Rl also known as R1 (one or L (lowercase))
 dt = Ts/100;%5e-10;
 Vdr = 5;
-M1_R = .05; % ronHS
-M2_R = .05; % ronLS
-D1_R = .05; % ronLS
-Order = [2 1 3 1]; % The order that the states must go in after being parsed
+M1_R_ON = .05; % ronHS
+M2_R_ON = .05; % ronLS
+D1_R_D = .05; % ronLS
+M1_R_D = .05; % ronHS
+M2_R_D = .05; % ronLS
+[D1_R_OFF,M1_R_OFF,M2_R_OFF] = deal(100000000); % ronLS
+
+
+Order = [2 1 4 1]; % The order that the states must go in after being parsed
 ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
-u = [Vg Io]';
+u = [Vg  0.7 0.7 Io]';
 %}
 TestparseWaveform = false;
 
 
 
 % Select .net file
-filename = 'Buck.net';
+filename = 'Buck2.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -108,10 +113,10 @@ parse = NetListParse();
 parse.initialize(filename,Voltage,Current);
 parse.ABCD();
 
-if TestparseWaveform
-testfun = str2func(testcase);
-testfun(parse);
-end
+% if TestparseWaveform
+% testfun = str2func(testcase);
+% testfun(parse);
+% end
 
 %% DC code (set up converter and topology classes)
 
@@ -123,6 +128,7 @@ conv.Topology = top;
 conv.ts = ts;
 conv.u = u;
 conv.order = Order;
+parse.find_diode(Order);
 
 simulator = SMPSim();
 
@@ -209,16 +215,15 @@ time_pos = 2;
 
 Vopos = 2;
 Xs = Xss;
-ron = M1_R;
 
 simulator.dead_time_intervals = [2,4];
-simulator.dead_time_states = [4,1];
+simulator.dead_time_states = [4,2];
 simulator.dead_time_goals = [0,0];
 
-simulator.Vo_index = 2 ;
+simulator.Vo_index = 1 ;
 simulator.Vo_ideal_value = V;
-simulator.Perturb1_index = 1; % Used for state sensitivity
-simulator.Perturb2_index = 3; % Used for state sensitivity
+simulator.Perturb1_index = 1; % Used for state sensitivity power time
+simulator.Perturb2_index = 3; % Used for state sensitivity power time
 iterations = 10;
 parse.find_diode(Order);
 % check = simulator.VfwdIrev();
@@ -233,6 +238,7 @@ parse.find_diode(Order);
 % power diode
 
 return
+%{
 simulator.Baxter_adjustDiodeCond();
 
 
@@ -325,6 +331,6 @@ while (nattempts < 100) && sum(sum(modelError))
     nattempts = nattempts + 1;
 
 end
+%}
 
-return
 
