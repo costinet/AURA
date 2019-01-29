@@ -40,7 +40,7 @@ C1 = 4040e-9; %Cout
 fs = 2e6;
 Ts = 1/fs;
 V = 1.8;
-Io = 1; % was 1
+Io = 10; % was 1
 M1_C = 3.4874e-10; % CHS
 M2_C = 3.4874e-10; % LHS
 D1_C = 3.4874e-10; % LHS
@@ -58,7 +58,7 @@ M2_R_D = .05; % ronLS
 
 Order = [2 1 4 1]; % The order that the states must go in after being parsed
 ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
-u = [Vg  0.7 0.7 Io]';
+u = [Vg  1 1 Io]';
 %}
 TestparseWaveform = false;
 

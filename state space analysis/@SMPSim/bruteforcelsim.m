@@ -19,15 +19,19 @@ function [check] = bruteforcelsim(obj,iterations)
 % IDmax is the reverse current allowed on a diode
 % VMmax is the limited forward voltage allowed on a diode
 % IMmax is the reverse current allowed on a body diode (FET OFF)
-VDmax = 3;
-IDmax = -0.1;
-VMmax = -3;
-IMmax = 0.1;
+% VDmax = 3;
+% IDmax = -0.1;
+% VMmax = -3;
+% IMmax = 0.1;
+
 
 i = [];
 
 the_counter = 0;
 Xs = obj.Xs;
+ts = obj.ts;
+Ts = sum(ts);
+
 while the_counter<=iterations
     pause(1)
     the_counter = the_counter+1;
@@ -62,9 +66,10 @@ while the_counter<=iterations
         drawnow;
     end
     
-    
-    
+
     for i = 1:1:size(Xs,1) % Cycle through state variables
+        
+        %{
         %% Universal Constraints
         if ONorOFF(i,1) ~=0 % if FET or Diode
             if obj.Converter.Topology.Parser.DMpos(i,2)==1 % if diode
@@ -85,43 +90,80 @@ while the_counter<=iterations
             % Can have reverse current when FET is on will have to
             % check when FET is off individually by time interval
         end
-        
+        %}
         %% Cycle through time intervals
+        time_ratio = Ts/time_interval(end); % Find the step value of the lsim that was done
         for j = 2:1:size(Xs,2)
             j;% is time interval for Xss
             k = j-1; % k is time interval for everything else
+            
             if ONorOFF(i,k) ~=0 % if FET or Diode
+                
+                index = time_interval(k)+1:time_interval(k+1); % List all the index values within the givn deadtime
+                waveform = y(StateNumbers(i),index); % Round off the values of the lsim
+                
                 if obj.Converter.Topology.Parser.DMpos(i,2)==1 % if diode
                     % Determine if a state changes from the Diode
                     % being on to being off or vice vera.
                     if ONorOFF(i,k) == 1 % if diode ON
-                        if ~isempty(find(y(StateNumbers(i),time_interval(i)+1:time_interval(i+1)) < 0,1)) && debug
+                        [V,P] = find(waveform < 1); % to try and find a value that is close to the goal deadtime value
+                        if ~isempty(V) && debug
                             fprintf('State Violation (Diode turn off) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                            
+                            
+                            
                         end
                     elseif ONorOFF(i,j-1) == -1 % if diode off
-                        if ~isempty(find(y(StateNumbers_Opp(i),time_interval(i)+1:time_interval(i+1)) > 0,1)) && debug
+                        [V,P] = find(waveform > 1); % to try and find a value that is close to the goal deadtime value
+                        if ~isempty(V) && debug
                             fprintf('State Violation (Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                            
+                            if all(diff(P)==1) && P(end)==size(waveform,2)
+                                dt = time_ratio*(P(end)-P(1)+1);
+                                adjust_time(-ONorOFF(i,j-1),dt,k,i)
+                                break
+                            end
+                            
+                            
                         end
                     else
                         fprintf('Messed up\n')
                     end
                 elseif obj.Converter.Topology.Parser.DMpos(i,3)==1 % if FET
-                    if ONorOFF(i,j-1) == 1 % if FET ON
+                    
+                    
+                    
+                    if ONorOFF(i,j-1) == 2 % if FET ON
                         if ~isempty(find(y(StateNumbers_Opp(i),time_interval(i)+1:time_interval(i+1)) < 0,1)) && debug
                             % Check if body diode conducts (time interval could be shortened)
                             fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                         end
                         
                     elseif ONorOFF(i,j-1) == -1 % if FET off
+                        
+                        [V,P] = find(waveform < -1); % to try and find a value that is close to the goal deadtime value
+                        if ~isempty(V) && debug
+                            fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                        end
+                        
+                        
+                    elseif ONorOFF(i,j-1) == 1 % body diode on
+                        [V,P] = find(waveform > -1); % to try and find a value that is close to the goal deadtime value
+                        if ~isempty(V) && debug
+                            fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                        end                        
+                        
+                        
+                        %{
                         % Can not have positive ID
                         if ~isempty(find(y(StateNumbers_Opp(i),time_interval(i)+1:time_interval(i+1)) > IMmax,1)) && debug % Only finds first violation to improve speed
                             fprintf('State Violation of FET reverse current %s exceed %.2f A \n',obj.Converter.Topology.Parser.StateNames{i,1},IDmax)
                         end
                         
-                        if ~isempty(find(y(StateNumbers_Opp(i),time_interval(i)+1:time_interval(i+1)) < 0,1)) && debug
+                        if ~isempty(find(y(StateNumbers_Opp(i),time_interval(i)+1:time_interval(i+1)) < -1,1)) && debug
                             fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                         end
-                        
+                        %}
                         %                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                         %                         % Find if FET turns on next
                         %                         if size(ONorOFF,2)+1 == j
@@ -149,6 +191,9 @@ while the_counter<=iterations
             end
             
         end
+        if j ~= size(Xs,2) % Only make one change at a time 
+            break
+        end
     end
     
     
@@ -157,6 +202,7 @@ while the_counter<=iterations
     % If it is possible to reach value then set the time to the first instance of that value
     % If is not possible to reach value then step in direction by a certain percentage of initial guess.
     
+    %{
     
     if the_counter == 5
         J=234;
@@ -259,7 +305,7 @@ while the_counter<=iterations
         ts(3) = ts(3)-(iterations-the_counter)/iterations*dt;
         
     end
-    
+    %}
     % if average>Vo_ideal_value
     %     ts(1) = ts(1)-0.2*1/the_counter*ts(1);
     %     ts(3) = ts(3)+0.2*1/the_counter*ts(1);
@@ -271,7 +317,7 @@ while the_counter<=iterations
     %     ts(3) = ts(3)-0.2*1/the_counter*ts(1);
     % end
     
-    obj.ts = ts;
+    %obj.ts = ts;
     obj.SS_Soln();
     obj.CorrectXs();
     

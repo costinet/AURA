@@ -63,6 +63,12 @@ classdef NetListParse < handle
         % Lists whether a FET or diode is on or off during a state
         ONorOFF
 
+        % List the refernce postion of state variables to and there
+        % row location in ABCD matricies relative to their postion in
+        % the netlist
+        
+        OrderedNamesnum
+        
         % Htemp for AB and CD matrix for large converters
 
         % Store indexing values hear as well

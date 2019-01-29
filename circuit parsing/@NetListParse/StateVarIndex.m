@@ -6,7 +6,7 @@ function [] = StateVarIndex(obj)
 
 % Disclaimer:
 % Assume that all state variables have both a current and voltage
-% measurement within the y matrix -- This assumtion is always true as long
+% measurement within the y matrix -- This assumption is always true as long
 % as addmeasure.m is unchanged. addmeasure.m is currently set up to always
 % ensure there are both current and voltage measurement elements for each
 % state space.
@@ -19,7 +19,7 @@ OutputNames = obj.OutputNamesCD;
 
 for i=1:1:size(StateNames1,1)
     result = strcmp(measurename,StateNames1(i));
-    
+
     if contains(StateNames(i),'L')
         StateNumbers(i)=find(result==1,1,'first');
         StateNumbers_Opp(i)=find(result==1,1,'last');
@@ -30,9 +30,8 @@ for i=1:1:size(StateNames1,1)
         fprintf('I don''t believe it.\n')
     end
 
-end 
+end
 
 obj.StateNumbers=StateNumbers;
 obj.StateNumbers_Opposite=StateNumbers_Opp;
-end
-
+end % That's all Folks

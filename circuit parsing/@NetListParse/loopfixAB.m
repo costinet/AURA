@@ -1,4 +1,4 @@
-function [A,B,C,D,Htemp,depends,StateNames,OutputNames,DependentNames,ConstantNames] = loopfixAB(obj,H,s,NLnets,SortedTree,SortedCoTree)
+function [A,B,C,D,Htemp,depends,StateNames,OutputNames,DependentNames,ConstantNames,OrderedNamesnum] = loopfixAB(obj,H,s,NLnets,SortedTree,SortedCoTree)
 %loopfixAB computes the ABCD matrix
 %   This function either computes symbolic Htemp matrix or the ABCD matrix
 %   The
@@ -92,6 +92,10 @@ while i<loop
         
         DependentNames(j+1,:) = OutputNames(i); % Assigns name to dependent row status
         OutputNames(i) = []; % Deletes name from Output names list
+        
+        % Correct the numerical reference from the state variables to net list 
+        OrderedNamesnum(end+1) = OrderedNamesnum(k); 
+        OrderedNamesnum(k) = [];
         
         j = j+1; % J is number of dependent elements
         
