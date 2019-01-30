@@ -69,6 +69,10 @@ classdef NetListParse < handle
         
         OrderedNamesnum
         
+        BD_state % Lists the off diode states index in NL
+
+        BD_OFF_state % Lists the off diode states index in NL
+        
         % Htemp for AB and CD matrix for large converters
 
         % Store indexing values hear as well

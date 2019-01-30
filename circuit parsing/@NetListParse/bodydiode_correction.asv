@@ -33,10 +33,6 @@ function [state] = bodydiode_correction(obj,switches,state)
 % row because a FET cannot be on and have its body diode conduct at
 % the same time
 %
-% bd_state and off_state is shows the state matrix index for all
-% states being the same excpet for the columns of the indexed state
-%
-%
 % Will later incorporate both body diode and FET being on at the same
 % time due to high negative current on the FET that will exceed the
 % forward voltage of the body diode
@@ -153,8 +149,6 @@ if j~=length(switches)
 
 end
 
-obj.BD_state = bd_state;
 
-obj.BD_OFF_state = off_state;
 
 end % That's all Folks

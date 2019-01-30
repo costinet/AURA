@@ -120,7 +120,7 @@ while the_counter<=iterations
                             
                             if all(diff(P)==1) && P(end)==size(waveform,2)
                                 dt = time_ratio*(P(end)-P(1)+1);
-                                adjust_time(-ONorOFF(i,j-1),dt,k,i)
+                                obj.adjust_time(-ONorOFF(i,j-1),dt,k,i)
                                 break
                             end
                             
