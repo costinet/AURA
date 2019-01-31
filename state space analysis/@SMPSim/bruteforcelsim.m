@@ -35,7 +35,9 @@ Ts = sum(ts);
 while the_counter<=iterations
     pause(1)
     the_counter = the_counter+1;
-    
+    Xs = obj.Xs;
+ts = obj.ts;
+Ts = sum(ts);
     % Important set up stuff
     debug = true;
     [xs, t, y, time_interval] = obj.SS_WF_Reconstruct();
@@ -109,10 +111,15 @@ while the_counter<=iterations
                         [V,P] = find(waveform < 1); % to try and find a value that is close to the goal deadtime value
                         if ~isempty(V) && debug
                             fprintf('State Violation (Diode turn off) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
-                            
-                            
-                            
+
+                            if all(diff(P)==1) && P(end)==size(waveform,2)
+                                dt = time_ratio*(P(end)-P(1)+1);
+                                obj.adjust_time(-ONorOFF(i,j-1),dt,k,i);
+                                break
+                            end
                         end
+
+                        
                     elseif ONorOFF(i,j-1) == -1 % if diode off
                         [V,P] = find(waveform > 1); % to try and find a value that is close to the goal deadtime value
                         if ~isempty(V) && debug
@@ -120,11 +127,11 @@ while the_counter<=iterations
                             
                             if all(diff(P)==1) && P(end)==size(waveform,2)
                                 dt = time_ratio*(P(end)-P(1)+1);
-                                obj.adjust_time(-ONorOFF(i,j-1),dt,k,i)
+                                obj.adjust_time(-ONorOFF(i,j-1),dt,k,i);
                                 break
                             end
                             
-                            
+
                         end
                     else
                         fprintf('Messed up\n')
@@ -141,10 +148,20 @@ while the_counter<=iterations
                         
                     elseif ONorOFF(i,j-1) == -1 % if FET off
                         
+                        
                         [V,P] = find(waveform < -1); % to try and find a value that is close to the goal deadtime value
                         if ~isempty(V) && debug
-                            fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                            fprintf('State Violation (Body Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                            
+                            if all(diff(P)==1) && P(end)==size(waveform,2)
+                                dt = time_ratio*(P(end)-P(1)+1);
+                                obj.adjust_time(-ONorOFF(i,j-1),dt,k,i);
+                                break
+                            end
+                            
+
                         end
+                        
                         
                         
                     elseif ONorOFF(i,j-1) == 1 % body diode on
@@ -318,8 +335,10 @@ while the_counter<=iterations
     % end
     
     %obj.ts = ts;
+    obj.updateTestConverter();
     obj.SS_Soln();
     obj.CorrectXs();
+    obj.Converter.Topology.Parser.find_diode(obj.order);
     
     
 end

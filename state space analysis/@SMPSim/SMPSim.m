@@ -121,27 +121,7 @@ classdef SMPSim < handle
         %% Test functions
         % for TEST_PARSE_SOLN_DIODE
         function loadTestConverter2(obj,conv)
-            %{
- try
-                load(dotmatfile, 'conv');
-                obj.converter = conv;
-                %                 params = load(matfile);
-            catch err
-                ME = MException('resultisNaN:noSuchVariable', ...
-                    'Error: test converter file does not contain all requred variables. Required variables are As, Bs, Cs, Ds, ts, and u');
-                throw(ME);
-            end
-            %}
-            
-            % To ensure matrix is probably statistically not likely to not be
-            % invertable (remove dependent states before solve) and puts
-            % states in order
-            
-%             n = size(conv.topology.Parse.OutputNames,1);
-%             A = conv.topology.Parse.Anum(:,:,:);
-%             B = conv.topology.Parse.Bnum(:,:,:);
-%             C = conv.topology.Parse.Cnum(:,:,:);
-%             D = conv.topology.Parse.Dnum(:,:,:);
+
             obj.order = conv.order;
             switchorder = obj.order;
             
@@ -185,6 +165,31 @@ classdef SMPSim < handle
             
         end
         
+        
+        function updateTestConverter(obj)
+
+            switchorder = obj.order;
+            
+            obj.As = [];
+            obj.Bs = [];
+            obj.Cs = [];
+            obj.Ds = [];
+            
+            obj.As = obj.Converter.Topology.Parser.Anum(:,:,switchorder);
+            obj.Bs = obj.Converter.Topology.Parser.Bnum(:,:,switchorder);
+            obj.Cs = obj.Converter.Topology.Parser.Cnum(:,:,switchorder);
+            obj.Ds = obj.Converter.Topology.Parser.Dnum(:,:,switchorder);
+            
+            obj.oldAs = zeros(size(obj.As));
+            obj.oldIntEAt = zeros(size(obj.As));
+            obj.Xs = [];
+            
+            if size(obj.u,1)~=size(obj.Bs,2)
+                error('The size of B and u do not allow matrix multiplication\n')
+            end
+            
+            
+        end
     end
     
 end

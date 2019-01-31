@@ -154,7 +154,6 @@ if j~=length(switches)
 end
 
 obj.BD_state = bd_state;
-
 obj.BD_OFF_state = off_state;
 
 end % That's all Folks
