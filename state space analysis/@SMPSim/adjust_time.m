@@ -39,7 +39,6 @@ elseif new_state == -1 % Turn body diode OFF in a state
         ts(time_index) = []; % Delete zero time states
         order(time_index) = []; % Delete zero time states
     else
-        
         bd_off_state_new = bd_off_state(order(time_index),ordered_state_index(k,order(time_index))==switches);
         ts = [ts(1:time_index) dt ts(time_index+1:end)];
         order = [order(1:time_index) bd_off_state_new(1) order(time_index+1:end)]; % Assume that FET is off and body diode is ON will have to adjust then when that correction is made its the (1) index

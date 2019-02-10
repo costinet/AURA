@@ -36,8 +36,8 @@ while the_counter<=iterations
     pause(1)
     the_counter = the_counter+1;
     Xs = obj.Xs;
-ts = obj.ts;
-Ts = sum(ts);
+    ts = obj.ts;
+    Ts = sum(ts);
     % Important set up stuff
     debug = true;
     [xs, t, y, time_interval] = obj.SS_WF_Reconstruct();
@@ -58,7 +58,7 @@ Ts = sum(ts);
             plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
             ylabel(obj.getstatenames{z})
             box on
-            %ax.YLim = [min(y(StateNumbers(z),:))-0.5*min(y(StateNumbers(z),:)) max(y(StateNumbers(z),:))+0.5*max(y(StateNumbers(z),:))];
+            ax.YLim = [min(y(StateNumbers(z),:))-abs(0.5*min(y(StateNumbers(z),:))) max(y(StateNumbers(z),:))+abs(0.5*max(y(StateNumbers(z),:)))];
             if(z<ns)
                 set(gca, 'Xticklabel', []);
             else
@@ -68,7 +68,10 @@ Ts = sum(ts);
         drawnow;
     end
     
-
+    Xs = obj.Xs;
+    ts = obj.ts;
+    Ts = sum(ts);
+    order = obj.order;
     for i = 1:1:size(Xs,1) % Cycle through state variables
         
         %{
@@ -95,13 +98,19 @@ Ts = sum(ts);
         %}
         %% Cycle through time intervals
         time_ratio = Ts/time_interval(end); % Find the step value of the lsim that was done
-        for j = 2:1:size(Xs,2)
+        j = 2;
+        new_index=1; 
+        time_variable_size = size(Xs,2);
+        while j <= time_variable_size
             j;% is time interval for Xss
             k = j-1; % k is time interval for everything else
             
             if ONorOFF(i,k) ~=0 % if FET or Diode
-                
+                if k ==1
+                index = time_interval(k):time_interval(k+1); % List all the index values within the givn deadtime
+                else
                 index = time_interval(k)+1:time_interval(k+1); % List all the index values within the givn deadtime
+                end
                 waveform = y(StateNumbers(i),index); % Round off the values of the lsim
                 
                 if obj.Converter.Topology.Parser.DMpos(i,2)==1 % if diode
@@ -111,27 +120,143 @@ Ts = sum(ts);
                         [V,P] = find(waveform < 1); % to try and find a value that is close to the goal deadtime value
                         if ~isempty(V) && debug
                             fprintf('State Violation (Diode turn off) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
-
-                            if all(diff(P)==1) && P(end)==size(waveform,2)
-                                dt = time_ratio*(P(end)-P(1)+1);
-                                obj.adjust_time(-ONorOFF(i,j-1),dt,k,i);
-                                break
+                            
+                            
+                              [P] = find(diff(waveform<1)~=0);
+                            flipflop = waveform(1)<1;
+                            ts_new = zeros(1,length(P)+1);
+                            order_new = ts_new;
+                            bd_state = obj.Converter.Topology.Parser.BD_OFF_state;
+                            old_state = obj.order(k);
+                            ordered_state_index = obj.Converter.Topology.Parser.OrderedNamesnum;
+                            switches = obj.Converter.Topology.Parser.Switches;
+                            bd_state_new = bd_state(obj.order(k),ordered_state_index(i,obj.order(k))==switches);
+                            if isempty(P)
+                            order(new_index) = bd_state_new;
+                            else
+                            for number_of_changes = 1:1:length(P)+1
+                                order_new(number_of_changes) = flipflop;
+                                if number_of_changes == 1
+                                    ts_new(1) = time_ratio*(P(1));
+                                    
+                                elseif number_of_changes == length(P)+1
+                                    ts_new(number_of_changes) = time_ratio*(length(waveform)-P(number_of_changes-1));
+                                    
+                                else
+                                    ts_new(number_of_changes) = time_ratio*(P(number_of_changes)-P(number_of_changes-1));
+                                    
+                                end
+                                
+                                flipflop=~flipflop;
                             end
+                            
+                            order_new(order_new==1) = bd_state_new(1);
+                            order_new(order_new==0) = old_state;
+                            ts = [ts(1:new_index-1) ts_new ts(new_index+1:end)];
+                            order = [order(1:new_index-1) order_new order(new_index+1:end)]; % Assume that FET is off and body diode is ON will have to adjust then when that correction is made its the (1) index
+                                
+                            new_index = new_index+length(P);
+                            
+                            end
+                            
+                            
+                            
+                            
+                            
+%                             if all(diff(P)==1) && P(end)==size(waveform,2)
+%                                 dt = time_ratio*(P(end)-P(1)+1);
+%                                 obj.adjust_time(-ONorOFF(i,j-1),dt,k,i);
+%                                 j = j+1;
+%                             end
                         end
-
+                        
                         
                     elseif ONorOFF(i,j-1) == -1 % if diode off
-                        [V,P] = find(waveform > 1); % to try and find a value that is close to the goal deadtime value
-                        if ~isempty(V) && debug
+                        %  [V,P] = find(waveform > 1); % to try and find a value that is close to the goal deadtime value
+                        if sum(waveform>1)>0 && debug
                             fprintf('State Violation (Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                             
-                            if all(diff(P)==1) && P(end)==size(waveform,2)
-                                dt = time_ratio*(P(end)-P(1)+1);
-                                obj.adjust_time(-ONorOFF(i,j-1),dt,k,i);
-                                break
+                            % Code to copy
+                            [P] = find(diff(waveform>1)~=0);
+                            flipflop = waveform(1)>1;
+                            ts_new = zeros(1,length(P)+1);
+                            order_new = ts_new;
+                            bd_state = obj.Converter.Topology.Parser.BD_state;
+                            old_state = obj.order(k);
+                            ordered_state_index = obj.Converter.Topology.Parser.OrderedNamesnum;
+                            switches = obj.Converter.Topology.Parser.Switches;
+                            bd_state_new = bd_state(obj.order(k),ordered_state_index(i,obj.order(k))==switches);
+                            if isempty(P)
+                            order(new_index) = bd_state_new;
+                            else
+                            for number_of_changes = 1:1:length(P)+1
+                                order_new(number_of_changes) = flipflop;
+                                if number_of_changes == 1
+                                    ts_new(1) = time_ratio*(P(1));
+                                    
+                                elseif number_of_changes == length(P)+1
+                                    ts_new(number_of_changes) = time_ratio*(length(waveform)-P(number_of_changes-1));
+                                    
+                                else
+                                    ts_new(number_of_changes) = time_ratio*(P(number_of_changes)-P(number_of_changes-1));
+                                    
+                                end
+                                
+                                flipflop=~flipflop;
                             end
                             
-
+                            order_new(order_new==1) = bd_state_new(1);
+                            order_new(order_new==0) = old_state;
+                            ts = [ts(1:new_index-1) ts_new ts(new_index+1:end)];
+                            order = [order(1:new_index-1) order_new order(new_index+1:end)]; % Assume that FET is off and body diode is ON will have to adjust then when that correction is made its the (1) index
+                                
+                            new_index = new_index+length(P);
+                            
+                            end
+                            
+                            
+                            
+                            
+                            %{
+                            ts = obj.ts;
+                            order = obj.order;
+                            bd_state = obj.Converter.Topology.Parser.BD_state;
+                            bd_off_state = obj.Converter.Topology.Parser.BD_OFF_state;
+                            switches = obj.Converter.Topology.Parser.Switches;
+                            ordered_state_index = obj.Converter.Topology.Parser.OrderedNamesnum;
+                            
+                            
+                            bd_state_new = bd_state(order(time_index),ordered_state_index(k,order(time_index))==switches);
+                            
+                            if new_state == 1 % Turn body diode ON in a state
+                                
+                                
+                                ts
+                                ts(time_index) = ts(time_index)-dt;
+                                
+                                if ts(time_index)<5*eps(dt) % If you have essentially deleted the state
+                                    ts(time_index) = 0;
+                                    bd_state_new = bd_state(order(time_index),ordered_state_index(k,order(time_index))==switches);
+                                    ts = [ts(1:time_index) dt ts(time_index+1:end)];
+                                    order = [order(1:time_index) bd_state_new(1) order(time_index+1:end)];
+                                    ts(time_index) = []; % Delete zero time states
+                                    order(time_index) = []; % Delete zero time states
+                                else
+                                    
+                                    bd_state_new = bd_state(order(time_index),ordered_state_index(k,order(time_index))==switches);
+                                    ts = [ts(1:time_index) dt ts(time_index+1:end)];
+                                    order = [order(1:time_index) bd_state_new(1) order(time_index+1:end)]; % Assume that FET is off and body diode is ON will have to adjust then when that correction is made its the (1) index
+                                end
+                                
+                                
+                                %                             if all(diff(P)==1) && P(end)==size(waveform,2)
+                                %                                 dt = time_ratio*(P(end)-P(1)+1);
+                                %                                 obj.adjust_time(-ONorOFF(i,j-1),dt,k,i);
+                                %                                 j = j+1;
+                                %                             end
+                            
+                            end
+                            %}
                         end
                     else
                         fprintf('Messed up\n')
@@ -153,13 +278,13 @@ Ts = sum(ts);
                         if ~isempty(V) && debug
                             fprintf('State Violation (Body Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                             
-                            if all(diff(P)==1) && P(end)==size(waveform,2)
-                                dt = time_ratio*(P(end)-P(1)+1);
-                                obj.adjust_time(-ONorOFF(i,j-1),dt,k,i);
-                                break
-                            end
+%                             if all(diff(P)==1) && P(end)==size(waveform,2)
+%                                 dt = time_ratio*(P(end)-P(1)+1);
+%                                 obj.adjust_time(-ONorOFF(i,j-1),dt,k,i);
+%                                 j = j+1;
+%                             end
                             
-
+                            
                         end
                         
                         
@@ -168,7 +293,7 @@ Ts = sum(ts);
                         [V,P] = find(waveform > -1); % to try and find a value that is close to the goal deadtime value
                         if ~isempty(V) && debug
                             fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
-                        end                        
+                        end
                         
                         
                         %{
@@ -206,11 +331,10 @@ Ts = sum(ts);
                 end
                 
             end
-            
+            j = j+1;
+            new_index=new_index+1;
         end
-        if j ~= size(Xs,2) % Only make one change at a time 
-            break
-        end
+        
     end
     
     
@@ -240,7 +364,7 @@ Ts = sum(ts);
         for i = 1:1:length(deadtimes)
             time_ratio = Ts/time_interval(end); % Find the step value of the lsim that was done
             index = time_interval(deadtimes(i))+1:time_interval(deadtimes(i)+1); % List all the index values within the givn deadtime
-            waveform = round(y(StateNumbers(deadstates(i)),index),0); % Round off the values of the lsim 
+            waveform = round(y(StateNumbers(deadstates(i)),index),0); % Round off the values of the lsim
             [V,P] = find(waveform == deadgoals(i)); % to try and find a value that is close to the goal deadtime value
             
             % If it is not already fairly close
@@ -265,7 +389,7 @@ Ts = sum(ts);
                 test_t=sum(ts); % sum ts to find length of period
                 ti = linspace(0,test_t,10000); % form the linspace for lsim solve
                 SS = ss(As(:,:,deadstates(i)), Bs(:,:,deadstates(i)), Cs(:,:,deadstates(i)), Ds(:,:,deadstates(i))); % set up SS
-                [y1, ~, ~] = lsim(SS, u*ones(size(ti)), ti, obj.Xs(:,deadtimes(i))); % run lsim 
+                [y1, ~, ~] = lsim(SS, u*ones(size(ti)), ti, obj.Xs(:,deadtimes(i))); % run lsim
                 time_ratio1 = Ts/10000; % find new Ratio of time to index values
                 y1 = [y1'];
                 % Same as steps above (except now with a longer time
@@ -318,7 +442,7 @@ Ts = sum(ts);
         dt = (Voerr)/mean(dxsdt(Vo_index,:)); % Find the appropriate dt for output error
         
         % Implement the change
-        ts(1) = ts(1)+(iterations-the_counter)/iterations*dt;  
+        ts(1) = ts(1)+(iterations-the_counter)/iterations*dt;
         ts(3) = ts(3)-(iterations-the_counter)/iterations*dt;
         
     end
@@ -335,6 +459,30 @@ Ts = sum(ts);
     % end
     
     %obj.ts = ts;
+    
+    % Combine similar adjacent states would be nice!
+    
+    
+    the_size = length(order);
+    the_key = 1;
+    while the_key < the_size
+        if order(the_key)==order(the_key+1)
+            order(the_key+1) = [];
+            ts(the_key) = ts(the_key) + ts(the_key+1);
+            ts(the_key+1) = [];
+            the_size = the_size-1;
+        end
+        the_key = the_key +1;
+    end
+    
+    
+    
+    obj.ts = ts;
+    obj.order = order;
+    
+    
+    
+    
     obj.updateTestConverter();
     obj.SS_Soln();
     obj.CorrectXs();

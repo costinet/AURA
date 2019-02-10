@@ -91,8 +91,8 @@ try
            SS = ss(As(:,:,i), Bs(:,:,i), Cs(:,:,i), Ds(:,:,i));
            [y, ~, x] = lsim(SS, u*ones(size(tinter)), tinter, xs(:,max(ti(1)-1,1)));
            ind = find(abs(tinter + tmin - t(ti)) == min(abs(tinter + tmin - t(ti))),1);
-           xs(:,ti) = x(ind);
-           ys(:,ti) = y(ind);
+           xs(:,ti) = x(ind)';
+           ys(:,ti) = y'(ind);
 
         end
     end
