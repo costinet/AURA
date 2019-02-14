@@ -1,4 +1,4 @@
-function [Xs] = SS_Soln(obj, As,Bs,ts,u)
+function [Xs] = SS_Soln(obj,keep_SS,As,Bs,ts,u)
 % Steady-state solution of switched system using state-space matrices
 %
 % [ Xs] = SS_Soln( As, Bs, ts, u, Xi, Bi) finds the state values Xs in
@@ -33,12 +33,20 @@ function [Xs] = SS_Soln(obj, As,Bs,ts,u)
 %%%% If other values are given then use them instead
 %%%% If other values are given then update the Xs matrix in the class
 %%%% added 12/19
-if nargin==1
+
+
+if nargin==1 
     As = obj.As;
     Bs = obj.Bs;
     ts = obj.ts;
     u = obj.u;
-elseif nargin ~= 5
+    keep_SS = false;
+elseif nargin == 2
+    As = obj.As;
+    Bs = obj.Bs;
+    ts = obj.ts;
+    u = obj.u;
+elseif nargin ~= 6
     fprintf('There were not enough or too many inputs provided.')
 end
 %%%%
@@ -104,26 +112,32 @@ for i=1:n
     obj.oldts(i) = ts(i);
     RHSsum = RHSsum +  cumProdExpRev(:,:,i)*frespNew;
 end
-hi = -6; % Intial guess (might be able to educated guess this)
 
-% This effectivly places a large shut resistor on all caps and series
-% resistors on all all inductors:
-if cond(eye(ns) - cumProdExp(:,:,n))>1*10^9 % 10^-9 is an educated guess
-    Xss = ((1-10^(hi))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum; % Calculate the educated guess value
-    
-    %%%% Use cond() to see where how 'able' the matrix is to converge %%%%
-    %%% Can also try and use optimization commented out below %%%%
-    
-    % Loop through increaseing hi until the condition of the inverted
-    % matrix reaches a 'large' value
-    while cond((1-10^(hi))*eye(ns) - cumProdExp(:,:,n))<1*10^9
-        hi = hi-1;
-        Xss = ((1-10^(hi))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
-    end
+%% Whether or not to keep SS_Soln from previous solve
+
+if keep_SS
+    Xss = obj.Xs(:,1);
 else
-    Xss = (eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
+    hi = -6; % Intial guess (might be able to educated guess this)
+    
+    % This effectivly places a large shut resistor on all caps and series
+    % resistors on all all inductors:
+    if cond(eye(ns) - cumProdExp(:,:,n))>1*10^9 % 10^-9 is an educated guess
+        Xss = ((1-10^(hi))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum; % Calculate the educated guess value
+        
+        %%%% Use cond() to see where how 'able' the matrix is to converge %%%%
+        %%% Can also try and use optimization commented out below %%%%
+        
+        % Loop through increaseing hi until the condition of the inverted
+        % matrix reaches a 'large' value
+        while cond((1-10^(hi))*eye(ns) - cumProdExp(:,:,n))<1*10^9
+            hi = hi-1;
+            Xss = ((1-10^(hi))*eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
+        end
+    else
+        Xss = (eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
+    end
 end
-
 %% Hacky solution when result is off because (eye(ns) - cumProdExp(:,:,n)) is non-invertable
 % Use optimization to solve without inversion through error minimization
 % --> Still needs tweaking
@@ -152,7 +166,7 @@ if sum(isnan(Xss))
 end
 
 %%%% added 12/19
-if nargin ==1
+if nargin ==1 || nargin == 2
     obj.Xs = Xs;
 end
 %%%%

@@ -31,6 +31,7 @@ the_counter = 0;
 Xs = obj.Xs;
 ts = obj.ts;
 Ts = sum(ts);
+delta_t = 0;
 
 while the_counter<=iterations
     pause(1)
@@ -97,6 +98,7 @@ while the_counter<=iterations
         end
         %}
         %% Cycle through time intervals
+        
         time_ratio = Ts/time_interval(end); % Find the step value of the lsim that was done
         j = 2;
         new_index=1; 
@@ -106,23 +108,29 @@ while the_counter<=iterations
             k = j-1; % k is time interval for everything else
             
             if ONorOFF(i,k) ~=0 % if FET or Diode
-                if k ==1
+                if k==1
                 index = time_interval(k):time_interval(k+1); % List all the index values within the givn deadtime
                 else
                 index = time_interval(k)+1:time_interval(k+1); % List all the index values within the givn deadtime
                 end
                 waveform = y(StateNumbers(i),index); % Round off the values of the lsim
                 
+                if (time_ratio*length(index))~=ts(k)
+                    somethingcool = ts(k)-(time_ratio*length(index));
+                    delta_t = delta_t+ ts(k)-(time_ratio*length(index));
+                end
+                
                 if obj.Converter.Topology.Parser.DMpos(i,2)==1 % if diode
                     % Determine if a state changes from the Diode
                     % being on to being off or vice vera.
                     if ONorOFF(i,k) == 1 % if diode ON
-                        [V,P] = find(waveform < 1); % to try and find a value that is close to the goal deadtime value
-                        if ~isempty(V) && debug
+                        if sum(waveform<1)>0 && debug
                             fprintf('State Violation (Diode turn off) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                            sign = [0,0];
+                            [ts,order,new_index] = adjust_time(obj,sign,new_index,ts,order,waveform,i,k,time_ratio);
                             
-                            
-                              [P] = find(diff(waveform<1)~=0);
+                            %{
+                            [P] = find(diff(waveform<1)~=0);
                             flipflop = waveform(1)<1;
                             ts_new = zeros(1,length(P)+1);
                             order_new = ts_new;
@@ -159,9 +167,7 @@ while the_counter<=iterations
                             
                             end
                             
-                            
-                            
-                            
+                            %}
                             
 %                             if all(diff(P)==1) && P(end)==size(waveform,2)
 %                                 dt = time_ratio*(P(end)-P(1)+1);
@@ -175,7 +181,9 @@ while the_counter<=iterations
                         %  [V,P] = find(waveform > 1); % to try and find a value that is close to the goal deadtime value
                         if sum(waveform>1)>0 && debug
                             fprintf('State Violation (Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
-                            
+                            sign = [1,0];
+                            [ts,order,new_index] = adjust_time(obj,sign,new_index,ts,order,waveform,i,k,time_ratio);
+                            %{
                             % Code to copy
                             [P] = find(diff(waveform>1)~=0);
                             flipflop = waveform(1)>1;
@@ -214,7 +222,7 @@ while the_counter<=iterations
                             
                             end
                             
-                            
+                            %}
                             
                             
                             %{
@@ -274,9 +282,18 @@ while the_counter<=iterations
                     elseif ONorOFF(i,j-1) == -1 % if FET off
                         
                         
-                        [V,P] = find(waveform < -1); % to try and find a value that is close to the goal deadtime value
-                        if ~isempty(V) && debug
+                        
+                        if sum(waveform<-1)>0 && debug
+                            
                             fprintf('State Violation (Body Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                            sign = [0,1];
+                            [ts,order,new_index] = adjust_time(obj,sign,new_index,ts,order,waveform,i,k,time_ratio);
+                            
+                            
+                            
+                            
+                            
+                            
                             
 %                             if all(diff(P)==1) && P(end)==size(waveform,2)
 %                                 dt = time_ratio*(P(end)-P(1)+1);
@@ -290,9 +307,11 @@ while the_counter<=iterations
                         
                         
                     elseif ONorOFF(i,j-1) == 1 % body diode on
-                        [V,P] = find(waveform > -1); % to try and find a value that is close to the goal deadtime value
-                        if ~isempty(V) && debug
+                        
+                        if sum(waveform>-1)>0 && debug
                             fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                            sign = [1,1];
+                            [ts,order,new_index] = adjust_time(obj,sign,new_index,ts,order,waveform,i,k,time_ratio);
                         end
                         
                         
@@ -339,6 +358,44 @@ while the_counter<=iterations
     
     
     
+
+    % Combine similar adjacent states would be nice!
+    
+    % This fixes the time intervals so there are not two adjacent time
+    % intervals with the same state
+    the_size = length(order);
+    the_key = 1;
+    while the_key < the_size
+        if order(the_key)==order(the_key+1)
+            order(the_key+1) = [];
+            ts(the_key) = ts(the_key) + ts(the_key+1);
+            ts(the_key+1) = [];
+            the_size = the_size-1;
+            the_key = the_key-1;
+        end
+        the_key = the_key +1;
+    end
+    
+    
+    
+    obj.ts = ts;
+    obj.order = order;
+    
+    
+    
+    
+    obj.updateTestConverter();
+    obj.SS_Soln(1);
+    obj.CorrectXs(1);
+    obj.Converter.Topology.Parser.find_diode(obj.order);
+    
+    
+end
+check =1;
+end % That's all Folks
+
+
+
     % Determine if it its possible to reach ideal value for soft switching (lsim for length of period)
     % If it is possible to reach value then set the time to the first instance of that value
     % If is not possible to reach value then step in direction by a certain percentage of initial guess.
@@ -460,35 +517,3 @@ while the_counter<=iterations
     
     %obj.ts = ts;
     
-    % Combine similar adjacent states would be nice!
-    
-    
-    the_size = length(order);
-    the_key = 1;
-    while the_key < the_size
-        if order(the_key)==order(the_key+1)
-            order(the_key+1) = [];
-            ts(the_key) = ts(the_key) + ts(the_key+1);
-            ts(the_key+1) = [];
-            the_size = the_size-1;
-        end
-        the_key = the_key +1;
-    end
-    
-    
-    
-    obj.ts = ts;
-    obj.order = order;
-    
-    
-    
-    
-    obj.updateTestConverter();
-    obj.SS_Soln();
-    obj.CorrectXs();
-    obj.Converter.Topology.Parser.find_diode(obj.order);
-    
-    
-end
-check =1;
-end % That's all Folks

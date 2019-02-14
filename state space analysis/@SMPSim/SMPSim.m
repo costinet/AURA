@@ -59,7 +59,7 @@ classdef SMPSim < handle
         end
         
         %% Methods from external files
-        [Xs] = SS_Soln(obj, As,Bs,ts,u)
+        [Xs] = SS_Soln(obj,keep_SS, As,Bs,ts,u)
         [ xs, t, ys, interval_end ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
         plotAllStates(obj, fn)
@@ -182,7 +182,7 @@ classdef SMPSim < handle
             
             obj.oldAs = zeros(size(obj.As));
             obj.oldIntEAt = zeros(size(obj.As));
-            obj.Xs = [];
+            
             
             if size(obj.u,1)~=size(obj.Bs,2)
                 error('The size of B and u do not allow matrix multiplication\n')

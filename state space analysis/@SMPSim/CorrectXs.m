@@ -1,4 +1,4 @@
-function [Xs] = CorrectXs(obj,Xs)
+function [Xs] = CorrectXs(obj,keep_SS,Xs)
 %CORRECTXS Takes the given Xs and corrects dependent states to reflect
 %actual values that contain KVL and KCL rules
 %   Must come after StateVarIndex to get the index of dependent states
@@ -24,8 +24,17 @@ if nargin==1
     Ds = obj.Ds;
     Xs = obj.Xs;
     u = obj.u;
+    keep_SS = false;
     
 elseif nargin == 2
+    As = obj.As;
+    Bs = obj.Bs;
+    Cs = obj.Cs;
+    Ds = obj.Ds;
+    Xs = obj.Xs;
+    u = obj.u;
+    
+elseif nargin == 3
     As = obj.As;
     Bs = obj.Bs;
     Cs = obj.Cs;
@@ -49,7 +58,9 @@ StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
 start = size(OutputNames,1);
 for i = 2:1:size(Xs,2)
     Xs(start+1:end,i) = Cs(StateNumbers(start+1:end),:,i-1)*Xs(:,i)+Ds(StateNumbers(start+1:end),:,i-1)*u;
-    Xs(:,1) = Xs(:,end);
+    if ~keep_SS
+        Xs(:,1) = Xs(:,end);
+    end
 end
 if nargin==1
     obj.Xs_circuit = Xs;

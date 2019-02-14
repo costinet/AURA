@@ -47,8 +47,8 @@ else
     error('Variable to perturb not found');
 end
 
-[dXs] = obj.SS_Soln(As,Bs,ts,u);
-[dXs] = obj.CorrectXs(dXs);
+[dXs] = obj.SS_Soln(0,As,Bs,ts,u); % Zero is for keeping Xss from last time, not sure if this is applicable here. might want to pass a variable in the future
+[dXs] = obj.CorrectXs(0,dXs);
 
 
 end
