@@ -227,6 +227,7 @@ simulator.Perturb2_index = 3; % Used for state sensitivity power time
 iterations = 10;
 parse.find_diode(Order);
 % check = simulator.VfwdIrev();
+
 [check] = simulator.bruteforcelsim(iterations);
 
 %check = simulator.VfwdIrev();
