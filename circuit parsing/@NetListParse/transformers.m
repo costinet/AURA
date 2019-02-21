@@ -1,5 +1,5 @@
 function [] = transformers(obj,mutual,value,position)
-%transformers creates dependent sources in place of inductors given in K
+%TRANSFORMERS creates dependent sources in place of inductors given in K
 %statements
 %   Transfomers takes an input of the mutual
 

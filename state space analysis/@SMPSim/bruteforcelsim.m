@@ -1,4 +1,4 @@
-function [check] = bruteforcelsim(obj,iterations)
+function [y] = bruteforcelsim(obj,iterations)
 %BRUTEFORCELSIM Attempts to optimize the time intervals of a converter using lsim()
 %   iterations is the number of iterations that will be looped through to try and optimize the converter provided in the class
 %
@@ -60,7 +60,6 @@ while not_reached_SS && the_big_counter<=more_iterations
             % What we are given for this iteration
             figure(1)
             ns = size(xs,1);
-            StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
             for z=1:ns
                 ax = subplot(10*ns,1,z*10-9:z*10);
                 hold on;
@@ -283,7 +282,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                         
                         
                         if ONorOFF(i,j-1) == 2 % if FET ON
-                            if ~isempty(find(y(StateNumbers_Opp(i),time_interval(i)+1:time_interval(i+1)) < 0,1)) && debug
+                            if sum(waveform<-1)>0 && debug
                                 % Check if body diode conducts (time interval could be shortened)
                                 fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                             end

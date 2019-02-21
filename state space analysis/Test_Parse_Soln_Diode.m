@@ -24,12 +24,15 @@ D1_C = 3.4874e-10; % LHS
 R1 =  5; % Output resistor
 dt = Ts/100;%5e-10;
 Vdr = 5;
-M1_R = .05; % ronHS
-M2_R = .05; % ronLS
-D1_R = .05; % ronLS
-Order = [2 1 3 1]; % The order that the states must go in after being parsed
+M1_R_ON = .05; % ronHS
+M2_R_ON = .05; % ronLS
+D1_R_D = .05; % ronLS
+M1_R_D = .05; % ronHS
+M2_R_D = .05; % ronLS
+[D1_R_OFF,M1_R_OFF,M2_R_OFF] = deal(100000000); % ronLS
+Order = [2 1 4 1]; % The order that the states must go in after being parsed
 ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
-u = [Vg]';
+u = [Vg 1 1]';
 %}
 
 %% Buck Converter
@@ -55,11 +58,51 @@ M1_R_D = .05; % ronHS
 M2_R_D = .05; % ronLS
 [D1_R_OFF,M1_R_OFF,M2_R_OFF] = deal(100000000); % ronLS
 
+%Order = [2 4]; % The order that the states must go in after being parsed
+%ts = [Ts*.5 Ts*.5]; % The inital guess of time intervals
+
 
 Order = [2 1 4 1]; % The order that the states must go in after being parsed
 ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
 u = [Vg  1 1 Io]';
 %}
+
+%% Flyback Converter
+%{
+Vg = 12;
+L1 = 1e-3;
+L2 = 4e-3;
+L3 = 0.5e-3;
+C1 = 4040e-9; %Cout
+fs = 2e6;
+Ts = 1/fs;
+V = 1.8;
+Io = 10; % was 1
+M1_C = 3.4874e-10; % CHS
+M2_C = 3.4874e-10; % LHS
+D1_C = 3.4874e-10; % LHS
+
+R1 =  24; % Rl also known as R1 (one or L (lowercase))
+dt = Ts/100;%5e-10;
+Vdr = 5;
+M1_R_ON = .05; % ronHS
+M2_R_ON = .05; % ronLS
+D1_R_D = .05; % ronLS
+M1_R_D = .05; % ronHS
+M2_R_D = .05; % ronLS
+[D1_R_OFF,M1_R_OFF,M2_R_OFF] = deal(100000000); % ronLS
+
+Order = [2 4]; % The order that the states must go in after being parsed
+ts = [Ts*.66 Ts*.34]; % The inital guess of time intervals
+
+
+%Order = [2 1 4 1]; % The order that the states must go in after being parsed
+%ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
+u = [Vg  1 1]';
+%}
+
+
+
 TestparseWaveform = false;
 
 
@@ -213,22 +256,24 @@ time_pos = 2;
 % User input to define output voltage/Cap
 % identify output cap/component
 
+optimize = SMPSOptim;
+optimize.Simulator = simulator;
 Vopos = 2;
 Xs = Xss;
 
-simulator.dead_time_intervals = [2,4];
-simulator.dead_time_states = [4,2];
-simulator.dead_time_goals = [0,0];
+optimize.dead_time_intervals = [2,4];
+optimize.dead_time_states = [4,2];
+optimize.dead_time_goals = [0,0];
 
-simulator.Vo_index = 1 ;
-simulator.Vo_ideal_value = V;
-simulator.Perturb1_index = 1; % Used for state sensitivity power time
-simulator.Perturb2_index = 3; % Used for state sensitivity power time
+optimize.Vo_index = 1 ;
+optimize.Vo_ideal_value = V;
+optimize.Perturb1_index = 1; % Used for state sensitivity power time
+optimize.Perturb2_index = 3; % Used for state sensitivity power time
 iterations = 10;
 parse.find_diode(Order);
 % check = simulator.VfwdIrev();
 
-[check] = simulator.bruteforcelsim(iterations);
+optimize.opptimization_loop;
 
 %check = simulator.VfwdIrev();
 

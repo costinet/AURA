@@ -1,6 +1,10 @@
 classdef FET < handle
     %FET contains all of the data of a Field Effect Transistor (FET)
-    %   Still needs some work
+    %   Now looking at input must be of the form 'property' value then
+    %   numerical value - similar to the constructors for figures
+    
+    % Will have to determine what variable names will be and how we
+    % can change them based on availible data
     
 %     %%%%%%   %      %  %%%%%%%    %%%%%%
 %    %      %  %      %  %      %  %      %
@@ -24,52 +28,37 @@ classdef FET < handle
 
     methods
 
-        function initialize(obj,Filename,Voltage,Current)
-            % This function checks to see if all variables are of the
-            % correct class
-            if ~exist(Filename,'file')
-                error('File %s not found',Filename)
+        function initialize(~,nargin)
+            % This function creates variables for all of the FET
+            % properties
+            
+            if mod(nargin,2)~=0
+                fprintf('input length is not correct \n')
             end
-
-            if ischar(Filename)
-                obj.filename=Filename;
-            else
-                error('Filename must be of type char \nCurrent class of filename: %s',class(Filename))
-            end
-            if nargin == 2
-                obj.Meas_Voltage = {};
-                obj.Meas_Current = {};
-                return
-            end
-            if nargin == 3
-                warning('Only voltage measurements detected')
-                Current = {};
-            end
-            if iscell(Voltage)
-                if size(Voltage,1)==1||size(Voltage,2)==1||isempty(Voltage)
-                    obj.Meas_Voltage = Voltage;
+            
+            
+            
+            for i = 1:1:length(nargin)
+            
+                
+                if mod(i,2)
+                    % This should be the string identifier for the
+                    % next 
+                    
+                    if ~ischar(nargin(i))
+                        fprintf('Not correct class type for odd entries')
+                        
+                    end
+                    
                 else
-                    error('Voltage is not the correct dimension')
+                    % This should be the value of the previous string identifier
+                    
+                    if ~isnumeric(nargin(i))
+                        fprintf('Not correct class type for even entries')
+                    end
                 end
-            else
-                error('Voltage must be of type cell \nCurrent class of Voltage: %s',class(Voltage))
-            end
-            if iscell(Current)
-                if size(Current,1)==1||size(Current,2)==1||isempty(Current)
-                    obj.Meas_Current = Current;
-                else
-                    error('Current is not the correct dimension')
-                end
-            else
-                error('Current must be of type cell \nCurrent class of Current: %s',class(Current))
-
             end
         end
-
-        function [StateNames]=getStateNames(obj)
-            StateNames = obj.StateNames;
-        end
-
 
     end
     % That's all Folks
