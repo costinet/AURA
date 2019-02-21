@@ -134,7 +134,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                             if sum(waveform<1)>0 && debug
                                 fprintf('State Violation (Diode turn off) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                                 sign = [0,0];
-                                [ts,order,new_index] = adjust_time(obj,sign,new_index,ts,order,waveform,i,k,time_ratio);
+                                [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 not_physical = true;
                                 %{
                             [P] = find(diff(waveform<1)~=0);
@@ -189,7 +189,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                             if sum(waveform>1)>0 && debug
                                 fprintf('State Violation (Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                                 sign = [1,0];
-                                [ts,order,new_index] = adjust_time(obj,sign,new_index,ts,order,waveform,i,k,time_ratio);
+                                [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 not_physical = true;
                                 %{
                             % Code to copy
@@ -295,7 +295,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                 
                                 fprintf('State Violation (Body Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                                 sign = [0,1];
-                                [ts,order,new_index] = adjust_time(obj,sign,new_index,ts,order,waveform,i,k,time_ratio);
+                                [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 
                                 not_physical = true;
                                 
@@ -315,7 +315,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                             if sum(waveform>-1)>0 && debug
                                 fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                                 sign = [1,1];
-                                [ts,order,new_index] = adjust_time(obj,sign,new_index,ts,order,waveform,i,k,time_ratio);
+                                [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 not_physical = true;
                             end
                             

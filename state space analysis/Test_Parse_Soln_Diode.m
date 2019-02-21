@@ -43,7 +43,7 @@ C1 = 4040e-9; %Cout
 fs = 2e6;
 Ts = 1/fs;
 V = 1.8;
-Io = 10; % was 1
+Io = 1; % was 1
 M1_C = 3.4874e-10; % CHS
 M2_C = 3.4874e-10; % LHS
 D1_C = 3.4874e-10; % LHS
@@ -108,7 +108,7 @@ TestparseWaveform = false;
 
 
 % Select .net file
-filename = 'Buck_Qual.net';
+filename = 'Buck2.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -265,10 +265,10 @@ optimize.dead_time_intervals = [2,4];
 optimize.dead_time_states = [4,2];
 optimize.dead_time_goals = [0,0];
 
-optimize.Vo_index = 1 ;
+optimize.Vo_index = 2 ;
 optimize.Vo_ideal_value = V;
 optimize.Perturb1_index = 1; % Used for state sensitivity power time
-optimize.Perturb2_index = 3; % Used for state sensitivity power time
+optimize.Perturb2_index = 2; % Used for state sensitivity power time
 iterations = 10;
 parse.find_diode(Order);
 % check = simulator.VfwdIrev();
