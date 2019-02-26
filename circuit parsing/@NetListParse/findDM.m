@@ -12,16 +12,11 @@ function [switches] = findDM(obj)
 % Switches contains the row location of all switching elements in the
 % circuit using obj.NL as a reference
 
-%     %%%%%%   %      %  %%%%%%%    %%%%%%
-%    %      %  %      %  %      %  %      %
-%    %      %  %      %  %      %  %      %
-%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
-%    %      %  %      %  %%        %      %
-%    %      %  %      %  % %       %      %
-%    %      %  %      %  %  %      %      %
-%    %      %  %      %  %   %     %      %
-%    %      %   %    %   %    %    %      %
-%    %      %    %%%%    %     %   %      %
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
 
 %% Set Variables
 

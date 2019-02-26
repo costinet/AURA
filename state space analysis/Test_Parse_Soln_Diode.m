@@ -48,6 +48,7 @@ M1_C = 3.4874e-10; % CHS
 M2_C = 3.4874e-10; % LHS
 D1_C = 3.4874e-10; % LHS
 
+R2 = .01;
 R1 =  .01; % Rl also known as R1 (one or L (lowercase))
 dt = Ts/100;%5e-10;
 Vdr = 5;
@@ -64,7 +65,7 @@ M2_R_D = .05; % ronLS
 
 Order = [2 1 4 1]; % The order that the states must go in after being parsed
 ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
-u = [Vg  1 1 Io]';
+u = [Vg  1 1]';
 %}
 
 %% Flyback Converter
@@ -108,7 +109,7 @@ TestparseWaveform = false;
 
 
 % Select .net file
-filename = 'Buck2.net';
+filename = 'Buck_Qual.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -150,6 +151,11 @@ Current = {'V1'
 %%% the C and D matrix whether they are placed in the above cell array or
 %%% not.
 
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
 
 %% Run functions
 parse = NetListParse();

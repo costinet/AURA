@@ -2,6 +2,13 @@ function [C,D,Htemp,saved,OutNames] = loopfixCD(obj,A,B,C,D,H,s,NLnets,SortedTre
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
+
+
 numE = 1;
 numEB = 2;
 numEM = 3;

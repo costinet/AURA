@@ -3,6 +3,13 @@ function [] = opptimization_loop(obj)
 %losses and goal values of output parameters.
 %   Detailed explanation goes here
 
+
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
+
 %% Constants from other classes
 
 StateNumbers = obj.Simulator.Converter.Topology.Parser.StateNumbers;
@@ -12,7 +19,7 @@ StateNumbers_Opp = obj.Simulator.Converter.Topology.Parser.StateNumbers_Opposite
 
 %% Adjust Power times
 
-[y] = obj.Simulator.bruteforcelsim(5);
+[y] = obj.Simulator.bruteforcelsim(100);
 
 ts = obj.Simulator.ts;
 Xs = obj.Simulator.Xs;

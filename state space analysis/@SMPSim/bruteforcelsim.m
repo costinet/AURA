@@ -2,16 +2,11 @@ function [y] = bruteforcelsim(obj,iterations)
 %BRUTEFORCELSIM Attempts to optimize the time intervals of a converter using lsim()
 %   iterations is the number of iterations that will be looped through to try and optimize the converter provided in the class
 %
-%     %%%%%%   %      %  %%%%%%%    %%%%%%
-%    %      %  %      %  %      %  %      %
-%    %      %  %      %  %      %  %      %
-%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
-%    %      %  %      %  %%        %      %
-%    %      %  %      %  % %       %      %
-%    %      %  %      %  %  %      %      %
-%    %      %  %      %  %   %     %      %
-%    %      %   %    %   %    %    %      %
-%    %      %    %%%%    %     %   %      %
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
 
 
 
@@ -80,7 +75,12 @@ while not_reached_SS && the_big_counter<=more_iterations
         ts = obj.ts;
         Ts = sum(ts);
         order = obj.order;
-        for i = 1:1:size(Xs,1) % Cycle through state variables
+        time_ratio = Ts/time_interval(end); % Find the step value of the lsim that was done
+        j = 2;
+        new_index=1;
+        time_variable_size = size(Xs,2);
+        while j <= time_variable_size+1
+            
             
             %{
         %% Universal Constraints
@@ -106,11 +106,8 @@ while not_reached_SS && the_big_counter<=more_iterations
             %}
             %% Cycle through time intervals
             
-            time_ratio = Ts/time_interval(end); % Find the step value of the lsim that was done
-            j = 2;
-            new_index=1;
-            time_variable_size = size(Xs,2);
-            while j <= time_variable_size
+
+            for i = 1:1:size(Xs,1) % Cycle through state variables
                 j;% is time interval for Xss
                 k = j-1; % k is time interval for everything else
                 
@@ -136,6 +133,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                 sign = [0,0];
                                 [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 not_physical = true;
+                                break
                                 %{
                             [P] = find(diff(waveform<1)~=0);
                             flipflop = waveform(1)<1;
@@ -191,6 +189,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                 sign = [1,0];
                                 [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 not_physical = true;
+                                break
                                 %{
                             % Code to copy
                             [P] = find(diff(waveform>1)~=0);
@@ -298,7 +297,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                 [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 
                                 not_physical = true;
-                                
+                                break
                                 
                                 %                             if all(diff(P)==1) && P(end)==size(waveform,2)
                                 %                                 dt = time_ratio*(P(end)-P(1)+1);
@@ -317,6 +316,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                 sign = [1,1];
                                 [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 not_physical = true;
+                                break
                             end
                             
                             
@@ -355,10 +355,13 @@ while not_reached_SS && the_big_counter<=more_iterations
                     end
                     
                 end
-                j = j+1;
-                new_index=new_index+1;
+
             end
-            
+            if not_physical
+                break
+            end
+            j = j+1;
+            new_index=new_index+1;
         end
         
         

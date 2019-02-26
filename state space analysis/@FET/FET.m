@@ -6,16 +6,11 @@ classdef FET < handle
     % Will have to determine what variable names will be and how we
     % can change them based on availible data
     
-%     %%%%%%   %      %  %%%%%%%    %%%%%%
-%    %      %  %      %  %      %  %      %
-%    %      %  %      %  %      %  %      %
-%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
-%    %      %  %      %  %%        %      %
-%    %      %  %      %  % %       %      %
-%    %      %  %      %  %  %      %      %
-%    %      %  %      %  %   %     %      %
-%    %      %   %    %   %    %    %      %
-%    %      %    %%%%    %     %   %      %
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
     
     properties
 

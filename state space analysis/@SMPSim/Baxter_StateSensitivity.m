@@ -17,6 +17,12 @@ function [dXs] = Baxter_StateSensitivity(obj, varToPerturb, pI, dX, cI)
 %   taken out of some other time interval in the circuit or a change
 %   in switching frequency will result
 
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
+
 
 As = obj.As;
 Bs = obj.Bs;

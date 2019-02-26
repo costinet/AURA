@@ -3,8 +3,14 @@ function [ts,order,new_index] = adjust_time(obj,sign,new_index,ts,order,waveform
 %adjust to have a correct physical circuit with diode implementation
 %   Detailed explanation goes here
 
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
 
 
+try
 if sign(1)  == 1
     [P] = find(diff(waveform>1*(-1)^sign(2))~=0); % Find all cases of violations
     flipflop = waveform(1)>1*(-1)^sign(2); % Check to see if the inital value was in violation. This will be used later on if there are multiple crossings of violations within the same time interval. We simply flipflop between states in the order variable
@@ -25,7 +31,7 @@ if sign(1)  == 1
     if isempty(P)
         % if there is no crossing then the entire state is in
         % violation of the
-        order(new_index) = bd_state_new;
+        order(new_index) = bd_state_new(1);
     else
         for number_of_changes = 1:1:length(P)+1
             order_new(number_of_changes) = flipflop;
@@ -70,7 +76,7 @@ if sign(1)  == 0
     switches = obj.Converter.Topology.Parser.Switches;
     bd_state_new = bd_state(obj.order(k),ordered_state_index(i,obj.order(k))==switches);
     if isempty(P)
-        order(new_index) = bd_state_new;
+        order(new_index) = bd_state_new(1);
     else
         for number_of_changes = 1:1:length(P)+1
             order_new(number_of_changes) = flipflop;
@@ -166,8 +172,10 @@ obj.ts = ts;
 
 %}
 
+catch ME
 
-
+throw(ME)
+end
 
 end
 

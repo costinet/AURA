@@ -41,16 +41,11 @@ function [state] = bodydiode_correction(obj,switches,state)
 % time due to high negative current on the FET that will exceed the
 % forward voltage of the body diode
 %
-%     %%%%%%   %      %  %%%%%%%    %%%%%%
-%    %      %  %      %  %      %  %      %
-%    %      %  %      %  %      %  %      %
-%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
-%    %      %  %      %  %%        %      %
-%    %      %  %      %  % %       %      %
-%    %      %  %      %  %  %      %      %
-%    %      %  %      %  %   %     %      %
-%    %      %   %    %   %    %    %      %
-%    %      %    %%%%    %     %   %      %
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
 %
 
 % Index values for components (will pass as variable... eventually):
