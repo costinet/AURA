@@ -94,8 +94,7 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
 
             %% check for ZVS where possible
             delta_DTs = max(min(ts)/100, sum(ts)/10000);
-            obj.Baxter_StateSensitivity( 'ts', Ti, delta_DTs, Tc);
-            dXs = obj.Xs;
+            dXs = obj.Baxter_StateSensitivity( 'ts', Ti, delta_DTs, Tc);
             dxsdt = (dXs-Xs)/delta_DTs;
 
             if(xdot(Sir,end) > 0)

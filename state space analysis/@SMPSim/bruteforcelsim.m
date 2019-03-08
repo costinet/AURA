@@ -18,6 +18,8 @@ function [y] = bruteforcelsim(obj,iterations)
 % IDmax = -0.1;
 % VMmax = -3;
 % IMmax = 0.1;
+try
+%tic
 the_big_counter = 0;
 not_reached_SS = true;
 more_iterations=iterations;
@@ -36,7 +38,7 @@ while not_reached_SS && the_big_counter<=more_iterations
     not_physical = true;
     
     while not_physical == 1 && the_counter<=iterations
-        pause(1)
+        % pause(1)
         not_physical = false;
         the_counter = the_counter+1;
         Xs = obj.Xs;
@@ -71,15 +73,15 @@ while not_reached_SS && the_big_counter<=more_iterations
             drawnow;
         end
         
-        Xs = obj.Xs;
-        ts = obj.ts;
-        Ts = sum(ts);
+        obj.Baxter_adjustDiodeConduction(Xs,3,2,1,-100)
+        
+       
         order = obj.order;
         time_ratio = Ts/time_interval(end); % Find the step value of the lsim that was done
         j = 2;
         new_index=1;
         time_variable_size = size(Xs,2);
-        while j <= time_variable_size+1
+        while j <= time_variable_size
             
             
             %{
@@ -407,6 +409,11 @@ while not_reached_SS && the_big_counter<=more_iterations
     
 end
 
+catch ME
+    
+    rethow(ME)
+end
+%toc
 end % That's all Folks
 
 

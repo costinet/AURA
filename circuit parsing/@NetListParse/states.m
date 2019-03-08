@@ -4,16 +4,11 @@ function [NL,NLnets,forward_pass] = states(obj,state,i,switches)
 % on switches to caps in parallel with an on resistance.
 
 
-%     %%%%%%   %      %  %%%%%%%    %%%%%%
-%    %      %  %      %  %      %  %      %
-%    %      %  %      %  %      %  %      %
-%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
-%    %      %  %      %  %%        %      %
-%    %      %  %      %  % %       %      %
-%    %      %  %      %  %  %      %      %
-%    %      %  %      %  %   %     %      %
-%    %      %   %    %   %    %    %      %
-%    %      %    %%%%    %     %   %      %
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
 
 
 
@@ -41,7 +36,7 @@ ON_index = 1;
 OFF_index = 1;
 count  = 1;
 forward_pass = zeros(size(obj.Diodes,1),1);
-
+try
 for j = 1:1:length(switches)
     
     % OPEN switch is replaced with cap
@@ -281,6 +276,11 @@ for j = 1:1:length(switches)
     end
     
 end
+
+catch ME
+    rethrow(ME);
+end
+
 
 % Update classes
 obj.ON_States(:,i)=ON_States;

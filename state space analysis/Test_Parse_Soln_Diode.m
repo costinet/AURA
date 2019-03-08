@@ -4,6 +4,13 @@
 % Currently trying to get Buck converter to work 
 % Then work on making it general for other tests
 
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
+
+
 %% User Input
 
 clear
@@ -36,7 +43,7 @@ u = [Vg 1 1]';
 %}
 
 %% Buck Converter
-%%{
+%{
 Vg = 5;
 L1 = 230e-9; %L
 C1 = 4040e-9; %Cout
@@ -48,7 +55,7 @@ M1_C = 3.4874e-10; % CHS
 M2_C = 3.4874e-10; % LHS
 D1_C = 3.4874e-10; % LHS
 
-R2 = .01;
+R2 = 0.5;
 R1 =  .01; % Rl also known as R1 (one or L (lowercase))
 dt = Ts/100;%5e-10;
 Vdr = 5;
@@ -69,7 +76,7 @@ u = [Vg  1 1]';
 %}
 
 %% Flyback Converter
-%{
+%%{
 Vg = 12;
 L1 = 1e-3;
 L2 = 4e-3;
@@ -84,7 +91,7 @@ M2_C = 3.4874e-10; % LHS
 D1_C = 3.4874e-10; % LHS
 
 R1 =  24; % Rl also known as R1 (one or L (lowercase))
-dt = Ts/100;%5e-10;
+dt = Ts/1000;%5e-10;
 Vdr = 5;
 M1_R_ON = .05; % ronHS
 M2_R_ON = .05; % ronLS
@@ -93,8 +100,8 @@ M1_R_D = .05; % ronHS
 M2_R_D = .05; % ronLS
 [D1_R_OFF,M1_R_OFF,M2_R_OFF] = deal(100000000); % ronLS
 
-Order = [2 4]; % The order that the states must go in after being parsed
-ts = [Ts*.66 Ts*.34]; % The inital guess of time intervals
+Order = [2 1 4 1]; % The order that the states must go in after being parsed
+ts = [Ts*.66-dt dt Ts*.34-dt dt]; % The inital guess of time intervals
 
 
 %Order = [2 1 4 1]; % The order that the states must go in after being parsed
@@ -109,7 +116,7 @@ TestparseWaveform = false;
 
 
 % Select .net file
-filename = 'Buck_Qual.net';
+filename = 'Flyback.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -151,16 +158,14 @@ Current = {'V1'
 %%% the C and D matrix whether they are placed in the above cell array or
 %%% not.
 
-%     _   _   _  ____    _    
-%    / \ | | | |/ _  |  / \   
-%   / _ \| | | | (_| | / _ \  
-%  / ___ | |_| |> _  |/ ___ \ 
-% /_/   \_\___//_/ |_/_/   \_\
+
 
 %% Run functions
 parse = NetListParse();
 parse.initialize(filename,Voltage,Current);
 parse.ABCD();
+% load('D:\GitHub\AURA\DAB_PARSE.mat')
+
 
 % if TestparseWaveform
 % testfun = str2func(testcase);

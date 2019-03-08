@@ -41,10 +41,10 @@ function [state] = bodydiode_correction(obj,switches,state)
 % time due to high negative current on the FET that will exceed the
 % forward voltage of the body diode
 %
-%     _   _   _  ____    _    
-%    / \ | | | |/ _  |  / \   
-%   / _ \| | | | (_| | / _ \  
-%  / ___ | |_| |> _  |/ ___ \ 
+%     _   _   _  ____    _
+%    / \ | | | |/ _  |  / \
+%   / _ \| | | | (_| | / _ \
+%  / ___ | |_| |> _  |/ ___ \
 % /_/   \_\___//_/ |_/_/   \_\
 %
 
@@ -80,19 +80,30 @@ while k<n
     end
 end
 
-
+bd_state2 = [zeros(size(state))]; % Initialize matrix
 bd_state = [zeros(size(state))]; % Initialize matrix
 off_state = [zeros(size(state))]; % Initialize matrix
 
 % These nested for loops find the associated diode on and off states for each state combination solved for FETs
 for j = 1:1:length(switches)-1
-    if switches(j)==switches(j+1) && (NL(switches(j),1)==numM) % IF the switch numbers are the same (its a FET) and NL says its a FET
-        for i = 1:1:size(state,1)
+    for i = 1:1:size(state,1)
+        if switches(j)==switches(j+1) && (NL(switches(j),1)==numM) % IF the switch numbers are the same (its a FET) and NL says its a FET
+            
             state_test = state(i,:);
             state_test(j:j+1) = [0 1]; % For FET selected want to find where body diode is ON and FET is OFF (this will need to later be adjusted if body diode and FET are on at the same time)
             state_test2 = state(i,:);
             state_test2(j:j+1) = [0 0]; % For FET selected want to find where body diode is OFF and FET is OFF (this will need to later be adjusted if body diode and FET are on at the same time)
+            
+            
+            bd_state(i,j) = find(sum(repmat(state_test,size(state,1),1)==state,2)==size(state,2)==1);
+            bd_state(i,j+1) = bd_state(i,j);
+            
+            off_state(i,j) = find(sum(repmat(state_test2,size(state,1),1)==state,2)==size(state,2)==1);
+            off_state(i,j+1) = off_state(i,j);
+            
+            
             % Cycle through and find correct states
+            %{
             for k = 1:1:size(state,1)
                 if state_test == state(k,:)
                     bd_state(i,j) = k;
@@ -103,17 +114,24 @@ for j = 1:1:length(switches)-1
                     off_state(i,j+1) = k;
                 end
             end
+            %}
         end
-        j = j+1; % On purpose to speed up (No need to check for body diode since ON state is the flag for FETs)
-    end
-
-% These nested for loops find the associated diode on and off states for each state combination solved for diodes
-    if (NL(switches(j),1)==numD)
-        for i = 1:1:size(state,1)
+        
+        
+        
+        % These nested for loops find the associated diode on and off states for each state combination solved for diodes
+        if (NL(switches(j),1)==numD)
+            
             state_test = state(i,:);
             state_test(j) = [1];
             state_test2 = state(i,:);
             state_test2(j) = [0];
+            
+            bd_state(i,j) = find(sum(repmat(state_test,size(state,1),1)==state,2)==size(state,2)==1);
+            
+            off_state(i,j) = find(sum(repmat(state_test2,size(state,1),1)==state,2)==size(state,2)==1);
+            
+            %{
             for k = 1:1:size(state,1)
                 if state_test == state(k,:)
                     bd_state(i,j) = k;
@@ -122,6 +140,7 @@ for j = 1:1:length(switches)-1
                     off_state(i,j) = k;
                 end
             end
+            %}
         end
     end
 end
@@ -129,13 +148,19 @@ end
 
 % This is an exception due to the method of indexing used in the above for loop
 % If the last switch in SWITCHES is a diode then was skipped in the previous step and must be included here
-if j~=length(switches)
+if (NL(switches(end),1)==numD)
     j = length(switches);
     for i = 1:1:size(state,1)
         state_test = state(i,:);
         state_test(j) = [1];
         state_test2 = state(i,:);
         state_test2(j) = [0];
+        
+        bd_state(i,j) = find(sum(repmat(state_test,size(state,1),1)==state,2)==size(state,2)==1);
+        
+        off_state(i,j) = find(sum(repmat(state_test2,size(state,1),1)==state,2)==size(state,2)==1);
+        
+        %{
         for k = 1:1:size(state,1)
             if state_test == state(k,:)
                 bd_state(i,j) = k;
@@ -144,8 +169,9 @@ if j~=length(switches)
                 off_state(i,j) = k;
             end
         end
+        %}
     end
-
+    
 end
 
 obj.BD_state = bd_state;

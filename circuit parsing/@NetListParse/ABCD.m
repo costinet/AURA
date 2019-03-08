@@ -53,6 +53,46 @@ SortedCoTree=zeros(2*size(obj.NL,1),5,1);
 obj.ON_States = cell(length(switches),number_of_states);
 obj.OFF_States = cell(length(switches),number_of_states);
 
+%[THE_LIST]=obj.states_find(state,switches);
+%{
+ON = [1 0];
+OFF = [0 0];
+
+Binary_for_DAB = [
+    OFF ON ON OFF OFF ON ON OFF
+    OFF OFF OFF OFF OFF ON ON OFF
+    ON OFF OFF ON OFF ON ON OFF
+    ON OFF OFF ON OFF OFF OFF OFF
+    ON OFF OFF ON ON OFF OFF ON
+    OFF OFF OFF OFF ON OFF OFF ON
+    OFF ON ON OFF ON OFF OFF ON
+    OFF ON ON OFF OFF OFF OFF OFF];
+
+The_Codex = []; % Initialize matrix
+    for i = 1:1:size(Binary_for_DAB,1)
+        Binary_for_DAB_test = Binary_for_DAB(i,:);
+        The_Codex(i) = find(sum(repmat(Binary_for_DAB_test,size(state,1),1)==state,2)==size(state,2)==1);
+       
+    end
+
+
+Combinations = The_Codex;
+
+% From THE_LIST, indicate by indicies which state you are wanting to
+% model. For eample, if you do not want o
+%Combinations = [2 1 4 1];  
+[b,m1,~] = unique(Combinations,'first');
+[~,d1] =sort(m1);
+Combinations = b(d1);
+
+
+[Combinations] = obj.BDCheck(Combinations,state,switches);
+
+state_old = state;
+state = state(Combinations,:);
+
+number_of_states = size(Combinations,2);
+%}
 %% Cycle through all possible states
 
 for i = 1:1:number_of_states
