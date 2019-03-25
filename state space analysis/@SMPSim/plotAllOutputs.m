@@ -1,9 +1,9 @@
-function plotAllStates(obj, fn, subplots)
+function plotAllOutputs(obj, fn, subplots)
 %UNTITLED6 Summary of this function goes here
 %   Detailed explanation goes here
-    [ xs, t] = obj.SS_WF_Reconstruct;
+    [ ~, t, ys] = obj.SS_WF_Reconstruct;
     figure(fn);
-    ns = size(xs,1);
+    ns = size(ys,1);
     
     if(nargin == 2)
         subplots = 1;
@@ -12,7 +12,7 @@ function plotAllStates(obj, fn, subplots)
     if(subplots)
         for i=1:ns
             subplot(10*ns,1,i*10-9:i*10)
-            plot(t,xs(i,:), 'Linewidth', 3);
+            plot(t,ys(i,:), 'Linewidth', 3);
             hold on;
             ylims = ylim;
             ylim(ylims)
@@ -20,7 +20,7 @@ function plotAllStates(obj, fn, subplots)
                 plot(sum(obj.ts(1:j))*ones(1,2), ylims, ':k');
             end
             hold off;
-            ylabel(obj.getstatenames{i});
+            ylabel(obj.converter.topology.outputLabels{i});
             box on
             if(i<ns)
                 set(gca, 'Xticklabel', []);
@@ -38,11 +38,11 @@ function plotAllStates(obj, fn, subplots)
 
         plot(t,xs, 'linewidth',2);
         if(firstrun)
-            legend(obj.converter.topology.stateLabels);
+            legend(obj.converter.topology.outputLabels);
         end
         hold on;
 %         plot(t, obj.converter.topology.constraints.regtarget*ones(size(t)), '-.k', 'linewidth',3);
-        ylims = [min(min(xs)) max(max(xs))];
+        ylims = [min(min(ys)) max(max(ys))];
         ylim(ylims)
         for i = 1:length(obj.ts)
             plot(sum(obj.ts(1:i))*ones(1,2), ylims, ':r');

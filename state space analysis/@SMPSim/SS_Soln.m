@@ -32,7 +32,7 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
     ts = obj.ts;
     u = obj.u;
 
-    if(nargin == 1)
+    if(nargin == 1 || obj.tryOpt == 0)
         tryOpt = 0;
     else
         tryOpt = obj.tryOpt;
@@ -80,18 +80,36 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
         end
 
     Xss = (eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
+    
+    %% Check for depdendent states
+    if(sum(isnan(Xss)) || sum(isinf(Xss)))
+        A = (eye(ns) - cumProdExp(:,:,n));
+        zeroCols = sum(A==0,1) == length(A);
+        if sum(zeroCols) > 0
+            A2 = A(~zeroCols, ~zeroCols);
+            b2 = RHSsum(~zeroCols);
+            Xss2 = A2\b2;
+            Xss = zeros(length(A),1);
+            Xss(~zeroCols) = Xss2;
+            if ~(sum(isnan(Xss)) || sum(isinf(Xss)))
+                % Solution worked, replace the dependent states that were
+                % removed
+                Xss = obj.Is(:,:,1)*Xss;
+                tryOpt = 0;
+            end
+        end
 
-    %% Hacky solution when result is off because (eye(ns) - cumProdExp(:,:,n)) is non-invertable
-    % Use optimization to solve without inversion through error minimization
-    % --> Still needs tweaking
-    if(tryOpt)
-        if(abs(Xss(1) - Xi(1)) > 2)
-            warning(['Unable to find SS solution directly for Xi = ' num2str(Xi)]);
-            Xss = Xi;
-            options = optimoptions('lsqlin','algorithm','trust-region-reflective','Display','none');
-            A = (eye(ns) - cumProdExp(:,:,n));
-            b = RHSsum;
-            Xss = lsqlin(A, b, [],[],[],[], Xi.*Bi, Xi.*(2-Bi), Xss, options);
+
+        %% Hacky solution when result is off because (eye(ns) - cumProdExp(:,:,n)) is non-invertable
+        % Use linprog to solve without inversion through error minimization
+        % I'm not sure if this addresses any real issue, i.e. if there is a
+        % case where this would work but the above would not.
+        if(tryOpt)
+            if(abs(Xss(1) - Xi(1)) > 2 || isnan(Xss(1)))
+                warning(['Unable to find SS solution directly for Xi = ' num2str(Xi)]);        
+                X = linprog( Xss2*0+1, [], [], A2, b2);
+                Xss = obj.Is(:,:,1)*X;
+            end
         end
     end
 
@@ -99,6 +117,7 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
     Xs(:,1) = Xss;
     for i=1:n
         Xs(:,i+1) = expAs(:,:,i)*Xs(:,i) + fresp(:,:,i);
+%         Xs(:,i+1) = obj.Is(:,:,i)*Xs(:,i+1);
     end
 
     if sum(isnan(Xss))

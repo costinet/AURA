@@ -1,8 +1,8 @@
 clear all; 
 clc;
 
-WFanalysis = 1;
-plotIterWF = 1;
+WFanalysis = 0;
+plotIterWF = 0;
 
 testDir = [erase(mfilename('fullpath'), mfilename) 'testConverters'];
 
@@ -13,7 +13,6 @@ converter = 'Buck';
         %Buck
         %Buck_nonSingular
 
-        
 simulator = SMPSim();
 simulator.loadTestConverter(converter);
 
@@ -25,7 +24,8 @@ if strcmp(converter, 'HybridDickson')
 elseif strcmp(converter, 'Buck')
     Ioloc = 2;
     Vgloc = 1;
-    Iorange = logspace(log10(.5), log10(18), 25);
+%     Iorange = logspace(log10(.5), log10(18), 25);
+    Iorange = 2;
     Voutloc = 4;
 elseif strcmp(converter, 'Buck_nonSingular')
     Ioloc = 2;
@@ -46,7 +46,6 @@ tic
 for j = 1:length(Iorange)
     simulator.u(Ioloc) = Iorange(j);
     Xss = simulator.SS_Soln();
-    simulator.regulate();
     
      if(WFanalysis)
         [xs, t, y] = simulator.SS_WF_Reconstruct();
@@ -80,12 +79,25 @@ for j = 1:length(Iorange)
 
 end
 toc
+figure(1);
+simulator.plotAllStates(1);
+
+while(1)
+    [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = simulator.adjustDiodeConduction( Xss, 3, 2, 6, -1);
+    simulator.setmodulation(ts);
+    Xss = simulator.SS_Soln();
+    [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = simulator.adjustDiodeConduction( Xss, 5, 2, 6, -1);
+    simulator.setmodulation(ts);
+    Xss = simulator.SS_Soln();
+    simulator.plotAllStates(1);
+    test = 1;
+end
 
 figure(2);
-plot(Pout, eta, 'Linewidth', 3);
+plot(Iorange, eta, 'Linewidth', 3);
 if(WFanalysis)
     hold on;
-    plot(Pout, etaWF, ':r', 'Linewidth', 3); 
+    plot(Iorange, etaWF, ':r', 'Linewidth', 3); 
 end
 
  

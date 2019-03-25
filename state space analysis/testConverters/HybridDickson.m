@@ -12,11 +12,11 @@ Cout = 100e-6;
 C1 =4.7e-6;
 C2 = C1;
 C3 = C1;
-ESR1 = 9e-3;
-ESR2 = 22e-3;
-ESR3 = 9e-3;
-ron = 1.2e-3;
-Rl = 6e-3;
+ESR1 = 1.2e-3 + 4e-3;
+ESR2 = 1.2e-3 +15e-3;
+ESR3 = 1.2e-3 + 4e-3;
+ron = 1.2e-3 + 10e-3*(.5*3/4*5/6);
+Rl = 5e-3;
 Coss = 2.5e-9;
 Qg = 18e-9;
 
@@ -123,7 +123,7 @@ M = 5/6;
 phi = 0;%-M*0*Ts;
 th = 0;%-M*0.05*Ts;
 
-Da = 2/3;
+Da = 3/4;
 
 ts = [Da*Ts/2*M-phi+th, (1-Da)*Ts/2*M+phi+th, Ts/2*(1-M), Da*Ts/2*M-phi-th, (1-Da)*Ts/2*M+phi-th, Ts/2*(1-M)];
 
@@ -143,7 +143,7 @@ Xi = [Vg/4, Vg/2, 3*Vg/4, 6*M Io];
 Bi = [.9 .9 .9 .9 .9];
 
 top = SMPStopology();
-top.setSS(As, Bs, Cs, Ds);
+top.setSS(As, Bs, Cs, Ds, K);
 top.Xi = Xi;
 top.Bi = Bi;
 top.stateLabels =  {'V_{C1}', 'V_{C2}', 'V_{C3}', 'V_{out}', 'I_L'};

@@ -68,6 +68,32 @@ Bi = [.9 .9 .9 .9];
 
 % save('Buck.mat', 'As','Bs','Cs','Ds','u','ts', 'Xi', 'Bi');
 
+% x = [Vhs Vls Il Vo]
+Clim = [1, 0, 0, 0;
+        0, 1, 0, 0];
+Dmax = [-1, 0;
+        -1, 0];
+Dmin = [0, 0;
+        0, 0];
+    
+Maxlim = [1, 1]';
+Minlim = [-1, -1]';
+
+
+Creg = [0 0 0 1];
+Dreg = [0 0];
+regtarget = [V];
+
+const = constraints();
+const.Cmax = Clim;
+const.Dmax = Dmax;
+const.Maxlim = Maxlim;
+const.Cmin = Clim;
+const.Dmin = Dmin;
+const.Minlim = Minlim;
+const.Creg = Creg;
+const.Dreg = Dreg;
+const.regtarget = regtarget;
 
 top = SMPStopology();
 top.setSS(As, Bs, Cs, Ds);
@@ -75,10 +101,13 @@ top.Xi = Xi;
 top.Bi = Bi;
 top.stateLabels =  {'V_{Chs}', 'V_{Cls}', 'i_L', 'V_{out}'};
 top.outputLabels = {'i_g'};
+top.setConstraints(const)
 
 conv = SMPSconverter();
 conv.topology = top;
 conv.ts = ts;
+conv.tsmax = [Ts dt Ts dt];
+conv.tcomp = [3 3 1 1];
 conv.u = u;
 
 save('Buck.mat', 'conv');
