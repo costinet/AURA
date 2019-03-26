@@ -43,7 +43,7 @@ u = [Vg 1 1]';
 %}
 
 %% Buck Converter
-%{
+%%{
 Vg = 5;
 L1 = 230e-9; %L
 C1 = 4040e-9; %Cout
@@ -72,11 +72,11 @@ M2_R_D = .05; % ronLS
 
 Order = [2 1 4 1]; % The order that the states must go in after being parsed
 ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
-u = [Vg  1 1]';
+u = [Vg  1 1 Io]';
 %}
 
 %% Flyback Converter
-%%{
+%{
 Vg = 12;
 L1 = 1e-3;
 L2 = 4e-3;
@@ -116,7 +116,7 @@ TestparseWaveform = false;
 
 
 % Select .net file
-filename = 'Flyback.net';
+filename = 'Buck2.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -176,7 +176,7 @@ parse.ABCD();
 
 top = SMPStopology();
 top.Parser = parse;
-top.stateLabels = parse.StateNames(:,1);
+
 conv = SMPSconverter();
 conv.Topology = top;
 conv.ts = ts;
@@ -238,7 +238,17 @@ Xss = simulator.SS_Soln();
 parse.StateVarIndex();
 simulator.CorrectXs();
 
-% Dont need anymore due to fix of SS_Soln.m
+
+for i = 1:1:length(parse.StateNumbers)
+    if strcmp(parse.OutputNamesCD{parse.StateNumbers(i),1}(1,end),'A')
+        top.stateLabels(end+1,1) = strcat('I_{', parse.StateNames(i,1),'} (A)');
+    else
+        top.stateLabels(end+1,1) = strcat(parse.OutputNamesCD{parse.StateNumbers(i),1}(1,end),'_{', parse.StateNames(i,1),'} (V)');
+    end
+end
+    
+    
+    % Dont need anymore due to fix of SS_Soln.m
 % Dependent variables are calculated with independent variables
 %{
 Xss(end+1,:) = zeros(size(parse.DependentNames,1),size(Xss,2));

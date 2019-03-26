@@ -96,11 +96,14 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
             delta_DTs = max(min(ts)/100, sum(ts)/10000);
             dXs = obj.Baxter_StateSensitivity( 'ts', Ti, delta_DTs, Tc);
             dxsdt = (dXs-Xs)/delta_DTs;
-
+            Backwards_dXs = obj.Baxter_StateSensitivity( 'ts', Ti, (-1)*delta_DTs, Tc);
+            Second_Derivative = (dXs-2*Xs+Backwards_dXs+dXs)/(delta_DTs^2);
+            
+            
             if(xdot(Sir,end) > 0)
                 tdelta = (Vmax-Xs(Sir,Xic))/(dxsdt(Sir,Xic));
-                tdelta = min(max(tdelta, -ts(Ti) + delta_DTs), tsmax(Ti) - ts(Ti));
-                tdelta = sign(tdelta)*min(abs(tdelta), maxStep);
+                %tdelta = min(max(tdelta, -ts(Ti) + delta_DTs), tsmax(Ti) - ts(Ti));
+                %tdelta = sign(tdelta)*min(abs(tdelta), maxStep);
                 if(Xs(Sir,Xic)-Vmax < 0 && tdelta < 0)
                    % Slope is positive, and non-ZVS, but partial tells me to reduce dead time
                    % effect will be small (reduced current due to reduced t1)
@@ -108,8 +111,8 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
                    % significantly to prevent oscillating
                    tdelta = sign(tdelta)*min(abs(tdelta), maxStep/10);
                 end
-                ts(Ti) = ts(Ti) - tdelta;
-                ts(Tc) = ts(Tc) + tdelta;
+                ts(Ti) = ts(Ti) + tdelta;
+                ts(Tc) = ts(Tc) - tdelta;
                 if(ts(Ti)<0)
                     change = 1e-10;
                     ts(Tc) = ts(Tc)-abs(ts(Ti))-change;
@@ -129,6 +132,7 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
 
             %% Check if hard switching is necessary
             % if resonance is carrying voltage in the wrong direction
+            %{
             ZVS_dir = (abs(Xs(Sir,Xic-1) - Vmax) < abs(Xs(Sir,Xic-1) - Vmin))*-1 + ...
                 (abs(Xs(Sir,Xic-1) - Vmax) > abs(Xs(Sir,Xic-1) - Vmin));
             if(sign(xdot(Sir,1)) ~= sign(ZVS_dir))
@@ -144,6 +148,7 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
                     hardSwNecessary = 1;
                 end
             end
+            %}
             return;    
 
 

@@ -18,8 +18,13 @@ function [y] = bruteforcelsim(obj,iterations)
 % IDmax = -0.1;
 % VMmax = -3;
 % IMmax = 0.1;
+
+tol = 0.005;
+
 try
 %tic
+history_i = [];
+history_j = [];
 the_big_counter = 0;
 not_reached_SS = true;
 more_iterations=iterations;
@@ -38,6 +43,8 @@ while not_reached_SS && the_big_counter<=more_iterations
     not_physical = true;
     
     while not_physical == 1 && the_counter<=iterations
+        first_violations = false;
+        last_violations = false;
         % pause(1)
         not_physical = false;
         the_counter = the_counter+1;
@@ -73,7 +80,7 @@ while not_reached_SS && the_big_counter<=more_iterations
             drawnow;
         end
         
-        obj.Baxter_adjustDiodeConduction(Xs,3,2,1,-100)
+        
         
        
         order = obj.order;
@@ -130,8 +137,25 @@ while not_reached_SS && the_big_counter<=more_iterations
                         % Determine if a state changes from the Diode
                         % being on to being off or vice vera.
                         if ONorOFF(i,k) == 1 % if diode ON
-                            if sum(waveform<1)>0 && debug
+                            if sum(waveform<1-1*tol)>0 && debug
                                 fprintf('State Violation (Diode turn off) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                                if waveform(1)<1
+                                    first_violations = 1;
+                                    
+                                    if the_counter>=5
+                                        if  isequal(history_i(end),history_i(end-1),history_i(end-2),history_i(end-3),i) && isequal(history_j(end),history_j(end-1),history_j(end-2),history_j(end-3),j)
+                                            %  old_ts_2 = obj.ts;
+                                            if first_violations && ONorOFF(i,k-1) == -1
+                                                j = j-1;
+                                                [ts] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,1,min(y(StateNumbers(i),:)));
+                                                order = obj.order;
+                                                not_physical = true;
+                                                break
+                                            end
+                                        end
+                                    end
+                                    
+                                end
                                 sign = [0,0];
                                 [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 not_physical = true;
@@ -186,11 +210,31 @@ while not_reached_SS && the_big_counter<=more_iterations
                             
                         elseif ONorOFF(i,j-1) == -1 % if diode off
                             %  [V,P] = find(waveform > 1); % to try and find a value that is close to the goal deadtime value
-                            if sum(waveform>1)>0 && debug
+                            if sum(waveform>1+1*tol)>0 && debug
                                 fprintf('State Violation (Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                                
+                                if waveform(end)>1
+                                    last_violations = 1;
+                                    
+                                    
+                                    if the_counter>=5
+                                        if  isequal(history_i(end),history_i(end-1),history_i(end-2),history_i(end-3),i) && isequal(history_j(end),history_j(end-1),history_j(end-2),history_j(end-3),j)
+                                            old_ts_2 = obj.ts;
+                                            if last_violations && ONorOFF(i,k+1) == 1
+                                                
+                                                [ts] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,1,min(y(StateNumbers(i),:)));
+                                                order = obj.order;
+                                                not_physical = true;
+                                                break
+                                            end
+                                        end
+                                    end
+                                    
+                                end
                                 sign = [1,0];
                                 [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 not_physical = true;
+                                
                                 break
                                 %{
                             % Code to copy
@@ -283,7 +327,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                         
                         
                         if ONorOFF(i,j-1) == 2 % if FET ON
-                            if sum(waveform<-1)>0 && debug
+                            if sum(waveform<-1-1*tol)>0 && debug
                                 % Check if body diode conducts (time interval could be shortened)
                                 fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                             end
@@ -292,13 +336,16 @@ while not_reached_SS && the_big_counter<=more_iterations
                             
                             
                             
-                            if sum(waveform<-1)>0 && debug
+                            if sum(waveform<-1-1*tol)>0 && debug
                                 
                                 fprintf('State Violation (Body Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                                 sign = [0,1];
                                 [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 
                                 not_physical = true;
+                                if waveform(1)<-1
+                                    first_violations = 1;
+                                end
                                 break
                                 
                                 %                             if all(diff(P)==1) && P(end)==size(waveform,2)
@@ -313,11 +360,14 @@ while not_reached_SS && the_big_counter<=more_iterations
                             
                         elseif ONorOFF(i,j-1) == 1 % body diode on
                             
-                            if sum(waveform>-1)>0 && debug
+                            if sum(waveform>-1+1*tol)>0 && debug
                                 fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                                 sign = [1,1];
                                 [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                 not_physical = true;
+                                if waveform(1)>-1
+                                    first_violations = 1;
+                                end
                                 break
                             end
                             
@@ -395,23 +445,45 @@ while not_reached_SS && the_big_counter<=more_iterations
             
             
             obj.updateTestConverter();
-            obj.SS_Soln(1);
-            obj.CorrectXs(1);
+            obj.SS_Soln();
+            obj.CorrectXs();
             obj.Converter.Topology.Parser.find_diode(obj.order);
         end
+        
+        history_i(end+1)=i;
+        history_j(end+1)=j;
+        
+        %{
+        if the_counter>=4
+            if  isequal(history_i(end),history_i(end-1),history_i(end-2),i) && isequal(history_j(end),history_j(end-1),history_j(end-2),j)
+               old_ts_2 = obj.ts;
+               if first_violations
+                   j = j-1;
+               end
+               [obj.ts] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),min(y(StateNumbers(i),:)));
+            end
+        end
+        history_i(end+1)=i;
+        history_j(end+1)=j;
+        
         obj.SS_Soln();
         obj.CorrectXs();
         obj.Converter.Topology.Parser.find_diode(obj.order);
+        %}
     end
-    check =1;
+    check = 1;
+    %obj.Xs(:,1) = obj.Xs(:,end); % Test step twords ss soln
+    obj.SS_Soln(1);
+    obj.CorrectXs(1);
+    obj.Converter.Topology.Parser.find_diode(obj.order);
     
     not_reached_SS = ~isequal(goal_SS,obj.Xs(:,1));
-    
+    %obj.Baxter_adjustDiodeConduction(Xs,3,2,1,-100)
 end
 
 catch ME
     
-    rethow(ME)
+    rethrow(ME)
 end
 %toc
 end % That's all Folks

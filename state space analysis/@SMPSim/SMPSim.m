@@ -98,6 +98,9 @@ classdef SMPSim < handle
             sn = obj.Converter.Topology.stateLabels;
         end
         
+        function sn = getstatenames2(obj)
+            sn = obj.Converter.Topology.stateLabels;
+        end
         
         %% Test functions
         function loadTestConverter(obj,dotmatfile)

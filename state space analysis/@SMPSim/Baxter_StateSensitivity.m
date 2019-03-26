@@ -53,8 +53,15 @@ else
     error('Variable to perturb not found');
 end
 
-[dXs] = obj.SS_Soln(0,As,Bs,ts,u); % Zero is for keeping Xss from last time, not sure if this is applicable here. might want to pass a variable in the future
-[dXs] = obj.CorrectXs(0,dXs);
+% Need to decide or pass a variable as to if Xss will stay constant or
+% be calculated when determining state sensitivity
+
+% Right now leaning towards calculating it everytime to maintain
+% sability
+
+
+[dXs] = obj.SS_Soln(1,As,Bs,ts,u); 
+[dXs] = obj.CorrectXs(1,dXs);
 
 
 end
