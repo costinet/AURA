@@ -1,4 +1,4 @@
-function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustDiodeConduction(obj, Xs, Xic, Sir, Vmax, Vmin, progBar)
+function [ ts, dxsdt, hardSwNecessary, multcross, overresonant,keep_SS] = Baxter_adjustDiodeConduction(obj, Xs, Xic, Sir, Vmax, Vmin, progBar,Vio,keep_SS)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -14,6 +14,8 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
     ts = obj.ts;
     u = obj.u;
     
+    %keep_SS = false;
+    
     tsmax = [.7 .3 .3 .7]; % JUST FOR TESTING
     
     try
@@ -22,12 +24,13 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
             origts = ts;
         end
 
-        if nargin < 11
-            progBar = 1;
+        if nargin < 7
+            progBar = 0.01;
         end
 
         maxStep = sum(ts)/100/(.5+1.5*progBar);
 
+        
         if ~(Xic>1) || ~(Xic<=size(Xs,2)) % Check to see if Xic is valid
             ME = MException('resultisNaN:noSuchVariable', ...
                                'Xi must be between 2 and length(Xs)');
@@ -59,14 +62,23 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
             xdot = As(:,:,Xic-1)*x' + Bs(:,:,Xic-1)*u;
         end
 
-        % Determine if there is a slope change in 
-        slopechange = find(diff(sign(xdot(1,:))));
-
+        % Determine if there is a slope change in the state variable
+        % and function being examined
+        slopechange = find(diff(sign(xdot(Sir,:))));
+        if ~isempty(slopechange)
+            % This is a crude way to account for there being a little
+            % bit of transient at the beginnining of a wavefrom that
+            % is otherwise linear
+            if abs(sum(sign(xdot(Sir,:))))>length(xdot(Sir,:))*0.95
+                slopechange  = [];
+            end
+        end
+        
         hardSwNecessary = 0;
 
         % adjust limits to account for possible I*Ron outside of bounds.
-        Vmax = max(Vmax, Xs(Sir, Xic-1));
-        Vmin = min(Vmin, Xs(Sir, Xic-1));
+        %Vmax = max(Vmax, Xs(Sir, Xic-1));
+        %Vmin = min(Vmin, Xs(Sir, Xic-1));
 
         % Find if the value of voltage exceeds the 
         Vmaxcross = find(diff(x(:,Sir)>Vmax));
@@ -75,7 +87,7 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
         multcross = length(Vmaxcross) + length(Vmincross) > 1;
         overresonant = ~isempty(slopechange);
         massiveOvershoot = Xs(Sir,Xic) > Vmax + max(abs([Vmax Vmin 1])) || Xs(Sir,Xic) < Vmin - max(abs([Vmax Vmin 1]));
-
+%{
         if multcross || overresonant || massiveOvershoot
             %% case where deadtime ringing causes multiple diode conduction intervals
             % dead time is way too long, so set it to first crossing (unintelligently) 
@@ -91,26 +103,26 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
 
     %     if isempty(Vmaxcross) && isempty(Vmincross) && isempty(slopechange)
     %         % no diode conduction problem
-
+%}
             %% check for ZVS where possible
             delta_DTs = max(min(ts)/100, sum(ts)/10000);
-            dXs = obj.Baxter_StateSensitivity( 'ts', Ti, delta_DTs, Tc);
+            dXs = obj.Baxter_StateSensitivity(keep_SS, 'ts', Ti, delta_DTs, Tc);
             dxsdt = (dXs-Xs)/delta_DTs;
-            Backwards_dXs = obj.Baxter_StateSensitivity( 'ts', Ti, (-1)*delta_DTs, Tc);
+            Backwards_dXs = obj.Baxter_StateSensitivity(keep_SS, 'ts', Ti, (-1)*delta_DTs, Tc);
             Second_Derivative = (dXs-2*Xs+Backwards_dXs+dXs)/(delta_DTs^2);
             
             
-            if(xdot(Sir,end) > 0)
+            if(Vio==1)
                 tdelta = (Vmax-Xs(Sir,Xic))/(dxsdt(Sir,Xic));
                 %tdelta = min(max(tdelta, -ts(Ti) + delta_DTs), tsmax(Ti) - ts(Ti));
                 %tdelta = sign(tdelta)*min(abs(tdelta), maxStep);
-                if(Xs(Sir,Xic)-Vmax < 0 && tdelta < 0)
+              %  if(Xs(Sir,Xic)-Vmax < 0 && tdelta < 0)
                    % Slope is positive, and non-ZVS, but partial tells me to reduce dead time
                    % effect will be small (reduced current due to reduced t1)
                    % so tdelta will always saturate and oscillate. Reduce step size 
                    % significantly to prevent oscillating
-                   tdelta = sign(tdelta)*min(abs(tdelta), maxStep/10);
-                end
+                 %  tdelta = sign(tdelta)*min(abs(tdelta), maxStep/10);
+               % end
                 ts(Ti) = ts(Ti) + tdelta;
                 ts(Tc) = ts(Tc) - tdelta;
                 if(ts(Ti)<0)
@@ -120,12 +132,17 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
                 end
                 
                 if(debug), disp(['-- Vsw increasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
-            elseif(xdot(Sir,end) < 0)
+            elseif(Vio==0)
                 tdelta = (Vmin-Xs(Sir,Xic))/(dxsdt(Sir,Xic));
-                tdelta = min(max(tdelta, -ts(Ti) + delta_DTs), tsmax(Ti) - ts(Ti));
-                tdelta = sign(tdelta)*min(abs(tdelta), maxStep);
-                ts(Ti) = ts(Ti) - tdelta;
-                ts(Tc) = ts(Tc) + tdelta;
+                %tdelta = min(max(tdelta, -ts(Ti) + delta_DTs), tsmax(Ti) - ts(Ti));
+                %tdelta = sign(tdelta)*min(abs(tdelta), maxStep);
+                ts(Ti) = ts(Ti) + tdelta;
+                ts(Tc) = ts(Tc) - tdelta;
+                if(ts(Ti)<0)
+                    change = 1e-10;
+                    ts(Tc) = ts(Tc)-abs(ts(Ti))-change;
+                    ts(Ti) = change;
+                end
                 if(debug), disp(['-- Vsw decreasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
             end
 
@@ -149,13 +166,36 @@ function [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = Baxter_adjustD
                 end
             end
             %}
+            
+            % Routine that will lock in Xss if there is a affect in SS
+            % waveforms to ensure that there will not be a massive
+            % response that will cause the SS solve to go unstable
+            
+            % If for any state variable the max or min of the previous
+            % system is exceeded
+            if sum(max(Xs,[],2) < max(Xs+dxsdt*tdelta,[],2))>1 || sum(min(Xs,[],2) > min(Xs+dxsdt*tdelta,[],2))>1
+            
+                % If this previous system is within a tolerance of the
+                % spacing of the max and min values of the variables
+                % or a tolerance around the max and min values
+                % themselves
+                if sum(abs((max(Xs+dxsdt*tdelta,[],2) - max(Xs,[],2))) > (max(Xs,[],2)-min(Xs,[],2))*0.05)>1 && sum(abs(max(Xs+dxsdt*tdelta,[],2) - max(Xs,[],2)) > abs(max(Xs,[],2)*0.05) )
+                keep_SS = true;
+                end
+                if sum(abs((min(Xs+dxsdt*tdelta,[],2) - min(Xs,[],2))) > (max(Xs,[],2)-min(Xs,[],2))*0.05)>1 && sum(abs(min(Xs+dxsdt*tdelta,[],2)-min(Xs,[],2)) > abs(min(Xs,[],2)*0.05) )
+                keep_SS = true;
+                end
+                
+                
+            end
             return;    
 
 
 
 
 
-        end
+        %end
+
     catch ERROR
     %     ERROR;
         rethrow(ERROR);

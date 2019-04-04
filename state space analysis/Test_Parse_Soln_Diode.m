@@ -43,7 +43,7 @@ u = [Vg 1 1]';
 %}
 
 %% Buck Converter
-%%{
+%{
 Vg = 5;
 L1 = 230e-9; %L
 C1 = 4040e-9; %Cout
@@ -109,14 +109,61 @@ ts = [Ts*.66-dt dt Ts*.34-dt dt]; % The inital guess of time intervals
 u = [Vg  1 1]';
 %}
 
+%% DAB Converter
+Vg = 100;
+L3 = 1e-3;
+L2 = 1e-3;
+L1 = 20e-6;
+C1 = 40040e-9; %Cout
+fs = 1e7;
+Ts = 1/fs;
+V = 100;
+Io = 10; % was 1
+M1_C = 200e-9; % CHS
+M2_C = 200-9; % LHS
+M3_C = 200e-9; % CHS
+M4_C = 200e-9; % LHS
+M5_C = 200e-9; % CHS
+M6_C = 200e-9; % LHS
+M7_C = 200e-9; % CHS
+M8_C = 200e-9; % LHS
+D1_C = 200e-9; % LHS
+
+R1 =  166; % Rl also known as R1 (one or L (lowercase))
+dt = Ts/1000;%5e-10;
+Vdr = 5;
+M1_R_ON = .05; % ronHS
+M2_R_ON = .05; % ronLS
+M3_R_ON = .05; % ronHS
+M4_R_ON = .05; % ronLS
+M5_R_ON = .05; % ronHS
+M6_R_ON = .05; % ronLS
+M7_R_ON = .05; % ronHS
+M8_R_ON = .05; % ronLS
+D1_R_D = .05; % ronLS
+M1_R_D = .05; % ronHS
+M2_R_D = .05; % ronLS
+M3_R_D = .05; % ronHS
+M4_R_D = .05; % ronLS
+M5_R_D = .05; % ronHS
+M6_R_D = .05; % ronLS
+M7_R_D = .05; % ronHS
+M8_R_D = .05; % ronLS
 
 
+
+[D1_R_OFF,M1_R_OFF,M2_R_OFF,M3_R_OFF,M4_R_OFF,M5_R_OFF,M6_R_OFF,M7_R_OFF,M8_R_OFF] = deal(100000000); % ronLS
+
+Order = [1 2 3 4 5 6 7 8]; % The order that the states must go in after being parsed
+ts = [(Ts*0.25/2)-dt 2*dt (Ts*0.25/2)-dt Ts*.25 (Ts*0.25/2)-dt 2*dt (Ts*0.25/2)-dt Ts*.25]; % The inital guess of time intervals
+
+u = [Vg  1 1 1 1 1 1 1 1 ]';
 TestparseWaveform = false;
 
 
 
 % Select .net file
-filename = 'Buck2.net';
+filename = 'DAB.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -161,10 +208,11 @@ Current = {'V1'
 
 
 %% Run functions
-parse = NetListParse();
-parse.initialize(filename,Voltage,Current);
-parse.ABCD();
-% load('D:\GitHub\AURA\DAB_PARSE.mat')
+
+% parse = NetListParse();
+% parse.initialize(filename,Voltage,Current);
+% parse.ABCD();
+load('D:\GitHub\AURA\DAB_PARSE.mat')
 
 
 % if TestparseWaveform

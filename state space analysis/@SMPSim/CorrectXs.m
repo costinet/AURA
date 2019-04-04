@@ -57,7 +57,7 @@ for i = 2:1:size(Xs,2)
         Xs(:,1) = Xs(:,end);
     end
 end
-if nargin==1
+if nargin==1||nargin==2
     obj.Xs_circuit = Xs;
     obj.Xs = Xs;
 end

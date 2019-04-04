@@ -54,7 +54,7 @@ obj.ON_States = cell(length(switches),number_of_states);
 obj.OFF_States = cell(length(switches),number_of_states);
 
 %[THE_LIST]=obj.states_find(state,switches);
-%{
+
 ON = [1 0];
 OFF = [0 0];
 
@@ -92,7 +92,7 @@ state_old = state;
 state = state(Combinations,:);
 
 number_of_states = size(Combinations,2);
-%}
+
 %% Cycle through all possible states
 
 for i = 1:1:number_of_states
@@ -105,6 +105,8 @@ for i = 1:1:number_of_states
     
     J = 98631;
 end
+
+% openvar('variable_name')
 
 % Update class
 obj.Asym = A;

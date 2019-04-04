@@ -1,4 +1,4 @@
-function [dXs] = Baxter_StateSensitivity(obj, varToPerturb, pI, dX, cI)
+function [dXs] = Baxter_StateSensitivity(obj,keep_SS, varToPerturb, pI, dX, cI)
 %Baxter_StateSensitivity Solves the state space for a slightly perturbed variable and solve for how that affects the steady state of the converter
 %   varToPerturb is on of the char arrays 'As','Bs','ts','u'
 %
@@ -29,10 +29,12 @@ Bs = obj.Bs;
 ts = obj.ts;
 u = obj.u;
 
-if(nargin == 4)
+
+
+if(nargin == 5)
     cI = pI;
     dX2 = 0;
-elseif(nargin == 5)
+elseif(nargin == 6)
     dX2 = -dX;
 end
 
@@ -60,8 +62,8 @@ end
 % sability
 
 
-[dXs] = obj.SS_Soln(1,As,Bs,ts,u); 
-[dXs] = obj.CorrectXs(1,dXs);
+[dXs] = obj.SS_Soln(keep_SS,As,Bs,ts,u); 
+[dXs] = obj.CorrectXs(keep_SS,dXs);
 
 
 end

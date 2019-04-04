@@ -3,6 +3,15 @@ function [ts,order,new_index] = adjust_time(obj,sign,new_index,ts,order,waveform
 %adjust to have a correct physical circuit with diode implementation
 %   Detailed explanation goes here
 
+
+% sign is a 1x2 double that determines the states that are chosen to
+% replace part or all of the period chosen. sign(1) determines whether
+% there is a < or > sign used to determine violations (could probably
+% be reduced with *(-1)). sign(2) determines the sign of the sign of
+% the forward voltage to make the comparison. This can be changed once
+% we get in a database of component values in a class.
+
+
 %     _   _   _  ____    _    
 %    / \ | | | |/ _  |  / \   
 %   / _ \| | | | (_| | / _ \  
@@ -11,6 +20,9 @@ function [ts,order,new_index] = adjust_time(obj,sign,new_index,ts,order,waveform
 
 
 try
+    
+    
+    
 if sign(1)  == 1
     [P] = find(diff(waveform>1*(-1)^sign(2))~=0); % Find all cases of violations
     flipflop = waveform(1)>1*(-1)^sign(2); % Check to see if the inital value was in violation. This will be used later on if there are multiple crossings of violations within the same time interval. We simply flipflop between states in the order variable
@@ -177,5 +189,5 @@ catch ME
 throw(ME)
 end
 
-end
+end % That's all Folks
 
