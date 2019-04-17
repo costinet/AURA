@@ -56,25 +56,55 @@ try
             Ts = sum(ts);
             % Important set up stuff
             debug = true;
+            output_order =  [10 8 6 9];
             [xs, t, y, time_interval] = obj.SS_WF_Reconstruct();
             StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
             StateNumbers_Opp = obj.Converter.Topology.Parser.StateNumbers_Opposite;
             ONorOFF = obj.Converter.Topology.Parser.ONorOFF;
             
+            %%% This is original waveform generator for all state
+            %%% variables 
+%             if debug
+%                 fprintf('--------- \n')
+%                 fprintf('Iteration number %.0f \n',the_counter-1)
+%                 % What we are given for this iteration
+%                 figure(1)
+%                 ns = size(xs,1);
+%                 for z=1:ns
+%                     ax = subplot(10*ns,1,z*10-9:z*10);
+%                     hold on;
+%                     plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
+%                     ylabel(obj.getstatenames{z})
+%                     box on
+%                     ax.YLim = [min(y(StateNumbers(z),:))-abs(0.5*min(y(StateNumbers(z),:))) max(y(StateNumbers(z),:))+abs(0.5*max(y(StateNumbers(z),:)))];
+%                     if(z<ns)
+%                         set(gca, 'Xticklabel', []);
+%                     else
+%                         xlabel('t(s)')
+%                     end
+%                 end
+%                 drawnow;
+%             end
+            
+
+
+
+                %%% This is new waveform generator for the listed
+                %%% waveforms of the compel converter
             if debug
                 fprintf('--------- \n')
                 fprintf('Iteration number %.0f \n',the_counter-1)
                 % What we are given for this iteration
-                figure(1)
+                figure(5)
                 ns = size(xs,1);
-                for z=1:ns
-                    ax = subplot(10*ns,1,z*10-9:z*10);
+                for z=1:length(output_order)
+                    ax = subplot(10*length(output_order),1,z*10-9:z*10);
                     hold on;
-                    plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
-                    ylabel(obj.getstatenames{z})
+                    plot(t,y(StateNumbers(output_order(z)),:), 'Linewidth', 3);
+                    ylabel(obj.getstatenames{output_order(z)})
                     box on
-                    ax.YLim = [min(y(StateNumbers(z),:))-abs(0.5*min(y(StateNumbers(z),:))) max(y(StateNumbers(z),:))+abs(0.5*max(y(StateNumbers(z),:)))];
-                    if(z<ns)
+                    ax.YLim = [min(y(StateNumbers(output_order(z)),:))-abs(0.5*min(y(StateNumbers(output_order(z)),:))) max(y(StateNumbers(output_order(z)),:))+abs(0.5*max(y(StateNumbers(output_order(z)),:)))];
+                    if(z<length(output_order))
                         set(gca, 'Xticklabel', []);
                     else
                         xlabel('t(s)')
@@ -82,8 +112,11 @@ try
                 end
                 drawnow;
             end
-            
-            
+
+
+
+
+
             
             
             order = obj.order;
@@ -357,20 +390,60 @@ try
                             if ONorOFF(i,j-1) == 2 % if FET ON
                                 if sum(waveform<-1-1*tol)>0 && debug
                                     % Check if body diode conducts (time interval could be shortened)
-                                    fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                                  %  fprintf('Body Diode conducting: %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                                 end
                                 
                             elseif ONorOFF(i,j-1) == -1 % if FET off
-                                
-                                
-                                
                                 if sum(waveform<-1-1*tol)>0 && debug
+                                    
                                     
                                     fprintf('State Violation (Body Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
                                     sign = [0,1];
-                                    [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
+                                    
+
+                                    [P] = find(diff(waveform<1*(-1)^sign(2))~=0); % Find all cases of violations
+                                    if (length(P)==1||length(P)==2) % Set equal to 2 to always be false so we can skip to the next part
+                                        if waveform(1)<-1 % if there is only a violation at the beginning of the time interval then look to set the end of the last time interval to be equal to the diode forward votlage (1)
+                                            first_violations = 1;
+                                          
+                                            if first_violations && ONorOFF(i,k-1) == 2
+                                                j = j-1;
+                                                [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,-1,min(y(StateNumbers(i),:)),0.001,1,keep_SS);
+                                                order = obj.order;
+                                                not_physical = true;
+                                                break
+                                            end
+                                            
+                                        end
+                                        
+                                        if waveform(end)<-1 % if there is only a violation at the end of the time interval then the current time interval needs to be ajusted to end earilier at the diode forward votlage crossing (1)
+                                            last_violations = 1;
+                                            if (k+1)>size(ONorOFF,2)
+                                                if last_violations && ONorOFF(i,1) == 2
+                                                    [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
+                                                    order = obj.order;
+                                                    not_physical = true;
+                                                    break
+                                                end
+                                            else
+                                                if last_violations && ONorOFF(i,k+1) == 2
+                                                    [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
+                                                    order = obj.order;
+                                                    not_physical = true;
+                                                    break
+                                                end
+                                            end
+                                        end
+                                        
+                                    else
+                                        
+                                        
+                                        
+                                        [ts,order,new_index] = obj.adjust_time(sign,new_index,ts,order,waveform,i,k,time_ratio);
                                     
                                     not_physical = true;
+                                    end
+
                                     if waveform(1)<-1
                                         first_violations = 1;
                                     end

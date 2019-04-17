@@ -59,14 +59,14 @@ ON = [1 0];
 OFF = [0 0];
 
 Binary_for_DAB = [
-    OFF ON ON OFF OFF ON ON OFF
-    OFF OFF OFF OFF OFF ON ON OFF
-    ON OFF OFF ON OFF ON ON OFF
-    ON OFF OFF ON OFF OFF OFF OFF
-    ON OFF OFF ON ON OFF OFF ON
-    OFF OFF OFF OFF ON OFF OFF ON
-    OFF ON ON OFF ON OFF OFF ON
-    OFF ON ON OFF OFF OFF OFF OFF];
+    OFF ON ON OFF OFF ON ON OFF % Reverse power
+    OFF OFF OFF OFF OFF ON ON OFF % primary sw
+    ON OFF OFF ON OFF ON ON OFF % phase shift
+    ON OFF OFF ON OFF OFF OFF OFF % secondary sw
+    ON OFF OFF ON ON OFF OFF ON % POWER
+    OFF OFF OFF OFF ON OFF OFF ON %primary sw
+    OFF ON ON OFF ON OFF OFF ON % phase shift
+    OFF ON ON OFF OFF OFF OFF OFF]; % secondary sw
 
 The_Codex = []; % Initialize matrix
     for i = 1:1:size(Binary_for_DAB,1)
@@ -125,5 +125,6 @@ obj.SortedTree = SortedTree;
 obj.SortedCoTree = SortedCoTree;
 obj.ConstantNames = ConstantNames;
 obj.OrderedNamesnum = OrderedNamesnum;
+obj.Codex = The_Codex;
 
 end % That's all Folks

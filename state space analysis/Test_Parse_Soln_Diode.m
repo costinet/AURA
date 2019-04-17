@@ -110,60 +110,64 @@ u = [Vg  1 1]';
 %}
 
 %% DAB Converter
-Vg = 100;
-L3 = 1e-3;
-L2 = 1e-3;
-L1 = 20e-6;
-C1 = 40040e-9; %Cout
-fs = 1e7;
+Vg = 48;
+L3 = 1e-6;
+L2 = 1296e-6;
+L1 = 76e-6;
+C1 = (4*100+680)*10^-6; %Cout
+fs = 0.2e6;
 Ts = 1/fs;
-V = 100;
+V = 1.2;
 Io = 10; % was 1
-M1_C = 200e-9; % CHS
-M2_C = 200-9; % LHS
-M3_C = 200e-9; % CHS
-M4_C = 200e-9; % LHS
-M5_C = 200e-9; % CHS
-M6_C = 200e-9; % LHS
-M7_C = 200e-9; % CHS
-M8_C = 200e-9; % LHS
-D1_C = 200e-9; % LHS
+M1_C = 110e-12; % CHS
+M2_C = 110e-12; % LHS
+M3_C = 110e-12; % CHS
+M4_C = 110e-12; % LHS
+M5_C = 1620e-12; % CHS
+M6_C = 1620e-12; % LHS
+M7_C = 1620e-12; % CHS
+M8_C = 1620e-12; % LHS
+D1_C = 1620e-12; % LHS
 
-R1 =  166; % Rl also known as R1 (one or L (lowercase))
+R1 =  0.16; %the out put resistor
 dt = Ts/1000;%5e-10;
 Vdr = 5;
-M1_R_ON = .05; % ronHS
-M2_R_ON = .05; % ronLS
-M3_R_ON = .05; % ronHS
-M4_R_ON = .05; % ronLS
-M5_R_ON = .05; % ronHS
-M6_R_ON = .05; % ronLS
-M7_R_ON = .05; % ronHS
-M8_R_ON = .05; % ronLS
-D1_R_D = .05; % ronLS
-M1_R_D = .05; % ronHS
-M2_R_D = .05; % ronLS
-M3_R_D = .05; % ronHS
-M4_R_D = .05; % ronLS
-M5_R_D = .05; % ronHS
-M6_R_D = .05; % ronLS
-M7_R_D = .05; % ronHS
-M8_R_D = .05; % ronLS
+M1_R_ON = 0.05; % ronHS
+M2_R_ON = 0.05; % ronLS
+M3_R_ON = 0.05; % ronHS
+M4_R_ON = 0.05; % ronLS
+M5_R_ON = 0.0015; % ronHS
+M6_R_ON = .0015; % ronLS
+M7_R_ON = .0015; % ronHS
+M8_R_ON = .0015; % ronLS
+
+M1_R_D = 0.05; % ronHS
+M2_R_D = 0.05; % ronLS
+M3_R_D = 0.05; % ronHS
+M4_R_D = 0.05; % ronLS
+M5_R_D = .0015; % ronHS
+M6_R_D = .0015; % ronLS
+M7_R_D = .0015; % ronHS
+M8_R_D = .0015; % ronLS
 
 
 
 [D1_R_OFF,M1_R_OFF,M2_R_OFF,M3_R_OFF,M4_R_OFF,M5_R_OFF,M6_R_OFF,M7_R_OFF,M8_R_OFF] = deal(100000000); % ronLS
 
 Order = [1 2 3 4 5 6 7 8]; % The order that the states must go in after being parsed
-ts = [(Ts*0.25/2)-dt 2*dt (Ts*0.25/2)-dt Ts*.25 (Ts*0.25/2)-dt 2*dt (Ts*0.25/2)-dt Ts*.25]; % The inital guess of time intervals
+% ts = [Ts*.2376 Ts*.0277 Ts*.23 Ts*.00023 Ts*.2376 Ts*.02775 Ts*.23 Ts*.00023];
 
-u = [Vg  1 1 1 1 1 1 1 1 ]';
+ts = [Ts*.32 Ts*.01 Ts*.16 Ts*.001 Ts*.32 Ts*.01 Ts*.16 Ts*.001];
+
+u = [Vg 1 1 1 1 1 1 1 1]';
+
+
 TestparseWaveform = false;
 
 
 
 % Select .net file
-filename = 'DAB.net';
+filename = 'DAB_no_RL.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -212,7 +216,7 @@ Current = {'V1'
 % parse = NetListParse();
 % parse.initialize(filename,Voltage,Current);
 % parse.ABCD();
-load('D:\GitHub\AURA\DAB_PARSE.mat')
+ load('D:\GitHub\AURA\DAB_PARSE.mat')
 
 
 % if TestparseWaveform
@@ -334,10 +338,10 @@ optimize.dead_time_intervals = [2,4];
 optimize.dead_time_states = [4,2];
 optimize.dead_time_goals = [0,0];
 
-optimize.Vo_index = 2 ;
+optimize.Vo_index = 10 ;
 optimize.Vo_ideal_value = V;
-optimize.Perturb1_index = 1; % Used for state sensitivity power time
-optimize.Perturb2_index = 2; % Used for state sensitivity power time
+optimize.Perturb1_index = [1 5]; % Used for state sensitivity power time
+optimize.Perturb2_index = [3 7]; % Used for state sensitivity power time
 iterations = 10;
 parse.find_diode(Order);
 % check = simulator.VfwdIrev();

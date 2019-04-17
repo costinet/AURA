@@ -38,7 +38,7 @@ while Voerr>0.05*obj.Vo_ideal_value
     
     % Preterb and observe approach using StateSensitivity.m
     delta_DTs = max(min(ts)/10, sum(ts)/10000);
-    [dXs]=obj.Simulator.Baxter_StateSensitivity('ts', Perturb1_index, delta_DTs,Perturb2_index); % Determine how much states change when time is changes
+    [dXs]=obj.Simulator.Baxter_StateSensitivity(0,'ts', Perturb1_index, delta_DTs,Perturb2_index); % Determine how much states change when time is changes
     dxsdt = (dXs-Xs)/delta_DTs; % Find the change in states over the change in time (linear approximation of how changing ts will affect SS Xs)
     dt = (Voerr)/mean(dxsdt(Vo_index,:)); % Find the appropriate dt for output error
     
@@ -70,10 +70,10 @@ ts_new(Perturb2_index)=ts(Perturb2_index)+(Newt*avg)/(avg-avg2);
     %PHI = ts(1)-(u*f)/(f-)
     
     % Implement the change
-    ts(1) = ts(1)+dt;
-    ts(3) = ts(3)-dt;
+    ts(Perturb1_index) = ts(Perturb1_index)+dt;
+    ts(Perturb2_index) = ts(Perturb2_index)-dt;
     
-    
+    obj.ts = ts;
     
 end
 
