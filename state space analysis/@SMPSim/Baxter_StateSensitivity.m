@@ -61,6 +61,10 @@ end
 % Right now leaning towards calculating it everytime to maintain
 % sability
 
+% If using a zero as a time interval then there is a real possibility
+% that there will be a negative state which will make SS_Soln not
+% happy
+
 
 [dXs] = obj.SS_Soln(keep_SS,As,Bs,ts,u); 
 [dXs] = obj.CorrectXs(keep_SS,dXs);

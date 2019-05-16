@@ -5,7 +5,7 @@ function [A,B,C,D,Htemp,depends,StateNames,OutputNames,DependentNames,ConstantNa
 
 % if the number of state variables is greater than sym_comput, sym AB
 % matrix will not be computed
-sym_comput = 9;  %% 99 or 1
+sym_comput = 1;  %% 99 or 1
 
 numE = 1;
 numEB = 2;
@@ -94,8 +94,8 @@ while i<loop
         OutputNames(i) = []; % Deletes name from Output names list
         
         % Correct the numerical reference from the state variables to net list 
-        OrderedNamesnum(end+1) = OrderedNamesnum(k); 
-        OrderedNamesnum(k) = [];
+        OrderedNamesnum(end+1) = OrderedNamesnum(i); 
+        OrderedNamesnum(i) = [];
         
         j = j+1; % J is number of dependent elements
         

@@ -45,6 +45,7 @@ classdef SMPSim < handle
         Vo_ideal_value
         Perturb1_index
         Perturb2_index
+        binary % This is the ON and OFF Position of switches for the converter to be simulated
     end
     
     methods (Access = private)
@@ -81,6 +82,15 @@ classdef SMPSim < handle
             obj.Xs = [];
         end
         
+        function setts(obj,ts)
+            if sum(ts>0)==length(ts)
+                obj.ts = ts;
+            else
+                error('There is a non-postitive time interval length trying to be assigned to the simulation class variable ts')
+            end
+        end
+        
+        
         function setmodulation(obj, ts)
             obj.ts = ts;
             obj.oldts = zeros(size(ts));
@@ -96,6 +106,10 @@ classdef SMPSim < handle
         
         function sn = getstatenames(obj)
             sn = obj.Converter.Topology.stateLabels;
+        end
+        
+        function sn = getstatenames_Opp(obj)
+            sn = obj.Converter.Topology.stateLabels_Opp;
         end
         
         function sn = getstatenames2(obj)

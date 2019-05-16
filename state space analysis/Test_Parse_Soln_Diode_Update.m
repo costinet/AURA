@@ -14,6 +14,7 @@
 %% User Input
 
 clear
+close all
 
 %% Boost converter
 %{
@@ -131,7 +132,7 @@ M8_C = 1620e-12; % LHS
 D1_C = 1620e-12; % LHS
 
 
-R2 = 0.05;
+R2 = 0.01;
 R3 = 0.01;
 
 R1 =  0.16; %the out put resistor
@@ -190,12 +191,19 @@ SW = [SW_OFF;SW_ON];
 
 
 
-
-
+Binary_for_DAB = [
+    OFF ON ON OFF OFF ON ON OFF % Reverse power
+    OFF OFF OFF OFF OFF ON ON OFF % primary sw
+    ON OFF OFF ON OFF ON ON OFF % phase shift
+    ON OFF OFF ON OFF OFF OFF OFF % secondary sw
+    ON OFF OFF ON ON OFF OFF ON % POWER
+    OFF OFF OFF OFF ON OFF OFF ON %primary sw
+    OFF ON ON OFF ON OFF OFF ON % phase shift
+    OFF ON ON OFF OFF OFF OFF OFF]; % secondary sw
 
 
 % Select .net file
-filename = 'DAB.net';
+filename = 'DAB_no_RL.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -203,6 +211,8 @@ filename = 'DAB.net';
 % Dickson.net
 % Flyback.net
 % Forward.net
+% DAB.net
+% DAB_no_RL.net
 % Buck_Qual.net Synchronous buck with series inductor resistance
 
 % Select test case file
@@ -241,10 +251,10 @@ Current = {'V1'
 
 %% Run functions
 
-% parse = NetListParse();
-% parse.initialize(filename,Voltage,Current);
-% parse.ABCD();
- load('D:\GitHub\AURA\DAB_PARSE.mat')
+parse = NetListParse();
+parse.initialize(filename,Voltage,Current);
+parse.ABCD();
+%  load('D:\GitHub\AURA\DAB_PARSE.mat')
 
 
 % if TestparseWaveform
@@ -277,28 +287,42 @@ D = parse.Dsym;
 SortedTree = parse.SortedTree;
 SortedCoTree = parse.SortedCoTree;
 
-
 if isempty(A)
-    for k = 1:1:size(parse.HtempAB,3)
-        HtempAB(:,:,k) = eval(parse.HtempAB(:,:,k));
-        HtempCD(:,:,k) = eval(parse.HtempCD(:,:,k));
-        dependsAB(:,:,k) = eval(parse.dependsAB(:,:,k));
-        savedCD(:,:,k) = eval(parse.savedCD(:,:,k));
-        for j = 1:1:size(parse.DependentNames(:,k),1)
-            DependentNames(j,k) = eval(parse.DependentNames{j,k});
+    for k = 1:1:size(Binary_for_DAB,1)
+        
+        out = {};
+        
+        for j = 1:1:size(Binary_for_DAB,2)
+            out{j} = SW(Binary_for_DAB(k,j)+1,j);
         end
-        for j = 1:1:size(parse.OutputNames(:,k),1)
-            OutputNames(j,k) = eval(parse.OutputNames{j,k});
+        [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+        
+        
+        
+        HtempAB(:,:,k) = eval(parse.HtempAB(:,:,1));
+        HtempCD(:,:,k) = eval(parse.HtempCD(:,:,1));
+        dependsAB(:,:,k) = eval(parse.dependsAB(:,:,1));
+        savedCD(:,:,k) = eval(parse.savedCD(:,:,1));
+        for j = 1:1:size(parse.DependentNames(:,1),1)
+            DependentNames(j,k) = eval(parse.DependentNames{j,1});
+        end
+        for j = 1:1:size(parse.OutputNames(:,1),1)
+            OutputNames(j,k) = eval(parse.OutputNames{j,1});
         end
     end
-    for k = 1:1:size(parse.HtempAB,3)
+    for k = 1:1:size(HtempAB,3)
         [A,B,C,D] = parse.loopfixAB_large(HtempAB(:,:,k),dependsAB(:,:,k),OutputNames(:,k),DependentNames(:,k));
-        [C,D] = parse.loopfixCD_large(B,C,D,HtempCD(:,:,k),savedCD(:,:,k),DependentNames(:,k),SortedTree(:,:,k),SortedCoTree(:,:,k));
+        [C,D] = parse.loopfixCD_large(B,C,D,HtempCD(:,:,k),savedCD(:,:,k),DependentNames(:,k),SortedTree(:,:,1),SortedCoTree(:,:,1));
         parse.Anum(:,:,k)=A;
         parse.Bnum(:,:,k)=B;
         parse.Cnum(:,:,k)=C;
         parse.Dnum(:,:,k)=D;
     end
+    
+    % Set all diode forward voltages to be off
+    B = parse.Bnum;
+    B(:,contains(parse.ConstantNames,'VF'))=0;
+    parse.Bnum = B;
     
 elseif ~isempty(parse.Anum)
     fprintf('Confirm Plecs used');
@@ -312,7 +336,7 @@ else
 end
 
 simulator.loadTestConverter2(conv);
-
+simulator.binary = Binary_for_DAB;
 Xss = simulator.SS_Soln();
 
 %% Reconstruction of Dependent variables
@@ -323,8 +347,10 @@ simulator.CorrectXs();
 for i = 1:1:length(parse.StateNumbers)
     if strcmp(parse.OutputNamesCD{parse.StateNumbers(i),1}(1,end),'A')
         top.stateLabels(end+1,1) = strcat('I_{', parse.StateNames(i,1),'} (A)');
+        top.stateLabels_Opp(end+1,1) = strcat('V_{', parse.StateNames(i,1),'} (V)');
     else
         top.stateLabels(end+1,1) = strcat(parse.OutputNamesCD{parse.StateNumbers(i),1}(1,end),'_{', parse.StateNames(i,1),'} (V)');
+        top.stateLabels_Opp(end+1,1) = strcat('I_{', parse.StateNames(i,1),'} (A)');
     end
 end
     
@@ -372,7 +398,7 @@ optimize.Vo_ideal_value = V;
 optimize.Perturb1_index = [1 5]; % Used for state sensitivity power time
 optimize.Perturb2_index = [3 7]; % Used for state sensitivity power time
 iterations = 10;
-parse.find_diode(Order);
+parse.find_diode_new(Order,Binary_for_DAB);
 % check = simulator.VfwdIrev();
 
 optimize.opptimization_loop;

@@ -20,7 +20,7 @@ Voerr = 999999999;
 
 while Voerr>0.05*obj.Vo_ideal_value
     
-    [y] = obj.Simulator.bruteforcelsim(20);
+    [y] = obj.Simulator.bruteforcelsim_single(20);
     
     ts = obj.Simulator.ts;
     Xs = obj.Simulator.Xs;

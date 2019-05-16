@@ -16,6 +16,7 @@ classdef SMPStopology < handle
         Dsym
         
         stateLabels={}
+        stateLabels_Opp={}
         Xi
         Bi
         outputLabels

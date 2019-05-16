@@ -37,7 +37,8 @@ number_of_states = 2^length(switches);
 bin=de2bi(0:number_of_states-1);
 state = bin;
 
-[state] = obj.bodydiode_correction(switches,state);
+% to find body diodes for DAB
+%[state] = obj.bodydiode_correction(switches,state);
 
 number_of_states = size(state,1);
 
@@ -53,8 +54,8 @@ SortedCoTree=zeros(2*size(obj.NL,1),5,1);
 obj.ON_States = cell(length(switches),number_of_states);
 obj.OFF_States = cell(length(switches),number_of_states);
 
-%[THE_LIST]=obj.states_find(state,switches);
 
+%{
 ON = [1 0];
 OFF = [0 0];
 
@@ -93,15 +94,18 @@ state = state(Combinations,:);
 
 number_of_states = size(Combinations,2);
 
+%}
+number_of_states = 1;
+
 %% Cycle through all possible states
 
 for i = 1:1:number_of_states
 
-    [NewNL,NewNLnets,forward_pass]=obj.states(state,i,switches);
+    [NewNL,NewNLnets,forward_pass]=obj.Single_states(state,i,switches);
     [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),HtempAB(:,:,i),dependsAB(:,:,i),HtempCD(:,:,i),savedCD(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i),OutputNames(:,i),DependentNames(:,i),SortedTree(:,:,i),SortedCoTree(:,:,i),ConstantNames(:,i),OrderedNamesnum(:,i)] = obj.nodeloop(NewNL,NewNLnets);
     
-    key = [ones(size(B(:,:,i),2)-size(forward_pass,1)-sum(SortedCoTree(:,1)==12),1);forward_pass;ones(sum(SortedCoTree(:,1)==12),1)]'; % Fit the forward voltage for body diodes in between other voltage sources and current sources to achive corret orientation in B
-    B(:,:,i)=B(:,:,i).*repmat(key,size(B(:,:,i),1),1); % Multiply the key times B to get rid of the columns of B where there is not a diode on during ith state
+    % key = [ones(size(B(:,:,i),2)-size(forward_pass,1)-sum(SortedCoTree(:,1)==12),1);forward_pass;ones(sum(SortedCoTree(:,1)==12),1)]'; % Fit the forward voltage for body diodes in between other voltage sources and current sources to achive corret orientation in B
+    % B(:,:,i)=B(:,:,i).*repmat(key,size(B(:,:,i),1),1); % Multiply the key times B to get rid of the columns of B where there is not a diode on during ith state
     
     J = 98631;
 end
@@ -125,6 +129,6 @@ obj.SortedTree = SortedTree;
 obj.SortedCoTree = SortedCoTree;
 obj.ConstantNames = ConstantNames;
 obj.OrderedNamesnum = OrderedNamesnum;
-obj.Codex = The_Codex;
+%obj.Codex = The_Codex;
 
 end % That's all Folks
