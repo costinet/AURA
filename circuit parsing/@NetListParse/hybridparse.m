@@ -29,16 +29,11 @@ function [H,s] = hybridparse(obj,preH,SortedTree,SortedCoTree)
 % done iff there are no dependent sources in the circuit other than
 % those created by the transformer model
 
-%     %%%%%%   %      %  %%%%%%%    %%%%%%
-%    %      %  %      %  %      %  %      %
-%    %      %  %      %  %      %  %      %
-%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
-%    %      %  %      %  %%        %      %
-%    %      %  %      %  % %       %      %
-%    %      %  %      %  %  %      %      %
-%    %      %  %      %  %   %     %      %
-%    %      %   %    %   %    %    %      %
-%    %      %    %%%%    %     %   %      %
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
 
 %% Set up variables
 
@@ -112,7 +107,7 @@ Jcol = preH(:,firstJ+DT(1):end);
 if isempty(Jcol)
 JBcol = preH(:,firstJB+DT(1):end);
 else
-JBcol = preH(:,firstJB+DT(1):firstJB+DT(1)-1);
+JBcol = preH(:,firstJB+DT(1):firstJ+DT(1)-1);
 end
 
 if isempty(JBcol)
@@ -162,7 +157,7 @@ Jcol = preH(:,firstJ+DT(1):end);
 if isempty(Jcol)
 JBcol = preH(:,firstJB+DT(1):end);
 else
-JBcol = preH(:,firstJB+DT(1):firstJB+DT(1)-1);
+JBcol = preH(:,firstJB+DT(1):firstJ+DT(1)-1);
 end
 
 if isempty(JBcol)

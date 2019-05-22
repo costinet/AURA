@@ -47,7 +47,7 @@ obj.Dnum = Dnum;
 obj.Inum = Inum;
 
 obj.InputNames = names.Inputs;
-obj.StateNaems = names.States;
+obj.StateNames = names.States;
 obj.OutputNamesCD = names.Outputs;
 obj.SwitchNames = names.Switches;
 

@@ -36,7 +36,27 @@ if(nargin == 5)
     dX2 = 0;
 elseif(nargin == 6)
     dX2 = -dX;
+    
+    if ts(pI)+dX<=0
+        dX = 0.1*ts(pI);
+    end
+    if ts(cI)+ dX2 <= 0
+        dX2 = 0.1*ts(cI);
+    end
+    
+    dX = min(abs(dX2),abs(dX));
+    dX2 = -dX;
 end
+
+% Need to ensure that ts changes will always result in a positive
+% value of ts for the SS solve.
+
+
+
+    
+
+
+
 
 if(varToPerturb(1:2) == 'As')
     As(pI(1), pI(2), pI(3)) = As(pI(1), pI(2), pI(3)) + dX;

@@ -1,5 +1,5 @@
 * G:\My Drive\Graduate Classes\Fall 2018\ECE 581\Baxter UTK Tiny Box Challenge\DAB.asc
-L1 N003 N004 1
+L1 N009 N004 1
 L2 N004 N006 1
 L3 N005 N007 1
 M1 N002 NC_01 N003 N003 NMOS
@@ -13,6 +13,7 @@ M8 N007 NC_08 0 0 NMOS
 C1 N001 0 1µ
 R1 N001 0 10
 V1 N002 0 48
+R2 N003 N009 1
 .model NMOS NMOS
 .model PMOS PMOS
 .lib C:\Users\jared\Documents\LTspiceXVII\lib\cmp\standard.mos

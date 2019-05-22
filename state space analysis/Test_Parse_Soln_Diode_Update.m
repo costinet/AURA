@@ -116,7 +116,7 @@ L3 = 1e-6;
 L2 = 1296e-6;
 L1 = 76e-6;
 C1 = (4*100+680)*10^-6; %Cout
-C2 = C1;
+C2 = 100*10^-6;
 fs = 0.2e6;
 Ts = 1/fs;
 V = 1.2;
@@ -132,7 +132,7 @@ M8_C = 1620e-12; % LHS
 D1_C = 1620e-12; % LHS
 
 
-R2 = 0.01;
+R2 = 0.16;
 R3 = 0.01;
 
 R1 =  0.16; %the out put resistor
@@ -171,7 +171,7 @@ Order = [1 2 3 4 5 6 7 8]; % The order that the states must go in after being pa
 
 ts = [Ts*.32 Ts*.01 Ts*.16 Ts*.001 Ts*.32 Ts*.01 Ts*.16 Ts*.001];
 
-u = [Vg 1 1 1 1 1 1 1 1]';
+u = [Vg 1 1 1 1 1 1 1 1 ]';
 
 
 TestparseWaveform = false;
@@ -203,7 +203,7 @@ Binary_for_DAB = [
 
 
 % Select .net file
-filename = 'DAB_no_RL.net';
+filename = 'DAB_Resistors.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -327,12 +327,24 @@ if isempty(A)
 elseif ~isempty(parse.Anum)
     fprintf('Confirm Plecs used');
 else
-    for k = 1:1:size(A,3)
-        parse.Anum(:,:,k) = eval(A(:,:,k));
-        parse.Bnum(:,:,k) = eval(B(:,:,k));
-        parse.Cnum(:,:,k) = eval(C(:,:,k));
-        parse.Dnum(:,:,k) = eval(D(:,:,k));
+    for k = 1:1:size(Binary_for_DAB,1)
+        
+        out = {};
+        
+        for j = 1:1:size(Binary_for_DAB,2)
+            out{j} = SW(Binary_for_DAB(k,j)+1,j);
+        end
+        [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+        
+        parse.Anum(:,:,k) = eval(A(:,:,1));
+        parse.Bnum(:,:,k) = eval(B(:,:,1));
+        parse.Cnum(:,:,k) = eval(C(:,:,1));
+        parse.Dnum(:,:,k) = eval(D(:,:,1));
     end
+     % Set all diode forward voltages to be off
+    B = parse.Bnum;
+    B(:,contains(parse.ConstantNames,'VF'),:)=0;
+    parse.Bnum = B;
 end
 
 simulator.loadTestConverter2(conv);
