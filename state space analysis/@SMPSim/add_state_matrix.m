@@ -126,9 +126,9 @@ end
         [C,D] = obj.Converter.Topology.Parser.loopfixCD_large(B,C,D,HtempCD(:,:,k),savedCD(:,:,k),DependentNames(:,k),obj.Converter.Topology.Parser.SortedTree(:,:,1),obj.Converter.Topology.Parser.SortedCoTree(:,:,1));
     end
 
-  
+    
     B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF'))=B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF')).*(Binary==2)';
-   
+    D(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF'))=D(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF')).*(Binary==2)';
     
     
 

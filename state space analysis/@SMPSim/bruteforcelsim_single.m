@@ -156,6 +156,11 @@ try
                     j;% is time interval for Xss
                     k = j-1; % k is time interval for everything else
                     
+                    if i ==9 && k==5
+                        J = 45465;
+                    end
+                    
+                    
                     if ONorOFF(i,k) ~=0 % if FET or Diode
                         if k==1
                             index = time_interval(k):time_interval(k+1); % List all the index values within the givn deadtime
@@ -270,7 +275,7 @@ try
                                 
                             elseif ONorOFF(i,j-1) == -1 % if FET off
                                 
-                                if j ~= 7
+                                
                                 if sum(waveform<-1-1*tol)>0 && debug
                                     
                                     
@@ -302,12 +307,39 @@ try
                                         if waveform(end)<-1 % if there is only a violation at the end of the time interval then the current time interval needs to be ajusted to end earilier at the diode forward votlage crossing (1)
                                             last_violations = 1;
                                             if (k+1)>size(ONorOFF,2)
-                                                if last_violations %&& ONorOFF(i,1) == 2
+                                                %         if last_violations %&& ONorOFF(i,1) == 2
+                                                %           [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
+                                                %         order = obj.order;
+                                                %       not_physical = true;
+                                                %     break
+                                                %      end
+                                                
+                                                if ONorOFF(i,1) == 1 && (sum((ONorOFF(:,1)==2)==(ONorOFF(:,j-1)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
                                                     [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
+                                                    obj.setts(ts);
+                                                    order = obj.order;
+                                                    not_physical = true;
+                                                    break
+                                                    
+                                                else
+                                                    replace = 0; new_index = 1;
+                                                    [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
+                                                    ts = [ts(1:k-1) ts(k)*.95 ts(k)*.05 ts(k+1:end)];
+                                                    obj.setts(ts);
+                                                    obj.SS_Soln(keep_SS);
+                                                    obj.CorrectXs(keep_SS);
+                                                    [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
+                                                    obj.setts(ts);
                                                     order = obj.order;
                                                     not_physical = true;
                                                     break
                                                 end
+                                                
+                                                
+                                                
+                                                
+                                                
+                                                
                                             else
                                                 if last_violations %&& ONorOFF(i,k+1) == 2
                                                     if ONorOFF(i,j) == 1 && (sum((ONorOFF(:,j)==2)==(ONorOFF(:,j-1)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
@@ -401,8 +433,8 @@ try
                                     %                             end
                                     
                                 end
-                             
-                                end % j not equal to 7 end 
+                                
+                                
                                 
                             elseif ONorOFF(i,j-1) == 1 % body diode on
                                 
@@ -588,7 +620,29 @@ try
                 %                 obj.ts = ts;
                 %                 obj.order = order;
                 
-                
+                ONorOFF = obj.Converter.Topology.Parser.ONorOFF;
+                time_intervals = size(ONorOFF,2);
+                key = 1;
+                while key < time_intervals
+                    
+                    if sum(ONorOFF(:,key)==ONorOFF(:,key+1))==size(ONorOFF,1) || ts(key+1) < 1e-12
+                        obj.As(:,:,key+1) = [];
+                        obj.Bs(:,:,key+1) = [];
+                        obj.Cs(:,:,key+1) = [];
+                        obj.Ds(:,:,key+1) = [];
+                        ONorOFF(:,key+1) = [];
+                        ts(key) = ts(key) + ts(key+1);
+                        ts(key+1) = [];
+                        
+                        time_intervals = time_intervals-1;
+                        key = key-1;
+                        fprintf('Found a repeated state \n')
+                    end
+                    
+                    key = key+1;
+                end
+                obj.Converter.Topology.Parser.ONorOFF = ONorOFF;
+                obj.setts(ts);
                 
                 
                 %                 obj.updateTestConverter();

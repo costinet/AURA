@@ -88,7 +88,7 @@ while i<loop
 
         % Set up so each depends row is a linear combination of the
         % independent state remaining:
-        depends(j,:)=Htemp(i,H_row2+1:2*H_row2);
+        depends(j,:)=Htemp(i,H_row2+1:2*H_row2); % Index forward to get the A matrix sandwitched between the I and B matrix
         depends(j,i) = 0;
 
         % Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*Htemp(:,i);
@@ -123,6 +123,12 @@ Htemp(:,H_row2:H_row2+sum(SortedTrees(:,1)==3)-1)=[];
 if ~isempty(C)
 
     if j~=0
+        % This takes the currents and voltages that were solved for
+        % previously in loopfixAB.m that should be the opposite of the
+        % state vector, so for C its I and for L its V. From there for
+        % those state that are dependent could have a current
+        % component for capacitors so add back in the current that was
+        % found in the previous C and D matrix
         for i = 1:1:size(saved,2)
             Htemp(:,H_row2:end-size(s,2)) = Htemp(:,H_row2:end-size(s,2)) + repmat(C(end-size(saved,2)+i,1:end-size(saved,2)),H_row2-1,1).*-saved(:,i);
             Htemp(:,end+1-size(s,2):end) = Htemp(:,end+1-size(s,2):end) + repmat(D(end-size(saved,2)+i,:),H_row2-1,1).*-saved(:,i);

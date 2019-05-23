@@ -88,29 +88,29 @@ try
     overresonant = ~isempty(slopechange);
     massiveOvershoot = Xs(Sir,Xic) > Vmax + max(abs([Vmax Vmin 1])) || Xs(Sir,Xic) < Vmin - max(abs([Vmax Vmin 1]));
     
-    if multcross || overresonant || massiveOvershoot
-        %% case where deadtime ringing causes multiple diode conduction intervals
-        % dead time is way too long, so set it to first crossing (unintelligently)
-        % and try again on next iteration
-        tdelta = tsim(max(min([Vmaxcross' Vmincross' slopechange]),2)) - ts(Xic-1);
-        
-        if isempty(tdelta)
-            return
-        end
-        
-        %guaranteed to be > 0, so no need to check
-        ts(Ti) = ts(Ti) + tdelta;
-        ts(Tc) = ts(Tc) - tdelta;
-        if(debug), disp('multcross || overresonant || massiveOvershoot found'); end
-        return;
-    else
+%     %if multcross || overresonant || massiveOvershoot
+%         %% case where deadtime ringing causes multiple diode conduction intervals
+%         % dead time is way too long, so set it to first crossing (unintelligently)
+%         % and try again on next iteration
+%         tdelta = tsim(max(min([Vmaxcross' Vmincross' slopechange]),2)) - ts(Xic-1);
+%         
+%         if isempty(tdelta)
+%             return
+%         end
+%         
+%         %guaranteed to be > 0, so no need to check
+%         ts(Ti) = ts(Ti) + tdelta;
+%         ts(Tc) = ts(Tc) - tdelta;
+%         if(debug), disp('multcross || overresonant || massiveOvershoot found'); end
+%         return;
+%    % else
         
         %     if isempty(Vmaxcross) && isempty(Vmincross) && isempty(slopechange)
         %         % no diode conduction problem
         
         %% check for ZVS where possible
-        delta_DTs = max(min(ts)/100, sum(ts)/10000);
-        dXs = obj.Baxter_StateSensitivity(keep_SS, 'ts', Ti, delta_DTs, Tc);
+        delta_DTs = max(min(ts)/1000, sum(ts)/100000);
+        [dXs,delta_DTs] = obj.Baxter_StateSensitivity2(keep_SS, 'ts', Ti, delta_DTs, Tc);
         dxsdt = (dXs-Xs)/delta_DTs;
         %Backwards_dXs = obj.Baxter_StateSensitivity(keep_SS, 'ts', Ti, (-1)*delta_DTs, Tc);
         %Second_Derivative = (dXs-2*Xs+Backwards_dXs+dXs)/(delta_DTs^2);
@@ -135,6 +135,12 @@ try
                 ts(Ti) = change;
             end
             
+            if(ts(Tc)<0)
+                change = abs(ts(Tc))*0.1;
+                ts(Ti) = ts(Ti)-abs(ts(Tc))-change;
+                ts(Tc) = change;
+            end
+            
             if(debug), disp(['-- Vsw increasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
         elseif(Vio==0)
             tdelta = (Vmin-Xs(Sir,Xic))/(dxsdt(Sir,Xic));
@@ -147,6 +153,12 @@ try
                 ts(Tc) = ts(Tc)-abs(ts(Ti))-change;
                 ts(Ti) = change;
             end
+            if(ts(Tc)<0)
+                change = abs(ts(Tc))*0.1;
+                ts(Ti) = ts(Ti)-abs(ts(Tc))-change;
+                ts(Tc) = change;
+            end
+            
             if(debug), disp(['-- Vsw decreasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
         end
         
@@ -191,7 +203,9 @@ try
 %             end
 %         end
         
-    end
+
+
+   % end % this is the end for the massive overshoot if statement
     return
     
     

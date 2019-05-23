@@ -51,7 +51,8 @@ try
     n = size(As,1);
     
     if nargin == 1
-        tsteps = min(max(Ts/min(ts)*100, 10e3),100e3);
+        tsteps = max(Ts/min(ts)*2, 100e3); % Modified to account for small time steps
+        % tsteps = min(max(Ts/min(ts)*100, 10e3),100e3);
     end
 %     if nargin < 7
 %         Ds = zeros(1,1,nsub);
@@ -60,6 +61,14 @@ try
 %         Cs = ones(1,n, nsub);
 %     end
     
+    %----
+    % if there is a very small timestep that takes up too much memeory
+    % find the state that is causing this and set up a special case
+%     if tsteps>1e6
+%         min(ts)
+%     end
+%     
+    %-----
     t = linspace(0,Ts,tsteps);
 
     xs = zeros(n, length(t));

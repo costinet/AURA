@@ -321,8 +321,11 @@ if isempty(A)
     
     % Set all diode forward voltages to be off
     B = parse.Bnum;
-    B(:,contains(parse.ConstantNames,'VF'))=0;
+    B(:,contains(parse.ConstantNames,'VF'),:)=0;
     parse.Bnum = B;
+    D = parse.Dnum;
+    D(:,contains(parse.ConstantNames,'VF'),:)=0;
+    parse.Dnum = D;
     
 elseif ~isempty(parse.Anum)
     fprintf('Confirm Plecs used');
@@ -345,6 +348,9 @@ else
     B = parse.Bnum;
     B(:,contains(parse.ConstantNames,'VF'),:)=0;
     parse.Bnum = B;
+    D = parse.Dnum;
+    D(:,contains(parse.ConstantNames,'VF'),:)=0;
+    parse.Dnum = D;
 end
 
 simulator.loadTestConverter2(conv);
