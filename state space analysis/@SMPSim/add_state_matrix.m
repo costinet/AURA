@@ -1,4 +1,4 @@
-function [A,B,C,D] = add_state_matrix(obj,new_states,time_pos)
+function [A,B,C,D] = add_state_matrix(obj,new_state)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -83,16 +83,14 @@ SW = [SW_OFF;SW_Diode;SW_ON];
 
 
 out = {};
-orig_new_state = new_states;
 
 k = 1;
 
 % Index fixing to get off = 1 diode = 2 and ON = 3
 
-new_state = new_states(:,time_pos);
 
-new_state(new_state==2)=3; % Turn logic 0 (OFF) to a -1
-new_state(new_state==1)=2; % Turn logic 1 (ON) to a 2
+new_state(new_state==2)=3; % Turn logic 2 (ON) to a 3
+new_state(new_state==1)=2; % Turn logic 1 (DON) to a 2
 new_state(new_state==-1)=1; % Turn logic 0 (OFF) to a -1
 
 

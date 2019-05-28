@@ -63,6 +63,16 @@ try
             StateNumbers_Opp = obj.Converter.Topology.Parser.StateNumbers_Opposite;
             ONorOFF = obj.Converter.Topology.Parser.ONorOFF;
             
+            
+            %%%
+            % New variables to try and speed things up
+            
+            last_violations_bd_turn_on = zeros(size(ONorOFF));
+            last_violations_bd_turn_off = last_violations_bd_turn_on;
+            first_violations_bd_turn_off = last_violations_bd_turn_off;
+            first_violations_bd_turn_on = last_violations_bd_turn_off;
+            %%%
+            
             %%% This is original waveform generator for all state
             %%% variables
             if debug
@@ -319,27 +329,28 @@ try
                                                     obj.setts(ts);
                                                     order = obj.order;
                                                     not_physical = true;
-                                                    break
+                                                            obj.SS_Soln(1);
+                                                            obj.CorrectXs(1);
+                                                    
                                                     
                                                 else
-                                                    replace = 0; new_index = 1;
-                                                    [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
-                                                    ts = [ts(1:k-1) ts(k)*.95 ts(k)*.05 ts(k+1:end)];
-                                                    obj.setts(ts);
-                                                    obj.SS_Soln(keep_SS);
-                                                    obj.CorrectXs(keep_SS);
-                                                    [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
-                                                    obj.setts(ts);
-                                                    order = obj.order;
-                                                    not_physical = true;
-                                                    break
+%                                                     replace = 0; new_index = 1;
+%                                                     [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
+%                                                     ts = [ts(1:k-1) ts(k)*.95 ts(k)*.05 ts(k+1:end)];
+%                                                     obj.setts(ts);
+%                                                     obj.SS_Soln(keep_SS);
+%                                                     obj.CorrectXs(keep_SS);
+%                                                     [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
+%                                                     obj.setts(ts);
+%                                                     order = obj.order;
+%                                                     not_physical = true;
+%                                                     break
+                                                    
+                                                    last_violations_bd_turn_on(i,j-1) = 1;
+                                                    
                                                 end
                                                 
-                                                
-                                                
-                                                
-                                                
-                                                
+
                                             else
                                                 if last_violations %&& ONorOFF(i,k+1) == 2
                                                     if ONorOFF(i,j) == 1 && (sum((ONorOFF(:,j)==2)==(ONorOFF(:,j-1)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
@@ -347,20 +358,24 @@ try
                                                         obj.setts(ts);
                                                         order = obj.order;
                                                         not_physical = true;
-                                                        break
+                                                            obj.SS_Soln(1);
+                                                            obj.CorrectXs(1);
                                                         
                                                     else
-                                                        replace = 0; new_index = 1;
-                                                        [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
-                                                        ts = [ts(1:k-1) ts(k)*.95 ts(k)*.05 ts(k+1:end)];
-                                                        obj.setts(ts);
-                                                        obj.SS_Soln(keep_SS);
-                                                        obj.CorrectXs(keep_SS);
-                                                        [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
-                                                        obj.setts(ts);
-                                                        order = obj.order;
-                                                        not_physical = true;
-                                                        break
+%                                                         replace = 0; new_index = 1;
+%                                                         [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
+%                                                         ts = [ts(1:k-1) ts(k)*.95 ts(k)*.05 ts(k+1:end)];
+%                                                         obj.setts(ts);
+%                                                         obj.SS_Soln(keep_SS);
+%                                                         obj.CorrectXs(keep_SS);
+%                                                         [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
+%                                                         obj.setts(ts);
+%                                                         order = obj.order;
+%                                                         not_physical = true;
+%                                                         break
+                                                        
+                                                        last_violations_bd_turn_on(i,j-1) = 1;
+                                                        
                                                     end
                                                 end
                                             end
@@ -376,7 +391,8 @@ try
                                                     [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,-1,min(y(StateNumbers(i),:)),0.001,1,keep_SS);
                                                     order = obj.order;
                                                     not_physical = true;
-                                                    break
+                                                    obj.SS_Soln(1);
+                                                            obj.CorrectXs(1);
                                                 end
                                                 
                                             else
@@ -389,20 +405,24 @@ try
                                                         obj.setts(ts);
                                                         order = obj.order;
                                                         not_physical = true;
-                                                        break
+                                                        obj.SS_Soln(1);
+                                                            obj.CorrectXs(1);
                                                         
                                                     else
-                                                        replace = 0; new_index = 0;
-                                                        [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
-                                                        ts = [ts(1:k-1) ts(k)*.05 ts(k)*.95 ts(k+1:end)];
-                                                        obj.setts(ts);
-                                                        obj.SS_Soln(keep_SS);
-                                                        obj.CorrectXs(keep_SS);
-                                                        [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,-1,min(y(StateNumbers(i),:)),0.001,1,keep_SS);
-                                                        obj.setts(ts);
-                                                        order = obj.order;
-                                                        not_physical = true;
-                                                        break
+%                                                         replace = 0; new_index = 0;
+%                                                         [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
+%                                                         ts = [ts(1:k-1) ts(k)*.05 ts(k)*.95 ts(k+1:end)];
+%                                                         obj.setts(ts);
+%                                                         obj.SS_Soln(keep_SS);
+%                                                         obj.CorrectXs(keep_SS);
+%                                                         [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,-1,min(y(StateNumbers(i),:)),0.001,1,keep_SS);
+%                                                         obj.setts(ts);
+%                                                         order = obj.order;
+%                                                         not_physical = true;
+%                                                         break
+                                                        
+                                                        first_violations_bd_turn_on(i,j-1) = 1;
+                                                        
                                                     end
                                                     
                                                     
@@ -424,7 +444,7 @@ try
                                         
                                         not_physical = true;
                                     end
-                                    break
+                                    
                                     
                                     %                             if all(diff(P)==1) && P(end)==size(waveform,2)
                                     %                                 dt = time_ratio*(P(end)-P(1)+1);
@@ -474,7 +494,8 @@ try
                                                     [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
                                                     order = obj.order;
                                                     not_physical = true;
-                                                    break
+                                                    obj.SS_Soln(1);
+                                                            obj.CorrectXs(1);
                                                 end
                                             else
                                                 if last_violations %&& ONorOFF(i,k+1) == 2
@@ -483,20 +504,24 @@ try
                                                         obj.setts(ts);
                                                         order = obj.order;
                                                         not_physical = true;
-                                                        break
+                                                        obj.SS_Soln(1);
+                                                            obj.CorrectXs(1);
                                                         
                                                     else
-                                                        replace = 0; new_index = 1;
-                                                        [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
-                                                        ts = [ts(1:k-1) ts(k)*.95 ts(k)*.05 ts(k+1:end)];
-                                                        obj.setts(ts);
-                                                        obj.SS_Soln(keep_SS);
-                                                        obj.CorrectXs(keep_SS);
-                                                        [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
-                                                        obj.setts(ts);
-                                                        order = obj.order;
-                                                        not_physical = true;
-                                                        break
+%                                                         replace = 0; new_index = 1;
+%                                                         [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
+%                                                         ts = [ts(1:k-1) ts(k)*.95 ts(k)*.05 ts(k+1:end)];
+%                                                         obj.setts(ts);
+%                                                         obj.SS_Soln(keep_SS);
+%                                                         obj.CorrectXs(keep_SS);
+%                                                         [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
+%                                                         obj.setts(ts);
+%                                                         order = obj.order;
+%                                                         not_physical = true;
+%                                                         break
+                                                        
+                                                         last_violations_bd_turn_off(i,j-1) = 1;
+                                                        
                                                     end
                                                 end
                                             end
@@ -512,7 +537,8 @@ try
                                                     [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(y(StateNumbers(i),:)),0.001,1,keep_SS);
                                                     order = obj.order;
                                                     not_physical = true;
-                                                    break
+                                                    obj.SS_Soln(1);
+                                                            obj.CorrectXs(1);
                                                 end
                                                 
                                             else
@@ -525,20 +551,24 @@ try
                                                         obj.setts(ts);
                                                         order = obj.order;
                                                         not_physical = true;
-                                                        break
+                                                        obj.SS_Soln(1);
+                                                            obj.CorrectXs(1);
                                                         
                                                     else
-                                                        replace = 0; new_index = 0;
-                                                        [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
-                                                        ts = [ts(1:k-1) ts(k)*.05 ts(k)*.95 ts(k+1:end)];
-                                                        obj.setts(ts);
-                                                        obj.SS_Soln(keep_SS);
-                                                        obj.CorrectXs(keep_SS);
-                                                        [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
-                                                        obj.setts(ts);
-                                                        order = obj.order;
-                                                        not_physical = true;
-                                                        break
+%                                                         replace = 0; new_index = 0;
+%                                                         [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
+%                                                         ts = [ts(1:k-1) ts(k)*.05 ts(k)*.95 ts(k+1:end)];
+%                                                         obj.setts(ts);
+%                                                         obj.SS_Soln(keep_SS);
+%                                                         obj.CorrectXs(keep_SS);
+%                                                         [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
+%                                                         obj.setts(ts);
+%                                                         order = obj.order;
+%                                                         not_physical = true;
+%                                                         break
+                                                        
+                                                         first_violations_bd_turn_off(i,j-1) = 1;
+                                                        
                                                     end
                                                     
                                                     
@@ -560,7 +590,7 @@ try
                                         
                                         not_physical = true;
                                     end
-                                    break
+                                    
                                     
                                     
                                     
@@ -589,13 +619,14 @@ try
                     
                 end
                 if not_physical
-                    break
+                    Jello = 8989;
                 end
                 j = j+1;
                 
             end
             
-            
+           [ts,ONorOFF]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off) ;
+
             
             if not_physical % If there were no changes made then skip this step
                 % Combine similar adjacent states would be nice!
