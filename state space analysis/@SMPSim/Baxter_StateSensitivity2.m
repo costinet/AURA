@@ -42,7 +42,7 @@ elseif(nargin == 6)
         dX = -dX;
     end
     
-    if ts(cI) + dX <= 0
+    if ts(pI) + dX <= 0
         error('dX is too big for both subintervals')
     end
 end

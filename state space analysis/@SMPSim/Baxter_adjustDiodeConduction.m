@@ -15,7 +15,7 @@ ts = obj.ts;
 u = obj.u;
 
 %keep_SS = false;
-
+change = [];
 tsmax = [.7 .3 .3 .7]; % JUST FOR TESTING
 
 try
@@ -144,7 +144,7 @@ try
             if(debug), disp(['-- Vsw increasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
         elseif(Vio==0)
             tdelta = (Vmin-Xs(Sir,Xic))/(dxsdt(Sir,Xic));
-            %tdelta = min(max(tdelta, -ts(Ti) + delta_DTs), tsmax(Ti) - ts(Ti));
+            % tdelta = min(max(tdelta, -ts(Ti) + delta_DTs), tsmax(Ti) - ts(Ti));
             tdelta = sign(tdelta)*min(abs(tdelta), maxStep);
             ts(Ti) = ts(Ti) + tdelta;
             ts(Tc) = ts(Tc) - tdelta;
@@ -204,6 +204,10 @@ try
 %         end
         
 
+tdelta_act = ts(Ti)-obj.ts(Ti);
+
+New_Xs = tdelta_act*dxsdt+Xs;
+obj.Xs = New_Xs;
 
    % end % this is the end for the massive overshoot if statement
     return

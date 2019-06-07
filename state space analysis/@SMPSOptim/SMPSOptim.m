@@ -34,7 +34,7 @@ properties
 end
 
     methods
-
+        [dXs] = fs_adjust(obj)
         function initialize(obj)
             % This function creates variables for all of the FET
             % properties

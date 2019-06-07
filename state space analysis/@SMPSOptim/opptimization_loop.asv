@@ -20,7 +20,7 @@ Voerr = 999999999;
 
 while Voerr>0.05*obj.Vo_ideal_value
     
-    obj.Simulator.bruteforcelsim_single(20);
+    [y] = obj.Simulator.bruteforcelsim_single(20);
     
     ts = obj.Simulator.ts;
     Xs = obj.Simulator.Xs;
@@ -29,7 +29,7 @@ while Voerr>0.05*obj.Vo_ideal_value
     u = obj.Simulator.u;
     
     
-    originalSim = obj.Simulator;
+    originalSim = obj.Simulator 
     
     [dXs] = obj.fs_adjust();
     

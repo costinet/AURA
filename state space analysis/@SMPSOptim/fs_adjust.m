@@ -1,0 +1,45 @@
+function [dXs] = fs_adjust(obj)
+%Baxter_StateSensitivity Solves the state space for a slightly perturbed variable and solve for how that affects the steady state of the converter
+%   varToPerturb is on of the char arrays 'As','Bs','ts','u'
+%
+%   Pi sets the increase in dX value that is desired, if As or Bs then
+%   it needs to be a 1x3 double of the position of the value, if ts or
+%   u then a 1x1 double to indicate the time period or the contestant
+%   value index
+%
+%   dX is the amount by which the value referenced by varToPerturband
+%   and pI should be perturbed
+%
+%   cI is the variable that should be reduced in order to maintain
+%   constant energy in the circuit or switching frequency
+%
+%   For example: if time interval 2 is perturbed then time must be
+%   taken out of some other time interval in the circuit or a change
+%   in switching frequency will result
+
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
+
+
+As = obj.Simulator.As;
+Bs = obj.Simulator.Bs;
+ts = obj.Simulator.ts;
+u = obj.Simulator.u;
+
+
+
+% Need to ensure that ts changes will always result in a positive
+% value of ts for the SS solve.
+
+
+ts = ts+ts.*0.05;
+
+
+[dXs] = obj.Simulator.SS_Soln(0,As,Bs,ts,u); 
+[dXs] = obj.Simulator.CorrectXs(0,dXs);
+
+
+end

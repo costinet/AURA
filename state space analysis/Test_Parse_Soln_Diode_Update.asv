@@ -15,7 +15,7 @@
 
 clear
 close all
-tic
+
 %% Boost converter
 %{
 V = 5;
@@ -111,7 +111,7 @@ u = [Vg  1 1]';
 %}
 
 %% DAB Converter
-
+%{
 Vg = 48;
 L3 = 1e-6;
 L2 = 1296e-6;
@@ -202,10 +202,10 @@ Binary_for_DAB = [
     OFF OFF OFF OFF ON OFF OFF ON %primary sw
     OFF ON ON OFF ON OFF OFF ON % phase shift
     OFF ON ON OFF OFF OFF OFF OFF]; % secondary sw
-
+%}
 
 % Select .net file
-filename = 'DAB_Resistors_Cap.net';
+filename = 'Buck_Qual.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -265,7 +265,7 @@ parse.ABCD();
 % end
 
 %% DC code (set up converter and topology classes)
-toc
+tic
 top = SMPStopology();
 top.Parser = parse;
 
@@ -297,8 +297,8 @@ if isempty(A)
         for j = 1:1:size(Binary_for_DAB,2)
             out{j} = SW(Binary_for_DAB(k,j)+1,j);
         end
-        [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
-        
+        %[M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+        [M1_R, M2_R] = deal(out{:});
         
         
         HtempAB(:,:,k) = eval(parse.HtempAB(:,:,1));
