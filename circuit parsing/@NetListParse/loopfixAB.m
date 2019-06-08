@@ -106,7 +106,7 @@ while i<loop
         depends(j,:)=Htemp(i,H_row2+1:2*H_row2);
         depends(j,i) = 0;
         
-        Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*Htemp(:,i);
+        Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*repmat(Htemp(:,i),1,H_row2);
         Htemp(i,:)=[];
         Htemp(:,i+H_row2) = [];
         Htemp(:,i)=[];

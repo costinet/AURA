@@ -56,7 +56,7 @@ try
             ts = obj.ts;
             Ts = sum(ts);
             % Important set up stuff
-            debug = false;
+            debug = true;
             if debug
             output_order =  [10 8 6 9];
             [xs, t, y, time_interval] = obj.SS_WF_Reconstruct();

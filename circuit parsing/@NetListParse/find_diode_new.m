@@ -88,7 +88,7 @@ Binary(Binary==0)=-1; % Turn logic 0 (OFF) to a -1
 Binary = Binary'; % Transpose so state variables are rows and time intervals are columns
 the_code = repmat(unique(obj.Switches),[size(obj.OrderedNamesnum,1),1])==repmat(obj.OrderedNamesnum,[1,size(unique(obj.Switches),2)]);
 
-for i = 1:1:length(order)
+for i = 1:1:size(Binary,1)
     onoroff(the_code(:,i),:) = Binary(i,:); % Assign correct row
 end
 

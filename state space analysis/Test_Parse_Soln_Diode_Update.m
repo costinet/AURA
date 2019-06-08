@@ -111,7 +111,7 @@ u = [Vg  1 1]';
 %}
 
 %% DAB Converter
-
+%{
 Vg = 48;
 L3 = 1e-6;
 L2 = 1296e-6;
@@ -202,10 +202,85 @@ Binary_for_DAB = [
     OFF OFF OFF OFF ON OFF OFF ON %primary sw
     OFF ON ON OFF ON OFF OFF ON % phase shift
     OFF ON ON OFF OFF OFF OFF OFF]; % secondary sw
+%}
+
+
+%% New Buck Converter
+%%{
+Vg = 12;
+L1 = 1e-6; %L
+C1 = (4*100+680)*10^-6; %Cout
+fs = 0.2e6;
+Ts = 1/fs;
+V = 5;
+%Io = 1; % was 1
+M1_C = 1230e-12; % CHS
+M2_C = 1230e-9; % LHS
+
+R2 = 0.16;
+R1 =  1; % Rl also known as R1 (one or L (lowercase))
+dt = Ts/100;%5e-10;
+Vdr = 5;
+M1_R_ON = 0.0032; % ronHS
+M2_R_ON = 0.0032; % ronLS
+D1_R_D = 0.0032; % ronLS
+M1_R_D = 0.0032; % ronHS
+M2_R_D = 0.0032; % ronLS
+[D1_R_OFF,M1_R_OFF,M2_R_OFF] = deal(100000000); % ronLS
+
+%Order = [2 4]; % The order that the states must go in after being parsed
+%ts = [Ts*.5 Ts*.5]; % The inital guess of time intervals
+
+
+Order = [1 2 3 4]; % The order that the states must go in after being parsed
+% ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
+% u = [Vg  1 1 Io]';
+
+
+% Order = [1 2 3 4 5 6 7 8]; % The order that the states must go in after being parsed
+% ts = [Ts*.2376 Ts*.0277 Ts*.23 Ts*.00023 Ts*.2376 Ts*.02775 Ts*.23 Ts*.00023];
+
+
+
+%[D1_R,M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R] = deal(100000000); % ronLS
+
+D = 5/12;
+dead = 0.01/fs;
+
+ts = [Ts*D-dead dead Ts*(1-D)-dead dead];
+
+u = [Vg 1 1]';
+
+
+TestparseWaveform = false;
+
+ON = 1;
+OFF = 0;
+
+
+SW_OFF = ones(1,2).*10000000;
+
+SW_ON = [M1_R_ON M2_R_ON];
+
+SW = [SW_OFF;SW_ON];
+
+
+%Out = [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R];
+
+
+
+Binary_for_DAB = [
+    ON OFF
+    OFF OFF
+    OFF ON
+    OFF OFF];
+
+%}
 
 
 % Select .net file
-filename = 'DAB_Resistors_Cap.net';
+%filename = 'DAB_Resistors_Cap.net';
+filename = 'Buck_Qual.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -297,8 +372,8 @@ if isempty(A)
         for j = 1:1:size(Binary_for_DAB,2)
             out{j} = SW(Binary_for_DAB(k,j)+1,j);
         end
-        [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
-        
+        % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+        [M1_R, M2_R] = deal(out{:});
         
         
         HtempAB(:,:,k) = eval(parse.HtempAB(:,:,1));
