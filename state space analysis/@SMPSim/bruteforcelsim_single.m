@@ -391,14 +391,34 @@ try
                                             first_violations = 1;
                                             
                                             if j == 2
-                                                j = size(Xs,2);
+                           
                                                 if first_violations %&& %ONorOFF(i,end) == 2
-                                                    j = j-1;
-                                                    [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
-                                                    order = obj.order;
-                                                    not_physical = true;
-                                                 %   obj.SS_Soln(1);
-                                                      %      obj.CorrectXs(1);
+                                                    
+                                                    if ONorOFF(i,end) == 1 && (sum((ONorOFF(:,j-1)==2)==(ONorOFF(:,end)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                                        [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
+                                                        obj.setts(ts);
+                                                        order = obj.order;
+                                                        not_physical = true;
+                                                       % obj.SS_Soln(1);
+                                                          %  obj.CorrectXs(1);
+                                                        
+                                                    else
+%                                                         replace = 0; new_index = 0;
+%                                                         [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
+%                                                         ts = [ts(1:k-1) ts(k)*.05 ts(k)*.95 ts(k+1:end)];
+%                                                         obj.setts(ts);
+%                                                         obj.SS_Soln(keep_SS);
+%                                                         obj.CorrectXs(keep_SS);
+%                                                         [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,-1,min(y(StateNumbers(i),:)),0.001,1,keep_SS);
+%                                                         obj.setts(ts);
+%                                                         order = obj.order;
+%                                                         not_physical = true;
+%                                                         break
+                                                        
+                                                        first_violations_bd_turn_on(i,j-1) = 1;
+                                                        
+                                                    end
+                                                    
                                                 end
                                                 
                                             else
@@ -406,8 +426,8 @@ try
                                                 if first_violations %&& %ONorOFF(i,k-1) == 2
                                                     
                                                     
-                                                    if ONorOFF(i,j) == 1 && (sum((ONorOFF(:,j-1)==2)==(ONorOFF(:,j-2)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
-                                                        [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
+                                                    if ONorOFF(i,j-2) == 1 && (sum((ONorOFF(:,j-1)==2)==(ONorOFF(:,j-2)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                                        [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
                                                         obj.setts(ts);
                                                         order = obj.order;
                                                         not_physical = true;
@@ -540,10 +560,10 @@ try
                                                 j = size(Xs,2);
                                                 if first_violations %&& %ONorOFF(i,end) == 2
                                                     
-                                                    [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
-                                                    order = obj.order;
-                                                    not_physical = true;
-                                                 %   obj.SS_Soln(1);
+%                                                     [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
+                                                     order = obj.order;
+%                                                     not_physical = true;
+%                                                  %   obj.SS_Soln(1);
                                                   %          obj.CorrectXs(1);
                                                 end
                                                 
@@ -553,7 +573,7 @@ try
                                                     
                                                     
                                                     if ONorOFF(i,j-2) == -1 && (sum((ONorOFF(:,j-1)==2)==(ONorOFF(:,j-2)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
-                                                        [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,max(obj.Xs(i,:)),-1,0.001,0,keep_SS);
+                                                        [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
                                                         obj.setts(ts);
                                                         order = obj.order;
                                                         not_physical = true;
@@ -631,9 +651,10 @@ try
                 
                 end
 %             end
-           [ts,ONorOFF]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off) ;
+if the_big_counter<2
+    [ts,ONorOFF]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off) ;
+end
 
-            
             if not_physical % If there were no changes made then skip this step
                 % Combine similar adjacent states would be nice!
                 
@@ -707,6 +728,13 @@ catch ME
     rethrow(ME)
 end
 toc
+
+Power_out = mean(y(29,:))^2/0.139;
+Power_in = obj.u(1)*mean(y(1,:));
+I_out = mean(y(29,:))/0.139;
+eff = Power_out/Power_in;
+
+
 end % That's all Folks
 
 

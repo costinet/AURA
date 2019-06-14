@@ -29,11 +29,11 @@ while Voerr>0.05*obj.Vo_ideal_value
     u = obj.Simulator.u;
     
     
+    
+    
     originalSim = obj.Simulator;
     
     [dXs] = obj.fs_adjust();
-    
-    
     
     
     % How to find the partial with respect to a variable 

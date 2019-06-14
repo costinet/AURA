@@ -111,12 +111,13 @@ u = [Vg  1 1]';
 %}
 
 %% DAB Converter
-%{
+%%{
 Vg = 48;
 L3 = 1e-6;
 L2 = 1296e-6;
 L1 = 76e-6;
 C1 = (4*100+680)*10^-6; %Cout
+C1 = (4*100)*10^-6; %Cout
 C2 = 100*10^-6;
 fs = 0.2e6;
 Ts = 1/fs;
@@ -143,8 +144,12 @@ M5_R_D = .0015; % ronHS
 M6_R_D = .0015; % ronLSR2 = 0.16;
 R3 = 0.01;
 
-R1 =  0.16; % the output resistor
-R2 = 1; % the inductor resistance
+%R1 =  0.16; % the output resistor
+
+%R1 = 0.05; % Output resistor of test
+R1 = 0.139; % Output resistor of test
+
+R2 = 8.25; % the inductor resistance % 1 ohm on the primary 1Ohm on the secondary
 dt = Ts/1000;%5e-10;
 Vdr = 5;
 M1_R_ON = 0.05; % ronHS
@@ -171,7 +176,19 @@ Order = [1 2 3 4 5 6 7 8]; % The order that the states must go in after being pa
 
 
 
-ts = [Ts*.32 Ts*.01 Ts*.16 Ts*.001 Ts*.32 Ts*.01 Ts*.16 Ts*.001];
+% ts = [Ts*.33 Ts*.01 Ts*.16 Ts*.001 Ts*.33 Ts*.01 Ts*.16 Ts*.001];
+
+
+ts = [(Ts/2)-50e-9-400e-9-13.33e-9 50e-9 400e-9 13.33e-9 (Ts/2)-50e-9-400e-9-13.33e-9 50e-9 400e-9 13.33e-9];
+
+ts = [50e-9 400e-9 13.33e-9 (Ts/2)-50e-9-400e-9-13.33e-9 50e-9 400e-9 13.33e-9 (Ts/2)-50e-9-400e-9-13.33e-9];
+%ts = [2.4960e-06 100e-9 200e-9 100e-9 2.4960e-06 100e-9 200e-9 100e-9];
+
+
+%ts = [2.1e-06 100e-9 200e-9 10e-11 2.1e-06 100e-9 200e-9 10e-11];
+
+% ts = [2.1e-06 50-9 400e-9 10e-9 2.1e-06 50e-9 400e-9 10e-9];
+
 
 u = [Vg 1 1 1 1 1 1 1 1]';
 
@@ -202,11 +219,23 @@ Binary_for_DAB = [
     OFF OFF OFF OFF ON OFF OFF ON %primary sw
     OFF ON ON OFF ON OFF OFF ON % phase shift
     OFF ON ON OFF OFF OFF OFF OFF]; % secondary sw
+
+Binary_for_DAB = [
+
+    OFF OFF OFF OFF OFF ON ON OFF % primary sw
+    ON OFF OFF ON OFF ON ON OFF % phase shift
+    ON OFF OFF ON OFF OFF OFF OFF % secondary sw
+    ON OFF OFF ON ON OFF OFF ON % POWER
+    OFF OFF OFF OFF ON OFF OFF ON %primary sw
+    OFF ON ON OFF ON OFF OFF ON % phase shift
+    OFF ON ON OFF OFF OFF OFF OFF % secondary sw
+    OFF ON ON OFF OFF ON ON OFF]; % Reverse power
+
 %}
 
 
 %% New Buck Converter
-%%{
+%{
 Vg = 12;
 L1 = 1e-6; %L
 C1 = (4*100+680)*10^-6; %Cout
@@ -279,8 +308,8 @@ Binary_for_DAB = [
 
 
 % Select .net file
-%filename = 'DAB_Resistors_Cap.net';
-filename = 'Buck_Qual.net';
+filename = 'DAB_Resistors_Cap.net';
+%filename = 'Buck_Qual.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -304,10 +333,10 @@ testcase = 'TEST_ABCD_Buck_Diode';
 
 % Set Voltage and Current Nodes to add
 Voltage = {'V1'
-    'I1'
+    'R1'
     'M1'};
 Current = {'V1'
-    'I1'
+    'R1'
     'M1'};
 % Change Voltage and Current based on desired output measurements (C and D
 % matricies). Voltage and Current should be of type Cell 
@@ -372,8 +401,8 @@ if isempty(A)
         for j = 1:1:size(Binary_for_DAB,2)
             out{j} = SW(Binary_for_DAB(k,j)+1,j);
         end
-        % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
-        [M1_R, M2_R] = deal(out{:});
+         [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+        % [M1_R, M2_R] = deal(out{:});
         
         
         HtempAB(:,:,k) = eval(parse.HtempAB(:,:,1));
