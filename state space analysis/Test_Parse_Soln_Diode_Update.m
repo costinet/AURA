@@ -117,7 +117,7 @@ L3 = 1e-6;
 L2 = 1296e-6;
 L1 = 76e-6;
 C1 = (4*100+680)*10^-6; %Cout
-C1 = (4*100)*10^-6; %Cout
+% C1 = (4*100)*10^-6; %Cout
 C2 = 100*10^-6;
 fs = 0.2e6;
 Ts = 1/fs;
@@ -147,9 +147,9 @@ R3 = 0.01;
 %R1 =  0.16; % the output resistor
 
 %R1 = 0.05; % Output resistor of test
-R1 = 0.139; % Output resistor of test
+R1 = 0.141; % Output resistor of test
 
-R2 = 8.25; % the inductor resistance % 1 ohm on the primary 1Ohm on the secondary
+R2 = 4.57535; % the inductor resistance % 1 ohm on the primary 1Ohm on the secondary
 dt = Ts/1000;%5e-10;
 Vdr = 5;
 M1_R_ON = 0.05; % ronHS
@@ -356,7 +356,7 @@ Current = {'V1'
 
 
 %% Run functions
-
+tic
 parse = NetListParse();
 parse.initialize(filename,Voltage,Current);
 parse.ABCD();

@@ -114,7 +114,7 @@ try
         dxsdt = (dXs-Xs)/delta_DTs;
         %Backwards_dXs = obj.Baxter_StateSensitivity(keep_SS, 'ts', Ti, (-1)*delta_DTs, Tc);
         %Second_Derivative = (dXs-2*Xs+Backwards_dXs+dXs)/(delta_DTs^2);
-        
+        debug = 0;
         
         if(Vio==1)
             tdelta = (Vmax-Xs(Sir,Xic))/(dxsdt(Sir,Xic));

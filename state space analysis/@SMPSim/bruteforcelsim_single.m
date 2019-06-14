@@ -77,8 +77,11 @@ try
             
             %%% This is original waveform generator for all state
             %%% variables
+            
+            if debug
             fprintf('--------- \n')
             fprintf('Iteration number %.0f \n',the_counter-1)
+            end
             if debug
                 
                 % What we are given for this iteration
@@ -196,7 +199,9 @@ try
                             
                             if ONorOFF(i,k) == 1 % if diode ON
                                 if sum(waveform<1-1*tol)>0  % if diode should turn off during time interval
+                                    if debug
                                     fprintf('State Violation (Diode turn off) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                                    end
                                     sign = [0,0];
                                     [P] = find(diff(waveform<1*(-1)^sign(2))~=0); % Find all cases of violations
                                     if length(P)==1||length(P)==2
@@ -246,7 +251,9 @@ try
                             elseif ONorOFF(i,j-1) == -1 % if diode off
                                 %  [V,P] = find(waveform > 1); % to try and find a value that is close to the goal deadtime value
                                 if sum(waveform>1+1*tol)>0 
+                                    if debug
                                     fprintf('State Violation (Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                                    end
                                     sign = [1,0];
                                     [P] = find(diff(waveform>1*(-1)^sign(2))~=0); % Find all cases of violations
                                     if length(P)==1
@@ -294,8 +301,9 @@ try
                                 
                                 if (obj.Xs(i,j)<-1-1*tol || obj.Xs(i,j-1)<-1-1*tol )
                                     
-                                    
+                                    if debug
                                     fprintf('State Violation (Body Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                                    end
                                     sign = [0,1];
                                     
                                     
@@ -485,9 +493,9 @@ try
                             elseif ONorOFF(i,j-1) == 1 % body diode on
                                 
                                 if (obj.Xs(i,j)>-1+1*tol || obj.Xs(i,j-1)>-1+1*tol)   
-                                    
+                                    if debug
                                     fprintf('State Violation (Body Diode turn off) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
-                                    
+                                    end
                                     
                                     sign = [1,1];
                                     
@@ -694,7 +702,9 @@ end
                         
                         time_intervals = time_intervals-1;
                         key = key-1;
+                        if debug
                         fprintf('Found a repeated state \n')
+                        end
                     end
                     
                     key = key+1;
