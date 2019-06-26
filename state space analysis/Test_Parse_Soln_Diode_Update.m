@@ -111,7 +111,7 @@ u = [Vg  1 1]';
 %}
 
 %% DAB Converter
-%%{
+%{
 Vg = 48;
 L3 = 1e-6;
 L2 = 1296e-6;
@@ -306,9 +306,132 @@ Binary_for_DAB = [
 
 %}
 
+% Hybrid Dixson Converter
+%%{
+Vg = 24;
+V = 5;
+Io = 10;
+u = [Vg 1 1 1 1 1 1 1 1]';
+L1 = 2*72e-9;
+RL = (0.007-2.65e-3 + 2*.35e-3);
+Da = 1;
+M = 5/6;
+
+fs = 500e3;
+Ts = 1/fs;
+
+dt = 1/fs/Ts;
+
+C4 = 100e-6; % Cout
+C1 = 13.38e-6;
+% C1 = 1e-6;
+C2 = 12.49e-6;
+C3 = 10.27e-6;
+
+ESRx = 3e-3;
+R3 = 1.1e-3+ESRx;
+R2 = 2.3e-3+ESRx;
+R4 = 2.3e-3+ESRx;
+ron = 2.5e-3;
+R1 = 0.5;
+
+Lp = 0e-9;
+Lp1 = Lp;
+Lp2 = 2*Lp;
+Lp3 = 3*Lp;
+
+
+kc = 1;
+Coss = kc*2.5e-9;
+Coss6 = kc*2.26e-9;
+Coss12 = kc*1.99e-9;
+Qg = 18e-9;
+
+Phase1a = [1 0 1 1 0 0 0 1];
+Phase1b = [1 0 0 1 0 0 0 1];
+Phase2a = 1 - Phase1a;
+Phase2b = Phase2a; Phase2b(6) = 0;
+Phase3 = [0 0 0 1 1 0 1 1];
+swseq = [Phase1a; Phase1b; Phase3;  Phase2a; Phase2b;  Phase3];
+
+
+M1_C = Coss6; % CHS
+M2_C = Coss12; % LHS
+M3_C = Coss12; % CHS
+M4_C = Coss6; % LHS
+M5_C = Coss6; % CHS
+M6_C = Coss6; % LHS
+M7_C = Coss6; % CHS
+M8_C = Coss6; % LHS
+
+Order = [1 2 3 4 5 6]; % The order that the states must go in after being parsed
+Order = [1 2 3 4];
+SW_OFF = ones(1,8).*10000000;
+
+SW_ON = ones(1,8).*2.5e-3;
+
+SW = [SW_OFF;SW_ON];
+
+M1 = [1
+    1
+    1
+    0
+    0
+    1];
+
+M4 = M1;
+
+M2 = [0
+    0
+    1
+    1
+    1
+    1];
+
+M3 = M2;
+
+M5 = [0
+    0
+    0
+    1
+    0
+    0];
+
+M6 = [1
+    1
+    0
+    0
+    0
+    0];
+
+M7 = [0
+    0
+    0
+    1
+    1
+    0];
+
+M8 = [1
+    0
+    0
+    0
+    0
+    0];
+
+Binary_for_DAB = [M1 M2 M3 M4 M5 M6 M7 M8]; % But its really for HDSC
+
+Binary_for_DAB(5,:) = [];
+Binary_for_DAB(2,:) = [];
+
+ts = [Da*Ts/2*M, (1-Da)*Ts/2*M, Ts/2*(1-M), Da*Ts/2*M, (1-Da)*Ts/2*M, Ts/2*(1-M)];
+ts(5) = [];
+ts(2) = [];
+%}
+
 
 % Select .net file
-filename = 'DAB_Resistors_Cap.net';
+% filename = 'DAB_Resistors_Cap.net';
+filename = 'HDSC_AURA.net';
 %filename = 'Buck_Qual.net';
 % Current options for filename:
 % Boost.net
