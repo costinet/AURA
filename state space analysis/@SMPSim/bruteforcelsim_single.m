@@ -739,9 +739,9 @@ catch ME
 end
 toc
 
-Power_out = mean(y(29,:))^2/0.1277;
+Power_out = mean(y(29,:))^2/0.141;
 Power_in = obj.u(1)*mean(y(1,:));
-I_out = mean(y(29,:))/0.1277;
+I_out = mean(y(29,:))/0.141;
 eff = Power_out/Power_in;
 
 

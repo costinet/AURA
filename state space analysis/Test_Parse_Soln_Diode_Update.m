@@ -111,7 +111,7 @@ u = [Vg  1 1]';
 %}
 
 %% DAB Converter
-%{
+%%{
 Vg = 48;
 L3 = 1e-6;
 L2 = 1296e-6;
@@ -177,7 +177,7 @@ Order = [1 2 3 4 5 6 7 8]; % The order that the states must go in after being pa
 
 
 % ts = [Ts*.33 Ts*.01 Ts*.16 Ts*.001 Ts*.33 Ts*.01 Ts*.16 Ts*.001];
-chooses = 12;
+chooses = 9;
 switch chooses
     
     case 1
@@ -280,7 +280,7 @@ V = 5;
 %Io = 1; % was 1
 M1_C = 1620e-12; % CHS
 M2_C = 1620e-12; % LHS
-
+R3 = 0.001;
 R2 = 0.16;
 R1 =  1; % Rl also known as R1 (one or L (lowercase))
 dt = Ts/100;%5e-10;
@@ -309,7 +309,7 @@ Order = [1 2 3 4]; % The order that the states must go in after being parsed
 %[D1_R,M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R] = deal(100000000); % ronLS
 
 D = 5/12;
-dead = 0.01/fs;
+dead = 0.001/fs;
 
 ts = [Ts*D-dead dead Ts*(1-D)-dead dead];
 
@@ -343,7 +343,7 @@ Binary_for_DAB = [
 
 %%  Hybrid Dixson Converter
 
-%%{
+%{
 Vg = 24;
 V = 5;
 Io = 10;
@@ -466,9 +466,9 @@ ts(2) = [];
 
 
 % Select .net file
- %filename = 'DAB_Resistors_Cap.net';
-filename = 'HDSC_AURA.net';
-%filename = 'Buck_Qual.net';
+ filename = 'DAB_Resistors_Cap.net';
+% filename = 'HDSC_AURA.net';
+ %filename = 'Buck_Qual.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
