@@ -111,7 +111,7 @@ u = [Vg  1 1]';
 %}
 
 %% DAB Converter
-%{
+%%{
 Vg = 48;
 L3 = 1e-6;
 L2 = 1296e-6;
@@ -343,7 +343,7 @@ Binary_for_DAB = [
 
 %%  Hybrid Dixson Converter
 
-%%{
+%{
 Vg = 24;
 V = 5;
 Io = 10;
@@ -370,7 +370,7 @@ R2 = 2.3e-3+ESRx;
 R4 = 2.3e-3+ESRx;
 ron = 2.5e-3;
 R1 = 0.5;
-R5 = 0.001;
+
 Lp = 0e-9;
 Lp1 = Lp;
 Lp2 = 2*Lp;
@@ -466,8 +466,8 @@ ts(2) = [];
 
 
 % Select .net file
- %filename = 'DAB_Resistors_Cap.net';
-filename = 'HDSC_AURA.net';
+ filename = 'DAB_Resistors_Cap.net';
+%filename = 'HDSC_AURA.net';
 %filename = 'Buck_Qual.net';
 % Current options for filename:
 % Boost.net
