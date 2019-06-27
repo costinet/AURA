@@ -1,7 +1,7 @@
 * H:\Graduate Research\LTspice\HDSC Compel\HDSC_AURA.asc
 C3 N001 vc3m 10.27µ
-V1 Vin1 0 24 AC 1V
-R5 Vin Vin1 1
+V1 Vin 0 24 AC 1V
+
 C2 vc2p N005 12.49µ
 C1 N002 vc1m 13.38µ
 L1 N003 Vout 144n Rser=5m
