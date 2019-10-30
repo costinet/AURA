@@ -29,7 +29,7 @@ new_A = obj.As;
 new_B = obj.Bs;
 new_C = obj.Cs;
 new_D = obj.Ds;
-
+new_eigA = obj.eigA;
 
 count = 1;
 for k = 1:1:size(ONorOFF,2)
@@ -39,11 +39,16 @@ if tot_L_ON(k)~=0
             new_state = ONorOFF(:,k); % Find state that needs to be copied
             new_state(L_ON(:,k)==1) = 1; % make correction in state
             new_state_space = [new_state_space(:,1:count), new_state ,new_state_space(:,count+1:end) ]; % Place new state space in the ONorOFF matrix
-            [A,B,C,D] = obj.add_state_matrix(new_state); % Calculate the needed 
+            [A,B,C,D,eigA] = obj.add_state_matrix(new_state); % Calculate the needed 
             
             
-            ts = [ts(1:count-1) ts(count)*.95 ts(count)*.05 ts(count+1:end)];
-
+            % ts = [ts(1:count-1) ts(count)*.05 ts(count)*.95 ts(count+1:end)];
+            % This is the new one to find a finner mesh grid on the
+            % surface plot
+            % ts = [ts(1:count-1) ts(count)*.99 ts(count)*.01 ts(count+1:end)];
+            
+            % This is the normal one:
+            ts = [ts(1:count-1) ts(count)*1.9847e-07/ts(count) ts(count)*(ts(count)-1.9847e-07)/ts(count) ts(count+1:end)];
             
             new_A(:,:,1:count) = new_A(:,:,1:count);
             new_A(:,:,count+2:size(new_A,3)+1) = new_A(:,:,count+1:end);
@@ -57,8 +62,9 @@ if tot_L_ON(k)~=0
             new_D(:,:,1:count) = new_D(:,:,1:count);
             new_D(:,:,count+2:size(new_D,3)+1) = new_D(:,:,count+1:end) ;
             new_D(:,:,count+1) =  D;
-
-            
+            new_eigA(:,1:count) = new_eigA(:,1:count);
+            new_eigA(:,count+2:size(new_eigA,2)+1) = new_eigA(:,count+1:end) ;
+            new_eigA(:,count+1) =  eigA;
             
             count = count+1;
     
@@ -75,7 +81,7 @@ obj.As = new_A;
 obj.Bs = new_B;
 obj.Cs = new_C;
 obj.Ds = new_D;
-
+obj.eigA = new_eigA;
 
 
 

@@ -1,10 +1,10 @@
-function [A,B,C,D] = add_state_matrix(obj,new_state)
+function [A,B,C,D,eigA] = add_state_matrix(obj,new_state)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
 
 %% DAB Converter
-%%{
+%{
 Vg = 48;
 L3 = 1e-6;
 L2 = 1296e-6;
@@ -70,7 +70,7 @@ Order = [1 2 3 4 5 6 7 8]; % The order that the states must go in after being pa
 
 
 % ts = [Ts*.33 Ts*.01 Ts*.16 Ts*.001 Ts*.33 Ts*.01 Ts*.16 Ts*.001];
-chooses = 6;
+chooses = 9;
 switch chooses
     
     case 1
@@ -355,6 +355,72 @@ ts(5) = [];
 ts(2) = [];
 %}
 
+%% MR-Buck Converter
+%%{
+Vg = 12;
+L1 = 1e-6; %L
+C1 = 1*10^-6; %Cout
+L2 = 20e-9; % Resonate inductor
+fs = 10e6;
+Ts = 1/fs;
+V = 3;
+Io = 1; % was 1
+M1_C = 0.7e-9; % CHS
+M2_C = 0.7e-9; % LHS
+dt = Ts/100;%5e-10;
+Vdr = 5;
+M1_R_ON = 0.002; % ronHS
+M2_R_ON = 0.002; % ronLS
+D1_R_D = 0.002; % ronLS
+M1_R_D = 0.002; % ronHS
+M2_R_D = 0.002; % ronLS
+[D1_R_OFF,M1_R_OFF,M2_R_OFF] = deal(100000000); % ronLS
+
+%Order = [2 4]; % The order that the states must go in after being parsed
+%ts = [Ts*.5 Ts*.5]; % The inital guess of time intervals
+
+
+Order = [1 2 3 4]; % The order that the states must go in after being parsed
+% ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
+% u = [Vg  1 1 Io]';
+
+
+% Order = [1 2 3 4 5 6 7 8]; % The order that the states must go in after being parsed
+% ts = [Ts*.2376 Ts*.0277 Ts*.23 Ts*.00023 Ts*.2376 Ts*.02775 Ts*.23 Ts*.00023];
+
+
+
+%[D1_R,M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R] = deal(100000000); % ronLS
+
+D = 5/12;
+%dead = 0.001/fs;
+dead = 0.1/fs;
+ts = [25e-9 25e-9 25e-9 25e-9];
+
+u = [Vg Io 1 1]';
+
+
+TestparseWaveform = false;
+
+ON = 1;
+OFF = 0;
+
+
+SW_OFF = ones(1,2).*10000000;
+
+SW_ON = [M1_R_ON M2_R_ON];
+
+SW = [SW_OFF;SW_ON;SW_ON];
+
+
+
+
+
+
+
+
+
+
 
 out = {};
 
@@ -378,9 +444,11 @@ end
         for j = 1:1:size(Binary,1)
             out{j} = SW(Binary(j),j);
         end
-        [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
-       % [M1_R, M2_R] = deal(out{:});
+       % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+        [M1_R, M2_R] = deal(out{:});
         
+        
+        if isempty(obj.Converter.Topology.Parser.Asym)
         
         HtempAB(:,:,k) = eval(obj.Converter.Topology.Parser.HtempAB(:,:,1));
         HtempCD(:,:,k) = eval(obj.Converter.Topology.Parser.HtempCD(:,:,1));
@@ -397,7 +465,19 @@ end
         [A,B,C,D] = obj.Converter.Topology.Parser.loopfixAB_large(HtempAB(:,:,k),dependsAB(:,:,k),OutputNames(:,k),DependentNames(:,k));
         [C,D] = obj.Converter.Topology.Parser.loopfixCD_large(B,C,D,HtempCD(:,:,k),savedCD(:,:,k),DependentNames(:,k),obj.Converter.Topology.Parser.SortedTree(:,:,1),obj.Converter.Topology.Parser.SortedCoTree(:,:,1));
     end
-
+    
+    
+        else
+            
+            A = eval(obj.Converter.Topology.Parser.Asym(:,:,1));
+            B = eval(obj.Converter.Topology.Parser.Bsym(:,:,1));
+            C = eval(obj.Converter.Topology.Parser.Csym(:,:,1));
+            D = eval(obj.Converter.Topology.Parser.Dsym(:,:,1));
+            eigA = eig(A);
+            
+        end
+        
+        
     % Sets new B and D matricies corresponding to the updated diode
     % conduction indecies in the variable binary
     B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF'))=B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF')).*(Binary==2)';

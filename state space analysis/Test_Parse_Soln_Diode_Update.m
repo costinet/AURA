@@ -111,7 +111,7 @@ u = [Vg  1 1]';
 %}
 
 %% DAB Converter
-%%{
+%{
 Vg = 48;
 L3 = 1e-6;
 L2 = 1296e-6;
@@ -132,6 +132,7 @@ M6_C = 1620e-12; % LHS
 M7_C = 1620e-12; % CHS
 M8_C = 1620e-12; % LHS
 D1_C = 1620e-12; % LHS
+
 
 
 
@@ -188,7 +189,7 @@ switch chooses
         R1 = 0.141;
         
         case 6
-        PS = 250-9;
+        PS = 250e-9;
         primary_dead = 110e-9;
         secondary_dead = 13.33e-9;        
         Power = (Ts/2)-PS-primary_dead-secondary_dead;
@@ -204,7 +205,7 @@ switch chooses
         case 12
         PS = 620e-9;
         primary_dead = 86.66e-9;
-        secondary_dead = 13.33e-9;        
+        secondary_dead = 13.33e-9;
         Power = (Ts/2)-PS-primary_dead-secondary_dead;
         R1 = 0.1277;
 end
@@ -255,6 +256,8 @@ SW = [SW_OFF;SW_ON];
 %     OFF ON ON OFF ON OFF OFF ON % phase shift
 %     OFF ON ON OFF OFF OFF OFF OFF]; % secondary sw
 
+%{
+% The Normal ON
 Binary_for_DAB = [
 
     OFF OFF OFF OFF OFF ON ON OFF % primary sw
@@ -265,8 +268,86 @@ Binary_for_DAB = [
     OFF ON ON OFF ON OFF OFF ON % phase shift
     OFF ON ON OFF OFF OFF OFF OFF % secondary sw
     OFF ON ON OFF OFF ON ON OFF]; % Reverse power
+%}
+
+%%{
+%The FLIPED one
+Binary_for_DAB = [
+
+    OFF OFF OFF OFF ON OFF OFF ON %primary sw
+    OFF ON ON OFF ON OFF OFF ON % phase shift
+    OFF ON ON OFF OFF OFF OFF OFF % secondary sw
+    OFF ON ON OFF OFF ON ON OFF % Reverse power
+    OFF OFF OFF OFF OFF ON ON OFF % primary sw
+    ON OFF OFF ON OFF ON ON OFF % phase shift
+    ON OFF OFF ON OFF OFF OFF OFF % secondary sw
+    ON OFF OFF ON ON OFF OFF ON]; % POWER
+
+
+
+
+for k = 1:1:size(Binary_for_DAB,1)
+        
+        out = {};
+        
+        for j = 1:1:size(Binary_for_DAB,2)
+            out{j} = SW(Binary_for_DAB(k,j)+1,j);
+        end
+         [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+
+end
+
+M1_C_VF = 0;
+M2_C_VF = 0;
+M3_C_VF = 0;
+M4_C_VF = 0;
+M5_C_VF = 0;
+M6_C_VF = 0;
+M7_C_VF = 0;
+M8_C_VF = 0;
+
+
+
+Numerical_Components = {'V1' Vg
+    'C1' C1
+    'C2' C2
+    'L1' L1
+    'L2_T' L2
+    'L3_T' L3
+    'M1_C' M1_C
+    'M2_C' M2_C
+    'M3_C' M3_C
+    'M4_C' M4_C
+    'M5_C' M5_C
+    'M6_C' M6_C
+    'M7_C' M7_C
+    'M8_C' M8_C
+    'R1' R1
+    'R2' R2
+    'R3' R3
+    'M1_C_VF' M1_C_VF
+    'M2_C_VF' M2_C_VF
+    'M3_C_VF' M3_C_VF
+    'M4_C_VF' M4_C_VF
+    'M5_C_VF' M5_C_VF
+    'M6_C_VF' M6_C_VF
+    'M7_C_VF' M7_C_VF
+    'M8_C_VF' M8_C_VF
+    'M1_R' M1_R
+    'M2_R' M2_R
+    'M3_R' M3_R
+    'M4_R' M4_R
+    'M5_R' M5_R
+    'M6_R' M6_R
+    'M7_R' M7_R
+    'M8_R' M8_R };
+
+
 
 %}
+
+
+
 
 
 %% New Buck Converter
@@ -309,8 +390,8 @@ Order = [1 2 3 4]; % The order that the states must go in after being parsed
 %[D1_R,M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R] = deal(100000000); % ronLS
 
 D = 5/12;
-dead = 0.001/fs;
-
+%dead = 0.001/fs;
+dead = 0.1/fs;
 ts = [Ts*D-dead dead Ts*(1-D)-dead dead];
 
 u = [Vg 1 1]';
@@ -464,11 +545,94 @@ ts(5) = [];
 ts(2) = [];
 %}
 
+%% MR-Buck Converter
+%%{
+Vg = 12;
+L1 = 1e-6; %L
+C1 = 1*10^-6; %Cout
+L2 = 0.01e-9; % Resonate inductor
+L3 = 0.01e-9; % Resonate inductor
+fs = 1e6;
+Ts = 1/fs;
+V = 3;
+Io = 0.1; % was 1
+M1_C = 1.5e-9; % CHS
+M2_C = 1.5e-9; % LHS
+dt = Ts/100;%5e-10;
+Vdr = 5;
+M1_R_ON = 0.002; % ronHS
+M2_R_ON = 0.002; % ronLS
+D1_R_D = 0.002; % ronLS
+M1_R_D = 0.002; % ronHS
+M2_R_D = 0.002; % ronLS
+[D1_R_OFF,M1_R_OFF,M2_R_OFF] = deal(100000000); % ronLS
+
+%Order = [2 4]; % The order that the states must go in after being parsed
+%ts = [Ts*.5 Ts*.5]; % The inital guess of time intervals
+
+
+Order = [1 2]; % The order that the states must go in after being parsed
+% ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
+% u = [Vg  1 1 Io]';
+
+
+% Order = [1 2 3 4 5 6 7 8]; % The order that the states must go in after being parsed
+% ts = [Ts*.2376 Ts*.0277 Ts*.23 Ts*.00023 Ts*.2376 Ts*.02775 Ts*.23 Ts*.00023];
+
+
+
+%[D1_R,M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R] = deal(100000000); % ronLS
+
+D = 5/12;
+%dead = 0.001/fs;
+dead = 0.01/fs;
+% ts = [25e-9 25e-9 25e-9 25e-9];
+ts = [Ts/4 3*Ts/4];
+u = [Vg 1 1 Io]';
+
+
+TestparseWaveform = false;
+
+ON = 1;
+OFF = 0;
+
+
+SW_OFF = ones(1,2).*10000000;
+
+SW_ON = [M1_R_ON M2_R_ON];
+
+SW = [SW_OFF;SW_ON];
+
+
+%Out = [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R];
+
+
+
+% Binary_for_DAB = [
+%     ON ON
+%     ON OFF
+%     ON ON
+%     OFF ON];
+
+
+Binary_for_DAB = [
+    ON OFF
+    OFF OFF];
+
+
+
+
+%}
+
+
+
 
 % Select .net file
- filename = 'DAB_Resistors_Cap.net';
+% filename = 'DAB_Resistors_Cap.net';
 % filename = 'HDSC_AURA.net';
- %filename = 'Buck_Qual.net';
+% filename = 'Buck_Qual.net';
+%   filename = 'MR_Buck.net';
+filename = 'Buck_io.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -517,6 +681,7 @@ Current = {'V1'
 %% Run functions
 tic
 parse = NetListParse();
+%parse.initialize(filename,Voltage,Current,Numerical_Components);
 parse.initialize(filename,Voltage,Current);
 parse.ABCD();
 %  load('D:\GitHub\AURA\DAB_PARSE.mat')
@@ -560,8 +725,8 @@ if isempty(A)
         for j = 1:1:size(Binary_for_DAB,2)
             out{j} = SW(Binary_for_DAB(k,j)+1,j);
         end
-         [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
-        % [M1_R, M2_R] = deal(out{:});
+        % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+         [M1_R, M2_R] = deal(out{:});
         
         
         HtempAB(:,:,k) = eval(parse.HtempAB(:,:,1));
@@ -602,12 +767,15 @@ else
         for j = 1:1:size(Binary_for_DAB,2)
             out{j} = SW(Binary_for_DAB(k,j)+1,j);
         end
-        [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+        
+        %[M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+        [M1_R, M2_R] = deal(out{:});
         
         parse.Anum(:,:,k) = eval(A(:,:,1));
         parse.Bnum(:,:,k) = eval(B(:,:,1));
         parse.Cnum(:,:,k) = eval(C(:,:,1));
         parse.Dnum(:,:,k) = eval(D(:,:,1));
+        [parse.eigA(:,k)] = eig(parse.Anum(:,:,k));
     end
      % Set all diode forward voltages to be off
     B = parse.Bnum;
@@ -619,6 +787,7 @@ else
 end
 
 simulator.loadTestConverter2(conv);
+simulator.eigA = parse.eigA;
 simulator.binary = Binary_for_DAB;
 Xss = simulator.SS_Soln();
 
@@ -684,6 +853,7 @@ iterations = 10;
 parse.find_diode_new(Order,Binary_for_DAB);
 % check = simulator.VfwdIrev();
 
+% simulator.DAB_Mesh;
 optimize.opptimization_loop;
 
 %check = simulator.VfwdIrev();

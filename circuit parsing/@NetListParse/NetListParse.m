@@ -16,6 +16,9 @@ classdef NetListParse < handle
         Dnum
         Inum % Only used for PLECS
 
+        eigA % The eiganvalues of Anum
+        
+        
         % Htemp of ABCD (used when unable to solve rref(sym))
         HtempAB
         HtempCD
@@ -77,6 +80,7 @@ classdef NetListParse < handle
         % The Codex
         Codex
         
+        Component_Values
         
         % Htemp for AB and CD matrix for large converters
 
@@ -103,13 +107,29 @@ classdef NetListParse < handle
         Meas_Voltage
         Meas_Current
         filename
-
+        
     end
     methods
-
-        function initialize(obj,Filename,Voltage,Current)
+        
+        function initialize(obj,Filename,Voltage,Current,Num_solve)
             % This function checks to see if all variables are of the
             % correct class
+            
+            if nargin == 5
+                if iscellstr(Num_solve(:,1))
+                    try
+                        numbers = cell2mat(Num_solve(:,2));
+                    catch ME
+                        error('Ensure the format of the component values array is of the form: component | numeric value')
+                    end
+                    if isnumeric(numbers)
+                        obj.Component_Values = Num_solve;
+                    end
+                else
+                    error('Ensure the format of the component values array is of the form: component | numeric value')
+                end
+            end
+            
             if ~exist(Filename,'file')
                 error('File %s not found',Filename)
             end

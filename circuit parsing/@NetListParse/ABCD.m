@@ -77,6 +77,8 @@ The_Codex = []; % Initialize matrix
     end
 
 
+
+
 Combinations = The_Codex;
 
 % From THE_LIST, indicate by indicies which state you are wanting to
@@ -97,13 +99,19 @@ number_of_states = size(Combinations,2);
 %}
 number_of_states = 1;
 
+
 %% Cycle through all possible states
 
 for i = 1:1:number_of_states
 
     [NewNL,NewNLnets,forward_pass]=obj.Single_states(state,i,switches);
+    % symbolic
     [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),HtempAB(:,:,i),dependsAB(:,:,i),HtempCD(:,:,i),savedCD(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i),OutputNames(:,i),DependentNames(:,i),SortedTree(:,:,i),SortedCoTree(:,:,i),ConstantNames(:,i),OrderedNamesnum(:,i)] = obj.nodeloop(NewNL,NewNLnets);
     
+    % numeric
+    % [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),HtempAB(:,:,i),dependsAB(:,:,i),HtempCD(:,:,i),savedCD(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i),OutputNames(:,i),DependentNames(:,i),SortedTree(:,:,i),SortedCoTree(:,:,i),ConstantNames(:,i),OrderedNamesnum(:,i)] = obj.nodeloop_num(NewNL,NewNLnets);
+    
+    % old stuff
     % key = [ones(size(B(:,:,i),2)-size(forward_pass,1)-sum(SortedCoTree(:,1)==12),1);forward_pass;ones(sum(SortedCoTree(:,1)==12),1)]'; % Fit the forward voltage for body diodes in between other voltage sources and current sources to achive corret orientation in B
     % B(:,:,i)=B(:,:,i).*repmat(key,size(B(:,:,i),1),1); % Multiply the key times B to get rid of the columns of B where there is not a diode on during ith state
     

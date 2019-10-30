@@ -26,6 +26,7 @@ classdef SMPSim < handle
         Converter % Converter
         order
         
+        eigA
         
         %         Aw
         %         Bw
@@ -69,6 +70,7 @@ classdef SMPSim < handle
         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
         [t] = deadtimecalc(obj,start_value,end_value,state_pos,time_pos)
         [m]=binary_search(obj,A,n,T)
+        []=Y_Power(obj)
         %% Locally-defined methods
         function settopology(obj, As, Bs, Cs, Ds)
             obj.As = As;
