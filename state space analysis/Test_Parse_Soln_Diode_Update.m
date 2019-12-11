@@ -625,14 +625,68 @@ Binary_for_DAB = [
 %}
 
 
+%% Dickson Converters
+%{
 
+
+Vg = 48;
+Iload = 5;
+fs = 1e6;
+Ts = 1/fs;
+dt = Ts/100;
+L1 = 500e-9;
+C8 = 10e-6;
+r_on = 4e-3;
+Cds = 710e-12;
+Cx = 2e-6;
+Cx_ESR = 4e-3;
+[M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R,M9_R,M10_R,M11_R,M12_R] = deal(r_on);
+[M1_C,M2_C,M3_C,M4_C,M5_C,M6_C,M7_C,M8_C,M9_C,M10_C,M11_C,M12_C] = deal(Cds);
+[C1,C2,C3,C4,C5,C6,C7] = deal(Cx);
+[R1,R2,R3,R4,R5,R6,R7,R8] = deal(Cx_ESR);
+
+
+% Order = [1 2]; % The order that the states must go in after being parsed
+%  ts = [Ts*.5 Ts*.5]; % The inital guess of time intervals
+ u = [Vg  1 1 1 1 1 1 1 1 1 1 1 1 Iload]';
+Order  = [1 2 3 4];
+ ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
+% u = [Vg  1 1 Io]';
+
+
+ON = 1;
+OFF = 0;
+
+
+% Binary_for_DAB = [
+% OFF ON OFF ON OFF ON OFF ON ON OFF OFF ON
+% ON OFF ON OFF ON OFF ON OFF OFF ON ON OFF
+%      ];
+
+ Binary_for_DAB = [
+     OFF ON OFF ON OFF ON OFF ON ON OFF OFF ON
+     OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF
+     ON OFF ON OFF ON OFF ON OFF OFF ON ON OFF
+     OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF
+     ];
+
+SW_OFF = ones(1,12).*10000000;
+
+SW_ON = [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R,M9_R,M10_R,M11_R,M12_R];
+
+SW = [SW_OFF;SW_ON];
+
+
+
+
+%}
 
 % Select .net file
 % filename = 'DAB_Resistors_Cap.net';
 % filename = 'HDSC_AURA.net';
 % filename = 'Buck_Qual.net';
-%   filename = 'MR_Buck.net';
-filename = 'Buck_io.net';
+   filename = 'MR_Buck.net';
+% filename = 'Induct_Load_Dickson.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -727,7 +781,7 @@ if isempty(A)
         end
         % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
          [M1_R, M2_R] = deal(out{:});
-        
+        %[M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
         
         HtempAB(:,:,k) = eval(parse.HtempAB(:,:,1));
         HtempCD(:,:,k) = eval(parse.HtempCD(:,:,1));
@@ -747,6 +801,7 @@ if isempty(A)
         parse.Bnum(:,:,k)=B;
         parse.Cnum(:,:,k)=C;
         parse.Dnum(:,:,k)=D;
+        [parse.eigA(:,k)] = eig(parse.Anum(:,:,k));
     end
     
     % Set all diode forward voltages to be off
@@ -844,7 +899,7 @@ Xs = Xss;
 optimize.dead_time_intervals = [2,4];
 optimize.dead_time_states = [4,2];
 optimize.dead_time_goals = [0,0];
-
+V = 546;
 optimize.Vo_index = 10 ;
 optimize.Vo_ideal_value = V;
 optimize.Perturb1_index = [1 5]; % Used for state sensitivity power time

@@ -76,28 +76,28 @@ switch chooses
     case 1
         PS = 400e-9;
         primary_dead = 50e-9;
-        secondary_dead = 13.33e-9;        
+        secondary_dead = 13.33e-9;
         Power = (Ts/2)-PS-primary_dead-secondary_dead;
         R1 = 0.141;
         
         case 6
         PS = 250-9;
         primary_dead = 110e-9;
-        secondary_dead = 13.33e-9;        
+        secondary_dead = 13.33e-9;
         Power = (Ts/2)-PS-primary_dead-secondary_dead;
         R1 = 0.212955;
         
         case 9
         PS = 410e-9;
         primary_dead = 86.66e-9;
-        secondary_dead = 13.33e-9;        
+        secondary_dead = 13.33e-9;
         Power = (Ts/2)-PS-primary_dead-secondary_dead;
         R1 = 0.16;
         
         case 12
         PS = 620e-9;
         primary_dead = 86.66e-9;
-        secondary_dead = 13.33e-9;        
+        secondary_dead = 13.33e-9;
         Power = (Ts/2)-PS-primary_dead-secondary_dead;
         R1 = 0.1277;
 end
@@ -415,11 +415,48 @@ SW = [SW_OFF;SW_ON;SW_ON];
 
 
 
+%}
 
 
 
+%% Dickson
+%{
+Vg = 48;
+Iload = 5;
+fs = 1e6;
+Ts = 1/fs;
+dt = Ts/50;
+L1 = 500e-9;
+C8 = 10e-6;
+r_on = 4e-3;
+Cds = 710e-12;
+Cx = 2e-6;
+Cx_ESR = 4e-3;
+[M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R,M9_R,M10_R,M11_R,M12_R] = deal(r_on);
+[M1_C,M2_C,M3_C,M4_C,M5_C,M6_C,M7_C,M8_C,M9_C,M10_C,M11_C,M12_C] = deal(Cds);
+[C1,C2,C3,C4,C5,C6,C7] = deal(Cx);
+[R1,R2,R3,R4,R5,R6,R7,R8] = deal(Cx_ESR);
 
 
+% Order = [1 2]; % The order that the states must go in after being parsed
+%  ts = [Ts*.5 Ts*.5]; % The inital guess of time intervals
+u = [Vg  1 1 1 1 1 1 1 1 1 1 1 1 Iload]';
+Order  = [1 2 3 4];
+ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
+% u = [Vg  1 1 Io]';
+
+
+ON = 1;
+OFF = 0;
+
+
+SW_OFF = ones(1,12).*10000000;
+
+SW_ON = [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R,M9_R,M10_R,M11_R,M12_R];
+
+SW = [SW_OFF;SW_ON];
+
+%}
 
 
 out = {};
@@ -438,52 +475,53 @@ The_Codex = obj.Converter.Topology.Parser.Codex;
 
 
 for i = 1:1:size(The_Codex,2)
-     Binary(i,:) = new_state(The_Codex(:,i)); % Assign correct row
+    Binary(i,:) = new_state(The_Codex(:,i)); % Assign correct row
 end
 
-        for j = 1:1:size(Binary,1)
-            out{j} = SW(Binary(j),j);
-        end
-       % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
-        [M1_R, M2_R] = deal(out{:});
-        
-        
-        if isempty(obj.Converter.Topology.Parser.Asym)
-        
-        HtempAB(:,:,k) = eval(obj.Converter.Topology.Parser.HtempAB(:,:,1));
-        HtempCD(:,:,k) = eval(obj.Converter.Topology.Parser.HtempCD(:,:,1));
-        dependsAB(:,:,k) = eval(obj.Converter.Topology.Parser.dependsAB(:,:,1));
-        savedCD(:,:,k) = eval(obj.Converter.Topology.Parser.savedCD(:,:,1));
-        for j = 1:1:size(obj.Converter.Topology.Parser.DependentNames(:,1),1)
-            DependentNames(j,k) = eval(obj.Converter.Topology.Parser.DependentNames{j,1});
-        end
-        for j = 1:1:size(obj.Converter.Topology.Parser.OutputNames(:,1),1)
-            OutputNames(j,k) = eval(obj.Converter.Topology.Parser.OutputNames{j,1});
-        end
+for j = 1:1:size(Binary,1)
+    out{j} = SW(Binary(j),j);
+end
+% [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+ [M1_R, M2_R] = deal(out{:});
+% [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
+
+
+if isempty(obj.Converter.Topology.Parser.Asym)
+    
+    HtempAB(:,:,k) = eval(obj.Converter.Topology.Parser.HtempAB(:,:,1));
+    HtempCD(:,:,k) = eval(obj.Converter.Topology.Parser.HtempCD(:,:,1));
+    dependsAB(:,:,k) = eval(obj.Converter.Topology.Parser.dependsAB(:,:,1));
+    savedCD(:,:,k) = eval(obj.Converter.Topology.Parser.savedCD(:,:,1));
+    for j = 1:1:size(obj.Converter.Topology.Parser.DependentNames(:,1),1)
+        DependentNames(j,k) = eval(obj.Converter.Topology.Parser.DependentNames{j,1});
+    end
+    for j = 1:1:size(obj.Converter.Topology.Parser.OutputNames(:,1),1)
+        OutputNames(j,k) = eval(obj.Converter.Topology.Parser.OutputNames{j,1});
+    end
     
     for k = 1:1:size(HtempAB,3)
         [A,B,C,D] = obj.Converter.Topology.Parser.loopfixAB_large(HtempAB(:,:,k),dependsAB(:,:,k),OutputNames(:,k),DependentNames(:,k));
         [C,D] = obj.Converter.Topology.Parser.loopfixCD_large(B,C,D,HtempCD(:,:,k),savedCD(:,:,k),DependentNames(:,k),obj.Converter.Topology.Parser.SortedTree(:,:,1),obj.Converter.Topology.Parser.SortedCoTree(:,:,1));
     end
+    eigA = eig(A);
     
+else
     
-        else
-            
-            A = eval(obj.Converter.Topology.Parser.Asym(:,:,1));
-            B = eval(obj.Converter.Topology.Parser.Bsym(:,:,1));
-            C = eval(obj.Converter.Topology.Parser.Csym(:,:,1));
-            D = eval(obj.Converter.Topology.Parser.Dsym(:,:,1));
-            eigA = eig(A);
-            
-        end
-        
-        
-    % Sets new B and D matricies corresponding to the updated diode
-    % conduction indecies in the variable binary
-    B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF'))=B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF')).*(Binary==2)';
-    D(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF'))=D(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF')).*(Binary==2)';
+    A = eval(obj.Converter.Topology.Parser.Asym(:,:,1));
+    B = eval(obj.Converter.Topology.Parser.Bsym(:,:,1));
+    C = eval(obj.Converter.Topology.Parser.Csym(:,:,1));
+    D = eval(obj.Converter.Topology.Parser.Dsym(:,:,1));
+    eigA = eig(A);
     
-    
+end
+
+
+% Sets new B and D matricies corresponding to the updated diode
+% conduction indecies in the variable binary
+B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF'))=B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF')).*(Binary==2)';
+D(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF'))=D(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF')).*(Binary==2)';
+
+
 
 end
 

@@ -23,12 +23,40 @@ tol = 0.005;
 toc
 try
     %tic
+    
+    [Xss] = obj.PLECS_lsim_solve(obj.Xs(:,1));
+     [Xss] = obj.PLECS_lsim_solve(Xss);
+     [Xss] = obj.PLECS_lsim_solve(Xss);
+    [Xss] = obj.PLECS_lsim_solve(Xss);
+    [Xss] = obj.PLECS_lsim_solve(Xss);
+    [Xss] = obj.PLECS_lsim_solve(Xss);
+    [Xss] = obj.PLECS_lsim_solve(Xss);
+     [Xss] = obj.PLECS_lsim_solve(Xss);
+    [Xss] = obj.PLECS_lsim_solve(Xss);
+     [Xss] = obj.PLECS_lsim_solve(Xss);
+    [Xss] = obj.PLECS_lsim_solve(Xss);
+%     [Xss] = obj.PLECS_lsim_solve(Xss);
+%     [Xss] = obj.PLECS_lsim_solve(Xss);
+%     [Xss] = obj.PLECS_lsim_solve(Xss);
+%     [Xss] = obj.PLECS_lsim_solve(Xss);
+%     [Xss] = obj.PLECS_lsim_solve(Xss);
+%     [Xss] = obj.PLECS_lsim_solve(Xss);
+%     [Xss] = obj.PLECS_lsim_solve(Xss);
+%     [Xss] = obj.PLECS_lsim_solve(Xss);
+     [Xss] = obj.PLECS_lsim_solve(Xss,1);
+    
+    
+    obj.SS_Soln();
+    obj.CorrectXs();
+    
     history_i = [];
     history_j = [];
     the_big_counter = 0;
     not_reached_SS = true;
     more_iterations=iterations;
     ONorOFF = obj.Converter.Topology.Parser.ONorOFF;
+    breakbreak = 0;
+    
     
     while not_reached_SS && the_big_counter<=more_iterations
         the_big_counter = the_big_counter+1;
@@ -293,6 +321,10 @@ try
                             else
                                 fprintf('Messed up\n')
                             end
+                            
+                            
+                            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                            
                         elseif obj.Converter.Topology.Parser.DMpos(i,3)==1 % if FET
                             
                             
@@ -305,63 +337,89 @@ try
                                 %                                 end
                                 
                             elseif ONorOFF(i,j-1) == -1 % if FET off
-                                
-                                if sum(ts(j-1)>2.*pi./abs(imag(obj.eigA(:,j-1))))>0
-                                    [~,time_change]=obj.fast_dynamic_check(i,j,k,Xs);
-                                    if ~isempty(time_change)
-                                    last_violations_bd_turn_on(i,j-1) = 1;
-                                    end
-%                                     
-%                                     % Value at 0
-%                                     X_zero = Xs(:,j-1);
-%                                     xdot_zero = obj.As(:,:,k)*X_zero+obj.Bs(:,:,k)*obj.u;
-%                                     
-%                                     
-%                                     % Value of 1/4
-%                                     M = expm(pi()/2/max(imag(obj.eigA(:,j-1)))*[obj.As(:,:,k), eye(length(obj.As(:,:,k))); zeros(size(obj.As(:,:,k),1), 2*size(obj.As(:,:,k),2))]);
-%                                     intEAt = M(1:size(obj.As(:,:,k),1), size(obj.As(:,:,k),2)+1:end);
-%                                     fresp = intEAt*(obj.Bs(:,:,k)*obj.u);
-%                                     X_quarter=expm(pi()/2/max(imag(obj.eigA(:,j-1)))*obj.As(:,:,k))*Xs(:,j-1)+fresp;
-%                                     xdot_quarter = obj.As(:,:,k)*X_quarter+obj.Bs(:,:,k)*obj.u;
-%                                     
-%                                     
-%                                     % Value of 1/2
-%                                     M = expm(pi()/max(imag(obj.eigA(:,j-1)))*[obj.As(:,:,k), eye(length(obj.As(:,:,k))); zeros(size(obj.As(:,:,k),1), 2*size(obj.As(:,:,k),2))]);
-%                                     intEAt = M(1:size(obj.As(:,:,k),1), size(obj.As(:,:,k),2)+1:end);
-%                                     fresp = intEAt*(obj.Bs(:,:,k)*obj.u);
-%                                     X_half=expm(pi()/max(imag(obj.eigA(:,j-1)))*obj.As(:,:,k))*Xs(:,j-1)+fresp;
-%                                     xdot_half = obj.As(:,:,k)*X_half+obj.Bs(:,:,k)*obj.u;
-%                                     
-%                                     
-%                                     % Value of 3/4
-%                                     M = expm(3*pi()/2/max(imag(obj.eigA(:,j-1)))*[obj.As(:,:,k), eye(length(obj.As(:,:,k))); zeros(size(obj.As(:,:,k),1), 2*size(obj.As(:,:,k),2))]);
-%                                     intEAt = M(1:size(obj.As(:,:,k),1), size(obj.As(:,:,k),2)+1:end);
-%                                     fresp = intEAt*(obj.Bs(:,:,k)*obj.u);
-%                                     X_3quarter=expm(3*pi()/2/max(imag(obj.eigA(:,j-1)))*obj.As(:,:,k))*Xs(:,j-1)+fresp;
-%                                     xdot_3quarter = obj.As(:,:,k)*X_3quarter+obj.Bs(:,:,k)*obj.u;
-%                                     
-%                                     
-%                                     % Value of 1
-%                                     M = expm(2*pi()/max(imag(obj.eigA(:,j-1)))*[obj.As(:,:,k), eye(length(obj.As(:,:,k))); zeros(size(obj.As(:,:,k),1), 2*size(obj.As(:,:,k),2))]);
-%                                     intEAt = M(1:size(obj.As(:,:,k),1), size(obj.As(:,:,k),2)+1:end);
-%                                     fresp = intEAt*(obj.Bs(:,:,k)*obj.u);
-%                                     X_one=expm(2*pi()/max(imag(obj.eigA(:,j-1)))*obj.As(:,:,k))*Xs(:,j-1)+fresp;
-%                                     xdot_one = obj.As(:,:,k)*X_one+obj.Bs(:,:,k)*obj.u;
-%                                     
-%                                     
-%                                     
-%                                     
-%                                     if (xdot_3quarter(i,1)<-1-1*tol || xdot_3quarter(i,1)<-1-1*tol )
-%                                     last_violations_bd_turn_on(i,j-1) = 1;
-%                                     end
-%                                     
+                                if ~(obj.Xs(i,j-1)<-1-1*tol)
+                                dxlastdt = obj.As(:,:,j-1)*Xs(:,j-1)+obj.Bs(:,:,j-1)*obj.u;
+                                dxfirstdt = obj.As(:,:,j-1)*Xs(:,j)+obj.Bs(:,:,j-1)*obj.u;
+                                if sum(ts(j-1)>pi./abs(imag(obj.eigA(:,j-1))))>0 || dxlastdt(i)<0 && dxfirstdt(i)>0 % If the FET length is greater than 2*fs of the fastest eigenvalue dynamic
+                                                 
+                                        % if 1 %the_big_counter<2
+                                        [~,time_change]=obj.fast_dynamic_check(i,j,k,Xs);
+                                        if ~isempty(time_change)
+                                            if (k+1)>size(ONorOFF,2)
+                                                if ONorOFF(i,1) == 1 && (sum((ONorOFF(:,1)==2)==(ONorOFF(:,j-1)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                                    
+                                                else
+                                                    last_violations_bd_turn_on=zeros(size(last_violations_bd_turn_on));
+                                                    last_violations_bd_turn_on(i,j-1) = 1;
+                                                    breakbreak = 1;
+                                                    break
+                                                end
+                                                
+                                            else
+                                                if ONorOFF(i,j) == 1 && (sum((ONorOFF(:,j)==2)==(ONorOFF(:,j-1)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                                    
+                                                    obj.setts([ts(1:k-1) time_change ts(k)+ts(k+1)-time_change ts(k+2:end)] );
+                                                    
+                                                else
+                                                    last_violations_bd_turn_on=zeros(size(last_violations_bd_turn_on));
+                                                    last_violations_bd_turn_on(i,j-1) = 1;
+                                                    breakbreak = 1;
+                                                    break
+                                                end
+                                            end
+                                        end
+                                        %end
+                                    %
+                                    %                                     % Value at 0
+                                    %                                     X_zero = Xs(:,j-1);
+                                    %                                     xdot_zero = obj.As(:,:,k)*X_zero+obj.Bs(:,:,k)*obj.u;
+                                    %
+                                    %
+                                    %                                     % Value of 1/4
+                                    %                                     M = expm(pi()/2/max(imag(obj.eigA(:,j-1)))*[obj.As(:,:,k), eye(length(obj.As(:,:,k))); zeros(size(obj.As(:,:,k),1), 2*size(obj.As(:,:,k),2))]);
+                                    %                                     intEAt = M(1:size(obj.As(:,:,k),1), size(obj.As(:,:,k),2)+1:end);
+                                    %                                     fresp = intEAt*(obj.Bs(:,:,k)*obj.u);
+                                    %                                     X_quarter=expm(pi()/2/max(imag(obj.eigA(:,j-1)))*obj.As(:,:,k))*Xs(:,j-1)+fresp;
+                                    %                                     xdot_quarter = obj.As(:,:,k)*X_quarter+obj.Bs(:,:,k)*obj.u;
+                                    %
+                                    %
+                                    %                                     % Value of 1/2
+                                    %                                     M = expm(pi()/max(imag(obj.eigA(:,j-1)))*[obj.As(:,:,k), eye(length(obj.As(:,:,k))); zeros(size(obj.As(:,:,k),1), 2*size(obj.As(:,:,k),2))]);
+                                    %                                     intEAt = M(1:size(obj.As(:,:,k),1), size(obj.As(:,:,k),2)+1:end);
+                                    %                                     fresp = intEAt*(obj.Bs(:,:,k)*obj.u);
+                                    %                                     X_half=expm(pi()/max(imag(obj.eigA(:,j-1)))*obj.As(:,:,k))*Xs(:,j-1)+fresp;
+                                    %                                     xdot_half = obj.As(:,:,k)*X_half+obj.Bs(:,:,k)*obj.u;
+                                    %
+                                    %
+                                    %                                     % Value of 3/4
+                                    %                                     M = expm(3*pi()/2/max(imag(obj.eigA(:,j-1)))*[obj.As(:,:,k), eye(length(obj.As(:,:,k))); zeros(size(obj.As(:,:,k),1), 2*size(obj.As(:,:,k),2))]);
+                                    %                                     intEAt = M(1:size(obj.As(:,:,k),1), size(obj.As(:,:,k),2)+1:end);
+                                    %                                     fresp = intEAt*(obj.Bs(:,:,k)*obj.u);
+                                    %                                     X_3quarter=expm(3*pi()/2/max(imag(obj.eigA(:,j-1)))*obj.As(:,:,k))*Xs(:,j-1)+fresp;
+                                    %                                     xdot_3quarter = obj.As(:,:,k)*X_3quarter+obj.Bs(:,:,k)*obj.u;
+                                    %
+                                    %
+                                    %                                     % Value of 1
+                                    %                                     M = expm(2*pi()/max(imag(obj.eigA(:,j-1)))*[obj.As(:,:,k), eye(length(obj.As(:,:,k))); zeros(size(obj.As(:,:,k),1), 2*size(obj.As(:,:,k),2))]);
+                                    %                                     intEAt = M(1:size(obj.As(:,:,k),1), size(obj.As(:,:,k),2)+1:end);
+                                    %                                     fresp = intEAt*(obj.Bs(:,:,k)*obj.u);
+                                    %                                     X_one=expm(2*pi()/max(imag(obj.eigA(:,j-1)))*obj.As(:,:,k))*Xs(:,j-1)+fresp;
+                                    %                                     xdot_one = obj.As(:,:,k)*X_one+obj.Bs(:,:,k)*obj.u;
+                                    %
+                                    %
+                                    %
+                                    %
+                                    %                                     if (xdot_3quarter(i,1)<-1-1*tol || xdot_3quarter(i,1)<-1-1*tol )
+                                    %                                     last_violations_bd_turn_on(i,j-1) = 1;
+                                    %                                     end
+                                    %
                                     
                                     
                                 end
                                 % Check this point to see if there is
                                 % a violation
                                 
-                                
+                                end
                                 
                                 
                                 
@@ -417,7 +475,7 @@ try
                                                 %  obj.CorrectXs(1);
                                                 
                                                 
-                                            else
+                                            elseif sum(ts(j-1)>2*pi./abs(imag(obj.eigA(:,j-1))))==0
                                                 %                                                     replace = 0; new_index = 1;
                                                 %                                                     [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
                                                 %                                                     ts = [ts(1:k-1) ts(k)*.95 ts(k)*.05 ts(k+1:end)];
@@ -445,7 +503,7 @@ try
                                                     %    obj.SS_Soln(1);
                                                     %  obj.CorrectXs(1);
                                                     
-                                                else
+                                                elseif sum(ts(j-1)>2*pi./abs(imag(obj.eigA(:,j-1))))==0
                                                     %                                                         replace = 0; new_index = 1;
                                                     %                                                         [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
                                                     %                                                         ts = [ts(1:k-1) ts(k)*.95 ts(k)*.05 ts(k+1:end)];
@@ -472,7 +530,7 @@ try
                                             
                                             if first_violations %&& %ONorOFF(i,end) == 2
                                                 
-                                                if ONorOFF(i,end) == 1 && (sum((ONorOFF(:,j-1)==2)==(ONorOFF(:,end)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                                if ONorOFF(i,end) == 1 && (sum((ONorOFF(:,j-1)==2)==(ONorOFF(:,end)==2)) == size(ONorOFF,1)) && sum(ts(end)<pi./abs(imag(obj.eigA(:,end))))>0 % This checks to see if there is already a diode state for the next interval that does not affect switching actions
                                                     [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
                                                     obj.setts(ts);
                                                     order = obj.order;
@@ -480,7 +538,7 @@ try
                                                     % obj.SS_Soln(1);
                                                     %  obj.CorrectXs(1);
                                                     
-                                                else
+                                                elseif sum(ts(j-1)>2*pi./abs(imag(obj.eigA(:,j-1))))==0
                                                     %                                                         replace = 0; new_index = 0;
                                                     %                                                         [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
                                                     %                                                         ts = [ts(1:k-1) ts(k)*.05 ts(k)*.95 ts(k+1:end)];
@@ -504,7 +562,7 @@ try
                                             if first_violations %&& %ONorOFF(i,k-1) == 2
                                                 
                                                 
-                                                if ONorOFF(i,j-2) == 1 && (sum((ONorOFF(:,j-1)==2)==(ONorOFF(:,j-2)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                                if ONorOFF(i,j-2) == 1 && (sum((ONorOFF(:,j-1)==2)==(ONorOFF(:,j-2)==2)) == size(ONorOFF,1)) && sum(ts(j-2)<pi./abs(imag(obj.eigA(:,j-2))))>0 % This checks to see if there is already a diode state for the next interval that does not affect switching actions
                                                     [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
                                                     obj.setts(ts);
                                                     order = obj.order;
@@ -512,7 +570,7 @@ try
                                                     % obj.SS_Soln(1);
                                                     %  obj.CorrectXs(1);
                                                     
-                                                else
+                                                elseif sum(ts(j-1)>2*pi./abs(imag(obj.eigA(:,j-1))))==0
                                                     %                                                         replace = 0; new_index = 0;
                                                     %                                                         [ts,order,new_index] = obj.adjust_time_single(sign,new_index,ts,order,waveform,i,k,time_ratio,ONorOFF,replace);
                                                     %                                                         ts = [ts(1:k-1) ts(k)*.05 ts(k)*.95 ts(k+1:end)];
@@ -591,7 +649,7 @@ try
                                     
                                     %                                     if (length(P)<2)
                                     
-                                    if obj.Xs(i,j)>-1 % if there is only a violation at the end of the time interval then the current time interval needs to be ajusted to end earilier at the diode forward votlage crossing (1)
+                                    if obj.Xs(i,j)>-1+1*tol% if there is only a violation at the end of the time interval then the current time interval needs to be ajusted to end earilier at the diode forward votlage crossing (1)
                                         last_violations = 1;
                                         if (k+1)>size(ONorOFF,2)
                                             if last_violations %&& ONorOFF(i,1) == 2
@@ -722,19 +780,21 @@ try
                     end
                     
                 end
-                if not_physical
-                    Jello = 8989;
+                if breakbreak
+                    
+                    [ts,ONorOFF]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off) ;
+                    break
                 end
                 j = j+1;
                 
             end
             %             end
-            if the_big_counter<2
+            if the_big_counter<2 && breakbreak == 0
                 [ts,ONorOFF]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off) ;
             end
             
             
-            
+            breakbreak = 0;
             
             if not_physical % If there were no changes made then skip this step
                 % Combine similar adjacent states would be nice!
