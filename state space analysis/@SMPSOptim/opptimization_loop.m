@@ -20,7 +20,7 @@ Voerr = 999999999;
 
 while Voerr>0.05*obj.Vo_ideal_value
     
-    obj.Simulator.bruteforcelsim_single(40);
+    obj.Simulator.Three_tier_diode_correct(40);
     
     ts = obj.Simulator.ts;
     Xs = obj.Simulator.Xs;

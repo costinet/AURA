@@ -26,70 +26,6 @@ try
     
     
     [Xss] = obj.PLECS_lsim_solve(obj.Xs(:,1));
-   
-    
-    
-    x = Xss;
-    max_x = max(abs(x),[],2);
-    
-    min_x = [0.1 0.1 0.1 0.1 0.1];
-    
-    % Estimate in relative error
-    eta = [abs(12-x(1)) abs(2-x(2)) abs(0-x(3)) abs(-1-x(4)) abs(0-x(5)) ]';
-    eta = [1 1 1 1 1]';
-    delta_x(:) = (eta).^0.5.*max(max_x(:),min_x(:));
-    delta_x = (Xss./1000)';
-    
-    x_big = x;
-    F_x = x(:,end);
-    I = eye(length(F_x));
-    J = zeros(length(F_x));
-    x = Xss;
-    for i = 1:1:length(x)
-        todeal =  (x+I(:,i)*delta_x(i))';
-        [new_x] = obj.PLECS_lsim_solve(todeal');
-        norm(new_x-F_x)/norm(F_x);
-        J(:,i) = I(:,i)-((new_x-x)./delta_x(i));
-        
-    end
-    
-    F_xtrack = Xss';
-    
-    F_x = Xss;
-    x_k = obj.Xs(:,1);
-    Alli = 0;
-    while Alli < 10
-        Alli=Alli+1;
-        x_plus_1 = x_k-(J^-1)*(x_k-F_x);
-        todeal=x_plus_1;
-        %[M1_V C1_V L1_I]=deal(todeal(1),todeal(2),todeal(3));
-        %M2_V = Vg-M1_V;
-        %sim('Buck_COMPEL_2019');
-        [F_x] = obj.PLECS_lsim_solve(todeal);
-        
-        %F_x = [M1sim.data C1sim.data L1sim.data]';
-        %F_x = F_x(:,end);
-        % Broyden's Update
-        
-        J = J+(((x_plus_1-F_x)*(x_plus_1-x_k)')/(norm(x_plus_1-x_k))^2);
-        
-        x_k = x_plus_1;
-        
-        F_xtrack(end+1,:) = F_x;
-        
-    end
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
 %     [Xss] = obj.PLECS_lsim_solve(F_x)
 %      [Xss] = obj.PLECS_lsim_solve(Xss)
@@ -110,7 +46,7 @@ try
 %     [Xss] = obj.PLECS_lsim_solve(Xss);
 %     [Xss] = obj.PLECS_lsim_solve(Xss);
 %     [Xss] = obj.PLECS_lsim_solve(Xss);
-     [Xss] = obj.PLECS_lsim_solve(F_x,1);
+     [Xss] = obj.PLECS_lsim_solve(Xss,1);
     
     
     obj.SS_Soln();

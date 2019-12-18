@@ -28,6 +28,22 @@ classdef SMPSim < handle
         
         eigA
         
+        
+        As_OG
+        Bs_OG
+        Cs_OG
+        Ds_OG
+        u_OG
+        eigA_OG
+        ONorOFF_OG
+        ts_OG
+        
+        
+        
+        
+        
+        
+        
         %         Aw
         %         Bw
         %         Cw

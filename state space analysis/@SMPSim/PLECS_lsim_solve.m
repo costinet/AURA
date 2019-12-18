@@ -15,15 +15,14 @@ try
         assign = false;
     end
     
-    As = obj.As;
-    Bs = obj.Bs;
-    Cs = obj.Cs;
-    Ds = obj.Ds;
-    u = obj.u;
-    eigA = obj.eigA;
-    ONorOFF = obj.Converter.Topology.Parser.ONorOFF;
-    ts = obj.ts;
-    Xs = obj.Xs;
+    As = obj.As_OG;
+    Bs = obj.Bs_OG;
+    Cs = obj.Cs_OG;
+    Ds = obj.Ds_OG;
+    u = obj.u_OG;
+    eigA = obj.eigA_OG;
+    ONorOFF = obj.ONorOFF_OG;
+    ts = obj.ts_OG;
     tol = 0.05;
     
     %{

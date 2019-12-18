@@ -1,0 +1,421 @@
+function [] = Three_tier_diode_correct(obj,iterations)
+%THREE_TIER_DIODE_CORRECT takes the steady state solution of a
+%converter can checks to determine if there are any diode violations
+%and correct them
+
+%     _   _   _  ____    _
+%    / \ | | | |/ _  |  / \
+%   / _ \| | | | (_| | / _ \
+%  / ___ | |_| |> _  |/ ___ \
+% /_/   \_\___//_/ |_/_/   \_\
+
+% Set debug flag
+debug = true;
+
+
+% Set this for the lsim function to be able to run without
+obj.As_OG = obj.As;
+obj.Bs_OG = obj.Bs;
+obj.Cs_OG = obj.Cs;
+obj.Ds_OG = obj.Ds;
+obj.u_OG = obj.u;
+obj.eigA_OG = obj.eigA;
+obj.ONorOFF_OG = obj.Converter.Topology.Parser.ONorOFF;
+obj.ts_OG = obj.ts;
+
+% Initalization of Variables and Counters
+the_big_counter = 0;
+more_iterations=iterations;
+not_reached_SS = true;
+previous_multi_violation = false;
+breakbreak = false;
+tol = 0.05;
+keep_SS = false; % dont really use this anymore but it is still riddled throughout the code
+
+if debug
+    Plot_Waveforms;
+end
+
+while not_reached_SS && the_big_counter<=more_iterations
+    the_big_counter = the_big_counter+1;
+    
+    try % For debugging
+        not_reached_SS = false;
+        %% Eigenvalue check
+        
+        % The eigenvalue check is done at the beginning of the function to
+        % determine which
+        
+        imagine_eigA = imag(obj.eigA); % get the imaginary part of the eigenvalue
+        imagine_eigA(imagine_eigA(:)<=0) = 0; % Only take the postive part of the eigenvalue
+        
+        num_eigA_volations=sum(1./obj.ts<imagine_eigA./pi(),1); % Find the time intervals that have an eigenvalue that has faster dynamics than its length
+        
+        multi_violations = sum(num_eigA_volations>1)>0;
+        if multi_violations
+            % Kick to code that will lsim throught the code if there is more
+            % than one eigenvalue that is faster than its corresponding time interval
+            [obj.Xs(:,1)] = obj.PLECS_lsim_solve(obj.Xs(:,1),1);
+            previous_multi_violation = true;
+            not_reached_SS = true;
+            continue
+        elseif previous_multi_violation
+            obj.SS_Soln();
+            obj.CorrectXs();
+            previous_multi_violation = false;
+            not_reached_SS = true;
+            continue
+        end
+        
+        
+        if debug
+            Plot_Waveforms;
+        end
+        
+        %% State Sensitvity Check
+        
+        
+        Xs = obj.Xs;
+        ONorOFF = obj.Converter.Topology.Parser.ONorOFF;
+        ts = obj.ts;
+        
+        last_violations_bd_turn_on = zeros(size(ONorOFF));
+        last_violations_bd_turn_off = last_violations_bd_turn_on;
+        first_violations_bd_turn_off = last_violations_bd_turn_off;
+        first_violations_bd_turn_on = last_violations_bd_turn_off;
+        
+        
+        j = 2;
+        time_variable_size = size(Xs,2);
+        while j <= time_variable_size % Cycle through time intervals
+            for i = 1:1:size(Xs,1) % Cycle through state variables
+                j;% is time interval for Xss
+                k = j-1; % k is time interval for everything else
+                if ONorOFF(i,k) ~=0 % if FET or Diode
+                    if obj.Converter.Topology.Parser.DMpos(i,2)==1 % if diode
+                        
+                    elseif obj.Converter.Topology.Parser.DMpos(i,3)==1 % if FET
+                        
+                        if ONorOFF(i,j-1) == 2 % if FET ON
+                            
+                            
+                        elseif ONorOFF(i,j-1) == -1 % if FET off
+                            
+                            
+                            % This set of code will run to check
+                            % if there is a need to adjust the
+                            % timing of the converter based on the
+                            % eigenvalues
+                            
+                            
+                            dxlastdt = obj.As(:,:,j-1)*obj.Xs(:,j-1)+obj.Bs(:,:,j-1)*obj.u; % This find the derivative at the end of the time interval
+                            dxfirstdt = obj.As(:,:,j-1)*obj.Xs(:,j)+obj.Bs(:,:,j-1)*obj.u; % This finds the derivative at the beginning of the time interval
+                            if sum(ts(j-1)>pi./abs(imag(obj.eigA(:,j-1))))>0 || dxlastdt(i)<0 && dxfirstdt(i)>0 % If the FET length is greater than 2*fs of the fastest eigenvalue dynamic
+                                
+                                % if 1 %the_big_counter<2
+                                [~,time_change]=obj.fast_dynamic_check(i,j,k,Xs);
+                                if ~isempty(time_change)
+                                    if (k+1)>size(ONorOFF,2)
+                                        if ONorOFF(i,1) == 1 && (sum((ONorOFF(:,1)==2)==(ONorOFF(:,j-1)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                            fprintf('Code not written yes')
+                                        else
+                                            last_violations_bd_turn_on=zeros(size(last_violations_bd_turn_on));
+                                            last_violations_bd_turn_on(i,j-1) = 1;
+                                            breakbreak = 1;
+                                            break
+                                        end
+                                        
+                                    else
+                                        if ONorOFF(i,j) == 1 && (sum((ONorOFF(:,j)==2)==(ONorOFF(:,j-1)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                            
+                                            obj.setts([ts(1:k-1) time_change ts(k)+ts(k+1)-time_change ts(k+2:end)] );
+                                            
+                                        else
+                                            last_violations_bd_turn_on=zeros(size(last_violations_bd_turn_on));
+                                            last_violations_bd_turn_on(i,j-1) = 1;
+                                            breakbreak = 1;
+                                            break
+                                        end
+                                    end
+                                end
+                            end
+                            
+                            
+                            
+                            
+                            
+                            if (obj.Xs(i,j)<-1-1*tol || obj.Xs(i,j-1)<-1-1*tol )
+                                
+                                if debug
+                                    fprintf('State Violation (Body Diode turn on) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                                end
+                                sign = [0,1];
+                                
+                                
+                                if obj.Xs(i,j)<-1 % if there is only a violation at the end of the time interval then the current time interval needs to be ajusted to end earilier at the diode forward votlage crossing (1)
+                                    last_violations = 1;
+                                    if (k+1)>size(ONorOFF,2)
+                                        
+                                        
+                                        if ONorOFF(i,1) == 1 && (sum((ONorOFF(:,1)==2)==(ONorOFF(:,j-1)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                            [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(y(StateNumbers(i),:)),-1,0.001,0,keep_SS);
+                                            obj.setts(ts);
+                                            order = obj.order;
+                                            not_physical = true;
+                                            %   obj.SS_Soln(1);
+                                            %  obj.CorrectXs(1);
+                                            
+                                            
+                                        elseif sum(ts(j-1)>2*pi./abs(imag(obj.eigA(:,j-1))))==0
+                                            
+                                            
+                                            last_violations_bd_turn_on(i,j-1) = 1;
+                                            
+                                        end
+                                        
+                                        
+                                    else
+                                        if last_violations %&& ONorOFF(i,k+1) == 2
+                                            if ONorOFF(i,j) == 1 && (sum((ONorOFF(:,j)==2)==(ONorOFF(:,j-1)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                                [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(obj.Xs(i,:)),-1,0.001,0,keep_SS);
+                                                obj.setts(ts);
+                                                order = obj.order;
+                                                not_physical = true;
+                                                %    obj.SS_Soln(1);
+                                                %  obj.CorrectXs(1);
+                                                
+                                                breakbreak = true;
+                                                not_reached_SS = true;
+                                                break
+                                                
+                                            elseif sum(ts(j-1)>2*pi./abs(imag(obj.eigA(:,j-1))))==0
+                                                
+                                                
+                                                last_violations_bd_turn_on(i,j-1) = 1;
+                                                not_reached_SS = true;
+                                            end
+                                        end
+                                    end
+                                end
+                                
+                                if obj.Xs(i,j-1)<-1 % if there is only a violation at the beginning of the time interval then look to set the end of the last time interval to be equal to the diode forward votlage (1)
+                                    first_violations = 1;
+                                    
+                                    if j == 2
+                                        
+                                        if first_violations %&& %ONorOFF(i,end) == 2
+                                            
+                                            if ONorOFF(i,end) == 1 && (sum((ONorOFF(:,j-1)==2)==(ONorOFF(:,end)==2)) == size(ONorOFF,1)) && sum(ts(end)<pi./abs(imag(obj.eigA(:,end))))>0 % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                                [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
+                                                obj.setts(ts);
+                                                order = obj.order;
+                                                not_physical = true;
+                                                % obj.SS_Soln(1);
+                                                %  obj.CorrectXs(1);
+                                                
+                                            elseif sum(ts(j-1)>2*pi./abs(imag(obj.eigA(:,j-1))))==0
+                                                
+                                                first_violations_bd_turn_on(i,j-1) = 1;
+                                                
+                                            end
+                                            
+                                        end
+                                        
+                                    else
+                                        
+                                        if first_violations %&& %ONorOFF(i,k-1) == 2
+                                            
+                                            
+                                            if ONorOFF(i,j-2) == 1 && (sum((ONorOFF(:,j-1)==2)==(ONorOFF(:,j-2)==2)) == size(ONorOFF,1)) && sum(ts(j-2)<pi./abs(imag(obj.eigA(:,j-2))))>0 % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                                [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
+                                                obj.setts(ts);
+                                                order = obj.order;
+                                                not_physical = true;
+                                                % obj.SS_Soln(1);
+                                                %  obj.CorrectXs(1);
+                                                
+                                            elseif sum(ts(j-1)>2*pi./abs(imag(obj.eigA(:,j-1))))==0
+                                                
+                                                first_violations_bd_turn_on(i,j-1) = 1;
+                                                
+                                            end
+                                            
+                                            
+                                        end
+                                        
+                                    end
+                                    
+                                end
+                                
+                            end
+                            
+                            
+                            
+                        elseif ONorOFF(i,j-1) == 1 % body diode on
+                            
+                            if (obj.Xs(i,j)>-1+1*tol || obj.Xs(i,j-1)>-1+1*tol)
+                                if debug
+                                    fprintf('State Violation (Body Diode turn off) of %s in time interval %.0f \n',obj.Converter.Topology.Parser.StateNames{i,1},j-1)
+                                end
+                                
+                                sign = [1,1];
+                                
+                                
+                                if obj.Xs(i,j)>-1+1*tol% if there is only a violation at the end of the time interval then the current time interval needs to be ajusted to end earilier at the diode forward votlage crossing (1)
+                                    last_violations = 1;
+                                    if (k+1)>size(ONorOFF,2)
+                                        if last_violations %&& ONorOFF(i,1) == 2
+                                            [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(obj.Xs(i,:)),-1,0.001,0,keep_SS);
+                                            order = obj.order;
+                                            not_physical = true;
+                                            % obj.SS_Soln(1);
+                                            %       obj.CorrectXs(1);
+                                        end
+                                    else
+                                        if last_violations %&& ONorOFF(i,k+1) == 2
+                                            if ONorOFF(i,j) == -1 && (sum((ONorOFF(:,j)==2)==(ONorOFF(:,j-1)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                                [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(obj.Xs(i,:)),-1,0.001,0,keep_SS);
+                                                obj.setts(ts);
+                                                order = obj.order;
+                                                not_physical = true;
+                                                obj.SS_Soln(1);
+                                                obj.CorrectXs(1);
+                                                
+                                            else
+                                                
+                                                last_violations_bd_turn_off(i,j-1) = 1;
+                                                
+                                            end
+                                        end
+                                    end
+                                end
+                                
+                                if obj.Xs(i,j-1)>-1 % if there is only a violation at the beginning of the time interval then look to set the end of the last time interval to be equal to the diode forward votlage (1)
+                                    first_violations = 1;
+                                    
+                                    if j == 2
+                                        j = size(Xs,2);
+                                        if first_violations %&& %ONorOFF(i,end) == 2
+                                            
+                                            
+                                            order = obj.order;
+                                            
+                                        end
+                                        
+                                    else
+                                        
+                                        if first_violations %&& %ONorOFF(i,k-1) == 2
+                                            
+                                            
+                                            if ONorOFF(i,j-2) == -1 && (sum((ONorOFF(:,j-1)==2)==(ONorOFF(:,j-2)==2)) == size(ONorOFF,1)) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                                [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
+                                                obj.setts(ts);
+                                                order = obj.order;
+                                                not_physical = true;
+                                                
+                                                
+                                            else
+                                                
+                                                
+                                                first_violations_bd_turn_off(i,j-1) = 1;
+                                                
+                                            end
+                                            
+                                            
+                                        end
+                                        
+                                    end
+                                    
+                                end
+                                
+                                
+                                
+                                
+                            end
+                            
+                        else
+                            fprintf('Messed up\n')
+                        end
+                    else
+                        
+                    end
+                    
+                end
+                
+            end
+            if breakbreak
+                
+                [ts,ONorOFF]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off) ;
+                break
+            end
+            j = j+1;
+            
+        end
+        
+        if the_big_counter<2 && breakbreak == 0
+            [ts,ONorOFF]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off) ;
+        end
+        
+        
+        breakbreak = 0;
+        obj.SS_Soln();
+        obj.CorrectXs();
+        
+        
+        
+    catch ME
+        ME
+        ME.stack.line
+        rethrow(ME)
+    end
+end
+
+    function Plot_Waveforms
+        %PLOT_WAVEFROMS is a nested function that plots all of the states
+        %and the inverse states (V->I or I->V). They will appear in
+        %figures 100 and 101
+        
+        
+        [xs, t, y, time_interval] = obj.SS_WF_Reconstruct();
+        StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
+        StateNumbers_Opp = obj.Converter.Topology.Parser.StateNumbers_Opposite;
+        
+        
+        figure(100)
+        ns = size(xs,1);
+        for z=1:ns
+            ax = subplot(10*ns,1,z*10-9:z*10);
+            hold on;
+            plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
+            ylabel(obj.getstatenames{z})
+            box on
+            ax.YLim = [min(y(StateNumbers(z),:))-abs(0.5*min(y(StateNumbers(z),:))) max(y(StateNumbers(z),:))+abs(0.5*max(y(StateNumbers(z),:)))];
+            if(z<ns)
+                set(gca, 'Xticklabel', []);
+            else
+                xlabel('t(s)')
+            end
+        end
+        drawnow;
+        figure(101)
+        ns = size(xs,1);
+        for z=1:ns
+            ax = subplot(10*ns,1,z*10-9:z*10);
+            hold on;
+            plot(t,y(StateNumbers_Opp(z),:), 'Linewidth', 3);
+            ylabel(obj.getstatenames_Opp{z})
+            box on
+            ax.YLim = [min(y(StateNumbers_Opp(z),:))-abs(0.5*min(y(StateNumbers_Opp(z),:))) max(y(StateNumbers_Opp(z),:))+abs(0.5*max(y(StateNumbers_Opp(z),:)))];
+            if(z<ns)
+                set(gca, 'Xticklabel', []);
+            else
+                xlabel('t(s)')
+            end
+        end
+        drawnow;
+        
+        
+        
+    end
+
+end
