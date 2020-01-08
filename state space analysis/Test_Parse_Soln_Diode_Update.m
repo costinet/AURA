@@ -546,7 +546,7 @@ ts(2) = [];
 %}
 
 %% MR-Buck Converter
-%%{
+%{
 Vg = 12;
 L1 = 1e-6; %L
 C1 = 1*10^-6; %Cout
@@ -626,7 +626,7 @@ Binary_for_DAB = [
 
 
 %% Dickson Converters
-%{
+%%{
 
 
 Vg = 48;
@@ -685,8 +685,8 @@ SW = [SW_OFF;SW_ON];
 % filename = 'DAB_Resistors_Cap.net';
 % filename = 'HDSC_AURA.net';
 % filename = 'Buck_Qual.net';
-   filename = 'MR_Buck.net';
-% filename = 'Induct_Load_Dickson.net';
+%   filename = 'MR_Buck.net';
+ filename = 'Induct_Load_Dickson.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -780,8 +780,8 @@ if isempty(A)
             out{j} = SW(Binary_for_DAB(k,j)+1,j);
         end
         % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
-         [M1_R, M2_R] = deal(out{:});
-        %[M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
+        % [M1_R, M2_R] = deal(out{:});
+        [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
         
         HtempAB(:,:,k) = eval(parse.HtempAB(:,:,1));
         HtempCD(:,:,k) = eval(parse.HtempCD(:,:,1));

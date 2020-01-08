@@ -356,7 +356,7 @@ ts(2) = [];
 %}
 
 %% MR-Buck Converter
-%%{
+%{
 Vg = 12;
 L1 = 1e-6; %L
 C1 = 1*10^-6; %Cout
@@ -420,7 +420,7 @@ SW = [SW_OFF;SW_ON;SW_ON];
 
 
 %% Dickson
-%{
+%%{
 Vg = 48;
 Iload = 5;
 fs = 1e6;
@@ -454,7 +454,7 @@ SW_OFF = ones(1,12).*10000000;
 
 SW_ON = [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R,M7_R,M8_R,M9_R,M10_R,M11_R,M12_R];
 
-SW = [SW_OFF;SW_ON];
+SW = [SW_OFF;SW_ON;SW_ON];
 
 %}
 
@@ -482,8 +482,8 @@ for j = 1:1:size(Binary,1)
     out{j} = SW(Binary(j),j);
 end
 % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
- [M1_R, M2_R] = deal(out{:});
-% [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
+% [M1_R, M2_R] = deal(out{:});
+ [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
 
 
 if isempty(obj.Converter.Topology.Parser.Asym)

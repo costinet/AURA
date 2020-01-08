@@ -55,6 +55,8 @@ try
         
         Samples = min(pi./abs(imag(eigA(:,i))))/4\ts(i);
         
+        Samples = max(Samples,10);
+        
         % Run lsim for given time period
         dt = ts(i)/Samples;
         
@@ -201,6 +203,47 @@ try
                 clear x
                 x = IC;
                 continue
+                
+            
+            else % If the inital condition needed to have a diode on
+                
+                min_index=find(Xoff==min_Xoff);
+                
+                new_state = ONorOFF(:,i); % Find state that needs to be copied
+                new_state(Yoff(min_index)) = 1; % make correction in state
+                ONorOFF = [new_state ,ONorOFF(:,1:end) ]; % Place new state space in the ONorOFF matrix
+                [A,B,C,D,eigA_n] = obj.add_state_matrix(new_state); % Calculate the needed
+                
+                ts = [count*dt ts(i)-count*dt ts(i+1:end)];
+                
+              
+                As(:,:,i+1:size(As,3)+1) = As(:,:,1:end);
+                As(:,:,i) =  A;
+              
+                Bs(:,:,i+1:size(Bs,3)+1) = Bs(:,:,1:end) ;
+                Bs(:,:,i) =  B;
+              
+                Cs(:,:,i+1:size(Cs,3)+1) = Cs(:,:,1:end) ;
+                Cs(:,:,i) =  C;
+              
+                Ds(:,:,i+1:size(Ds,3)+1) = Ds(:,:,1:end) ;
+                Ds(:,:,i) =  D;
+              
+                eigA(:,i+1:size(eigA,2)+1) = eigA(:,1:end) ;
+                eigA(:,i) = eigA_n;
+               
+                Aas(:,:,i+1:size(Aas,3)+1) = Aas(:,:,1:end);
+                Aas(:,:,i) =  [A, B*u;
+                                 zeros(1,size(A,1)+1)];
+                
+                
+                i = i+1;
+                IC = x(end,:);
+                clear x
+                x = IC;
+                
+                
+                
             end
             
         end

@@ -52,6 +52,11 @@ while not_reached_SS && the_big_counter<=more_iterations
         num_eigA_volations=sum(1./obj.ts<imagine_eigA./pi(),1); % Find the time intervals that have an eigenvalue that has faster dynamics than its length
         
         multi_violations = sum(num_eigA_volations>1)>0;
+        
+        if the_big_counter == 10 || the_big_counter == 11
+        multi_violations = 1;
+        end
+        
         if multi_violations
             % Kick to code that will lsim throught the code if there is more
             % than one eigenvalue that is faster than its corresponding time interval
@@ -141,9 +146,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                             end
                             
                             
-                            
-                            
-                            
+
                             if (obj.Xs(i,j)<-1-1*tol || obj.Xs(i,j-1)<-1-1*tol )
                                 
                                 if debug
@@ -186,7 +189,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                                 
                                                 breakbreak = true;
                                                 not_reached_SS = true;
-                                                break
+                                              %   break
                                                 
                                             elseif sum(ts(j-1)>2*pi./abs(imag(obj.eigA(:,j-1))))==0
                                                 
@@ -240,7 +243,6 @@ while not_reached_SS && the_big_counter<=more_iterations
                                                 
                                             end
                                             
-                                            
                                         end
                                         
                                     end
@@ -248,8 +250,6 @@ while not_reached_SS && the_big_counter<=more_iterations
                                 end
                                 
                             end
-                            
-                            
                             
                         elseif ONorOFF(i,j-1) == 1 % body diode on
                             

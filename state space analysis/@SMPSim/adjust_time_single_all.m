@@ -45,10 +45,10 @@ if tot_L_ON(k)~=0
             % ts = [ts(1:count-1) ts(count)*.05 ts(count)*.95 ts(count+1:end)];
             % This is the new one to find a finner mesh grid on the
             % surface plot
-            % ts = [ts(1:count-1) ts(count)*.99 ts(count)*.01 ts(count+1:end)];
+             ts = [ts(1:count-1) ts(count)*.99 ts(count)*.01 ts(count+1:end)];
             
             % This is the normal one:
-            ts = [ts(1:count-1) ts(count)*1.9074e-07/ts(count) ts(count)*(ts(count)-1.9074e-07)/ts(count) ts(count+1:end)];
+            % ts = [ts(1:count-1) ts(count)*1.9074e-07/ts(count) ts(count)*(ts(count)-1.9074e-07)/ts(count) ts(count+1:end)];
             
             new_A(:,:,1:count) = new_A(:,:,1:count);
             new_A(:,:,count+2:size(new_A,3)+1) = new_A(:,:,count+1:end);
