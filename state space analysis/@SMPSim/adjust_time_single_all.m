@@ -1,4 +1,4 @@
-function [ts,new_state_space] = adjust_time_single_all(obj,ts,L_ON,L_OFF,F_ON,F_OFF)
+function [ts,new_state_space,groupeddiodes] = adjust_time_single_all(obj,ts,L_ON,L_OFF,F_ON,F_OFF,gdiode)
 %adjaust_time calcualtes the time needed and ordered states needed to
 %adjust to have a correct physical circuit with diode implementation
 %   Detailed explanation goes here
@@ -25,12 +25,16 @@ try
     tot_F_ON = sum(F_ON,1);
     tot_F_OFF = sum(F_OFF,1);
     
+    groupeddiodes = zeros(size(ONorOFF));
+    
     new_A = obj.As;
     new_B = obj.Bs;
     new_C = obj.Cs;
     new_D = obj.Ds;
     new_eigA = obj.eigA;
     
+    
+    mark  = 0;
     count = 1;
     k = 1;
     while k <=size(ONorOFF,2)
@@ -49,8 +53,7 @@ try
                 Tc = 1;
             end
             
-            
-            if new_state == ONorOFF(:,Tc)
+            if sum(new_state ~= ONorOFF(:,Tc))==0 || sum((ONorOFF(:,k)==2)~=(ONorOFF(:,Tc)==2))==0
                 
                 % This is where we can make a correction to determine
                 % if there needs to be a separation of violations
@@ -65,6 +68,7 @@ try
                 
                 dxsdt_col = dxsdt(:,Tc).*L_ON(:,Ti);
                 
+                x_col = obj.Xs(:,k+1).*L_ON(:,Ti);
                 
                 % use Repmat to create a column and row vector of the
                 % values at the point of diode violation
@@ -74,12 +78,18 @@ try
                 
                 jac_like = abs((repmat(dxsdt_col,[1,size(dxsdt,1)])-repmat(dxsdt_col',[size(dxsdt,1),1]))./repmat(dxsdt_col,[1,size(dxsdt,1)]));
                 
-                [Xcord,Ycord]=find(jac_like<0.01& jac_like~=0);
+                value_like = abs((repmat(x_col,[1,size(dxsdt,1)])-repmat(x_col',[size(dxsdt,1),1]))./repmat(x_col,[1,size(dxsdt,1)]));
                 
+                [Xcord,Ycord] = find(jac_like<0.01& jac_like~=0);
+                
+                [Zcord] = find(value_like<0.01& value_like~=0);
                 
                 jac_like = zeros(size(jac_like));
+                value_like = zeros(size(jac_like));
                 All_cord=sub2ind(size(jac_like),Xcord,Ycord);
                 jac_like(All_cord) = 1;
+                value_like(Zcord) = 1;
+                
                 
                 tdelta = zeros(size(L_ON,1),1);
                 % If this is true then there is a
@@ -90,48 +100,44 @@ try
                             tdelta(index) = (-1-obj.Xs(index,k+1))/(dxsdt(index,k+1));
                         end
                     end
-                    [~,P]=min(tdelta);
+                    
+                    % Work on making this able to sort more than just
+                    % the minimum postition point and place the diodes
+                    % in the correct order
+                    
+                    [V,P]=min(tdelta);
+                    if V>=0
+                        k = k+1;
+                        count = count+1;
+                        continue
+                    end
+                    
                     L_ON(:,k) = jac_like(:,P);
                     L_ON(P,k) = 1;
-                    k = k-1;
+                    
+                    
                     
                 else
                     
                     fprintf('Not sure what to do here yet');
                 end
-
-                %{
-                % match is of the form: columns correspond to Xcord and
-                % rows correspond to Ycord
-                for i = 1:1:length(Xcord)
-                    match(:,i)=(Xcord==repmat(Ycord(i),[length(Xcord),1]))&(Ycord==repmat(Xcord(i),[length(Ycord),1]));
-                    
-                end
-                 
-                % If the transpose of the values are == 1 then both
-                % are within the bounds and those two values can be
-                % linked
                 
-                % If every element that was a match with its
-                % reciprocole then we can shorthand get all of the
-                % matches by just looking at the row and columns
-                % quickly
+                % Recreate newstate to find and continue to add the
+                % new changed time interval 
+                new_state = ONorOFF(:,k); % Find state that needs to be copied
+                new_state(L_ON(:,k)==1) = 1; % make correction in state
                 
-                if true == all(all(match==match'))
-                    index = 1;
-                    together = zeros(size(Xcord,1));
-                    while index < size(match,2)
-                        match(:,match(index,:))=0;
-                        
-                        
-                    end
-                    
-                end
-               
-                %}
-                count = count-1;
-            else
+                mark  = 1;
+            end
+                
+            
                 new_state_space = [new_state_space(:,1:count), new_state ,new_state_space(:,count+1:end) ]; % Place new state space in the ONorOFF matrix
+                if mark
+                    groupeddiodes=zeros(size(new_state_space));
+                    groupeddiodes(new_state_space==1)=1;
+                else 
+                    groupeddiodes = zeros(size(new_state_space));
+                end
                 [A,B,C,D,eigA] = obj.add_state_matrix(new_state); % Calculate the needed
                 
                 
@@ -160,12 +166,12 @@ try
                 new_eigA(:,count+1) =  eigA;
                 
                 count = count+1;
-            end
+            
             
         end
         
         count = count+1;
-        k = k+1
+        k = k+1;
     end
     
     obj.Converter.Topology.Parser.ONorOFF = new_state_space;
@@ -177,7 +183,9 @@ try
     obj.eigA = new_eigA;
     
     
-    
+    if ~mark && sum(sum(gdiode))~=0
+        groupeddiodes = gdiode;
+    end
     
     
     

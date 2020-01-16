@@ -13,7 +13,7 @@ function [] = Three_tier_diode_correct(obj,iterations)
 debug = true;
 
 
-% Set this for the lsim function to be able to run without
+% Set this for the lsim function to be able to run without issue
 obj.As_OG = obj.As;
 obj.Bs_OG = obj.Bs;
 obj.Cs_OG = obj.Cs;
@@ -22,6 +22,7 @@ obj.u_OG = obj.u;
 obj.eigA_OG = obj.eigA;
 obj.ONorOFF_OG = obj.Converter.Topology.Parser.ONorOFF;
 obj.ts_OG = obj.ts;
+gdiode = zeros(size(obj.ONorOFF_OG));
 
 % Initalization of Variables and Counters
 the_big_counter = 0;
@@ -53,14 +54,18 @@ while not_reached_SS && the_big_counter<=more_iterations
         
         multi_violations = sum(num_eigA_volations>1)>0;
         
+        %{
         if the_big_counter == 10 || the_big_counter == 11
             multi_violations = 1;
         end
+        %}
+        
         
         if multi_violations
             % Kick to code that will lsim throught the code if there is more
             % than one eigenvalue that is faster than its corresponding time interval
             [obj.Xs(:,1)] = obj.PLECS_lsim_solve(obj.Xs(:,1),1);
+            gdiode=zeros(size(obj.Converter.Topology.Parser.ONorOFF));
             previous_multi_violation = true;
             not_reached_SS = true;
             continue
@@ -178,7 +183,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                         
                                     else
                                         if last_violations %&& ONorOFF(i,k+1) == 2
-                                            if ONorOFF(i,j) == 1 && sum(~(ONorOFF([[1:i-1],[i+1:end]],j)==ONorOFF([[1:i-1],[i+1:end]],j-1)))==0 % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                            if (ONorOFF(i,j) == 1 && sum(~(ONorOFF([[1:i-1],[i+1:end]],j)==ONorOFF([[1:i-1],[i+1:end]],j-1)))==0) || (ONorOFF(i,j) == 1 && sum(~(ONorOFF(:,j)==1 == gdiode(:,j)==1))==0) % This checks to see if there is already a diode state for the next interval that does not affect switching actions
                                                 [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(obj.Xs(i,:)),-1,0.001,0,keep_SS);
                                                 obj.setts(ts);
                                                 order = obj.order;
@@ -310,7 +315,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                         if first_violations %&& %ONorOFF(i,k-1) == 2
                                             
                                             
-                                            if ONorOFF(i,j-2) == -1 && sum(~(ONorOFF([[1:i-1],[i+1:end]],j-2)==ONorOFF([[1:i-1],[i+1:end]],j-1)))==0  % This checks to see if there is already a diode state for the next interval that does not affect switching actions
+                                            if (ONorOFF(i,j-2) == -1 && sum(~(ONorOFF([[1:i-1],[i+1:end]],j-2)==ONorOFF([[1:i-1],[i+1:end]],j-1)))==0) || (ONorOFF(i,j-2) == -1 && sum(~(ONorOFF(:,j-1)==1 == gdiode(:,j-1)==1))==0)  % This checks to see if there is already a diode state for the next interval that does not affect switching actions
                                                 [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j-1,i,-1,min(obj.Xs(i,:)),0.001,1,keep_SS);
                                                 obj.setts(ts);
                                                 order = obj.order;
@@ -347,7 +352,7 @@ while not_reached_SS && the_big_counter<=more_iterations
             end
             if breakbreak
                 
-                [ts,ONorOFF]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off) ;
+                [ts,ONorOFF,gdiode]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off,gdiode) ;
                 break
             end
             j = j+1;
@@ -355,7 +360,7 @@ while not_reached_SS && the_big_counter<=more_iterations
         end
         
         if the_big_counter < 99 && breakbreak == 0
-            [ts,ONorOFF]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off) ;
+            [ts,ONorOFF,gdiode]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off,gdiode) ;
         end
         
         
@@ -405,7 +410,7 @@ while not_reached_SS && the_big_counter<=more_iterations
     end
 end
 
-    function Plot_Waveforms
+    function Plot_Waveforms(statenum,oppstatenum)
         %PLOT_WAVEFROMS is a nested function that plots all of the states
         %and the inverse states (V->I or I->V). They will appear in
         %figures 100 and 101
@@ -415,8 +420,15 @@ end
         StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
         StateNumbers_Opp = obj.Converter.Topology.Parser.StateNumbers_Opposite;
         
+        switch nargin
+            case 0
+                statenum = 100;
+                oppstatenum = 101;
+            case 1
+                oppstatenum = 101;
+        end
         
-        figure(100)
+        figure(statenum)
         ns = size(xs,1);
         for z=1:ns
             ax = subplot(10*ns,1,z*10-9:z*10);
@@ -432,7 +444,7 @@ end
             end
         end
         drawnow;
-        figure(101)
+        figure(oppstatenum)
         ns = size(xs,1);
         for z=1:ns
             ax = subplot(10*ns,1,z*10-9:z*10);
