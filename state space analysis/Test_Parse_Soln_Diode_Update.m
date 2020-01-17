@@ -781,7 +781,7 @@ if isempty(A)
         end
         % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
         % [M1_R, M2_R] = deal(out{:});
-        [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
+         [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
         
         HtempAB(:,:,k) = eval(parse.HtempAB(:,:,1));
         HtempCD(:,:,k) = eval(parse.HtempCD(:,:,1));

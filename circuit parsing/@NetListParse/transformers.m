@@ -54,6 +54,11 @@ end
 
 %% Create K Matrix
 
+
+% i REALLY  dont know what this is maybe related to the numerical
+% update stuff i was working on in the fall
+
+%{
 shortcellarray = mutual;
 longcellarray  = obj.Component_Values(:,1);
 index  = zeros(length(longcellarray),1);
@@ -66,7 +71,7 @@ for ind =1:length(shortcellarray)
         end
     end
 end
-
+%}
 
 syms(mutual);
 syms 'mutual2';
