@@ -137,8 +137,8 @@ for i = 1:1:length(NLraw) % Step though netlist
     chars = char(cell); % Convert to chars
     Net = strsplit(chars); % Split up chars by spaces into cells
     for k = 1:1:length(pattern) % Step through pattern of components
-        emptyish = strfind(Net{1},pattern{k}); % find if component was in cell
-        if isempty(emptyish) % if there was no components
+        emptyish = startsWith(Net{1},pattern{k}); % find if component was in cell this should be changed from strfind to startsWith function
+        if emptyish==0 % if there was no components
             % Add contents of row to all array
             for j = 1:1:length(Net)
                 ALL(i,j) = Net(j);

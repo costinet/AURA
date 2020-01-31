@@ -129,10 +129,10 @@ for j = 1:1:length(switches)
     end
     
     
-    
-    if state(i,j) ~= 1 && state(i,j) ~= 0
-        error('Invalid State Detected')
-    end
+   % Eliminated state because it is too big when looking at large circuits a lot of circuits 
+   % if state(i,j) ~= 1 && state(i,j) ~= 0
+   %     error('Invalid State Detected')
+   % end
     
 end
 

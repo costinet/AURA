@@ -55,7 +55,7 @@ try
         
         Samples = min(pi./abs(imag(eigA(:,i))))/4\ts(i);
         
-        Samples = max(Samples,10);
+        Samples = max(Samples,100);
         
         % Run lsim for given time period
         dt = ts(i)/Samples;
@@ -166,7 +166,7 @@ try
         if ~isempty(min(Xoff)<=min(Xon)) || isempty(Xon)
             min_Xoff = min(Xoff);
             
-            if min_Xoff~=1
+            if min_Xoff~=1 || i~=1
                 
                 min_index=find(Xoff==min_Xoff);
                 

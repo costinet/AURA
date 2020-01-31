@@ -34,9 +34,12 @@ end
 
 %% Get binary representation of number of states to change R and C for D and M
 number_of_states = 2^length(switches);
-bin=de2bi(0:number_of_states-1);
-state = bin;
 
+% Changed due to the time required to calculate this for a large
+% number of swithc circuits
+%bin=de2bi(0:number_of_states-1);
+%state = bin;
+state  = 1;
 % to find body diodes for DAB
 %[state] = obj.bodydiode_correction(switches,state);
 
@@ -51,8 +54,11 @@ SortedCoTree=zeros(2*size(obj.NL,1),5,1);
 % Pre-set number of possible ON and OFF states
 %  This is needed to efficiently pass these variables through for each time
 %  interval
-obj.ON_States = cell(length(switches),number_of_states);
-obj.OFF_States = cell(length(switches),number_of_states);
+% These are no longer used in this implementation if there are
+% alterations or revision back to a previous version there should be a
+% column length of "number_of_states" insead of 1 
+obj.ON_States = cell(length(switches),1);
+obj.OFF_States = cell(length(switches),1);
 
 
 %{

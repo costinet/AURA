@@ -7,6 +7,9 @@ classdef SMPSconverter < handle
         ts
         u
         order
+        Element_Properties
+        Switch_Resistors 
+        Switch_Resistor_Values % [SW_ON; SW_OFF; SW_]
         
     end
     

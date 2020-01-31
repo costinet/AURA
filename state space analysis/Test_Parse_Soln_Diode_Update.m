@@ -111,7 +111,7 @@ u = [Vg  1 1]';
 %}
 
 %% DAB Converter
-%{
+%%{
 Vg = 48;
 L3 = 1e-6;
 L2 = 1296e-6;
@@ -342,8 +342,12 @@ Numerical_Components = {'V1' Vg
     'M7_R' M7_R
     'M8_R' M8_R };
 
+for i = 1:1:size(Numerical_Components,1)
+    eval([Numerical_Components{i,1} '=' 'Numerical_Components{i,2}']);
+end
 
 
+% eval([Numerical_Components{1,1} '=' 'Numerical_Components{1,2}'])
 %}
 
 
@@ -626,7 +630,7 @@ Binary_for_DAB = [
 
 
 %% Dickson Converters
-%%{
+%{
 
 
 Vg = 48;
@@ -681,12 +685,115 @@ SW = [SW_OFF;SW_ON];
 
 %}
 
+
+%% Active Clamp Flyback Converters
+%{
+
+
+Vg = 5;
+Iload = 5;
+fs = 0.5e6;
+Ts = 1/fs;
+dt = Ts/50;
+L1 = 1e-3; % Primary turns
+L2 = 16e-3; % Secondary turns
+L3 = 5e-3;  % Magnetizing inductance
+r_on = 16e-3;
+Cds = 150e-12;
+L4 = 5e-6; % Resonate indcutor
+C2 = 5e-9; % Resonate Cap
+C1 = 50e-6; % Output Cap
+R1 = 133.3333;
+[M1_R,M2_R,M3_R] = deal(r_on);
+[M1_C,M2_C,M3_C] = deal(Cds);
+
+% Order = [1 2]; % The order that the states must go in after being parsed
+%  ts = [Ts*.5 Ts*.5]; % The inital guess of time intervals
+ u = [Vg 1 1 1]';
+Order  = [1 2 3 4];
+ ts = [Ts*.5-dt dt Ts*.5-dt dt]; % The inital guess of time intervals
+% u = [Vg  1 1 Io]';
+
+
+ON = 1;
+OFF = 0;
+
+ Binary_for_DAB = [
+ON OFF OFF
+OFF OFF OFF
+OFF ON OFF
+OFF OFF OFF
+
+     ];
+
+SW_OFF = ones(1,3).*10000000;
+
+SW_ON = [M1_R,M2_R,M3_R];
+
+SW = [SW_OFF;SW_ON];
+
+
+
+
+%}
+
+
+%%  Flyback Converters
+%{
+
+
+Vg = 5;
+Iload = 5;
+fs = 0.5e6;
+Ts = 1/fs;
+dt = Ts/50;
+L1 = 1e-3; % Primary turns
+L2 = 16e-3; % Secondary turns
+L3 = 5e-3;  % Magnetizing inductance
+r_on = 16e-3;
+Cds = 150e-12;
+L4 = 5e-6; % Resonate indcutor
+C2 = 5e-9; % Resonate Cap
+C1 = 50e-6; % Output Cap
+R1 = 133.3333;
+[M1_R,M2_R] = deal(r_on);
+[M1_C,M2_C] = deal(Cds);
+
+% Order = [1 2]; % The order that the states must go in after being parsed
+%  ts = [Ts*.5 Ts*.5]; % The inital guess of time intervals
+ u = [Vg 1 1 ]';
+Order  = [1 2];
+ ts = [Ts*.5 Ts*.5]; % The inital guess of time intervals
+% u = [Vg  1 1 Io]';
+
+
+ON = 1;
+OFF = 0;
+
+ Binary_for_DAB = [
+ON OFF 
+OFF OFF 
+     ];
+
+SW_OFF = ones(1,2).*10000000;
+
+SW_ON = [M1_R,M2_R];
+
+SW = [SW_OFF;SW_ON];
+
+
+
+
+%}
+
+
 % Select .net file
-% filename = 'DAB_Resistors_Cap.net';
+ filename = 'DAB_Resistors_Cap.net';
 % filename = 'HDSC_AURA.net';
 % filename = 'Buck_Qual.net';
 %   filename = 'MR_Buck.net';
- filename = 'Induct_Load_Dickson.net';
+% filename = 'Induct_Load_Dickson.net';
+ % filename = 'AC_Flyback.net';
 % Current options for filename:
 % Boost.net
 % Buck.net
@@ -747,7 +854,7 @@ parse.ABCD();
 % end
 
 %% DC code (set up converter and topology classes)
-toc
+
 top = SMPStopology();
 top.Parser = parse;
 
@@ -779,9 +886,10 @@ if isempty(A)
         for j = 1:1:size(Binary_for_DAB,2)
             out{j} = SW(Binary_for_DAB(k,j)+1,j);
         end
-        % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+         [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
         % [M1_R, M2_R] = deal(out{:});
-         [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
+        % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
+        %[M1_R, M2_R, M3_R] = deal(out{:});
         
         HtempAB(:,:,k) = eval(parse.HtempAB(:,:,1));
         HtempCD(:,:,k) = eval(parse.HtempCD(:,:,1));
@@ -824,7 +932,9 @@ else
         end
         
         %[M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+        % [M1_R, M2_R, D1_R] = deal(out{:});
         [M1_R, M2_R] = deal(out{:});
+        
         
         parse.Anum(:,:,k) = eval(A(:,:,1));
         parse.Bnum(:,:,k) = eval(B(:,:,1));

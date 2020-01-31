@@ -1,5 +1,5 @@
 * G:\My Drive\Graduate Reserach\Qual\LTSpice\Buck_sync.asc
-V1 N001 0 10
+V§I5 N001 0 10
 L1 N002 out 20m
 M1 N001 NC_01 N002 N070 BSC032NE2LS
 C1 out 0 10µ

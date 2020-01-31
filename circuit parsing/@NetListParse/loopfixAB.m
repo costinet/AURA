@@ -5,7 +5,7 @@ function [A,B,C,D,Htemp,depends,StateNames,OutputNames,DependentNames,ConstantNa
 
 % if the number of state variables is greater than sym_comput, sym AB
 % matrix will not be computed
-sym_comput = 5;  %% 99 or 1
+sym_comput = 7;  %% 99 or 1
 
 numE = 1;
 numEB = 2;
