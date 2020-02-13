@@ -1,4 +1,4 @@
-function [pass] = Run_Test_Case(selection,print)
+function [pass] = RunTestCase(filename,converter,Check)
 
 %% Test Cases
 % This code runs a test case of AURA and compares the RMS value of the
@@ -8,8 +8,24 @@ function [pass] = Run_Test_Case(selection,print)
 % Might eventually make a function to determine the test case wanted
 % or to run all of them to run a final check
 
+load(converter);
+
+parse = NetListParse();
+parse.initialize(filename);
+parse.ABCD();
+
+top = SMPStopology();
+top.Parser = parse;
+
+conv.Topology = top;
+
+simulator = SMPSim();
+
+print = 0;
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{
 switch selection
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     case 'DAB'
@@ -372,7 +388,7 @@ switch selection
     case 'AC Fly'
         
         Assignment = tic;
-        filename = 'AC Flyback.net';
+        filename = 'Flyback_new.net';
         parse = NetListParse();
         parse.initialize(filename);
         parse.ABCD();
@@ -392,27 +408,24 @@ switch selection
         dt = 0.02/fs;
         L1 = 1e-3; % Primary turns
         L2 = 16e-3; % Secondary turns
-        L3 = 0.98648e-6;  % Magnetizing inductance
+        L3 = 0.947e-6;  % Magnetizing inductance
         r_on = 16e-3;
         Cds = 150e-12;
         L4 = 50e-9; % Resonate indcutor
-        C2 = 111.91e-9; % Resonate Cap
+        C2 = 112e-9; % Resonate Cap
         C1 = 10e-6; % Output Cap
         R1 = 133.3333;
-        R2 = 0.001;
-        R4 = 0.001;
-        R3 = 1000;
-        I1 = 0.15;
         [M1_R,M2_R,M3_R] = deal(r_on);
         [M1_C,M2_C,M3_C] = deal(Cds);
+        
         M3_C_Resist = 10000;
         M2_C_Resist = 10000;
         M1_C_Resist = 10000;
        
         
         u = [Vg 1 1 1]';
-        Order  = [1 2 3 4];
-        ts = [Ts*.53-dt dt Ts*.47 dt]; % The inital guess of time intervals
+        Order  = [1 2 3 4 5 6];
+        ts = [Ts*.53-dt dt 70e-9 Ts*.47-dt-70e-9-50e-9 50e-9  dt]; % The inital guess of time intervals
         
         Numerical_Components = {'C1' C1
             'C2' C2
@@ -424,10 +437,6 @@ switch selection
             'M2_C' M2_C
             'M3_C' M3_C
             'R1' R1
-            'R2' R2
-            'R3' R3
-            'R4' R4
-            'I1' I1
             'M3_C_Resist' M3_C_Resist
             'M2_C_Resist' M2_C_Resist
             'M1_C_Resist' M1_C_Resist
@@ -443,6 +452,8 @@ switch selection
         Binary_for_DAB = [
             ON OFF OFF
             OFF OFF OFF
+            OFF ON OFF
+            OFF ON ON 
             OFF ON OFF
             OFF OFF OFF
             
@@ -460,13 +471,19 @@ switch selection
         return
 end
 
-conv.ts = ts;
-conv.u = u;
-conv.order = Order;
-conv.Element_Properties = Numerical_Components;
-conv.Switch_Resistors = Switch_Resistors;
-conv.Switch_Resistor_Values = SW;
+%}
 
+ts=conv.ts;
+u = conv.u ;
+Order = conv.order;
+Numerical_Components = conv.Element_Properties ;
+Switch_Resistors = conv.Switch_Resistors;
+SW = conv.Switch_Resistor_Values ;
+Binary_for_DAB = conv.Switch_Sequence;
+
+for i = 1:1:size(Numerical_Components,1)
+    eval([Numerical_Components{i,1} '=' 'Numerical_Components{i,2};'])
+end
 
 
 

@@ -13,6 +13,8 @@ supply for a gate driver based on the topology.
 
 %}
 
+clear
+
 P = 3;
 Lr = 50e-9;
 Lm = 5e-6;
@@ -46,3 +48,22 @@ Cr = ((1-alpha)/fs/2/pi())^2/Lr;
 
 fs_diff = (1-alpha)/(2*pi()*sqrt(Lr*Cr))-fs;
 Gain = (n*alpha)/(1-alpha)*(Lm/(Lm+Lr));
+
+ModelPath = 'Flyback_PLECS_Model/Circuit2';
+
+swVec(1,:) = [0 0 0];
+
+ssOrder = plecs('get', ModelPath, 'StateSpaceOrder');
+plecs('set', ModelPath, 'SwitchVector', swVec(1,:));
+names = plecs('get', ModelPath, 'Topology');
+As(:,:,1) = names.A;
+Bs(:,:,1) = names.B;
+Cs(:,:,1) = names.C;
+Ds(:,:,1) = names.D;
+Is(:,:,1) = names.I;
+
+eigA = eig(As(:,:,1));
+
+
+
+

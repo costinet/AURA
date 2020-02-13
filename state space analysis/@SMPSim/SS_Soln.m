@@ -49,6 +49,8 @@ elseif nargin == 2
 elseif nargin ~= 6
     fprintf('There were not enough or too many inputs provided.')
 end
+%{
+
 %%%%
 
 
@@ -158,6 +160,11 @@ Xs(:,1) = Xss;
 for i=1:n
     Xs(:,i+1) = expAs(:,:,i)*Xs(:,i) + fresp(:,:,i);
 end
+%}
+
+[Xs] = obj.SS_Soln_Aug(keep_SS,As,Bs,ts,u);
+
+Xss = Xs(:,1);
 
 if sum(isnan(Xss))
     ME = MException('resultisNaN:noSuchVariable', ...

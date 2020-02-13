@@ -146,7 +146,7 @@ if isempty(EBcol)
         E_state = preH(:,lastE+1:DT(1));
 
     end
-else
+else 
     E_state = preH(:,lastEB+1:DT(1));
 end
 

@@ -1,4 +1,4 @@
-function [Xss] = PLECS_lsim_solve(obj,IC,assign)
+function [Xss,Xs] = PLECS_lsim_solve(obj,IC,assign)
 % This function takes the current steady state solution to the
 % converter and updates it based on lsim-ing through the converter for
 % 1 period. In this simulation there are no presumed diode conduction
@@ -51,8 +51,9 @@ try
     
     i = 1;
     x(1,:) = [IC',1];
+    Xs = [];
     while i <= size(ONorOFF,2)
-        
+        Xs(:,end+1) = x(1:end-1)';
         Samples = min(pi./abs(imag(eigA(:,i))))/4\ts(i);
         
         Samples = max(Samples,100);
@@ -64,6 +65,7 @@ try
         notend = true;
         count = 0;
         while noviolation && notend 
+            
             x(end+1,:) = (expm(Aas(:,:,i)*(dt))*x(end,:)')';
             noviolation =  ~(sum(sum(x(:,[(ONorOFF(:,i)==-1)'])<-1-tol)) | sum(sum(x(:,[(ONorOFF(:,i)==1)'])>-1+tol)));
             count = count+1;
@@ -110,6 +112,7 @@ try
             IC = x(end,:);
             clear x
             x = IC;
+            
             continue
         end
         
@@ -252,7 +255,7 @@ try
         
     end
     Xss = x(end,1:end-1)';
-    
+    Xs(:,end+1) = Xss;
     
     if assign
         obj.As = As;

@@ -122,6 +122,29 @@ for j = 1:1:length(switches)
         
         NL(sum(row.*NL(:,4)),2)=new_node; % Adjust element beign measured node (numerical net list)
         NL(end+1,:)= [numV,new_node,node,NL(end,4)+1]; % Create measurement node (numerical net list)
+        
+        %%%%%%%%%%%%%%% New code to put a resistor in series with the FETs
+        %{
+        
+        if switches(j) == 11
+        
+        new_resist_node = max(max(NL(:,2:3)))+1; % Set new node number (highest node number + 1)
+        node_resist = NL(switches(j),2); % Find node number from element being measured
+        
+        New_Resistor_Node = strcat(NLnets(switches(j),2),'_Resist'); % Set new node cell name (highest node number + 1)
+        Node_Resist = NLnets(switches(j),2); % Find cell name from element being measured
+        
+        NLnets(switches(j),2) = New_Resistor_Node; % Adjust element beign measured node (cell net list)
+        NLnets(end+1,:) = [strcat(NLnets(switches(j),1),'_Resist'),Node_Resist,New_Resistor_Node,NLnets(switches(j),4:end)]; % Create measurement node (cell net list)
+        
+        NL(switches(j),2)=new_resist_node; % Adjust element beign measured node (numerical net list)
+        NL(end+1,:)= [numR,node_resist,new_resist_node,NL(end,4)+1]; % Create measurement node (numerical net list)
+        
+        end
+        %}
+        %%%%%%%%%%%%%%%
+        
+        
         ON_States(ON_index,1) = NLnets(end-1,1);
         ON_index = ON_index+1;
         count = count+1;

@@ -1,8 +1,7 @@
-function [outputArg1,outputArg2] = SS_Soln_Aug(obj,inputArg2)
+function [Xi] = SS_Soln_Aug(obj,~,As,Bs,ts,u)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
+
 
 
 if nargin==1 
@@ -19,6 +18,22 @@ elseif nargin == 2
 elseif nargin ~= 6
     fprintf('There were not enough or too many inputs provided.')
 end
+
+ti= ts;
+
+depends = obj.Converter.Topology.Parser.dependsAB;
+
+
+    ns = size(As,2);
+    pi = size(Bs,2);
+    nsub = length(ti);
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % This sets up dummy dependent states that will be added back in
+    % and be incorrect but they will be fixed by CorrectXs at the end
+    % of this function
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Is = [eye(size(As,1)-size(depends,1)) zeros(size(As,1)-size(depends,1),size(depends,1)) ; eye(size(depends)) zeros(size(depends,1))  ];
+
 
 
   %% Set up Augmented State Space
@@ -38,6 +53,7 @@ end
     
     %% Solve Augmented State Space without dependent states
     x0b = null(eye(ns-nd+1) - Phi);
+    x0b  = x0b(:,end);
     X0 = x0b/x0b(end);
     
     %% Put dependent states back in
@@ -51,22 +67,29 @@ end
     
 
     %% Integrate all states and outputs during each subinterval
-    Xi = zeros(2*ns+1+mo,nsub+1);
-    Xi(:,1) = [X0; zeros(ns+mo,1)];
+    Xi = zeros(2*ns+1,nsub+1);
+    Xi(:,1) = [X0; zeros(ns,1)];
     for i = 1:nsub
         % Triple-augmented matrix; in addition to the eye(ns) term that
         % integrates the states, this adds in the appropriate C and D
         % matrices such that the last mo entries in the new state vector
         % are the integrals of each of the outputs
-        Aais(:,:,i) = [Aas(:,:,i), zeros(ns+1, ns+mo);
-                        eye(ns), zeros(ns, ns+1+mo);
-                        Cs(:,:,i), Ds(:,:,i)*u, zeros(mo,ns+mo)];
+        Aais(:,:,i) = [Aas(:,:,i), zeros(ns+1, ns);
+                        eye(ns), zeros(ns, ns+1)];
         Xi(:,i+1) = expm(Aais(:,:,i)*ti(i))*Xi(:,i);
     end
+    
+    Xi(size(As,1)+1:end,:) = [];
+    obj.Converter.Topology.Parser.StateVarIndex();
+    [Xi] = obj.CorrectXs(0,Xi);
+    
+    
     
     %% Check that solution is valid
     assert(norm(Xi(1:ns-nd,1)-Xi(1:ns-nd,end)) < 1e-6)
  
 
+    
+    
 
 end

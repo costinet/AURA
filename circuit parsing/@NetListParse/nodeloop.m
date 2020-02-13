@@ -7,6 +7,14 @@ function [A,B,C,D,HtempAB,dependsAB,HtempCD,savedCD,StateNamesAB,StateNamesCD,Ou
 %
 
 
+%{
+% For the AC fly converter::::
+NLnets(11,:) = []
+NL(11,:) = []
+NL(:,4) = [1:34]
+%}
+
+
 %% Find incidence matricies
 SortedRows = sortrows(NL,1); % sorts rows in prefered tree order
 incidence = zeros(max(max(NL(:,2:3))),size(NL,1)); % initialize incidence matrix

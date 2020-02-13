@@ -12,7 +12,7 @@ function [] = Three_tier_diode_correct(obj,iterations,debug)
 % Set debug flag
 
 % 
- obj.Xs(:,end) = [0;20;0;0;0;0;0];
+ obj.Xs(:,end) = [0;20;0;0;-5;5;20];
 
 % Set this for the lsim function to be able to run without issue
 obj.As_OG = obj.As;
