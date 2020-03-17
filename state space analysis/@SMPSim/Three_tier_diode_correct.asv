@@ -12,18 +12,18 @@ function [] = Three_tier_diode_correct(obj,iterations,debug)
 % Set debug flag
 
 % 
- obj.Xs(:,end) = [0;20;0;0;-5;5;20];
-
+obj.Xs(:,end) = [0;5;10;20;1;1;-15];
+obj.Xs(:,end) = [0;0;0;0;0;0;0];
 % Set this for the lsim function to be able to run without issue
-obj.As_OG = obj.As;
-obj.Bs_OG = obj.Bs;
-obj.Cs_OG = obj.Cs;
-obj.Ds_OG = obj.Ds;
-obj.u_OG = obj.u;
-obj.eigA_OG = obj.eigA;
-obj.ONorOFF_OG = obj.Converter.Topology.Parser.ONorOFF;
-obj.ts_OG = obj.ts;
-gdiode = zeros(size(obj.ONorOFF_OG));
+% obj.As_OG = obj.As;
+% obj.Bs_OG = obj.Bs;
+% obj.Cs_OG = obj.Cs;
+% obj.Ds_OG = obj.Ds;
+% obj.u_OG = obj.u;
+% obj.eigA_OG = obj.eigA;
+% obj.ONorOFF_OG = obj.Converter.Topology.Parser.ONorOFF;
+% obj.ts_OG = obj.ts;
+ gdiode = zeros(size(obj.ONorOFF_OG));
 
 % Initalization of Variables and Counters
 the_big_counter = 0;
@@ -48,6 +48,9 @@ while not_reached_SS && the_big_counter<=more_iterations
         % The eigenvalue check is done at the beginning of the function to
         % determine which
         
+       
+        
+        
         imagine_eigA = imag(obj.eigA); % get the imaginary part of the eigenvalue
         imagine_eigA(imagine_eigA(:)<=0) = 0; % Only take the postive part of the eigenvalue
         
@@ -56,13 +59,13 @@ while not_reached_SS && the_big_counter<=more_iterations
         multi_violations = sum(num_eigA_volations>1)>0;
         
         
-        %if the_big_counter == 10 || the_big_counter == 11
-         %   multi_violations = 1;
-        %end
-        
-        if the_big_counter < 39
-            multi_violations = 1;
+        if the_big_counter == 10 || the_big_counter == 11 || the_big_counter == 20 || the_big_counter == 21
+           multi_violations = 1;
         end
+        
+         if the_big_counter < 20
+             multi_violations = 1;
+         end
         
         if multi_violations
             % Kick to code that will lsim throught the code if there is more
@@ -71,7 +74,7 @@ while not_reached_SS && the_big_counter<=more_iterations
             gdiode=zeros(size(obj.Converter.Topology.Parser.ONorOFF));
             previous_multi_violation = true;
             not_reached_SS = true;
-            Plot_Waveforms;
+            disp('Multi_Violations time step solve');
             continue
         elseif previous_multi_violation
             obj.SS_Soln();
@@ -105,6 +108,8 @@ while not_reached_SS && the_big_counter<=more_iterations
             for i = 1:1:size(Xs,1) % Cycle through state variables
                 j;% is time interval for Xss
                 k = j-1; % k is time interval for everything else
+                
+
                 if ONorOFF(i,k) ~=0 % if FET or Diode
                     if obj.Converter.Topology.Parser.DMpos(i,2)==1 % if diode
                         
@@ -685,23 +690,23 @@ end
                 oppstatenum = 101;
                 plotxparam = 0;
             case 2
-                plotxparam = 1;
+                plotxparam = plotxparam;
         end
         
-        if plotxparam
-            ns = size(xs,1);
+        if plotxparam~=0
+            ns = length(plotxparam);
             figure(50)
             for z=1:ns
                 ax = subplot(10*ns,1,z*10-9:z*10);
                 hold on;
-                plot(t,xs(z,:), 'Linewidth', 3);
-                ylabel(obj.getstatenames{z})
+                plot(t*10^6,xs(plotxparam(z),:), 'Linewidth', 3);
+                ylabel(obj.getstatenames{plotxparam(z)})
                 box on
-                ax.YLim = [min(xs(z,:))-abs(0.5*min(xs(z,:))) max(xs(z,:))+abs(0.5*max(xs(z,:)))];
+                %ax.YLim = [min(xs(z,:))-abs(0.5*min(xs(z,:))) max(xs(z,:))+abs(0.5*max(xs(z,:)))];
                 if(z<ns)
                     set(gca, 'Xticklabel', []);
                 else
-                    xlabel('t(s)')
+                    xlabel('t [\mus]')
                 end
             end
         end
@@ -723,6 +728,8 @@ end
             end
         end
         drawnow;
+        
+        
         figure(oppstatenum)
         ns = size(xs,1);
         for z=1:ns

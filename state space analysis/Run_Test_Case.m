@@ -11,6 +11,199 @@ function [pass] = Run_Test_Case(selection,print)
 
 
 switch selection
+    
+    case 'EVAL-CN0342-EB1Z'
+        
+        Assignment = tic;
+        filename = 'EVAL_FLY.net';
+        parse = NetListParse();
+        parse.initialize(filename);
+        parse.ABCD();
+        
+        top = SMPStopology();
+        top.Parser = parse;
+        
+        conv = SMPSconverter();
+        conv.Topology = top;
+        
+        simulator = SMPSim();
+        
+        Vg = 5;
+        
+        fs = 200e3;
+        Ts = 1/fs;
+        dt = 0.02/fs;
+        dt = 0.1*Ts;
+        L1 = 1e-3; % Primary turns
+        L2 = 1e-3; % Secondary turns
+        L3 = 16e-6;  % Magnetizing inductance
+        L4 = 1.5e-6; % Resonate indcutor
+        C2 = 220e-9; % Resonate Cap
+        C1 = 158e-6; % Output Cap
+        R1 = 10;
+        R2 = 390;
+        R3 = 0.1; % Inductor series resistance
+        R9 = 0.001; % input resistance 
+        
+        M1_R = 0.054;
+        M2_R = 0.0305;
+        M3_R = 0.2834;
+        
+        M1_C = 166e-12;
+        M2_C = 166e-12;
+        M3_C = 166e-12;
+        
+        M3_C_Resist = 10000;
+        M2_C_Resist = 10000;
+        M1_C_Resist = 10000;
+       
+        
+        u = [Vg 1 1 1]';
+        Order  = [1 2];
+        ts = [Ts*.6 Ts*.4]; % The inital guess of time intervals
+        
+        Numerical_Components = {'C1' C1
+            'C2' C2
+            'L1' L1
+            'L2' L2
+            'L3' L3
+            'L3' L3
+            'L4' L4
+            'M1_C' M1_C
+            'M2_C' M2_C
+            'M3_C' M3_C
+            'R1' R1
+            'R2' R2
+            'R3' R3
+            'R9' R9
+            'M3_C_Resist' M3_C_Resist
+            'M2_C_Resist' M2_C_Resist
+            'M1_C_Resist' M1_C_Resist
+            };
+        
+        Switch_Resistors = {'M1_R'
+            'M2_R'
+            'M3_R'};
+        
+        ON = 1;
+        OFF = 0;
+        
+        Binary_for_DAB = [
+            ON OFF OFF 
+            OFF OFF OFF
+            ];
+        
+        SW_OFF = ones(1,3).*10000000;
+        
+        SW_ON = [M1_R,M2_R,M3_R];
+        
+        SW = [SW_OFF;SW_ON;SW_ON];
+        
+        
+        
+        
+    
+    case 'BuckBoost'
+        
+        Assignment = tic;
+        filename = 'Buck_Boost.net';
+        parse = NetListParse();
+        parse.initialize(filename);
+        parse.ABCD();
+        
+        top = SMPStopology();
+        top.Parser = parse; 
+        
+        conv = SMPSconverter();
+        conv.Topology = top;
+        
+        simulator = SMPSim();
+        
+        
+        
+        
+        Vg = 5;
+        Pout = 25;
+        Dbuck = 0.92;
+        Dboost = 0.3118;
+        M = Dbuck/(1-Dboost);
+        Vout = M*Vg;
+        Iout = Pout/Vout;
+        R1 = .73+.73;
+        L1 = 200e-9;
+        C1 = 23.5e-6;
+        C2 = 4.4e-6;
+        
+        % EPC 2024
+        r_on = 1.5e-3;
+        Cds = 1620e-12;
+        [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R] = deal(r_on);
+        [M1_C,M2_C,M3_C,M4_C,M5_C,M6_C] = deal(Cds);
+        
+        
+        Numerical_Components = {'V1' Vg
+            'C1' C1
+            'C2' C2
+            'L1' L1
+            'M1_C' M1_C
+            'M2_C' M2_C
+            'M3_C' M3_C
+            'M4_C' M4_C
+            'M5_C' M5_C
+            'M6_C' M6_C
+            'R1' R1 };
+        
+        
+        Switch_Resistors = {'M1_R'
+            'M2_R'
+            'M3_R'
+            'M4_R'
+            'M5_R'
+            'M6_R'};
+        
+        fs = 1000e3;
+        Ts = 1/fs;
+        dt = 5e-9;
+        
+        ON = 1;
+        OFF = 0;
+        
+        
+        SW_OFF = ones(1,6).*10000000;
+        
+        SW_ON = [r_on r_on r_on r_on r_on r_on];
+        
+        SW = [SW_OFF;SW_ON;SW_ON];
+        
+        Order = [1 2 3 4 5 6 7 8 9 10 11 12];
+        
+        
+        u = [Vg 1 1 1 1 1 1]';
+        
+        
+        % Duty cycle is in pu
+
+        
+        
+        ts = [Dboost*Ts-dt  dt  (Dbuck/2-Dboost)*Ts-dt  dt  (0.5-Dbuck/2)*Ts-dt  dt  Dboost*Ts-dt  dt  (Dbuck/2-Dboost)*Ts-dt  dt  (0.5-Dbuck/2)*Ts-dt  dt];
+        
+        Binary_for_DAB = [
+         ON  OFF OFF ON  OFF ON   % Q6 ON
+         ON  OFF OFF ON  OFF OFF  % Dead Q6 Q3
+         ON  OFF ON  ON  OFF OFF  % Q3 ON
+         OFF OFF ON  ON  OFF OFF  % Dead Q1 Q2
+         OFF ON  ON  ON  OFF OFF  % Q2 ON
+         OFF OFF ON  OFF OFF OFF  % Dead
+         
+         ON  OFF ON  OFF ON  OFF  % Q5 Q1 ON
+         ON  OFF ON  OFF OFF OFF  % Dead Q5 Q4
+         ON  OFF ON  ON  OFF OFF  % Q4 ON
+         OFF OFF ON  ON  OFF OFF  % Dead Q1 Q2         
+         OFF ON  ON  ON  OFF OFF  % Q2 ON
+         OFF OFF OFF ON  OFF OFF  % Dead
+        ];
+         
+         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     case 'DAB'
         Assignment = tic;
@@ -456,7 +649,7 @@ switch selection
         
         
     otherwise
-        fprintf('Pick a test case that actually exists please\n') % Well you should
+        fprintf('Pick a test case that actually exists please\n Number of times this has happend: %d \n',ceil(rand*1000)) % That's embarrassing
         return
 end
 
@@ -584,7 +777,10 @@ end
 
 parse.find_diode_new(Order,Binary_for_DAB);
 iterations = 100;
-simulator.Three_tier_diode_correct(iterations,print)
+Optimization = SMPSOptim;
+Optimization.Simulator = simulator;
+Optimization.opptimization_loop;
+% simulator.Three_tier_diode_correct(iterations,print)
 
 [~, ~, y] = simulator.SS_WF_Reconstruct();
 

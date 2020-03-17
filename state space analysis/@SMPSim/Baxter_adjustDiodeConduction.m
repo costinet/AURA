@@ -48,7 +48,10 @@ try
     end
     
     dxsdt = zeros(size(Xs));
-    
+    hardSwNecessary = 0;
+    multcross = 0;
+    overresonant = 0;
+    %{
     % Run lsim for given time period
     C = zeros(1,size(As,1), 1);
     SS = ss(As(:,:,Xic-1), Bs(:,:,Xic-1), C, 0);
@@ -104,7 +107,7 @@ try
 %         if(debug), disp('multcross || overresonant || massiveOvershoot found'); end
 %         return;
 %    % else
-        
+        %}
         %     if isempty(Vmaxcross) && isempty(Vmincross) && isempty(slopechange)
         %         % no diode conduction problem
         

@@ -9,6 +9,19 @@ function [Xss,Xs] = PLECS_lsim_solve(obj,IC,assign)
 % converter is chosen to be the final value of the state space
 % solution.
 
+
+
+
+% This is important to remember and implement
+% There has to be a hysteresis of the signal. That means you judge
+% erros based on a tolerance but you correct to the actual signal. so
+% a signal much reach -1.01 or something volts but the time stepping
+% will correct it so that the switch happens at -1.0001 or something
+% equal to or less than the tolerance value. This is important to not
+% have 10000000000000000000000000000000000 different time intervals
+% due to a resonance that goes to the boundary of a diode being on or
+% off
+
 try
     
     if nargin==2
@@ -23,7 +36,8 @@ try
     eigA = obj.eigA_OG;
     ONorOFF = obj.ONorOFF_OG;
     ts = obj.ts_OG;
-    tol = 0.05;
+    tol = 0.02;
+    
     
     %{
 
@@ -56,7 +70,7 @@ try
         Xs(:,end+1) = x(1:end-1)';
         Samples = min(pi./abs(imag(eigA(:,i))))/4\ts(i);
         
-        Samples = max(Samples,100);
+        Samples = max(Samples,10000);
         
         % Run lsim for given time period
         dt = ts(i)/Samples;
@@ -77,13 +91,13 @@ try
         % Need to check each state as I go to determine if there is a
         % violation
         
-        
+        % if no violation
         Infx = x(:,1:end-1);
         negInfx = x(:,1:end-1);
         Infx(:,[(ONorOFF(:,i)~=-1)']) = Inf;
         negInfx(:,[(ONorOFF(:,i)~=1)']) = -Inf;
-        [Xoff,Yoff] = find(Infx<-1-tol);
-        [Xon,Yon] = find(negInfx>-1+tol);
+        [Xoff,Yoff] = find(Infx<-1);
+        [Xon,Yon] = find(negInfx>-1);
         
         
         
@@ -106,6 +120,8 @@ try
     [Xoff,Yoff] = find(Infx<-1-tol);
     [Xon,Yon] = find(negInfx>-1+tol);
         %}
+        
+        
         % If there is no violation then continue on to the next interation
         if isempty(Xoff) && isempty(Xon)
             i = i+1;

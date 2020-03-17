@@ -1,0 +1,18 @@
+* G:\My Drive\Graduate Reserach\LTSpice\Quillen\Buck_Boost.asc
+V1 N003 0 12
+M1 N003 NC_01 N004 N004 NMOS
+M2 N004 NC_02 0 0 NMOS
+L1 N004 N005 22µ
+M3 N001 NC_03 N002 N002 NMOS
+M4 N002 NC_04 N005 N005 NMOS
+M5 N005 NC_05 N006 N006 NMOS
+M6 N006 NC_06 0 0 NMOS
+C1 N001 0 20µ
+C2 N002 N006 9.3µ
+R1 N001 0 3
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\jb\Documents\LTspiceXVII\lib\cmp\standard.mos
+.tran 1
+.backanno
+.end

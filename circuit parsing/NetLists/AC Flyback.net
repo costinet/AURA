@@ -17,7 +17,7 @@ M3 N004 N001 N001 N001 NMOS
 .model NMOS NMOS
 .model PMOS PMOS
 .lib C:\Users\jb\Documents\LTspiceXVII\lib\cmp\standard.mos
-K1 L1 L2 1
+K1 L2 L1 1
 .tran 1
 .backanno
 .end
