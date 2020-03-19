@@ -32,7 +32,6 @@ while onward
     onward = false;
     toc
     obj.Simulator.Three_tier_diode_correct(40,0);
-    toc
     
     ts = obj.Simulator.ts;
     Xs = obj.Simulator.Xs;

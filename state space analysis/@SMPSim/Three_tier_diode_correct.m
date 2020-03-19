@@ -12,8 +12,8 @@ function [] = Three_tier_diode_correct(obj,iterations,debug)
 % Set debug flag
 
 % 
-obj.Xs(:,end) = [0;5;10;20;1;1;-15];
-obj.Xs(:,end) = [0;0;0;0;0;0;0];
+%obj.Xs(:,end) = [0;5;10;20;1;1;-15];
+%obj.Xs(:,end) = [0;0;0;0;0;0;0;0];
 % Set this for the lsim function to be able to run without issue
 % obj.As_OG = obj.As;
 % obj.Bs_OG = obj.Bs;
@@ -59,13 +59,13 @@ while not_reached_SS && the_big_counter<=more_iterations
         multi_violations = sum(num_eigA_volations>1)>0;
         
         
-        if the_big_counter == 10 || the_big_counter == 11 || the_big_counter == 20 || the_big_counter == 21
-           multi_violations = 1;
-        end
+    %    if the_big_counter == 10 || the_big_counter == 11 || the_big_counter == 20 || the_big_counter == 21
+     %      multi_violations = 1;
+      %  end
         
-         if the_big_counter < 20
-             multi_violations = 1;
-         end
+ %        if the_big_counter < 20
+  %           multi_violations = 1;
+   %      end
         
         if multi_violations
             % Kick to code that will lsim throught the code if there is more

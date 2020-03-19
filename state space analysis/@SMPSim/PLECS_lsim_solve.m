@@ -36,7 +36,7 @@ try
     eigA = obj.eigA_OG;
     ONorOFF = obj.ONorOFF_OG;
     ts = obj.ts_OG;
-    tol = 0.02;
+    tol = 0.0005;
     
     
     %{
@@ -70,7 +70,7 @@ try
         Xs(:,end+1) = x(1:end-1)';
         Samples = min(pi./abs(imag(eigA(:,i))))/4\ts(i);
         
-        Samples = max(Samples,10000);
+        Samples = max(Samples,100);
         
         % Run lsim for given time period
         dt = ts(i)/Samples;
@@ -91,14 +91,14 @@ try
         % Need to check each state as I go to determine if there is a
         % violation
         
-        % if no violation
+        if ~noviolation
         Infx = x(:,1:end-1);
         negInfx = x(:,1:end-1);
         Infx(:,[(ONorOFF(:,i)~=-1)']) = Inf;
         negInfx(:,[(ONorOFF(:,i)~=1)']) = -Inf;
         [Xoff,Yoff] = find(Infx<-1);
         [Xon,Yon] = find(negInfx>-1);
-        
+        end
         
         
         %{
@@ -123,7 +123,7 @@ try
         
         
         % If there is no violation then continue on to the next interation
-        if isempty(Xoff) && isempty(Xon)
+        if noviolation
             i = i+1;
             IC = x(end,:);
             clear x

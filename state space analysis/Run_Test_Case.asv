@@ -41,7 +41,7 @@ switch selection
         C2 = 220e-9; % Resonate Cap
         C1 = 157e-6; % Output Cap
         
-        C4 = 1e-6;
+        C4 = 1e-6
         
         R1 = 10;
         R2 = 390;

@@ -15,34 +15,23 @@ supply for a gate driver based on the topology.
 
 clear
 
+ Vg = 12;
+        L1 = 1e-6; %L
+        C1 = 1*10^-6; %Cout
+        L2 = 0.01e-9; % Resonate inductor
+        fs = 1e6;
+        Ts = 1/fs;
+        V = 3;
+        Io = 0.1; % was 1
+        M1_C = 1.5e-9; % CHS
+        M2_C = 1.5e-9; % LHS
 
-Ll = 1.5e-6;
-Lm = 16e-6;
-Co = (1+10+100+47)*1e-6;
-Rds1 = 0.054;
+        M1_R_ON = 0.002; % ronHS
+        M2_R_ON = 0.002; % ronLS
 
-Drec_Ron = 0.0305;
-Drec_Vf = 0.35;
-Drec_Vf = 1;
+duty = 0.25;
 
-Dsnub_Ron = 0.2834;
-Dsnub_Vf = 0.35;
-Dsnub_Vf = 1;
 
-Rsnub = 390;
-Csnub = 220e-9;
-
-Cds1 = 166e-12;
-Cds2 = 166e-12;
-Cds3 = 166e-12;
-duty = .6;
-np = 1;
-ns = 1;
-
-Ro = 10;
-Vg = 5; 
-fs = 200e3;
-deadtime = 0;
 
 
 
