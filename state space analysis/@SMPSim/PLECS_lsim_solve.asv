@@ -244,14 +244,14 @@ try
             min_index=find(Xoff==min_Xoff);
             
             
-%             if min_Xoff~=1 && dt>1e-10 && x(Xoff(min_index),Yoff(min_index))<Vf-0.1 && Samples<50000
-%                 Samples = Samples*2;
-%                 Xs(:,end)= [];
-%                 IC = x(1,:);
-%                 clear x
-%                 x = IC;
-%                 continue
-%             end
+            if min_Xoff~=1 && dt>1e-10 && x(Xoff(min_index),Yoff(min_index))<Vf-0.1 && Samples<50000
+                Samples = Samples*2;
+                Xs(:,end)= [];
+                IC = x(1,:);
+                clear x
+                x = IC;
+                continue
+            end
             
             
             if min_Xoff~=1

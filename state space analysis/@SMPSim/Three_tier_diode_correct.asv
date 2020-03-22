@@ -12,8 +12,10 @@ function [] = Three_tier_diode_correct(obj,iterations,debug)
 % Set debug flag
 
 % 
-%obj.Xs(:,end) = [0;5;10;20;1;1;-15];
-%obj.Xs(:,end) = [0;0;0;0;0;0;0;0];
+%obj.Xs(:,end) = [0;5;5;0;0;0;0];
+%obj.Xs(:,end) = [0;0;0;0;0;0;0];
+%obj.Xs(:,end) = [0;0;0;0;0];
+
 % Set this for the lsim function to be able to run without issue
 % obj.As_OG = obj.As;
 % obj.Bs_OG = obj.Bs;
@@ -59,14 +61,20 @@ while not_reached_SS && the_big_counter<=more_iterations
         multi_violations = sum(num_eigA_volations>1)>0;
         
         
-    %    if the_big_counter == 10 || the_big_counter == 11 || the_big_counter == 20 || the_big_counter == 21
-     %      multi_violations = 1;
-      %  end
+        if the_big_counter == 10 || the_big_counter == 11 || the_big_counter == 20 || the_big_counter == 21 %|| the_big_counter == 30 || the_big_counter == 31 
+           multi_violations = 1;
+        end
         
- %        if the_big_counter < 20
-  %           multi_violations = 1;
-   %      end
-        
+        % For flyback
+        if the_big_counter < 8 && mod(the_big_counter,2)
+      %       multi_violations = 1;
+      %   end
+         
+      %   if the_big_counter < 2
+      %       multi_violations = 1;
+      %   end
+         
+         
         if multi_violations
             % Kick to code that will lsim throught the code if there is more
             % than one eigenvalue that is faster than its corresponding time interval
@@ -428,7 +436,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                             not_physical = true;
                                             %   obj.SS_Soln(1);
                                             %  obj.CorrectXs(1);
-                                            
+                                            breakbreak = true;
                                             
                                         elseif sum(ts(j-1)>2*pi./abs(imag(obj.eigA(:,j-1))))==0
                                             
@@ -473,6 +481,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                                 obj.setts(ts);
                                                 order = obj.order;
                                                 not_physical = true;
+                                            
                                                 % obj.SS_Soln(1);
                                                 %  obj.CorrectXs(1);
                                                 
@@ -494,6 +503,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                                 obj.setts(ts);
                                                 order = obj.order;
                                                 not_physical = true;
+                                           
                                                 % obj.SS_Soln(1);
                                                 %  obj.CorrectXs(1);
                                                 
@@ -528,6 +538,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                             [ ts, ~, ~, ~, ~,keep_SS] = obj.Baxter_adjustDiodeConduction(obj.Xs,j,i,max(obj.Xs(i,:)),-1,0.001,0,keep_SS);
                                             order = obj.order;
                                             not_physical = true;
+                                      
 
                                         end
                                     else
@@ -559,6 +570,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                             obj.setts(ts);
                                             order = obj.order;
                                             not_physical = true;
+                                          
                                             
                                         else
                                             
@@ -576,7 +588,8 @@ while not_reached_SS && the_big_counter<=more_iterations
                                                 obj.setts(ts);
                                                 order = obj.order;
                                                 not_physical = true;
-                                                
+                                                       
+                                     
                                                 
                                             else
                                                 
@@ -668,7 +681,7 @@ while not_reached_SS && the_big_counter<=more_iterations
 end
 
 if not_reached_SS
-    fprintf('Failed to converge to steady state solution ')
+    fprintf('Failed to converge to steady state solution \n')
 end
 
     function Plot_Waveforms(statenum,oppstatenum,plotxparam)
@@ -699,8 +712,13 @@ end
             for z=1:ns
                 ax = subplot(10*ns,1,z*10-9:z*10);
                 hold on;
-                plot(t*10^6,xs(plotxparam(z),:), 'Linewidth', 3);
-                ylabel(obj.getstatenames{plotxparam(z)})
+                if plotxparam(z)<0
+                    plotxparam(z) = abs(plotxparam(z));
+                plot(t*10^6,-y(plotxparam(z),:), 'Linewidth', 3);
+                else
+                plot(t*10^6,y(plotxparam(z),:), 'Linewidth', 3);
+                end
+                ylabel(plotxparam(z))
                 box on
                 %ax.YLim = [min(xs(z,:))-abs(0.5*min(xs(z,:))) max(xs(z,:))+abs(0.5*max(xs(z,:)))];
                 if(z<ns)
@@ -746,6 +764,12 @@ end
             end
         end
         drawnow;
+        
+        
+        Power_out = mean(y(2,:))*mean(y(13,:));
+        Power_in = mean(y(1,:))*mean(y(12,:));
+        eff = Power_out/Power_in;
+
         
         
         

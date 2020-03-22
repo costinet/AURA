@@ -34,6 +34,9 @@ while onward
     obj.Simulator.Three_tier_diode_correct(40,0);
     toc
     
+    
+    
+    %%  All of this is for the buck boot converter
     ts = obj.Simulator.ts;
     Xs = obj.Simulator.Xs;
     As = obj.Simulator.As;

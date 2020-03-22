@@ -16,30 +16,35 @@ supply for a gate driver based on the topology.
 clear
 
 
-Ll = 1.5e-6;
-Lm = 16e-6;
+ShortedL = 0.47382e-6;
+ShortedR = 326.9e-3;
+
+Ll = 1.0393e-6-ShortedL;
+Lm = 16.228e-6-ShortedL;
+
+
 Co = (1+10+100+47)*1e-6;
 Rds1 = 0.054;
 
 Drec_Ron = 0.0305;
-Drec_Vf = 0.35;
-Drec_Vf = 1;
+Drec_Vf = 0.2;
+
 
 Dsnub_Ron = 0.2834;
-Dsnub_Vf = 0.35;
-Dsnub_Vf = 1;
+Dsnub_Vf = 0.2;
+
 
 Rsnub = 390;
 Csnub = 220e-9;
 
-Cds1 = 166e-12;
-Cds2 = 166e-12;
-Cds3 = 166e-12;
-duty = .6;
+Cds1 = 300e-12;
+Cds2 = 271.9951e-12;
+Cds3 = 28.47e-12;
+duty = .52;
 np = 1;
 ns = 1;
 
-Ro = 10;
+Ro = 17;
 Vg = 5; 
 fs = 200e3;
 deadtime = 0;

@@ -17,7 +17,15 @@ switch selection
         Assignment = tic;
         filename = 'EVAL_FLY.net';
         parse = NetListParse();
-        parse.initialize(filename);
+        
+        Voltage = {'V1'
+            'R1'
+            'M1'};
+        Current = {'V1'
+            'R1'
+            'M1'};
+        
+        parse.initialize(filename,Voltage,Current);
         parse.ABCD();
         
         top = SMPStopology();
@@ -34,16 +42,22 @@ switch selection
         Ts = 1/fs;
         dt = 0.02/fs;
         dt = 0.1*Ts;
+        
+        ShortedL = 0.47382e-6;
+        ShortedR = 326.9e-3;
+        
+        L4 = 1.0393e-6-ShortedL;  % Resonate indcutor
+        L3 = 16.228e-6-ShortedL; % Magnetizing inductance
+        
+        
         L1 = 1e-3; % Primary turns
         L2 = 1e-3; % Secondary turns
-        L3 = 16e-6;  % Magnetizing inductance
-        L4 = 1.5e-6; % Resonate indcutor
         C2 = 220e-9; % Resonate Cap
-        C1 = 157e-6; % Output Cap
+        C1 = 158e-6; % Output Cap
         
-        C4 = 1e-6
         
-        R1 = 10;
+        
+        R1 = 17;
         R2 = 390;
         R3 = 0.1; % Inductor series resistance
         R9 = 0.001; % input resistance 
@@ -53,8 +67,8 @@ switch selection
         M3_R = 0.2834;
         
         M1_C = 166e-12;
-        M2_C = 166e-12;
-        M3_C = 166e-12;
+        M2_C = 272e-12;
+        M3_C = 28.47e-12;
         
         M3_C_Resist = 10000;
         M2_C_Resist = 10000;
@@ -63,11 +77,10 @@ switch selection
         
         u = [Vg 1 1 1]';
         Order  = [1 2];
-        ts = [Ts*.6 Ts*.4]; % The inital guess of time intervals
+        ts = [Ts*.55 Ts*.45]; % The inital guess of time intervals
         
         Numerical_Components = {'C1' C1
             'C2' C2
-            'C4' C4
             'L1' L1
             'L2' L2
             'L3' L3
