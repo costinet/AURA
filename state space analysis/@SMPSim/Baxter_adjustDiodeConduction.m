@@ -144,7 +144,7 @@ try
                 ts(Tc) = change;
             end
             
-            if(debug), disp(['-- Vsw increasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
+          if(debug), disp(['-- Vsw increasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
         elseif(Vio==0)
             tdelta = (Vmin-Xs(Sir,Xic))/(dxsdt(Sir,Xic));
             % tdelta = min(max(tdelta, -ts(Ti) + delta_DTs), tsmax(Ti) - ts(Ti));
@@ -162,7 +162,7 @@ try
                 ts(Tc) = change;
             end
             
-            if(debug), disp(['-- Vsw decreasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
+           if(debug), disp(['-- Vsw decreasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
         end
         
         

@@ -13,6 +13,18 @@ supply for a gate driver based on the topology.
 
 %}
 
+
+        M1_R = 0.054;
+        M2_R = 0.0305;
+        M3_R = 0.2834;
+        
+        M1_C = 166e-12;
+        M2_C = 272e-12;
+        M3_C = 28.47e-12;
+
+
+
+
 clear
 
 P = 3;
@@ -21,8 +33,10 @@ Lm = 5e-6;
 Co = 10e-6;
 Rds1 = 0.016;
 Rds2 = 0.016;
+Rds3 = 0.016;
 Cds1 = 150e-12;
 Cds2 = 150e-12;
+Cds3 = 0;
 duty = .53;
 np = 1;
 ns = 4;
@@ -34,6 +48,11 @@ deadtime = 0.02/fs;
 alpha = duty;
 n = ns/np;
 Cr = 5e-9;
+Vf1 = 1;
+Vf2 = 1;
+Vf3 = 0.2;
+
+
 
 if Cds1 == Cds2
     Cds = Cds1;
@@ -49,6 +68,7 @@ Cr = ((1-alpha)/fs/2/pi())^2/Lr;
 fs_diff = (1-alpha)/(2*pi()*sqrt(Lr*Cr))-fs;
 Gain = (n*alpha)/(1-alpha)*(Lm/(Lm+Lr));
 
+%{
 ModelPath = 'Flyback_PLECS_Model/Circuit2';
 
 swVec(1,:) = [0 0 0];
@@ -64,6 +84,6 @@ Is(:,:,1) = names.I;
 
 eigA = eig(As(:,:,1));
 
-
+%}
 
 

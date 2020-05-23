@@ -37,6 +37,10 @@ Dsnub_Vf = 0.2;
 Rsnub = 390;
 Csnub = 220e-9;
 
+
+Rsub = 
+
+
 Cds1 = 300e-12;
 Cds2 = 271.9951e-12;
 Cds3 = 28.47e-12;
@@ -49,7 +53,12 @@ Vg = 5;
 fs = 200e3;
 deadtime = 0;
 
+Ts = 1/fs;
 
+Ns = 1000;
+omega = 2*pi()*1.1765e+07;
+
+return
 
 ModelPath = 'Flyback_PLECS_Model_EVAL/Circuit';
 

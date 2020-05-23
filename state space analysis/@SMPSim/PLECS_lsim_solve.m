@@ -37,7 +37,7 @@ try
     ONorOFF = obj.ONorOFF_OG;
     ts = obj.ts_OG;
     tol = 0.000005;
-    Vf = 1;
+    Vf = 0.2;
     
     %{
 
@@ -65,8 +65,10 @@ try
     
     i = 1;
     Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
+    Samples = max(10000,Samples);
     x(1,:) = [IC',1];
     Xs = [];
+    
     while i <= size(ONorOFF,2)
         Xs(:,end+1) = x(1:end-1)';
         
@@ -187,7 +189,7 @@ try
                 clear x
                 x = IC;
                 Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
-                Samples = max(1000,Samples);
+                Samples = max(10000,Samples);
                 continue
                 
             elseif min_Xon==1
@@ -228,7 +230,7 @@ try
                 clear x
                 x = IC;
                 Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
-                Samples = max(1000,Samples);
+                Samples = max(10000,Samples);
                 continue
                 
                 
@@ -291,7 +293,7 @@ try
                 clear x
                 x = IC;
                 Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
-                Samples = max(1000,Samples);
+                Samples = max(10000,Samples);
                 continue
                 
             elseif min_Xoff==1 && i~=1
@@ -329,7 +331,7 @@ try
                 clear x
                 x = IC;
                 Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
-                Samples = max(1000,Samples);
+                Samples = max(10000,Samples);
                 continue
                 
                 
@@ -408,7 +410,7 @@ try
                 x(1,:) = [IC',1];
                 Xs = [];
                 Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
-                Samples = max(1000,Samples);
+                Samples = max(10000,Samples);
             end
             
         end

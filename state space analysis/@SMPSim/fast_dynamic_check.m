@@ -15,6 +15,9 @@ try
     fault = 0;
     time_changed = [];
     
+    Vf = 1;
+    
+    
     for n = 1:1:length(obj.eigA(:,j-1)) % Iterate through eigenvalues that are needed
         fault = 0;
         
@@ -46,12 +49,17 @@ try
                 xdot_quarters(:,halfes+1) = obj.As(:,:,k)*X_quarters(:,halfes+1)+obj.Bs(:,:,k)*obj.u;
                 
                 % Checks to see if there was a sign change in derivative
-                % of any of the state variables
+                % of any of the state variables from negative to
+                % positive to indicate that there could be a point
+                % where the diode should have turned ON at some point
+                % between the discrete time points
                 if sign(xdot_quarters(i,halfes))==-1 && sign(xdot_quarters(i,halfes+1))==1
                     changed = halfes;
                 end
             end
             
+            % Builds the value and derivative at the fastest
+            % eigenvalue frequency
             if iterations < 4
                 X_quarters(:,halfes+2) = Xs(:,j);
                 xdot_quarters(:,halfes+2) = obj.As(:,:,k)*X_quarters(:,halfes+2)+obj.Bs(:,:,k)*obj.u;
@@ -102,13 +110,13 @@ try
             
             
             % If the last negative derivative point is positive
-            if X_quarters(i,changed) > -1
+            if X_quarters(i,changed) > -Vf
                 T_fast = 2*pi/imag(obj.eigA(n,j-1));
                 % Set up binary search
                 left = (changed-1)*pi()/2;
                 right = changed*pi()/2;
                 
-                t_mid=(((-1)-X_quarters(i,changed))/xdot_quarters(i,changed))+T_fast*left/2/pi();
+                t_mid=(((-Vf)-X_quarters(i,changed))/xdot_quarters(i,changed))+T_fast*left/2/pi();
                 if t_mid>T_fast
                     fault = 0;
                     continue
@@ -128,7 +136,9 @@ try
                     X_mid=expm(mid/imag(obj.eigA(n,j-1))*obj.As(:,:,k))*Xs(:,j-1)+fresp;
                     xdot_mid = obj.As(:,:,k)*X_mid+obj.Bs(:,:,k)*obj.u;
                     
-                    if X_mid(i) <= -1
+                    
+                    % Change the 
+                    if X_mid(i) <= -Vf
                         fault  = 1;
                         break
                     end
@@ -163,8 +173,7 @@ try
                         J = 8578923045934;
                     end
                     
-                    
-                    
+
                     if (((-1)-X_mid(i))/xdot_mid(i)) < 1e-15 && sign(xdot_mid(i))==-1
                         fault = 1;
                         break

@@ -9,8 +9,123 @@ function [pass] = Run_Test_Case(selection,print)
 % or to run all of them to run a final check
 
 
+
+
+
+
 tic
 switch selection
+    
+    case 'Test Primary Flyback'
+    
+      Assignment = tic;
+        filename = 'EVAL_FLY_reduced.net';
+        parse = NetListParse();
+        
+        Voltage = {'V1'
+            'R1'
+            'M1'
+            'L2'};
+        Current = {'V1'
+            'R1'
+            'M1'};
+        
+        parse.initialize(filename,Voltage,Current);
+        parse.ABCD();
+        
+        top = SMPStopology();
+        top.Parser = parse;
+        
+        conv = SMPSconverter();
+        conv.Topology = top;
+        
+        simulator = SMPSim();
+        
+        Vg = 5;
+        
+        fs = 200e3;
+        fs = 2.0367e+05;
+        Ts = 1/fs;
+        dt = 0.02/fs;
+        dt = 0.1*Ts;
+        
+        ShortedL = 0.47382e-6;
+        ShortedR = 326.9e-3;
+        
+        L4 = 1.0393e-6-ShortedL;  % Resonate indcutor
+        L3 = 16.228e-6-ShortedL; % Magnetizing inductance
+        
+        R10 = 1000000; % Parallel to L4
+        
+        L1 = 1e-3; % Primary turns
+        L2 = 1e-3; % Secondary turns
+        C2 = 220e-9; % Resonate Cap
+        C1 = 158e-6; % Output Cap
+        
+        
+        
+        R1 = 17;
+        R2 = 390;
+        R3 = 0.63521-ShortedR; % Inductor series resistance
+        R9 = 0.001; % input resistance 
+        
+        M1_R = 0.054;
+        M2_R = 0.0305;
+        M3_R = 0.2834;
+        
+        M1_C = 166e-12;
+        M2_C = 272e-12;
+        M3_C = 28.47e-12;
+        
+        M3_C_Resist = 10000;
+        M2_C_Resist = 10000;
+        M1_C_Resist = 10000;
+       
+        
+        u = [Vg 0.2 0.2]';
+        Order  = [1 2];
+        ts = [2.575e-6 Ts-2.575e-6]; % The inital guess of time intervals
+        
+        Numerical_Components = {'C1' C1
+            'C2' C2
+            'L1' L1
+            'L2' L2
+            'L3' L3
+            'L3' L3
+            'L4' L4
+            'M1_C' M1_C
+            'M2_C' M2_C
+            'M3_C' M3_C
+            'R1' R1
+            'R2' R2
+            'R3' R3
+            'R9' R9
+            'R10' R10
+            'M3_C_Resist' M3_C_Resist
+            'M2_C_Resist' M2_C_Resist
+            'M1_C_Resist' M1_C_Resist
+            };
+        
+        Switch_Resistors = {'M1_R'
+            'M3_R'};
+        
+        ON = 1;
+        OFF = 0;
+        
+        Binary_for_DAB = [
+            ON OFF 
+            OFF OFF
+            ];
+        
+        SW_OFF = ones(1,2).*10000000;
+        
+        SW_ON = [M1_R,M3_R];
+        
+        SW = [SW_OFF;SW_ON;SW_ON];
+    
+        
+        
+        
     
     case 'EVAL-CN0342-EB1Z'
         
@@ -40,6 +155,7 @@ switch selection
         Vg = 5;
         
         fs = 200e3;
+        fs = 2.0367e+05;
         Ts = 1/fs;
         dt = 0.02/fs;
         dt = 0.1*Ts;
@@ -50,7 +166,7 @@ switch selection
         L4 = 1.0393e-6-ShortedL;  % Resonate indcutor
         L3 = 16.228e-6-ShortedL; % Magnetizing inductance
         
-        R10 = 1000; % Parallel to L4
+        R10 = 1000000; % Parallel to L4
         
         L1 = 1e-3; % Primary turns
         L2 = 1e-3; % Secondary turns
@@ -61,7 +177,7 @@ switch selection
         
         R1 = 17;
         R2 = 390;
-        R3 = 0.1; % Inductor series resistance
+        R3 = 0.63521-ShortedR; % Inductor series resistance
         R9 = 0.001; % input resistance 
         
         M1_R = 0.054;
@@ -77,9 +193,9 @@ switch selection
         M1_C_Resist = 10000;
        
         
-        u = [Vg 1 1 1]';
+        u = [Vg 0.2 0.2 0.2]';
         Order  = [1 2];
-        ts = [Ts*.55 Ts*.45]; % The inital guess of time intervals
+        ts = [2.575e-6 Ts-2.575e-6]; % The inital guess of time intervals
         
         Numerical_Components = {'C1' C1
             'C2' C2
@@ -120,8 +236,183 @@ switch selection
         SW = [SW_OFF;SW_ON;SW_ON];
         
         
+    case 'HDSC'
         
         
+        Assignment = tic;
+        filename = 'HDSC_AURA.net';
+        parse = NetListParse();
+        
+        Voltage = {'V1'
+            'R1'
+            'M1'};
+        Current = {'V1'
+            'R1'
+            'M1'};
+        
+        parse.initialize(filename,Voltage,Current);
+        parse.ABCD();
+        
+        top = SMPStopology();
+        top.Parser = parse;
+        
+        conv = SMPSconverter();
+        conv.Topology = top;
+        
+        simulator = SMPSim();
+        
+        
+        Vg = 24;
+        V = 5;
+        Io = 10;
+        u = [Vg 1 1 1 1 1 1 1 1]';
+        L1 = 2*72e-9;
+        RL = (0.007-2.65e-3 + 2*.35e-3);
+        Da = 1;
+        M = 5/6;
+        
+        fs = 500e3;
+        Ts = 1/fs;
+        
+        dt = 1/fs/Ts;
+        
+        C4 = 100e-6; % Cout
+        C1 = 13.38e-6;
+        % C1 = 1e-6;
+        C2 = 12.49e-6;
+        C3 = 10.27e-6;
+        
+        ESRx = 3e-3;
+        R3 = 1.1e-3+ESRx;
+        R2 = 2.3e-3+ESRx;
+        R4 = 2.3e-3+ESRx;
+        ron = 2.5e-3;
+        R1 = 0.5;
+        R5 = 0.001;
+        Lp = 0e-9;
+        Lp1 = Lp;
+        Lp2 = 2*Lp;
+        Lp3 = 3*Lp;
+        
+        
+        kc = 1;
+        Coss = kc*2.5e-9;
+        Coss6 = kc*2.26e-9;
+        Coss12 = kc*1.99e-9;
+        Qg = 18e-9;
+        
+        Phase1a = [1 0 1 1 0 0 0 1];
+        Phase1b = [1 0 0 1 0 0 0 1];
+        Phase2a = 1 - Phase1a;
+        Phase2b = Phase2a; Phase2b(6) = 0;
+        Phase3 = [0 0 0 1 1 0 1 1];
+        swseq = [Phase1a; Phase1b; Phase3;  Phase2a; Phase2b;  Phase3];
+        
+        
+        M1_C = Coss6; % CHS
+        M2_C = Coss12; % LHS
+        M3_C = Coss12; % CHS
+        M4_C = Coss6; % LHS
+        M5_C = Coss6; % CHS
+        M6_C = Coss6; % LHS
+        M7_C = Coss6; % CHS
+        M8_C = Coss6; % LHS
+        
+        Order = [1 2 3 4 5 6]; % The order that the states must go in after being parsed
+        Order = [1 2 3 4];
+        SW_OFF = ones(1,8).*10000000;
+        
+        SW_ON = ones(1,8).*2.5e-3;
+        
+        SW = [SW_OFF;SW_ON;SW_ON];
+        
+        M1 = [1
+            1
+            1
+            0
+            0
+            1];
+        
+        M4 = M1;
+        
+        M2 = [0
+            0
+            1
+            1
+            1
+            1];
+        
+        M3 = M2;
+        
+        M5 = [0
+            0
+            0
+            1
+            0
+            0];
+        
+        M6 = [1
+            1
+            0
+            0
+            0
+            0];
+        
+        M7 = [0
+            0
+            0
+            1
+            1
+            0];
+        
+        M8 = [1
+            0
+            0
+            0
+            0
+            0];
+        
+        Binary_for_DAB = [M1 M2 M3 M4 M5 M6 M7 M8]; % But its really for HDSC
+        
+        Binary_for_DAB(5,:) = [];
+        Binary_for_DAB(2,:) = [];
+        
+        ts = [Da*Ts/2*M, (1-Da)*Ts/2*M, Ts/2*(1-M), Da*Ts/2*M, (1-Da)*Ts/2*M, Ts/2*(1-M)];
+        ts(5) = [];
+        ts(2) = [];
+        
+        
+        
+        Numerical_Components = {'V1' Vg
+            'C1' C1
+            'C2' C2
+            'C3' C3
+            'C4' C4
+            'L1' L1
+            'M1_C' M1_C
+            'M2_C' M2_C
+            'M3_C' M3_C
+            'M4_C' M4_C
+            'M5_C' M5_C
+            'M6_C' M6_C
+            'M7_C' M7_C
+            'M8_C' M8_C
+            'R1' R1
+            'R2' R2
+            'R3' R3
+            'R4' R4
+            'R5' R5};
+        
+        Switch_Resistors = {'M1_R'
+            'M2_R'
+            'M3_R'
+            'M4_R'
+            'M5_R'
+            'M6_R'
+            'M7_R'
+            'M8_R'};
+        
+
     
     case 'BuckBoost'
         
@@ -666,6 +957,110 @@ switch selection
         SW_ON = [M1_R,M2_R,M3_R];
         
         SW = [SW_OFF;SW_ON;SW_ON];
+        
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    case 'COMPEL Buck'
+        
+        Assignment = tic;
+        filename = 'Buck_Qual.net';
+        parse = NetListParse();
+        parse.initialize(filename);
+        parse.ABCD();
+        
+        top = SMPStopology();
+        top.Parser = parse;
+        
+        conv = SMPSconverter();
+        conv.Topology = top;
+        
+        simulator = SMPSim();
+        %{
+            Ls = 1e-6;
+    Ron = 0.0015;
+    Vg = 12;
+    Vout = 5;
+    % R_L should be around 0.16 for experimetnal stuff
+    I_out = 3;
+    Cout = (4*100+680)*10^-6;
+    R_out = 1;
+    R_L = 0.16;
+    Coss = 1620e-12;
+    Vfwd = 1;
+    
+    
+    D = 5/12;
+    fs_adj = 200e3;
+    Ts = 1/fs_adj;
+    dead = 0.001;
+    M2_D = (1-D)-dead;
+    M1_D = D-dead;
+    M2_delay = Ts*(D+dead);
+    M1_delay = 0;
+    %}
+        
+        
+            D = 5/12;
+    fs_adj = 200e3;
+    Ts = 1/fs_adj;
+    dead = 0.002;
+        
+        
+        
+        Vg = 12;
+        
+        fs = 0.2e6;
+        Ts = 1/fs;
+        dt = 0.02/fs;
+        L1 = 6e-6; 
+        r_on = 0.0015;
+        Cds = 1620e-12;
+        C1 = (4*100+680)*10^-6; % Output Cap
+        R1 = 1;
+        R2 = 0.16;
+        R3 = 0.05;
+        
+        [M1_R,M2_R] = deal(r_on);
+        [M1_C,M2_C] = deal(Cds);
+        M2_C_Resist = 10000;
+        M1_C_Resist = 10000;
+       
+        
+        u = [Vg 1 1]';
+        Order  = [1 2 3 4];
+        ts = [Ts*(D-dead) Ts*(dead) Ts*(1-D-dead) Ts*(dead)]; % The inital guess of time intervals
+        
+        Numerical_Components = {'C1' C1
+            'L1' L1
+            'M1_C' M1_C
+            'M2_C' M2_C
+            'R1' R1
+            'R2' R2
+            'R3' R3
+            'M2_C_Resist' M2_C_Resist
+            'M1_C_Resist' M1_C_Resist
+            };
+        
+        Switch_Resistors = {'M1_R'
+            'M2_R'};
+        
+        ON = 1;
+        OFF = 0;
+        
+        Binary_for_DAB = [
+            ON OFF 
+            OFF OFF 
+            OFF ON 
+            OFF OFF 
+            
+            ];
+        
+        SW_OFF = ones(1,2).*10000000;
+        
+        SW_ON = [M1_R,M2_R];
+        
+        SW = [SW_OFF;SW_ON;SW_ON];
+        
         
         
     otherwise

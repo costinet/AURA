@@ -12,6 +12,8 @@ function [] = opptimization_loop(obj)
 
 %% Constants from other classes
 
+
+
 StateNumbers = obj.Simulator.Converter.Topology.Parser.StateNumbers;
 StateNumbers_Opp = obj.Simulator.Converter.Topology.Parser.StateNumbers_Opposite;
 
@@ -28,12 +30,14 @@ StateNumbers_Opp = obj.Simulator.Converter.Topology.Parser.StateNumbers_Opposite
     
 onward = true;
 
+started=tic;
 while onward
     onward = false;
-    toc
-    obj.Simulator.Three_tier_diode_correct(40,0);
-    toc
+    round=tic;
+    obj.Simulator.Three_tier_diode_correct(100,0);
+    toc(round)
     
+    %{
     
     
     %%  All of this is for the buck boot converter
@@ -125,7 +129,7 @@ while onward
     
     
     
-    
+    %}
     
     
     
@@ -204,6 +208,7 @@ ts_new(Perturb2_index)=ts(Perturb2_index)+(Newt*avg)/(avg-avg2);
     obj.ts = ts;
    %} 
 end
-obj.Simulator.Three_tier_diode_correct(40,0);
+toc(started)
+% obj.Simulator.Three_tier_diode_correct(40,0);
 end
 
