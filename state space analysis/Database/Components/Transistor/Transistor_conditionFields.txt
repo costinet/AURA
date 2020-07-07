@@ -1,0 +1,3 @@
+Vac,f ,Vdd,L,D
+V  ,Hz,V  ,H,%
+m  ,M ,1  ,u,1

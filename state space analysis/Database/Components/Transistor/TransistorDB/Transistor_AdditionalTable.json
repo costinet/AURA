@@ -1,0 +1,1 @@
+{"EPC2024":{"Igss":{"Typ":{"Value":100,"Conditions":{"Vgs":-4},"ExtraConditions":"","Exp":false},"Max":{"Value":900,"Conditions":{"Vgs":-4},"ExtraConditions":"","Exp":false}},"Vds":{"Max":{"Value":48,"Conditions":{"Tj":150},"ExtraConditions":"up to 10,000 5 ms pulses","Exp":false}}}}

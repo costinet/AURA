@@ -1,1 +1,0 @@
-create table FETs (partno varchar(255), ron NUMERIC, vds NUMERIC, Id NUMERIC, Qg NUMERIC, Rjc Numeric)
