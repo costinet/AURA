@@ -701,7 +701,7 @@ classdef Transistor < Component
                 issues = [issues; 'Part number should be one line of text.'];
             elseif isempty(partNumberBox.Value{1})
                 issues = [issues; 'Please add the manufacturer part number.'];
-            else
+            elseif isempty(obj.partNumber) || ~strcmp(obj.partNumber, partNumberBox.Value{1})
                 devices = obj.listDevices();
                 obj.partNumber = Transistor.checkDuplicateDevices(partNumberBox.Value{1}, devices); 
                 partNumberBox.Value = obj.partNumber;
@@ -731,7 +731,12 @@ classdef Transistor < Component
                             issues = [issues; ['Invalid min number for: ' obj.tableFields{i} '. Do not use exponentials']];
                         else
                             try
-                                new_minVals{i} = str2double(strip(minStr));
+                                new_minVal = str2double(strip(minStr));
+                                if isnan(new_minVal)
+                                    error('NaN');
+                                else
+                                    new_minVals{i} = new_minVal;
+                                end
                             catch
                                 issues = [issues; ['Invalid min number for: ' obj.tableFields{i} '. Do not use exponentials']];
                             end
@@ -744,7 +749,12 @@ classdef Transistor < Component
                             issues = [issues; ['Invalid typ number for: ' obj.tableFields{i} '. Do not use exponentials']];
                         else
                             try
-                                new_typVals{i} = str2double(strip(typStr));
+                                new_typVal = str2double(strip(typStr));
+                                if isnan(new_typVal)
+                                    error('NaN');
+                                else
+                                    new_typVals{i} = new_typVal;
+                                end
                             catch
                                 issues = [issues; ['Invalid typ number for: ' obj.tableFields{i} '. Do not use exponentials']];
                             end
@@ -757,79 +767,18 @@ classdef Transistor < Component
                             issues = [issues; ['Invalid max number for: ' obj.tableFields{i} '. Do not use exponentials']];
                         else
                             try
-                                new_maxVals{i} = str2double(strip(maxStr));
+                                new_maxVal = str2double(strip(maxStr));
+                                if isnan(new_maxVal)
+                                    error('NaN');
+                                else
+                                    new_maxVals{i} = new_maxVal;
+                                end
                             catch
                                 issues = [issues; ['Invalid max number for: ' obj.tableFields{i} '. Do not use exponentials']];
                             end
                         end
                     end                    
                 end                
-            end
-                
-            new_additionalLabels = cell(1,numel(obj.additionalTableLabels));
-            new_additionalMinVals = cell(1,numel(obj.additionalTableLabels));
-            new_additionalTypVals = cell(1,numel(obj.additionalTableLabels));
-            new_additionalMaxVals = cell(1,numel(obj.additionalTableLabels));
-            new_additionalUnits = cell(1,numel(obj.additionalTableLabels));
-            % Additional Table Parameters
-            for i = 1:numel(obj.additionalTableLabels)
-                
-                label = obj.additionalTableLabels(i).Value;
-                min = obj.additionalTableMin(i).Value;
-                typ = obj.additionalTableTyp(i).Value;
-                max = obj.additionalTableMax(i).Value;
-                unit = obj.additionalTableUnits(i).Value;
-               
-                if numel(label) > 1 || numel(min) > 1 || numel(typ) > 1 || numel(max) > 1 || numel(unit) > 1
-                    issues = [issues; ['Parameter values should be one line of text: Additional parameter row ' num2str(i)]];
-                elseif isempty(label{1}) && isempty(min{1}) && isempty(typ{1}) && isempty(max{1}) && isempty(unit{1})
-                    % Do nothing- blank row
-                elseif isempty(label{1}) || isempty(unit{1}) || (isempty(min{1}) && isempty(typ{1}) && isempty(max{1}))
-                    % Missing some info in a row
-                    issues = [issues; 'Additional table parameters must have name, unit, and at least one value. Leave all boxes empty to skip a row'];
-                else
-                    if ~all(ismember(label{1},'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'))
-                        issues = [issues; ['Invalid parameter: ' label{1} '. Parameter names may only contain English letters and underscores']];
-                    elseif ~ismember(label{1}(1), 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                        issues = [issues; ['Invalid parameter: ' label{1} '. Parameter names must start with a letter']];
-                    else
-                        new_additionalLabels{i} = label{1};
-                    end
-                    new_additionalUnits{i} = unit{1};
-                    if ~isempty(min{1})
-                        if ~all(ismember(strip(min{1}), '0123456789+-.'))
-                            issues = [issues; ['Invalid min number for: ' label{1} '. Do not use exponentials']];
-                        else
-                            try
-                                new_additionalMinVals{i} = str2double(strip(min{1}));
-                            catch
-                                issues = [issues; ['Invalid min number for: ' label{1} '. Do not use exponentials']];
-                            end
-                        end
-                    end
-                    if ~isempty(typ{1})
-                        if ~all(ismember(strip(typ{1}), '0123456789+-.'))
-                            issues = [issues; ['Invalid typ number for: ' label{1} '. Do not use exponentials']];
-                        else
-                            try
-                                new_additionalTypVals{i} = str2double(strip(typ{1}));
-                            catch
-                                issues = [issues; ['Invalid typ number for: ' label{1} '. Do not use exponentials']];
-                            end
-                        end
-                    end
-                    if ~isempty(max{1})
-                        if ~all(ismember(strip(max{1}), '0123456789+-.'))
-                            issues = [issues; ['Invalid max number for: ' label{1} '. Do not use exponentials']];
-                        else
-                            try
-                                new_additionalMaxVals{i} = str2double(strip(max{1}));
-                            catch
-                                issues = [issues; ['Invalid max number for: ' label{1} '. Do not use exponentials']];
-                            end
-                        end
-                    end
-                end
             end
             
             % Show issues or add data and close figure if there are no issues
@@ -848,21 +797,6 @@ classdef Transistor < Component
                     end
                     if ~isempty(new_maxVals{i})
                         obj.tableParameters.(obj.tableFields{i}).Max = new_maxVals{i};
-                    end
-                end
-                for i=1:numel(new_additionalLabels)
-                    label = new_additionalLabels{i};
-                    if ~isempty(label)
-                        obj.additionalTableParameters.(label).Unit = new_additionalUnits{i};
-                        if ~isempty(new_additionalMinVals{i})
-                            obj.additionalTableParameters.(label).Min = new_additionalMinVals{i};
-                        end
-                        if ~isempty(new_additionalTypVals{i})
-                            obj.additionalTableParameters.(label).Typ = new_additionalTypVals{i};
-                        end
-                        if ~isempty(new_additionalMaxVals{i})
-                            obj.additionalTableParameters.(label).Max = new_additionalMaxVals{i};
-                        end                        
                     end
                 end
                 msgbox('Table Parameters Saved');
@@ -914,7 +848,7 @@ classdef Transistor < Component
             new_struct.Exp = ExpBox.Value;
             
             % Check with user first
-            newStr = [new_param ' minimum = ' num2str(new_value)];
+            newStr = [new_param ' ' typeDropdown.Value ' = ' num2str(new_value)];
             index = find(strcmp(obj.conditionFields, new_param));
             newStr = [newStr strrep(obj.conditionDefaultMultipliers{index},'1','') obj.conditionUnits{index}];
             conditions = fieldnames(new_struct.Conditions);
