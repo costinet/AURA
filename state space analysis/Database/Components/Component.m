@@ -48,7 +48,11 @@ classdef Component < handle
                 if length(x) == 1 && x(1) == 0
                     dataBox.Value = '';
                 else
-                    dataPlot.XLim = [min(x), max(x)]; 
+                    try
+                        dataPlot.XLim = [min(x), max(x)]; 
+                    catch
+                         dataPlot.XLim = [-inf inf];
+                    end
                 end
                 plot(dataPlot,x,y,'-o');
                 if strcmp(x_logBox.Value,'Linear') 
