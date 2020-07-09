@@ -189,7 +189,6 @@ classdef Component < handle
         datasheet(obj);
         loadData(obj);
         saveData(obj);   
-        devices = listDevices(obj);
     end
     
     
@@ -212,6 +211,7 @@ classdef Component < handle
         removeFromDatabase(partNumber); 
         push(other_location);
         pull(other_location);
+        devices = listDevices(obj);
     end
 
 end

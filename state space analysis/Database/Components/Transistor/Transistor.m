@@ -51,7 +51,7 @@ classdef Transistor < Component
     % Public Methods
     methods     
         % Constructor - Must pass partNumber string
-        function obj = Transistor(partNumber)   
+        function obj = Transistor(partNumber, noGUIs)   
             obj.componentType = 'Transistor';
             obj.types = strip(split(fileread('Transistor_types.txt'),','));
             obj.materials = strip(split(fileread('Transistor_materials.txt'),','));
@@ -78,9 +78,11 @@ classdef Transistor < Component
                 obj.loadData();
             end
             
-            obj.addTableParametersGUI();
-            obj.addAdditionalTableParametersGUI();
-            obj.addGraphParametersGUI();
+            if nargin < 2 || ~noGUIs
+%                 obj.addTableParametersGUI();
+%                 obj.addAdditionalTableParametersGUI();
+                obj.addGraphParametersGUI();
+            end
             
             if ~isempty(obj.partNumber) && ~isempty(obj.type) && ~isempty(obj.material)
                 obj.saveData();
@@ -305,6 +307,7 @@ classdef Transistor < Component
             extraBox.Layout.Column = [1 12];
             
             mainText = uitextarea(grid,'Editable','off');
+            mainText.FontSize = 14;
             
             % Save button
             saveBtn = uibutton(grid,'Text','Add/Save Row','ButtonPushedFcn',...
@@ -600,6 +603,7 @@ classdef Transistor < Component
             
             % Create Additional Parameters Text
             additionalParametersBox = uitextarea(grid, 'editable', 'off');
+            additionalParametersBox.FontSize = 14;
             additionalParametersBox.Layout.Column = 3;
             obj.loadAdditionalDataGUI(additionalParametersBox)
             
@@ -653,35 +657,6 @@ classdef Transistor < Component
             obj.save_rldb('Components\Transistor\TransistorDB\Transistor_StandardTable.db');
             obj.save_nrdb('Components\Transistor\TransistorDB\Transistor_Graph.json', ...
                           'Components\Transistor\TransistorDB\Transistor_AdditionalTable.json');
-        end
-        
-        % List all devices
-        function devices = listDevices(obj)
-            devices = {};
-            % Connect to SQL DB
-            rldb_file = 'Components\Transistor\TransistorDB\Transistor_StandardTable.db';
-            if ~isfile(rldb_file)
-                conn = sqlite(rldb_file, 'create');
-                rldbInit = ['create table Transistor ' ...
-                            '(partNumber varchar(255) NOT NULL UNIQUE, ' ...
-                            'type varchar(255) NOT NULL, ' ...
-                            'material varchar(255) NOT NULL'];
-                for parameter = obj.tableFields'
-                    rldbInit = [rldbInit ', ' ...
-                                parameter{1} '_Min NUMERIC, ' ...
-                                parameter{1} '_Typ NUMERIC, ' ...
-                                parameter{1} '_Max NUMERIC'];
-                end
-                rldbInit = [rldbInit ')'];
-                exec(conn, rldbInit);
-                close(conn);
-            end
-            try
-                conn = sqlite(rldb_file);
-                devices = fetch(conn, 'SELECT partNumber FROM Transistor');
-                close(conn)
-            catch 
-            end
         end
    
     end
@@ -1337,9 +1312,39 @@ classdef Transistor < Component
                 checkResult = 0;
                 return
             else
+                % No errors, check for unexpected multipliers (eg. Coss (F) instead of Coss (pF))
+                yMult = y_multiplierBox.Value;
+                xMult = x_multiplierBox.Value;
+                expectedYMult = obj.graphDefaultMultipliers{strcmp(obj.graphFields,yField{1})};
+                expectedXMult = obj.graphDefaultMultipliers{strcmp(obj.graphFields,xField{1})};
+                if ~strcmp(yMult,expectedYMult)
+                    answer = questdlg(['Unexpected multiplier: ' yField{1} ' (' strrep(yMult,'1','') yField{2} ').' ...
+                        ' Did you intend: ' yField{1} ' (' strrep(expectedYMult,'1','') yField{2} ')?'], ...
+                        'Unexpected Y Field Multiplier', ...
+                        [yField{1} ' (' strrep(yMult,'1','') yField{2} ')'], ...
+                        [yField{1} ' (' strrep(expectedYMult,'1','') yField{2} ')'], ...
+                        [yField{1} ' (' strrep(expectedYMult,'1','') yField{2} ')']);
+                    if strcmp(answer, [yField{1} ' (' strrep(expectedYMult,'1','') yField{2} ')'])
+                        y_multiplierBox.Value = expectedYMult;
+                    end
+                end
+                if ~strcmp(xMult,expectedXMult)
+                    answer = questdlg(['Unexpected multiplier: ' xField{1} ' (' strrep(xMult,'1','') xField{2} ').' ...
+                        ' Did you intend: ' xField{1} ' (' strrep(expectedXMult,'1','') xField{2} ')?'], ...
+                        'Unexpected X Field Multiplier', ...
+                        [xField{1} ' (' strrep(xMult,'1','') xField{2} ')'], ...
+                        [xField{1} ' (' strrep(expectedXMult,'1','') xField{2} ')'], ...
+                        [xField{1} ' (' strrep(expectedXMult,'1','') xField{2} ')']);
+                    if strcmp(answer, [xField{1} ' (' strrep(expectedXMult,'1','') xField{2} ')'])
+                        x_multiplierBox.Value = expectedXMult;
+                    end
+                end                    
+                obj.temp_graphParameters.(obj.current_graphParameter)(obj.current_graphPage).Multiplier = [x_multiplierBox.Value,y_multiplierBox.Value];
+                % Return
                 obj.temp_graphParameters.(obj.current_graphParameter)(obj.current_graphPage).Valid = 1;
+                checkResult = 1;
+                return
             end
-            checkResult = 1;
         end
     end
    
@@ -2110,6 +2115,22 @@ classdef Transistor < Component
             end
             
             msgbox(msg, 'Pull Finished');
+        end
+        
+        % List all devices
+        function devices = listDevices()
+            devices = {};
+            % Connect to SQL DB
+            rldb_file = 'Components\Transistor\TransistorDB\Transistor_StandardTable.db';
+            if ~isfile(rldb_file)
+                return
+            end
+            try
+                conn = sqlite(rldb_file);
+                devices = fetch(conn, 'SELECT partNumber FROM Transistor');
+                close(conn)
+            catch 
+            end
         end
     end
     
