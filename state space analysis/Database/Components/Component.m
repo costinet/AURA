@@ -87,8 +87,8 @@ classdef Component < handle
                 end
                 
             catch Error
-                rethrow(Error);
-%                 Component.dialogBox({'Invalid data points, use default data output from WebPlotDigitizer'}, 12);
+%                 rethrow(Error);
+                Component.dialogBox({'Invalid data points, use default data output from WebPlotDigitizer'}, 12);
             end
         end          
     end
@@ -131,55 +131,59 @@ classdef Component < handle
             if any(strcmp(devices,givenDevice))
                 deviceNumber = givenDevice;
                 return
+            end
 
+            while length(givenDevice) > 3 && strcmpi(givenDevice(end-2:end),'-nd')
+                answer = inputdlg('Please enter the Manufacturer Part Number, not the Digi-Key Part Number:');
+                givenDevice = strip(answer{1});
+            end
+                
             % Check for near matches
-            else
-                % First, check if given device number is substring of an existing device number
-                for i = 1:numel(devices)
-                    device = devices{i};
-                    if contains(device, givenDevice)
-                        answer = questdlg(['Your given device number, ' givenDevice ', is similar to an existing device: ' ...
-                            device '. Double-check that the device you are entering is not the same device.'], 'Similar Device', ...
-                            'It is the same device.', 'It is a new device.', 'It is the same device.');
-                        if strcmp(answer, 'It is the same device.')
-                            deviceNumber = device;
-                        else
-                            deviceNumber = givenDevice;
-                        end
-                        return
+            % First, check if given device number is substring of an existing device number
+            for i = 1:numel(devices)
+                device = devices{i};
+                if contains(device, givenDevice)
+                    answer = questdlg(['Your given device number, ' givenDevice ', is similar to an existing device: ' ...
+                        device '. Double-check that the device you are entering is not the same device.'], 'Similar Device', ...
+                        'It is the same device.', 'It is a new device.', 'It is the same device.');
+                    if strcmp(answer, 'It is the same device.')
+                        deviceNumber = device;
+                    else
+                        deviceNumber = givenDevice;
                     end
+                    return
                 end
-                % Next, check if given device number is a superstring of an existing device number
-                for i = 1:numel(devices)
-                    device = devices{i};
-                    if contains(givenDevice, device)
-                        answer = questdlg(['Your given device number, ' givenDevice ', is very similar to an existing device: ' ...
-                            device '. Double-check that the device you are entering is not the same device.'], 'Similar Device', ...
-                            'It is the same device.', 'It is a new device.', 'It is the same device.');
-                        if strcmp(answer, 'It is the same device.')
-                            deviceNumber = device;
-                        else
-                            deviceNumber = givenDevice;
-                        end
-                        return
+            end
+            % Next, check if given device number is a superstring of an existing device number
+            for i = 1:numel(devices)
+                device = devices{i};
+                if contains(givenDevice, device)
+                    answer = questdlg(['Your given device number, ' givenDevice ', is very similar to an existing device: ' ...
+                        device '. Double-check that the device you are entering is not the same device.'], 'Similar Device', ...
+                        'It is the same device.', 'It is a new device.', 'It is the same device.');
+                    if strcmp(answer, 'It is the same device.')
+                        deviceNumber = device;
+                    else
+                        deviceNumber = givenDevice;
                     end
+                    return
                 end
-                % Lastly, check for close similarity betweeen given device number and an existing device using an algorithmic function 
-                for i = 1:numel(devices)
-                    device = devices{i};
-                    if EditDist(device,givenDevice) <= 2
-                        answer = questdlg(['Your given device number, ' givenDevice ', is very similar to an existing device: ' ...
-                            device '. Double-check that the device you are entering is not the same device.'], 'Similar Device', ...
-                            'It is the same device.', 'It is a new device.', 'It is the same device.');
-                        if strcmp(answer, 'It is the same device.')
-                            deviceNumber = device;
-                        else
-                            deviceNumber = givenDevice;
-                        end
-                        return
+            end
+            % Lastly, check for close similarity betweeen given device number and an existing device using an algorithmic function 
+            for i = 1:numel(devices)
+                device = devices{i};
+                if EditDist(device,givenDevice) <= 2
+                    answer = questdlg(['Your given device number, ' givenDevice ', is very similar to an existing device: ' ...
+                        device '. Double-check that the device you are entering is not the same device.'], 'Similar Device', ...
+                        'It is the same device.', 'It is a new device.', 'It is the same device.');
+                    if strcmp(answer, 'It is the same device.')
+                        deviceNumber = device;
+                    else
+                        deviceNumber = givenDevice;
                     end
+                    return
                 end
-            end            
+            end
         end
        
     end

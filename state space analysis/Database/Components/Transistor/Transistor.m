@@ -74,7 +74,7 @@ classdef Transistor < Component
             % Given device number
             if nargin >= 1
                 devices = obj.listDevices();
-                obj.partNumber = Transistor.checkDuplicateDevices(partNumber, devices);
+                obj.partNumber = Transistor.checkDuplicateDevices(strip(partNumber), devices);
                 obj.loadData();
             end
             
@@ -674,11 +674,11 @@ classdef Transistor < Component
             new_partNumber = upper(strip(partNumberBox.Value{1}));
             if numel(partNumberBox.Value) > 1
                 issues = [issues; 'Part number should be one line of text.'];
-            elseif isempty(partNumberBox.Value{1})
+            elseif isempty(strip(partNumberBox.Value{1}))
                 issues = [issues; 'Please add the manufacturer part number.'];
-            elseif isempty(obj.partNumber) || ~strcmp(obj.partNumber, partNumberBox.Value{1})
+            elseif isempty(obj.partNumber) || ~strcmp(obj.partNumber, strip(partNumberBox.Value{1}))
                 devices = obj.listDevices();
-                obj.partNumber = Transistor.checkDuplicateDevices(partNumberBox.Value{1}, devices); 
+                obj.partNumber = Transistor.checkDuplicateDevices(strip(partNumberBox.Value{1}), devices); 
                 partNumberBox.Value = obj.partNumber;
             end
             
