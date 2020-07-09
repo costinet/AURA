@@ -1167,11 +1167,9 @@ classdef Transistor < Component
         % Store data for current page and check if the NEWPARAMETER page can be replaced with a real page
         function checkResult = pageChecks(obj, selectDropdown, dataBox, y_fieldBox, x_fieldBox, y_logBox, ...
                 x_logBox, x_multiplierBox, y_multiplierBox, expCheckbox, conditionBoxes, conditionExtras)
-            
+                    
             issues = {};
-                        
             % Store temp data for current page
-
             obj.temp_graphParameters.(obj.current_graphParameter)(obj.current_graphPage).Data = Transistor.dataStrToMat(dataBox);
             obj.temp_graphParameters.(obj.current_graphParameter)(obj.current_graphPage).Multiplier = [x_multiplierBox.Value,y_multiplierBox.Value];
             xLog = strcmp(x_logBox.Value,'Log');
@@ -1206,6 +1204,13 @@ classdef Transistor < Component
                 end
             end
             obj.temp_graphParameters.(obj.current_graphParameter)(obj.current_graphPage).ExtraConditions = conditionExtras.Value;
+            
+            % Check for missing fields
+            if strcmp(y_fieldBox.Value,'--Select Y-axis Field--') || strcmp(x_fieldBox.Value,'--Select X-axis Field--')
+                msgbox('Missing Y or X fields', 'Missing fields')
+                checkResult = 0;
+                return
+            end
             
             % Check if NEWPARAMETER page updated
             if strcmp(obj.current_graphParameter,'NEWPARAMETER') && ...
