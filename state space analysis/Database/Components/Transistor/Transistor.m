@@ -79,8 +79,8 @@ classdef Transistor < Component
             end
             
             if nargin < 2 || ~noGUIs
-%                 obj.addTableParametersGUI();
-%                 obj.addAdditionalTableParametersGUI();
+                obj.addTableParametersGUI();
+                obj.addAdditionalTableParametersGUI();
                 obj.addGraphParametersGUI();
             end
             
