@@ -21,8 +21,9 @@ addpath(genpath(pwd))
 %
 % Add data and save, then close the GUI window to open the next window. 
 % Observe unit prefixes carefully!
-% Change the device number to enter a new device.
-t = Transistor('EPC2024');
+
+deviceNumber = 'EPC2024'; % This device is already in the database as an example, change it to enter a new device.
+t = Transistor(deviceNumber);
 
 
 %% View Transistor Datasheet
