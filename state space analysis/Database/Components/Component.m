@@ -21,11 +21,8 @@ classdef Component < handle
         conditionDefaultMultipliers;
     end
     
-    
     properties (Access = protected)
-        SIkeys = {'f','p','n','u','m','1','k','M','G','T','P'};
-        SIprefixes = containers.Map({'f','p','n','u','m','1','k','M','G','T','P'}, ...
-                                    [1E-15 1E-12 1E-9 1E-6 1E-3 1E0 1E3 1E6 1E9 1E12 1E15]);
+
         additionalTableLabels = {}
         additionalTableMin = {}
         additionalTableTyp = {}
@@ -35,6 +32,12 @@ classdef Component < handle
         temp_graphParameters = struct();
         current_graphParameter = '';
         current_graphPage = 1;
+    end
+    
+    properties (Access = protected, Constant)
+        SIkeys = {'f','p','n','u','m','1','k','M','G','T','P'};
+        SIprefixes = containers.Map({'f','p','n','u','m','1','k','M','G','T','P'}, ...
+                                    [1E-15 1E-12 1E-9 1E-6 1E-3 1E0 1E3 1E6 1E9 1E12 1E15]);        
     end
     
     
@@ -51,10 +54,10 @@ classdef Component < handle
                     try
                         dataPlot.XLim = [min(x), max(x)]; 
                     catch
-                         dataPlot.XLim = [-inf inf];
+                        dataPlot.XLim = [-inf inf];
                     end
                 end
-                plot(dataPlot,x,y,'-o');
+                plot(dataPlot,x,y,'-o','LineWidth',2);
                 if strcmp(x_logBox.Value,'Linear') 
                     dataPlot.XScale = 'linear';
                 else
@@ -81,9 +84,9 @@ classdef Component < handle
                     xlabel = [strip(xField{1}) ' (' xMultiplier strip(xField{2}) ')'];
                     ylabel = [strip(yField{1}) ' (' yMultiplier strip(yField{2}) ')'];
                     title_str = [ylabel ' vs. ' xlabel ', Page ' num2str(obj.current_graphPage)];
-                    title(dataPlot, strrep(title_str, '_', '\_'));
+                    title(dataPlot, strrep(title_str, '_', '\_'), 'FontSize', 16);
                 else
-                    title(dataPlot, 'Select Fields for X and Y axes')
+                    title(dataPlot, 'Select Fields for X and Y axes', 'FontSize', 16)
                 end
                 
             catch Error
@@ -92,7 +95,6 @@ classdef Component < handle
             end
         end          
     end
-    
     
     methods (Access = protected, Static)
         % For graph parameters GUI- Convert formatted string for text area to data matrix        
@@ -188,13 +190,11 @@ classdef Component < handle
        
     end
     
-    
     methods (Abstract)
         datasheet(obj);
         loadData(obj);
         saveData(obj);   
     end
-    
     
     methods (Abstract, Access = protected)
         save_rldb(obj, rldb_file);
@@ -203,13 +203,11 @@ classdef Component < handle
         load_nrdb(obj, nrdb_file);
     end
     
-    
     methods (Abstract, Access = protected, Static)
         changedStr = merge_tableParameters(rldb_file, other_rldb_file);
         merge_additionalTable(nrdb_file, other_nrdb_file);
         merge_graphParameters(nrdb_file, other_nrdb_file);
     end
-    
     
     methods (Abstract, Static)
         removeFromDatabase(partNumber); 

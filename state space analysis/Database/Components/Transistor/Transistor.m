@@ -53,23 +53,11 @@ classdef Transistor < Component
         % Constructor - Must pass partNumber string
         function obj = Transistor(partNumber, noGUIs)   
             obj.componentType = 'Transistor';
-            obj.types = strip(split(fileread('Transistor_types.txt'),','));
-            obj.materials = strip(split(fileread('Transistor_materials.txt'),','));
             
-            lines = splitlines(fileread('Transistor_tableFields.txt'));
-            obj.tableFields = strip(split(lines(1), ','));
-            obj.tableUnits = strip(split(lines(2), ','));
-            obj.tableDefaultMultipliers = strip(split(lines(3), ','));
-            
-            lines = splitlines(fileread('Transistor_graphFields.txt'));
-            obj.graphFields = [obj.tableFields; strip(split(lines(1), ','))];
-            obj.graphUnits = [obj.tableUnits; strip(split(lines(2), ','))];
-            obj.graphDefaultMultipliers = [obj.tableDefaultMultipliers; strip(split(lines(3), ','))];
-            
-            lines = splitlines(fileread('Transistor_conditionFields.txt'));
-            obj.conditionFields = [obj.graphFields; strip(split(lines(1), ','))];
-            obj.conditionUnits = [obj.graphUnits; strip(split(lines(2), ','))];
-            obj.conditionDefaultMultipliers = [obj.graphDefaultMultipliers; strip(split(lines(3), ','))];
+            [obj.types,obj.materials,...
+            obj.tableFields,obj.tableUnits,obj.tableDefaultMultipliers,...
+            obj.graphFields,obj.graphUnits,obj.graphDefaultMultipliers,...
+            obj.conditionFields,obj.conditionUnits,obj.conditionDefaultMultipliers] = Transistor.loadMetaData();
             
             % Given device number
             if nargin >= 1
@@ -88,46 +76,7 @@ classdef Transistor < Component
                 obj.saveData();
             end
         end
-        
-        % Find the charge in the output capacitance at a given Vds
-        function charge = getChargeFromCoss(obj, Vds)
-            % Get Data
-            try
-                param = obj.graphParameters.CossVERSUSVds(1);
-                X = param.Data;
-                xMult = obj.SIprefixes(param.Multiplier(1));
-                yMult = obj.SIprefixes(param.Multiplier(2));
-            catch Error
-                if contains(Error.message, 'Reference to non-existent field')
-                    error('No data found for Coss vs. Vds'); 
-                else
-                    rethrow(Error)
-                end
-            end
-            
-            % Ensure Vds is within data
-            if Vds < X(1,1) || Vds > X(end,1)
-                error('Vds must fall within the domain of this data for integration');
-            end
-            
-            % Remove data points where x is negative
-            X(X(:,1)<0,:) = [];
-            x = X(:,1).*xMult;
-            y = X(:,2).*yMult;
-            
-            % Extrapolate to y-intersect
-            if x(1) ~= 0
-                y = [interp1(x,y,0,'spline','extrap'); y];
-                x = [0; x];
-            end
-                        
-            % Find cumulative numerical intergral
-            Q = cumtrapz(x,y);
-            cumulative_Coss = interp1(x,Q,Vds,'spline');
-            charge = cumulative_Coss;
-
-        end
-     
+   
         % GUI for entering datasheet table parameters information
         function addTableParametersGUI(obj)
             % Create 3 row grid layout, rescales when window size is changed
@@ -252,7 +201,7 @@ classdef Transistor < Component
             end
             
             % Save button
-            uibutton(grid,'Text','Save Data','ButtonPushedFcn',...
+            uibutton(grid,'Text','Save Data','FontSize',16,'FontWeight','bold','ButtonPushedFcn',...
                 @(btn,event) obj.saveTableBtnPushed(partNumberBox,typeBox,materialBox,minBoxes,typBoxes,maxBoxes));
             
             % Make datasheet visible and pause further code execution until it is closed
@@ -379,7 +328,7 @@ classdef Transistor < Component
             y_fieldBox.Items = y_fieldBox_items;
             y_fieldBox.Layout.Row = 1;
             
-            y_multiplierBox = uidropdown(dataGrid, 'Items', obj.SIkeys);
+            y_multiplierBox = uidropdown(dataGrid, 'Items', Transistor.SIkeys);
             y_multiplierBox.FontSize = 16;
             y_multiplierBox.Value = {'1'};
             y_multiplierBox.Layout.Row = 2;
@@ -399,7 +348,7 @@ classdef Transistor < Component
             x_fieldBox.Layout.Row = 4;
             x_fieldBox.Layout.Column = 3;
             
-            x_multiplierBox = uidropdown(dataGrid, 'Items', obj.SIkeys);
+            x_multiplierBox = uidropdown(dataGrid, 'Items', Transistor.SIkeys);
             x_multiplierBox.FontSize = 16;
             x_multiplierBox.Value = {'1'};
             x_multiplierBox.Layout.Row = 4;
@@ -437,8 +386,11 @@ classdef Transistor < Component
                 h = uidropdown(conditionsGrid);
                 h.Items = [{'--Add Condition--'} ; strcat(obj.conditionFields, {' ('}, strrep(obj.conditionDefaultMultipliers,'1',''), obj.conditionUnits, {')'})];
                 h.Layout.Column = [1 2];
+                h.FontSize = 16;
                 conditionBoxes(i,1) = {h};
-                conditionBoxes(i,2) = {uitextarea(conditionsGrid)};
+                t = uitextarea(conditionsGrid);
+                t.FontSize = 16;
+                conditionBoxes(i,2) = {t};
             end
             conditionExtras = uitextarea(conditionsGrid, 'Value', 'Add additional (non-sortable) conditions if needed.');
             conditionExtras.Layout.Column = [1 3];
@@ -613,13 +565,16 @@ classdef Transistor < Component
         
         % Public method to load table and graph data from DBs.
         function loadData(obj)
+            path_parts = strsplit(which('Transistor'),'Transistor.m');
+            path = path_parts{1};
+            
             try
-                obj.load_rldb('Components\Transistor\TransistorDB\Transistor_StandardTable.db');
+                obj.load_rldb([path 'TransistorDB\Transistor_StandardTable.db']);
             catch
                 % Part not found, do nothing
             end
             try
-                obj.additionalTableParameters = obj.load_nrdb('Components\Transistor\TransistorDB\Transistor_AdditionalTable.json');
+                obj.additionalTableParameters = obj.load_nrdb([path 'TransistorDB\Transistor_AdditionalTable.json']);
             catch Error
                 if ~(contains(Error.message, 'json does not exist') || contains(Error.message, 'not found in non-relational') || ...
                         contains(Error.message, 'JSON syntax error'))
@@ -629,7 +584,7 @@ classdef Transistor < Component
                 end
             end
             try
-                obj.graphParameters = obj.load_nrdb('Components\Transistor\TransistorDB\Transistor_Graph.json');
+                obj.graphParameters = obj.load_nrdb([path 'TransistorDB\Transistor_Graph.json']);
             catch Error
                 if ~(contains(Error.message, 'json does not exist') || contains(Error.message, 'not found in non-relational') || ...
                         contains(Error.message, 'JSON syntax error'))
@@ -654,9 +609,12 @@ classdef Transistor < Component
         
         % Public method to save table and graph data to DBs.
         function saveData(obj)
-            obj.save_rldb('Components\Transistor\TransistorDB\Transistor_StandardTable.db');
-            obj.save_nrdb('Components\Transistor\TransistorDB\Transistor_Graph.json', ...
-                          'Components\Transistor\TransistorDB\Transistor_AdditionalTable.json');
+            path_parts = strsplit(which('Transistor'),'Transistor.m');
+            path = path_parts{1};           
+            
+            obj.save_rldb([path 'TransistorDB\Transistor_StandardTable.db']);
+            obj.save_nrdb([path 'TransistorDB\Transistor_Graph.json'], ...
+                          [path 'TransistorDB\Transistor_AdditionalTable.json']);
         end
    
     end
@@ -1571,9 +1529,35 @@ classdef Transistor < Component
     
     % Private, Static Methods
     methods (Static, Access = protected) 
+        % Read in meta-data from associated text files
+        function [types,materials,...
+                tableFields,tableUnits,tableDefaultMultipliers,...
+                graphFields,graphUnits,graphDefaultMultipliers,...
+                conditionFields,conditionUnits,conditionDefaultMultipliers] = loadMetaData()
+            types = strip(split(fileread('Transistor_types.txt'),','));
+            materials = strip(split(fileread('Transistor_materials.txt'),','));
+            
+            lines = splitlines(fileread('Transistor_tableFields.txt'));
+            tableFields = strip(split(lines(1), ','));
+            tableUnits = strip(split(lines(2), ','));
+            tableDefaultMultipliers = strip(split(lines(3), ','));
+            
+            lines = splitlines(fileread('Transistor_graphFields.txt'));
+            graphFields = [tableFields; strip(split(lines(1), ','))];
+            graphUnits = [tableUnits; strip(split(lines(2), ','))];
+            graphDefaultMultipliers = [tableDefaultMultipliers; strip(split(lines(3), ','))];
+            
+            lines = splitlines(fileread('Transistor_conditionFields.txt'));
+            conditionFields = [graphFields; strip(split(lines(1), ','))];
+            conditionUnits = [graphUnits; strip(split(lines(2), ','))];
+            conditionDefaultMultipliers = [graphDefaultMultipliers; strip(split(lines(3), ','))]; 
+        end
+        
         % Merge another SQL table into the default SQL table for this class for table parameters 
         function changedStr = merge_tableParameters(rldb_file, other_rldb_file)
             changedStr = '';
+            [~,~,tableFields,tableUnits,tableDefaultMultipliers,~,~,~,~,~,~] = Transistor.loadMetaData();
+            
             
             % Connect to original SQL DB
             if ~isfile(rldb_file)
@@ -1754,8 +1738,12 @@ classdef Transistor < Component
                                         a = double(oldData.(device).(parameter).Min);
                                         b = double(otherData.(device).(parameter).Min);
                                         if a ~= b
+                                            index = strcmp(tableFields,parameter);
+                                            unitStr = ['(' strrep(tableDefaultMultipliers{index},'1','') tableUnits{index} ')'];
                                             answer = questdlg(['Conflicting Parameter: ' parameter ' min.  in ' device '. Which is correct?'], ...
-                                                'Conflicting Parameter', num2str(a), num2str(b), num2str(a));
+                                                'Conflicting Parameter', [num2str(a) unitStr], [num2str(b) unitStr], [num2str(a) unitStr]);
+                                            answer = strsplit(answer, '(');
+                                            answer = answer{1};
                                             exec(conn1, ['UPDATE Transistor SET "' parameter '_Min"=' ...
                                                 num2str(answer) ' WHERE partNumber="' device '"']);
                                             if strcmp(answer, num2str(b))
@@ -1774,8 +1762,12 @@ classdef Transistor < Component
                                         a = double(oldData.(device).(parameter).Typ);
                                         b = double(otherData.(device).(parameter).Typ);
                                         if a ~= b
+                                            index = strcmp(tableFields,parameter);
+                                            unitStr = ['(' strrep(tableDefaultMultipliers{index},'1','') tableUnits{index} ')'];
                                             answer = questdlg(['Conflicting Parameter: ' parameter ' typ.  in ' device '. Which is correct?'], ...
-                                                'Conflicting Parameter', num2str(a), num2str(b), num2str(a));
+                                                'Conflicting Parameter', [num2str(a) unitStr], [num2str(b) unitStr], [num2str(a) unitStr]);
+                                            answer = strsplit(answer, '(');
+                                            answer = answer{1};
                                             exec(conn1, ['UPDATE Transistor SET "' parameter '_Typ"=' ...
                                                 num2str(answer) ' WHERE partNumber="' device '"']);                                          
                                             if strcmp(answer, num2str(b))
@@ -1794,8 +1786,12 @@ classdef Transistor < Component
                                         a = double(oldData.(device).(parameter).Max);
                                         b = double(otherData.(device).(parameter).Max);
                                         if a ~= b
+                                            index = strcmp(tableFields,parameter);
+                                            unitStr = ['(' strrep(tableDefaultMultipliers{index},'1','') tableUnits{index} ')'];
                                             answer = questdlg(['Conflicting Parameter: ' parameter ' max.  in ' device '. Which is correct?'], ...
-                                                'Conflicting Parameter', num2str(a), num2str(b), num2str(a));
+                                                'Conflicting Parameter', [num2str(a) unitStr], [num2str(b) unitStr], [num2str(a) unitStr]);
+                                            answer = strsplit(answer, '(');
+                                            answer = answer{1};
                                             exec(conn1, ['UPDATE Transistor SET "' parameter '_Max"=' ...
                                                 num2str(answer) ' WHERE partNumber="' device '"']);                                          
                                             if strcmp(answer, num2str(b))
@@ -1978,15 +1974,303 @@ classdef Transistor < Component
             fprintf(fid, json_text);
             fclose(fid);   
         end
+        
+        % Scale/multiply data by multiplier (unit prefix)
+        function scaledData = scaleData(data,multiplier)
+            scaledData = data;
+            if ~isempty(multiplier)
+                if ~contains(Transistor.SIkeys,multiplier)
+                    error(['Multiplier: ' string(multiplier) ' is not a valid SI unit prefix']);
+                end
+                scaledData = data*Transistor.SIprefixes(multiplier);
+            end
+        end
     end
     
     
     % Public, Static Methods
     methods (Static)
+        %%% Methods for pulling and comparing device data
+        % Get a table parameter value for a device. 
+            % If there is no data, returns NaN. 
+            % All other issues such as invalid devices will throw errors.
+        function paramValue = getTableParam(device,param,min_typ_max)
+            path_parts = strsplit(which('Transistor'),'Transistor.m');
+            path = path_parts{1};
+            
+            % Check inputs
+            if ~contains(Transistor.listDevices,strip(device))
+                error(['Device ' device 'does not exist in DB']);
+            end
+            if ~contains({'min','typ','max'},lower(strip(min_typ_max)))
+                error('Third argument must be Min Typ or Max');
+            end
+            
+            min_typ_max = strip(min_typ_max);
+            min_typ_max = [upper(min_typ_max(1)) lower(min_typ_max(2:end))];
+            paramValue = NaN;
+            
+            % Connect to SQL DB
+            if ~isfile([path 'TransistorDB\Transistor_StandardTable.db'])
+                error(['Relational database file ' path 'TransistorDB\Transistor_StandardTable.db does not exist.']);
+            end
+            conn = sqlite([path 'TransistorDB\Transistor_StandardTable.db']);
+            
+            % Get parameter value
+            try
+                [~,~,tableFields,~,tableDefaultMultipliers,~,~,~,~,~,~] = Transistor.loadMetaData(); 
+                index = find(strcmpi(tableFields,strip(param)));
+                if isempty(index)
+                    error('no such column');
+                end
+                param = tableFields{index};
+                
+                result = fetch(conn, ['SELECT ' param '_' min_typ_max ...
+                    ' FROM Transistor WHERE partNumber="' strip(device) '"']);
+                paramValue = double(result{1});
+                
+                mult = Transistor.SIprefixes(tableDefaultMultipliers{strcmp(tableFields,param)});
+                paramValue = paramValue*mult;
+            catch Exception
+                if contains(Exception.message,'no such column')
+                    error(['Param ' strip(param) ' does not exist in the DB']);
+                elseif contains(Exception.message,'Unexpected NULL')
+                    % No data, return NaN
+                else
+                    rethrow(Exception)
+                end
+            end
+            
+        end
+        
+        % Get graph curve for a parameter comparison for a device
+            % Returns a cell array of Nx2 arrays.
+            % If there is no data, returns a 0x0 cell array.
+            % All other issues such as invalid devices will throw errors.
+        function [graphData, ConditionsStruct] = getGraphData(device,yParam,xParam)
+            path_parts = strsplit(which('Transistor'),'Transistor.m');
+            path = path_parts{1};
+            
+            % Check if device exists
+            if ~contains(Transistor.listDevices,strip(device))
+                error(['Device ' device 'does not exist in DB']);
+            end
+            if ~isfile([path 'TransistorDB\Transistor_Graph.json'])
+                error(['Non-relational database file ' path 'TransistorDB\Transistor_Graph.json does not exist.']);
+            end
+            json_text = fileread([path 'TransistorDB\Transistor_Graph.json']);
+            top_struct = jsondecode(json_text);
+            if ~isfield(top_struct, device)
+                error(['Device ' device ' does not exist in DB']);
+            end
+            
+            graphData = cell(0);
+            ConditionsStruct = struct;
+            data_struct = top_struct.(device);
+            field = [strip(yParam) 'VERSUS' strip(xParam)];
+            if ~isfield(data_struct,field)
+                return
+            end
+            for i = 1:numel(data_struct.(field))
+                data = data_struct.(field)(i).Data;
+                data(:,1) = Transistor.scaleData(data(:,1), data_struct.(field)(i).Multiplier(1));
+                data(:,2) = Transistor.scaleData(data(:,2), data_struct.(field)(i).Multiplier(2));
+                graphData(i) = {data};
+                ConditionsStruct.Conditions(i) = data_struct.(field)(i).Conditions;
+            end
+        end
+        
+        % Returns the y-values and associated conditions for given xParam, yParam, and xValue.
+            % Will extrapolate if xValue is out of the domain if it is within a 10% margin of the domain
+                % Will return NaN otherwise
+            % Returns a ConditionsStruct structure which has one element- a structure array of conditions
+            % corresponding to the curves from which the y-values were obtained.
+        function [yValue, ConditionsStruct] = getGraphPoint(device,yParam,xParam,xValue)
+             [graphData, ConditionsStruct] = Transistor.getGraphData(device,yParam,xParam);
+             yValue = [];
+             for i = 1:numel(graphData)
+                data = graphData{i};
+                x = data(:,1);
+                y = data(:,2);
+                if xValue > min(x) && xValue < max(x)
+                    % Spline (3rd order) interpolation works well
+                    yValue(i) = interp1(x,y,xValue,'spline');
+                elseif xValue < min(x) && xValue > (min(x)-(max(x)-min(x))*0.1) || ...
+                       xValue > max(x) && xValue < (max(x)+(max(x)-min(x))*0.1)
+                    % Use linear extrapolation, it's the most consistent.
+                    yValue(i) = interp1(x,y,xValue,'linear','extrap');
+                else
+                    % Data out of range, return []
+                    yValue(i) = NaN;
+                end
+             end
+        end
+        
+        % Compare curves for a parameter comparison for one device
+            % Ex. Show Id vs Vds curves for different Vgs for one device
+        function showGraphData(device,yParam,xParam,axis)
+            [graphData, ConditionsStruct] = Transistor.getGraphData(device,yParam,xParam);
+            strings = Transistor.ConditionsStructToStr(ConditionsStruct);
+            [~,~,~,~,~,graphFields,graphUnits,graphDefaultMultipliers,~,~,~] = Transistor.loadMetaData();
+        
+            for i = 1:numel(graphData)
+                data = graphData{i};
+                hold on
+                plot(axis,data(:,1),data(:,2));
+            end
+            yIndex = find(strcmp(graphFields,yParam));
+            ylabel(axis,[yParam ' (' strrep(graphDefaultMultipliers{yIndex},'1','') graphUnits{yIndex} ')'])
+            xIndex = find(strcmp(graphFields,xParam));
+            xlabel(axis,[xParam ' (' strrep(graphDefaultMultipliers{xIndex},'1','') graphUnits{xIndex} ')'])
+            if numel(graphData) > 1
+                legend(axis,strings);
+            end
+            title(axis,[device ': ' yParam ' vs. ' xParam])
+        end
+        
+        % Returns a cell array of strings made from a ConditionsStruct structure from Transistor.getGraphPoint
+            % For data visualization purposes
+        function strings = ConditionsStructToStr(ConditionsStruct)
+            strings = cell(0);
+            [~,~,~,~,~,~,~,~,conditionFields,conditionUnits,conditionDefaultMultipliers] = Transistor.loadMetaData();
+            for i = 1:numel(ConditionsStruct.Conditions)
+                s = ConditionsStruct.Conditions(i);
+                str = '';
+                conditions = fieldnames(s);
+                for j = 1:numel(conditions)
+                    condition = conditions{j};
+                    if j > 1 
+                        str = [str ','];
+                    end
+                    index = find(strcmp(conditionFields,condition));
+                    str = [' ' str condition ' = ' num2str(s.(condition)) '(' ,...
+                        strrep(conditionDefaultMultipliers{index},'1',''),...
+                        conditionUnits{index} ')'];
+                end
+                strings(i) = {strip(str)};
+            end
+        end
+  
+        % Numerically integrate a parameter curve over a given domain
+            % Linearly extrapolates domain to xMin and xMax if out of the domain
+        function result = integrateCurve(device, yParam, xParam, xMin, xMax)
+            % Get Data
+            [graphData, ~] = Transistor.getGraphData(device,yParam,xParam);
+            
+            result = {};
+            for i = 1:numel(graphData)
+                X = graphData{i};
+                x = X(:,1);
+                y = X(:,2);
+
+                % Extrapolate to xMin if needed
+                if min(x) > xMin
+                    y = [interp1(x,y,0,'linear','extrap'); y];
+                    x = [xMin; x];
+                end
+                % Extrapolate to xMax if needed
+                if max(x) < xMax
+                    y = [y; interp1(x,y,0,'linear','extrap')];
+                    x = [x; xMax];
+                end  
+
+                % Find cumulative numerical intergral
+                Q = cumtrapz(x,y);
+                sumMin = interp1(x,Q,xMin,'spline');
+                sumMax = interp1(x,Q,xMax,'spline');
+                result(i) = {sumMax-sumMin};
+            end
+        end
+ 
+        % Find the average value of a curve over a given domain
+        function avgVal = getAvgVal(device, yParam, xParam, xMin, xMax)
+            integral = Transistor.integrateCurve(device, yParam, xParam, xMin, xMax);
+            avgVal = {};
+            for i = 1:numel(integral)
+                avgVal(i) = {integral{i}/(xMax-xMin)};
+            end
+        end
+            
+        % Find the charge in the output capacitance at a given Vds
+            % If Vds is greater than Vds_Max, throws an error
+        function Qoss = getChargeFromCoss(device, Vds)
+            % Check for positive Vds
+            if Vds <= 0
+                error('Vds must be a positive numeric value.')
+            end
+            
+            % Check for Vds < Vds Max
+            vds_max = Transistor.getTableParam(device,'Vds','max');
+            if isnan(vds_max)
+                disp(['WARNING: No Vds max for ' device '. Data may be inaccurate']);
+            elseif Vds > vds_max
+                error(['Given Vds, ' num2str(Vds) '(V), is greater than the max voltage '...
+                    'for this device: ' num2str(vds_max) '(V), ' device]);
+            end
+
+            % Get Qoss data
+            Qoss = Transistor.integrateCurve(device, 'Coss','Vds',0,Vds);
+            
+        end
+           
+        % Returns a cell array of devices whom have a maximum parameter value greater than the given threshold
+            % Uses SQL filtering
+        function validDevices = filter(param, min_typ_max, operand, threshold)
+            path_parts = strsplit(which('Transistor'),'Transistor.m');
+            path = path_parts{1};
+            
+            % Check inputs
+            if ~contains({'min','typ','max'},lower(strip(min_typ_max)))
+                error('Second argument must be Min Typ or Max');
+            end
+            if ~contains({'=','>','<','>=','<='},strip(operand))
+                error(['Third argument must be one of the following' newline '= > < >= <=']);
+            end
+            min_typ_max = strip(min_typ_max);
+            min_typ_max = [upper(min_typ_max(1)) lower(min_typ_max(2:end))];
+            
+            % Connect to SQL DB
+            if ~isfile([path 'TransistorDB\Transistor_StandardTable.db'])
+                error(['Relational database file ' path 'TransistorDB\Transistor_StandardTable.db does not exist.']);
+            end
+            conn = sqlite([path '\TransistorDB\Transistor_StandardTable.db']);
+            
+            % Find valid devices
+            validDevices = cell(0);
+            try
+                [~,~,tableFields,~,tableDefaultMultipliers,~,~,~,~,~,~] = Transistor.loadMetaData(); 
+                index = find(strcmpi(tableFields,strip(param)));
+                if isempty(index)
+                    error('no such column');
+                end
+                param = tableFields{index};
+                mult = Transistor.SIprefixes(tableDefaultMultipliers{strcmp(tableFields,param)});
+                threshold = threshold/mult;
+                
+                query = ['SELECT "partNumber" FROM Transistor WHERE "' ... 
+                    param '_' min_typ_max '" ' operand ' ' num2str(threshold)];
+                validDevices = fetch(conn, query);
+            catch Exception
+                if contains(Exception.message,'no such column')
+                    error(['Param ' strip(param) ' does not exist in the DB']);
+                elseif contains(Exception.message,'Unexpected NULL')
+                    % No data, return NaN
+                else
+                    rethrow(Exception)
+                end
+            end
+        end
+
+        
+        
+        %%% Other misc. static public methods
         % Delete a part
         function removeFromDatabase(partNumber)
+            path_parts = strsplit(which('Transistor'),'Transistor.m');
+            path = path_parts{1};
+            
             % Connect to SQL DB
-            rldb_file = 'Components\Transistor\TransistorDB\Transistor_StandardTable.db';
+            rldb_file = [path 'TransistorDB\Transistor_StandardTable.db'];
             if ~isfile(rldb_file)
                 error(['Relational database file ' rldb_file ' does not exist.']);
             end
@@ -1998,7 +2282,7 @@ classdef Transistor < Component
             end
             
             % Connect to additional table parameters db
-            nrdb_file = 'Components\Transistor\TransistorDB\Transistor_AdditionalTable.json';
+            nrdb_file = [path 'TransistorDB\Transistor_AdditionalTable.json'];
             if ~isfile(nrdb_file)
                 error(['Non-relational database file ' nrdb_file ' does not exist.']);
             end
@@ -2012,7 +2296,7 @@ classdef Transistor < Component
             end
 
             % Connect to graph parameters db
-            nrdb_file = 'Components\Transistor\TransistorDB\Transistor_Graph.json';
+            nrdb_file = [path 'TransistorDB\Transistor_Graph.json'];
             if ~isfile(nrdb_file)
                 error(['Non-relational database file ' nrdb_file ' does not exist.']);
             end
@@ -2028,22 +2312,25 @@ classdef Transistor < Component
 
         % Push (export) DBs to another folder
         function push(other_location, userID)     
+            path_parts = strsplit(which('Transistor'),'Transistor.m');
+            path = path_parts{1};
+            
             msg = {};
             time = char(datetime);
             time = strrep(time,':','-');
             time = strrep(time,' ','_');
-            fid = fopen('Components/Transistor/TransistorDB/Log.txt', 'a+');
+            fid = fopen([path 'TransistorDB/Log.txt'], 'a+');
             fprintf(fid, '%s,%s', time, userID);
             
             % Push Standard Table Parameters
             if ~isfile([other_location '\Transistor_StandardTable.db'])
-                copyfile('Components\Transistor\TransistorDB\Transistor_StandardTable.db', ...
+                copyfile([path 'TransistorDB\Transistor_StandardTable.db'], ...
                     [other_location '\Transistor_StandardTable.db']);
                 msg = [msg ; 'Standard table parameter database created.'];
             else
                 try
                     changedStr = Transistor.merge_tableParameters([other_location '\Transistor_StandardTable.db'], ...
-                        'Components\Transistor\TransistorDB\Transistor_StandardTable.db');
+                        [path 'TransistorDB\Transistor_StandardTable.db']);
                     if ~isempty(changedStr)
                         fprintf(fid, '%s', changedStr);
                     end
@@ -2055,13 +2342,13 @@ classdef Transistor < Component
             
             % Push Additional Table Parameters
             if ~isfile([other_location '\Transistor_AdditionalTable.json'])
-                copyfile('Components\Transistor\TransistorDB\Transistor_AdditionalTable.json', ...
+                copyfile([path 'TransistorDB\Transistor_AdditionalTable.json'], ...
                     [other_location '\Transistor_AdditionalTable.json']);
                 msg = [msg ; 'Additional table parameter database created.'];
             else
                 try
                     Transistor.merge_additionalTable([other_location '\Transistor_AdditionalTable.json'], ...
-                        'Components\Transistor\TransistorDB\Transistor_AdditionalTable.json');
+                        [path 'TransistorDB\Transistor_AdditionalTable.json']);
                     msg = [msg ; 'Additional table parameters pushed.' newline];
                 catch Error
                     msg = [msg ; 'WARNING: Additional table parameters NOT pushed:' ; Error.message newline];
@@ -2070,13 +2357,13 @@ classdef Transistor < Component
             
             % Push Graph Parameters
             if ~isfile([other_location '\Transistor_Graph.json'])
-                copyfile('Components\Transistor\TransistorDB\Transistor_Graph.json', ...
+                copyfile([path 'TransistorDB\Transistor_Graph.json'], ...
                     [other_location '\Transistor_Graph.json']);
                 msg = [msg ; 'Graph parameters database created.'];
             else
                 try
                     Transistor.merge_graphParameters([other_location '\Transistor_Graph.json'], ...
-                        'Components\Transistor\TransistorDB\Transistor_Graph.json', 'PUSH');
+                        [path 'TransistorDB\Transistor_Graph.json'], 'PUSH');
                     msg = [msg ; 'Graph parameters pushed.' newline];
                 catch Error
                     msg = [msg ; 'WARNING: Graph parameters NOT pushed:' ; Error.message newline];
@@ -2085,18 +2372,21 @@ classdef Transistor < Component
             
             fprintf(fid, newline);
             fclose(fid);
-            copyfile('Components/Transistor/TransistorDB/Log.txt', [other_location '/Log.txt']);
+            copyfile([path 'TransistorDB/Log.txt'], [other_location '/Log.txt']);
             
             msgbox(msg, 'Push Finished');            
         end
         
         % Pull (import) DBs from another folder
-        function pull(other_location)  
+        function pull(other_location) 
+            path_parts = strsplit(which('Transistor'),'Transistor.m');
+            path = path_parts{1};
+            
             msg = {};
-            copyfile([other_location '/Log.txt'], 'Components/Transistor/TransistorDB/Log.txt');
+            copyfile([other_location '/Log.txt'], [path 'TransistorDB/Log.txt']);
             
             try
-                Transistor.merge_tableParameters('Components\Transistor\TransistorDB\Transistor_StandardTable.db', ...
+                Transistor.merge_tableParameters([path 'TransistorDB\Transistor_StandardTable.db'], ...
                     [other_location '\Transistor_StandardTable.db']);
                 msg = [msg ; 'Standard table parameters pulled.' newline];
             catch Error
@@ -2104,7 +2394,7 @@ classdef Transistor < Component
             end
             
             try
-                Transistor.merge_additionalTable('Components\Transistor\TransistorDB\Transistor_AdditionalTable.json', ...
+                Transistor.merge_additionalTable([path 'TransistorDB\Transistor_AdditionalTable.json'], ...
                     [other_location '\Transistor_AdditionalTable.json']);
                 msg = [msg ; 'Additional table parameters pulled.' newline];
             catch Error
@@ -2112,7 +2402,7 @@ classdef Transistor < Component
             end
             
             try
-                Transistor.merge_graphParameters('Components\Transistor\TransistorDB\Transistor_Graph.json', ...
+                Transistor.merge_graphParameters([path 'TransistorDB\Transistor_Graph.json'], ...
                         [other_location '\Transistor_Graph.json'], 'PULL');
                 msg = [msg ; 'Graph parameters pulled.' newline];                    
             catch Error
@@ -2124,9 +2414,12 @@ classdef Transistor < Component
         
         % List all devices
         function devices = listDevices()
+            path_parts = strsplit(which('Transistor'),'Transistor.m');
+            path = path_parts{1};
+            
             devices = {};
             % Connect to SQL DB
-            rldb_file = 'Components\Transistor\TransistorDB\Transistor_StandardTable.db';
+            rldb_file = [path 'TransistorDB\Transistor_StandardTable.db'];
             if ~isfile(rldb_file)
                 return
             end
