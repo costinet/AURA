@@ -35,16 +35,6 @@ classdef Transistor < Component
             % Cell array of strings - Keys for SI prefixes dict ordered properly
         % SIprefixes
             % Dictionary string->double - For graph parameter data scaling
-        % additionalTableLabels
-            % Cell array of strings - For use in GUI functions
-        % additionalTableMin
-            % Cell array of strings - For use in GUI functions
-        % additionalTableTyp
-            % Cell array of strings - For use in GUI functions
-        % additionalTableMax
-            % Cell array of strings - For use in GUI functions
-        % additionalTableUnits
-            % Cell array of strings, for use in GUI functions
     end
     
     
@@ -593,6 +583,8 @@ classdef Transistor < Component
                     return
                 end
             end
+            
+            % Workaround for MATLAB bug
             fields = fieldnames(obj.graphParameters);
             for i = 1:numel(fields)
                 field = fields{i};
@@ -1512,7 +1504,7 @@ classdef Transistor < Component
         
         % Protected method to load non-relational DB information from .json file
         function data_struct = load_nrdb(obj, nrdb_file)
-            % Connect to graph parameters JSON DB
+            % Connect to nrdb parameters JSON DB
             if ~isfile(nrdb_file)
                 error(['Non-relational database file ' nrdb_file ' does not exist.']);
             end
@@ -2116,14 +2108,15 @@ classdef Transistor < Component
             for i = 1:numel(graphData)
                 data = graphData{i};
                 hold on
-                plot(axis,data(:,1),data(:,2));
+                plot(axis,data(:,1),data(:,2),'LineWidth',3);
             end
             yIndex = find(strcmp(graphFields,yParam));
             ylabel(axis,[yParam ' (' strrep(graphDefaultMultipliers{yIndex},'1','') graphUnits{yIndex} ')'])
             xIndex = find(strcmp(graphFields,xParam));
             xlabel(axis,[xParam ' (' strrep(graphDefaultMultipliers{xIndex},'1','') graphUnits{xIndex} ')'])
             if numel(graphData) > 1
-                legend(axis,strings);
+                lgnd = legend(axis,strings);
+                set(lgnd,'FontSize',12);
             end
             title(axis,[device ': ' yParam ' vs. ' xParam])
         end

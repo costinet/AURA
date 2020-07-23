@@ -22,13 +22,6 @@ classdef Component < handle
     end
     
     properties (Access = protected)
-
-        additionalTableLabels = {}
-        additionalTableMin = {}
-        additionalTableTyp = {}
-        additionalTableMax = {}
-        additionalTableUnits = {}
-        
         temp_graphParameters = struct();
         current_graphParameter = '';
         current_graphPage = 1;
