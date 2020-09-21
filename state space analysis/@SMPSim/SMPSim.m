@@ -28,7 +28,7 @@ classdef SMPSim < handle
         
         eigA
         
-        
+        % All of the OG Stuff will be pushed to the converter class
         As_OG
         Bs_OG
         Cs_OG
@@ -38,16 +38,26 @@ classdef SMPSim < handle
         ONorOFF_OG
         ts_OG
         
-        
-        
-        
-        
-        
-        
+        ts_history
+        Xs_history
         %         Aw
         %         Bw
         %         Cw
         %         Dw
+        
+        As_saved
+        Bs_saved
+        Cs_saved
+        Ds_saved
+        u_saved
+        eigA_saved
+        ONorOFF_saved
+        ts_saved
+        Xs_saved
+        
+        
+        
+        
         
         Xs
         Xs_circuit % In current implementation this should be Xs if correctXs function is run to ensure the values do not violate KVL and KCL
@@ -101,6 +111,17 @@ classdef SMPSim < handle
             obj.Xs = [];
         end
         
+        
+        function set.ts(obj,ts)
+            if sum(ts>0)==length(ts)
+                obj.ts = ts;
+            else
+                error('There is a non-postitive time interval length trying to be assigned to the simulation class variable ts')
+            end
+            
+            
+        end
+        
         function setts(obj,ts)
             if sum(ts>0)==length(ts)
                 obj.ts = ts;
@@ -134,6 +155,43 @@ classdef SMPSim < handle
         function sn = getstatenames2(obj)
             sn = obj.Converter.Topology.stateLabels;
         end
+        
+        % History Functions
+        
+        function ts_hist(obj,ts)
+        
+           if isempty(obj.ts_history)
+               obj.ts_history = ts;
+           
+           elseif size(obj.ts_history,2) ~= size(ts,2)
+                obj.ts_history = [];
+               obj.ts_history = ts;
+           
+           else
+               obj.ts_history(end+1,:) = ts;
+           end
+            
+        end    
+        
+        function Xs_hist(obj,Xs)
+        
+            if isempty(obj.Xs_history)
+               obj.Xs_history = Xs;
+           
+           elseif size(obj.Xs_history,2) ~= size(Xs,2)
+                obj.Xs_history = [];
+               obj.Xs_history = Xs;
+           
+           else
+               obj.Xs_history(:,:,end+1) = Xs;
+           end
+            
+        end    
+            
+          
+        
+        
+        
         
         %% Test functions
         function loadTestConverter(obj,dotmatfile)

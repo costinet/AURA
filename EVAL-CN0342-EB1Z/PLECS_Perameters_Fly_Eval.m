@@ -38,8 +38,6 @@ Rsnub = 390;
 Csnub = 220e-9;
 
 
-Rsub = 
-
 
 Cds1 = 300e-12;
 Cds2 = 271.9951e-12;

@@ -82,6 +82,10 @@ classdef NetListParse < handle
         
         Component_Values
         
+        % Forward votlage values in order of A matrix
+        Fwd_Voltage
+        
+        
         % Htemp for AB and CD matrix for large converters
 
         % Store indexing values hear as well

@@ -1,5 +1,5 @@
-%%{
 clear
+
 
 load('Test2.mat')
 number_selected = 2;
@@ -59,6 +59,9 @@ t = linspace(0,obj.ts(end),n);
 figure(1)
 Y1= lsim(sysss,u*ones(size(t)),t,[7 -2 -0.000277]);
 lsim(sysss,u*ones(size(t)),t,[7 -2 -0.000277]);
+
+
+
 
 
 Poles = P{end,end};
@@ -135,6 +138,12 @@ options = optimoptions('lsqnonlin','Display','iter');
 figure(2)
 lsim(new_sys_ss,u*ones(size(t)),t,X');
 Y2 = lsim(new_sys_ss,u*ones(size(t)),t,X');
+
+sysss_plot = ss( new_sys_ss.A, new_sys_ss.B, new_sys_ss.C(1:4,:), new_sys_ss.D(1:4,:));
+
+figure(5)
+lsim(sysss_plot,u*ones(size(t)),t,X');
+
 
 R_before = Y1(:,6)./Y1(:,3); 
 R_after = Y2(:,6)./Y2(:,3);
@@ -224,249 +233,6 @@ tf(sysss_old)
 
 %}
 
-%% Small RLC
-
-clear
-
-% Check conservation of energy check on simple circuits without source
-%u = [0 0]';
-u = [0 0 0]';
-syms R L C C1 C2 R1 R2 R3 R_ac L_ac
-Asyms = [0 -1/C2
-    1/L -R3/L];
-
-AL = [0     -1/C2            0
-      1/L   (-R3-R_ac)/L     (R_ac)/L
-      0     R_ac/L_ac        -R_ac/L_ac ];
-
-%eig(Asyms);
-
-
-A33 = [-1/R1/C1 0 -1/C1
-    0 -1/R2/C2 -1/C2
-    1/L 1/L -R3/L];
-
-
-
-
-L_ac = 1e-3;
-
-ShortedL = 0.47382e-6;
-ShortedR = 326.9e-3;
-L = 1.0393e-6-ShortedL;  % Resonate indcutor
-L = 1.0393e-6-ShortedL;  % Resonate indcutor
-C1 = 220e-9; % Resonate Cap
-R1 = 390;
-R3 = 0.63521-ShortedR; % Inductor series resistance
-R2 = 0.2834;
-C2 = 28.47e-12;
-
-eig(eval(A33));
-
-R_ac = 6.2-R3;
-
-%R3 = 6.2;% To determine what the equal respone is for a larger resistance
-
-% As = eval(Asyms);
-As = eval(AL);
-number_selected = 1;
-
-%Ress_out = [0 R3];
-
-Ress_out = [0 R3 0
-           0 R_ac -R_ac];
-
-Ax = As;
-Bx = [eye(size(As(:,:,number_selected)))];
-Cx = [eye(size(As(:,:,number_selected)));Ress_out];
-Dx = zeros(size(Cx,1), size(Bx,2));
-
-
-
-sysss = ss(As(:,:,number_selected),Bx,Cx,Dx);
-
-
-
-sys = tf(sysss);
-% sys.InputName = {'C [V]' 'L [A]'};
-% sys.OutputName = {'C [V]' 'L [A]' 'L_R [V]'};
-
-sys.InputName = {'C [V]' 'L [A]' 'L_AC [A]'};
-sys.OutputName = {'C [V]' 'L [A]' 'L_AC [A]' 'L_R [V]'  'L_R_AC [V]'};
-
-figure(3)
-h = bodeplot(sys(:,1:end));
-setoptions(h,'FreqUnits','Hz','PhaseVisible','off');
-
-[Z,P,K]=zpkdata(sys);
-
-ts = 2.334903274905484e-06;
-
-n = 10000;
-t = linspace(0,ts(end),n);
-
-%lsim(sysss,u*ones(size(t)),t,obj.Xs(:,end-1)')
-% Need code that will find certain poles and change them 
-
-figure(1)   
-% Y1= lsim(sysss,u*ones(size(t)),t,[-2 -0.000277]);
-% lsim(sysss,u*ones(size(t)),t,[-2 -0.000277]);
-
-Y1= lsim(sysss,u*ones(size(t)),t,[-2 -0.000277 -0.000277]);
-lsim(sysss,u*ones(size(t)),t,[-2 -0.000277 -0.000277]);
-
-
-%s = tf('s');
-%Zin = (R3/L/C2 + s/C2)/(s^2+s*R3/L+1/L/C2)
-
-%Zin1 = (1/C2*s^2+1/C2*s*(R_ac/L+R_ac/L_ac+R3/L)+R_ac*R3/L_ac/L/C2) /( s^3 + s^2 * (R_ac/L+R_ac/L_ac+R3/L) + s*(R_ac*R3/L_ac/L+1/L/C2 ) +R_ac/L_ac/L/C2 );
-
-
-Poles = P{end,end};
-Poles(1) = real(Poles(1))*20+imag(Poles(1))*1i;
-Poles(2) = real(Poles(2))*20+imag(Poles(2))*1i;
-%Pole = num2cell(Poles);
-
-%Poles(1) = real(Poles(1))+imag(Poles(1))*1i;
-%Poles(2) = real(Poles(2))+imag(Poles(2))*1i;
-
-
- P{1,1} = Poles;
- P{2,1} = Poles;
- P{3,1} = Poles;
- P{1,2} = Poles;
- P{2,2} = Poles;
- P{3,2} = Poles;
- 
-
- 
-new_sys = zpk(Z,P,K);
-
-new_sys.InputName = {'C [V]' 'L [A]'};
-new_sys.OutputName = {'C [V]' 'L [A]' 'L_R [V]'};
-
-figure(4)
-h = bodeplot(new_sys(:,1:end));
-setoptions(h,'FreqUnits','Hz','PhaseVisible','off');
-
-
-
-
-% Nonlinear (bounded) least squares regression to find zero for Buck implementation
-
-As = As(:,:,number_selected);
-Bs = [];
-Cs = [eye(size(As(:,:,number_selected)));Ress_out];
-Ds = []; 
-u = [];
-X0 = [-2 -0.000277]';
-ti = 1e-9;
-Xi = AugSS(X0,As,Bs,ti,u);
-Xi2 = AugSS(X0,As,Bs,ti*2,u);
-Stick0 = Cs*X0;
-Stick1 = Cs*Xi;
-Stick2 = Cs*Xi2;
-
-Stick=[Stick0 Stick1 Stick2];
-
-
-new_sys_ss = ss(new_sys);
-As = new_sys_ss.A;
-Bs = new_sys_ss.B;
-Cs = new_sys_ss.C;
-Ds = new_sys_ss.D;
-u = [0 0]';
-X0 = zeros(size(As,1),1);
-
-%Stick = [3.8091;  1.1909;   -0.0091];
-
-
-options = optimoptions('lsqnonlin','Display','iter');
-
-
-[X,RESNORM,RESIDUAL,EXITFLAG] = ...
-    lsqnonlin(@(x) IC_Error(x, As, Bs, ti,u,Cs,Ds,Stick),X0,[],[],options);
-
-figure(2)
-lsim(new_sys_ss,u*ones(size(t)),t,X');
-Y2 = lsim(new_sys_ss,u*ones(size(t)),t,X');
-
-R_before = Y1(:,3)./Y1(:,2); 
-R_after = Y2(:,3)./Y2(:,2);
-
-
-P_before = mean(Y1(:,3).*Y1(:,2));
-P_after = mean(Y2(:,3).*Y2(:,2));
-
-L = 5.6548e-07;
-D2 = 2.8470e-11;
-
-ED2_start = 0.5*D2*(-2)^2;
-EL_start = 0.5*L*(-0.000277)^2;
-
-E_start = ED2_start + EL_start;
-
-
-ED2_starta = 0.5*D2*(Y2(1,1))^2;
-EL_starta = 0.5*L*(Y2(1,2))^2;
-
-E_starta = ED2_start + EL_start;
-
-
-ED2_before = 0.5*D2*Y1(end,1)^2;
-EL_before = 0.5*L*Y1(end,2)^2;
-
-E_before =   ED2_before + EL_before;
-
-
-ED2_after = 0.5*D2*Y2(end,1)^2;
-EL_after = 0.5*L*Y2(end,2)^2;
-
-E_after = + ED2_after + EL_after;
-
-Power_change_before = (E_start - E_before) / ts(end);
-Power_change_after = (E_starta - E_after) / ts(end);
-
-Add_before =  P_before  ;
-Add_after =  P_after  ;
-
-
-% This is for the R+Rac one
-
-
-R_before = Y1(:,4)./Y1(:,2); 
-P_before = mean(Y1(:,4).*Y1(:,2));
-
-R2_before = Y1(:,5)./(Y1(:,2)-Y1(:,3)); 
-P2_before = mean(Y1(:,5).*(Y1(:,2)-Y1(:,3)));
-
-
-L = 5.6548e-07;
-D2 = 2.8470e-11;
-
-
-ED2_start = 0.5*D2*(-2)^2;
-EL_start = 0.5*L*(-0.000277)^2;
-EL2_start = 0.5*L_ac*(-0.000277)^2;
-
-E_start = ED2_start + EL_start + EL2_start;
-
-
-ED2_before = 0.5*D2*Y1(end,1)^2;
-EL_before = 0.5*L*Y1(end,2)^2;
-EL2_before = 0.5*L_ac*Y1(end,3)^2;
-E_before =   ED2_before + EL_before +EL2_before;
-
-
-Power_change_before = (E_start - E_before) / ts(end);
-
-Add_before =  P_before + P2_before;
-
-
-return
-
-
-
 
 
 function [err] = IC_Error(X0, As, Bs, ti,u,Cs,Ds,Stick)
@@ -513,5 +279,3 @@ Xi = expm(Aais*ti)*X0;
 Xi(ns+1:end,:) = [];
  
 end
-
-

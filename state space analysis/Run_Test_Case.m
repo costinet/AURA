@@ -1027,7 +1027,7 @@ switch selection
        
         
         u = [Vg 1 1]';
-        Order  = [1 2 3 4];
+     %   Order  = [1 2 3 4];
         ts = [Ts*(D-dead) Ts*(dead) Ts*(1-D-dead) Ts*(dead)]; % The inital guess of time intervals
         
         Numerical_Components = {'C1' C1

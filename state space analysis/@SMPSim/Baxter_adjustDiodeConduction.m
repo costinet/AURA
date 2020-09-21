@@ -28,8 +28,14 @@ try
         progBar = 0.01;
     end
     
-    maxStep = sum(ts)/100/(.5+1.5*progBar);
+    imagine_eigA = imag(obj.eigA); % get the imaginary part of the eigenvalue
+    imagine_eigA(imagine_eigA(:)<=0) = 0; % Only take the postive part of the eigenvalue
+    imagin_eigA_reduced = imagine_eigA(:,Xic-1:Xic);
     
+    %maxStep =  min(min(pi()/5./imagine_eigA));
+    
+    maxStep =  min(min(pi()/5./imagin_eigA_reduced));
+    % sum(ts)/100/(.5+1.5*progBar)
     
     if ~(Xic>1) || ~(Xic<=size(Xs,2)) % Check to see if Xic is valid
         ME = MException('resultisNaN:noSuchVariable', ...
@@ -207,10 +213,15 @@ try
 %         end
         
 
-tdelta_act = ts(Ti)-obj.ts(Ti);
+%tdelta_act = ts(Ti)-obj.ts(Ti);
 
-New_Xs = tdelta_act*dxsdt+Xs;
-obj.Xs = New_Xs;
+%New_Xs = tdelta_act*dxsdt+Xs;
+%obj.Xs = New_Xs;
+
+obj.setts(ts);
+
+obj.SS_Soln();
+obj.CorrectXs();
 
    % end % this is the end for the massive overshoot if statement
     return

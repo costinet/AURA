@@ -37,7 +37,7 @@ try
     ONorOFF = obj.ONorOFF_OG;
     ts = obj.ts_OG;
     tol = 0.000005;
-    Vf = 0.2;
+    Vf = 1;
     
     %{
 

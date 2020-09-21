@@ -64,13 +64,16 @@ toc
     counter = 0;
     
     type = 2;
+    
+    tic
+    Time_stamp = toc;
     switch type
         %% Strait Lsim
         
         case 1
             
             sim('Buck_COMPEL_2019'); % This is like pressing play in Simulink
-            
+            Time_stamp(end+1) = toc;
             C1_V_data(end+1) = C1sim.data(end);
             L1_I_data(end+1) = L1sim.data(end);
             M1_V_data(end+1) = M1sim.data(end);
@@ -94,7 +97,7 @@ toc
             while abs(C1_V_data(end)-C1_V_data(end-1))>1e-6 && abs(L1_I_data(end)-L1_I_data(end-1))>1e-6
                 
                 sim('Buck_COMPEL_2019'); % This is like pressing play in Simulink
-                
+                Time_stamp(end+1) = toc;
                 C1_V_data(end+1) = C1sim.data(end);
                 L1_I_data(end+1) = L1sim.data(end);
                 M1_V_data(end+1) = M1sim.data(end);
@@ -131,29 +134,38 @@ toc
             
             Errorcode = [C1_error CM1_error CM2_error L_error];
             
+            Timecode = [Time_stamp' Time_stamp' Time_stamp' Time_stamp'];
             
             figure(10)
             subplot(3,1,[1:2])
             % Create axes
             
             % Create multiple lines using matrix input to plot
-            plot1 = plot(Errorcode,'LineWidth',3);
+            plot1 = plot(Timecode,Errorcode,'MarkerFaceColor',[1 0 0],...
+                'MarkerEdgeColor',[0 0 0],...
+                'MarkerSize',10,...
+                'Marker','o',...
+                'LineWidth',3);
             set(plot1(1),'DisplayName','C_{out}');
             set(plot1(2),'DisplayName','C_{M1}');
             set(plot1(3),'DisplayName','C_{M2}');
             set(plot1(4),'DisplayName','L');
             
             % Create ylabel
-            ylabel('$\frac{|x(n)-x(n+1)|}{|x(end)|}$','Interpreter','latex');
+            ylabel('$E_{x_{ss}}$','Interpreter','latex');
             
             set(gca, 'Xticklabel', []);
             set(gca,'FontName','Times New Roman','FontSize',24);
             % Create title
-            title({'Error per Iteration to Reach Steady-State'});
+            title({'Error per Time to Reach Steady-State'});
             legend
             
             subplot(3,1,3)
-            plot2 = plot(zeros(length(Errorcode),2),'LineWidth',3);
+            plot2 = plot(Timecode(:,1:2),zeros(length(Errorcode),2),'MarkerFaceColor',[1 0 0],...
+                'MarkerEdgeColor',[0 0 0],...
+                'MarkerSize',10,...
+                'Marker','o',...
+                'LineWidth',3);
             
             set(plot2(1),'DisplayName','Deadtime1');
             set(plot2(2),'DisplayName','Deadtime2');
@@ -163,11 +175,11 @@ toc
             
             % Create ylabel
             
-            ylabel('$\frac{|V_D-V_F|}{|V_F|}$','Interpreter','latex')
+            ylabel('$E_{V_{F}}$','Interpreter','latex')
             
             
             % Create xlabel
-            xlabel('Iterations');
+            xlabel('Real Time [s]');
             
             set(gca,'FontName','Times New Roman','FontSize',24,'YTick',[0 1]);
             legend({},'Orientation','horizontal')
@@ -193,7 +205,7 @@ toc
                 while true
                     
                     sim('Buck_COMPEL_2019');
-                    
+                    Time_stamp(end+1) = toc;
                     C1_V_data(end+1) = C1sim.data(end);
                     L1_I_data(end+1) = L1sim.data(end);
                     M1_V_data(end+1) = M1sim.data(end);
@@ -245,6 +257,17 @@ toc
                     [M1_V, C1_V, L1_I, M2_V]=deal(todeal(1),todeal(2),todeal(3),todeal(4));
                     
                     sim('Buck_COMPEL_2019');
+                    
+                    % Added to emphasize the delay in find the
+                    % jacobians
+                    % Time_stamp(end+1) = toc;
+                    % C1_V_data(end+1) = C1_V_data(end);
+                    % L1_I_data(end+1) = L1_I_data(end);
+                    % M1_V_data(end+1) = M1_V_data(end);
+                    % M2_V_data(end+1) = M2_V_data(end);
+                    
+                    
+                    
                     new_Fx = [M1sim.data(end) C1sim.data(end) L1sim.data(end) M2sim.data(end)]';
                     % norm(new_x-F_x)/norm(F_x);
                     % J(:,i) = I(:,i)-((new_x-x)./delta_x(i));
@@ -267,7 +290,7 @@ toc
                     [M1_V, C1_V, L1_I, M2_V]=deal(todeal(1),todeal(2),todeal(3),todeal(4));
                     
                     sim('Buck_COMPEL_2019');
-                    
+                    Time_stamp(end+1) = toc;
                     C1_V_data(end+1) = C1sim.data(end);
                     L1_I_data(end+1) = L1sim.data(end);
                     M1_V_data(end+1) = M1sim.data(end);
@@ -331,29 +354,40 @@ toc
             Errorcode = [C1_error CM1_error CM2_error L_error];
             
             
+            Timecode = [Time_stamp' Time_stamp' Time_stamp' Time_stamp'];
+            
+            
             figure(11)
             
             subplot(3,1,[1:2])
             % Create axes
             
             % Create multiple lines using matrix input to plot
-            plot1 = plot(Errorcode,'LineWidth',3);
+            plot1 = plot(Timecode,Errorcode,'MarkerFaceColor',[1 0 0],...
+                'MarkerEdgeColor',[0 0 0],...
+                'MarkerSize',10,...
+                'Marker','o',...
+                'LineWidth',3);
             set(plot1(1),'DisplayName','C_{out}');
             set(plot1(2),'DisplayName','C_{M1}');
             set(plot1(3),'DisplayName','C_{M2}');
             set(plot1(4),'DisplayName','L');
             
             % Create ylabel
-            ylabel('$\frac{|x(n)-x(n+1)|}{|x(end)|}$','Interpreter','latex');
+            ylabel('$E_{x_{ss}}$','Interpreter','latex');
             
             set(gca, 'Xticklabel', []);
             set(gca,'FontName','Times New Roman','FontSize',24);
             % Create title
-            title({'Error per Iteration to Reach Steady-State'});
+            title({'Error per Time to Reach Steady-State'});
             legend
             
             subplot(3,1,3)
-            plot2 = plot(zeros(length(Errorcode),2),'LineWidth',3);
+            plot2 = plot(Timecode(:,1:2),zeros(length(Errorcode),2),'MarkerFaceColor',[1 0 0],...
+                'MarkerEdgeColor',[0 0 0],...
+                'MarkerSize',10,...
+                'Marker','o',...
+                'LineWidth',3);
             
             set(plot2(1),'DisplayName','Deadtime1');
             set(plot2(2),'DisplayName','Deadtime2');
@@ -363,11 +397,11 @@ toc
             
             % Create ylabel
             
-            ylabel('$\frac{|V_D-V_F|}{|V_F|}$','Interpreter','latex')
+            ylabel('$E_{V_{F}}$','Interpreter','latex')
             
             
             % Create xlabel
-            xlabel('Iterations');
+            xlabel('Real Time [s]');
             
             set(gca,'FontName','Times New Roman','FontSize',24,'YTick',[0 1]);
             legend({},'Orientation','horizontal')
@@ -471,17 +505,22 @@ hold on
 plot(abs(ts_hist6(:)-ts_hist6(end))./abs(ts_hist6(end)))
 %}
 
-
+load('COMPEL_2020_Digest_AURA_Data.mat')
 play = Xs_hist;
 
 
-play  = play(:,:,2:end);
+%play  = play(:,:,2:end);
+play(:,:,1)  = play(:,:,2);
 
 error1 = abs(squeeze(play(3,3,:)+1));
 error2 = abs(squeeze(play(3,6,:)+1));
 
 
 Errorcode = [error1 error2];
+
+Time_stamp = [0 Time_stamp];
+
+Timecode = [Time_stamp' Time_stamp' Time_stamp' Time_stamp'];
 
 figure(13)
 
@@ -493,41 +532,48 @@ subplot(3,1,[1:2])
 
 % Create multiple lines using matrix input to plot
 
-plot1 = plot(Errorcode,'LineWidth',3);
+plot1 = plot(Timecode(:,1:2),Errorcode,'MarkerFaceColor',[1 0 0],...
+                'MarkerEdgeColor',[0 0 0],...
+                'MarkerSize',10,...
+                'Marker','o',...
+                'LineWidth',3);
 
 set(plot1(1),'DisplayName','Deadtime1');
 set(plot1(2),'DisplayName','Deadtime2');
 
-
-ylabel('$\frac{|V_D-V_F|}{|V_F|}$','Interpreter','latex')
+xlim([0 1]);
+ylabel('$E_{V_{F}}$','Interpreter','latex')
 
 
 
 
 % Create ylabel
 
-
 set(gca, 'Xticklabel', []);
 set(gca,'FontName','Times New Roman','FontSize',24);
 % Create title
-title({'Error per Iteration to Reach Steady-State'});
+title({'Error per Time to Reach Steady-State'});
 legend
 
 subplot(3,1,3)
-plot2 = plot(zeros(length(Errorcode),4),'LineWidth',3);
+plot2 = plot(Timecode,zeros(length(Errorcode),4),'MarkerFaceColor',[1 0 0],...
+                'MarkerEdgeColor',[0 0 0],...
+                'MarkerSize',10,...
+                'Marker','o',...
+                'LineWidth',3);
 set(plot2(1),'DisplayName','C_{out}');
 set(plot2(2),'DisplayName','C_{M1}');
 set(plot2(3),'DisplayName','C_{M2}');
 set(plot2(4),'DisplayName','L');
 
 
-
+xlim([0 1]);
 ylim([-0.49 1.49]);
 
-ylabel('$\frac{|x(n)-x(n+1)|}{|x(end)|}$','Interpreter','latex');
+ylabel('$E_{x_{ss}}$','Interpreter','latex');
 
 % Create xlabel
-xlabel('Iterations');
+xlabel('Real Time [s]');
 
 set(gca,'FontName','Times New Roman','FontSize',24,'YTick',[0 1]);
 legend({},'Orientation','horizontal')

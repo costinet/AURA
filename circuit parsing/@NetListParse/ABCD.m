@@ -1,4 +1,4 @@
-function [] = ABCD(obj)
+function [A,B,C,D] = ABCD(obj)
 % ABCD creates takes a NETlist file from LTSpice and creates the associated
 % ABCD matrices or the associated matrices need to get ABCD if a symbolic
 % formulation cannot be solved in a descent amount of time.

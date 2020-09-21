@@ -92,7 +92,7 @@ for i = 1:1:size(Binary,1)
     onoroff(the_code(:,i),:) = Binary(i,:); % Assign correct row
 end
 
-Fwd_Voltage = the_code*diode;
+Fwd_Voltage = the_code*diode
     
 % for i = 1:1:length(order) % Iterate through number of states
 %     for j = 1:1:num % Iterate through number of states variables

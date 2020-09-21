@@ -15,6 +15,8 @@ classdef SMPStopology < handle
         Csym
         Dsym
         
+        filename % The filename that contains the topology for this covnerter
+        
         stateLabels={}
         stateLabels_Opp={}
         Xi
@@ -47,6 +49,18 @@ classdef SMPStopology < handle
             obj.Ds = parse.Dnum;
         end
 
+        function []=parse(obj,filename)
+            % confrim that pasre class is empty??!!??
+            obj.filename = filename;
+            obj.Parser.initialize(filename);
+            obj.Parser.ABCD;
+            obj.Asym = obj.Parser.Asym;
+            obj.Bsym = obj.Parser.Bsym;
+            obj.Csym = obj.Parser.Csym;
+            obj.Dsym = obj.Parser.Dsym;
+        end
+        
+        
     end
 end
 
