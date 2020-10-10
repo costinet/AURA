@@ -537,8 +537,8 @@ ON = 1;
 OFF = 0;
 
  Binary_for_DAB = [
-ON OFF 
-OFF OFF 
+ON OFF
+OFF OFF
      ];
 
 SW_OFF = ones(1,2).*10000000;
@@ -570,8 +570,8 @@ SW = obj.Converter.Switch_Resistor_Values; % [SW_OFF; SW_ON; SW_ON]
 
 
 
-
 out = {};
+
 
 k = 1;
 
@@ -581,64 +581,97 @@ k = 1;
 new_state(new_state==2)=3; % Turn logic 2 (ON) to a 3
 new_state(new_state==1)=2; % Turn logic 1 (DON) to a 2
 new_state(new_state==-1)=1; % Turn logic 0 (OFF) to a -1
-
-
-The_Codex = obj.Converter.Topology.Parser.Codex;
-
-
-for i = 1:1:size(The_Codex,2)
-    Binary(i,:) = new_state(The_Codex(:,i)); % Assign correct row
+number_location = [];
+if ~isempty(obj.saved_new_state)
+number_location = find(sum(obj.saved_new_state==new_state)==length(new_state),1);
 end
 
-for j = 1:1:size(Binary,1)
-    out{j} = SW(Binary(j),j);
-end
-
-for i = 1:1:size(Resistances,1)
-    eval([Resistances{i} '=' 'out{i};'])
-end
-
-% [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
-% [M1_R, M2_R] = deal(out{:});
-% [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
-% [M1_R, M2_R] = deal(out{:});
-
-if isempty(obj.Converter.Topology.Parser.Asym)
+if ~isempty(number_location)
     
-    HtempAB(:,:,k) = eval(obj.Converter.Topology.Parser.HtempAB(:,:,1));
-    HtempCD(:,:,k) = eval(obj.Converter.Topology.Parser.HtempCD(:,:,1));
-    dependsAB(:,:,k) = eval(obj.Converter.Topology.Parser.dependsAB(:,:,1));
-    savedCD(:,:,k) = eval(obj.Converter.Topology.Parser.savedCD(:,:,1));
-    for j = 1:1:size(obj.Converter.Topology.Parser.DependentNames(:,1),1)
-        DependentNames(j,k) = eval(obj.Converter.Topology.Parser.DependentNames{j,1});
-    end
-    for j = 1:1:size(obj.Converter.Topology.Parser.OutputNames(:,1),1)
-        OutputNames(j,k) = eval(obj.Converter.Topology.Parser.OutputNames{j,1});
-    end
     
-    for k = 1:1:size(HtempAB,3)
-        [A,B,C,D] = obj.Converter.Topology.Parser.loopfixAB_large(HtempAB(:,:,k),dependsAB(:,:,k),OutputNames(:,k),DependentNames(:,k));
-        [C,D] = obj.Converter.Topology.Parser.loopfixCD_large(B,C,D,HtempCD(:,:,k),savedCD(:,:,k),DependentNames(:,k),obj.Converter.Topology.Parser.SortedTree(:,:,1),obj.Converter.Topology.Parser.SortedCoTree(:,:,1));
-    end
-    eigA = eig(A);
+       A =  obj.saved_A(:,:,number_location);
+       B =  obj.saved_B(:,:,number_location);
+       C =  obj.saved_C(:,:,number_location);
+       D =  obj.saved_D(:,:,number_location);
+       eigA =  obj.saved_eigA(:,number_location);
+       new_state =  obj.saved_new_state(:,number_location);
+    
     
 else
     
-    A = eval(obj.Converter.Topology.Parser.Asym(:,:,1));
-    B = eval(obj.Converter.Topology.Parser.Bsym(:,:,1));
-    C = eval(obj.Converter.Topology.Parser.Csym(:,:,1));
-    D = eval(obj.Converter.Topology.Parser.Dsym(:,:,1));
-    eigA = eig(A);
+    The_Codex = obj.Converter.Topology.Parser.Codex;
     
+    
+    for i = 1:1:size(The_Codex,2)
+        Binary(i,:) = new_state(The_Codex(:,i)); % Assign correct row
+    end
+    
+    for j = 1:1:size(Binary,1)
+        out{j} = SW(Binary(j),j);
+    end
+    
+    for i = 1:1:size(Resistances,1)
+        eval([Resistances{i} '=' 'out{i};'])
+    end
+    
+    % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R] = deal(out{:});
+    % [M1_R, M2_R] = deal(out{:});
+    % [M1_R, M2_R, M3_R, M4_R, M5_R, M6_R, M7_R, M8_R,M9_R,M10_R, M11_R, M12_R] = deal(out{:});
+    % [M1_R, M2_R] = deal(out{:});
+    
+    if isempty(obj.Converter.Topology.Parser.Asym)
+        
+        HtempAB(:,:,k) = eval(obj.Converter.Topology.Parser.HtempAB(:,:,1));
+        HtempCD(:,:,k) = eval(obj.Converter.Topology.Parser.HtempCD(:,:,1));
+        dependsAB(:,:,k) = eval(obj.Converter.Topology.Parser.dependsAB(:,:,1));
+        savedCD(:,:,k) = eval(obj.Converter.Topology.Parser.savedCD(:,:,1));
+        for j = 1:1:size(obj.Converter.Topology.Parser.DependentNames(:,1),1)
+            DependentNames(j,k) = eval(obj.Converter.Topology.Parser.DependentNames{j,1});
+        end
+        for j = 1:1:size(obj.Converter.Topology.Parser.OutputNames(:,1),1)
+            OutputNames(j,k) = eval(obj.Converter.Topology.Parser.OutputNames{j,1});
+        end
+        
+        for k = 1:1:size(HtempAB,3)
+            [A,B,C,D] = obj.Converter.Topology.Parser.loopfixAB_large(HtempAB(:,:,k),dependsAB(:,:,k),OutputNames(:,k),DependentNames(:,k));
+            [C,D] = obj.Converter.Topology.Parser.loopfixCD_large(B,C,D,HtempCD(:,:,k),savedCD(:,:,k),DependentNames(:,k),obj.Converter.Topology.Parser.SortedTree(:,:,1),obj.Converter.Topology.Parser.SortedCoTree(:,:,1));
+        end
+        eigA = eig(A);
+        
+    else
+        
+        A = eval(obj.Converter.Topology.Parser.Asym(:,:,1));
+        B = eval(obj.Converter.Topology.Parser.Bsym(:,:,1));
+        C = eval(obj.Converter.Topology.Parser.Csym(:,:,1));
+        D = eval(obj.Converter.Topology.Parser.Dsym(:,:,1));
+        eigA = eig(A);
+        
+    end
+    
+    
+    % Sets new B and D matricies corresponding to the updated diode
+    % conduction indecies in the variable binary
+    B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF'))=B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF')).*(Binary==2)';
+    D(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF'))=D(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF')).*(Binary==2)';
+    
+    if isempty(obj.saved_A)
+        
+        obj.saved_A=A;
+        obj.saved_B=B;
+        obj.saved_C=C;
+        obj.saved_D=D;
+        obj.saved_eigA=eigA;
+        obj.saved_new_state=new_state;
+        
+    else
+        
+        obj.saved_A(:,:,end+1)=A;
+        obj.saved_B(:,:,end+1)=B;
+        obj.saved_C(:,:,end+1)=C;
+        obj.saved_D(:,:,end+1)=D;
+        obj.saved_eigA(:,end+1)=eigA;
+        obj.saved_new_state(:,end+1)=new_state;
+    end
 end
-
-
-% Sets new B and D matricies corresponding to the updated diode
-% conduction indecies in the variable binary
-B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF'))=B(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF')).*(Binary==2)';
-D(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF'))=D(:,contains(obj.Converter.Topology.Parser.ConstantNames,'VF')).*(Binary==2)';
-
-
-
 end
 

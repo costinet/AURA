@@ -130,7 +130,7 @@ while not_reached_SS && the_big_counter<=more_iterations
             obj.Xs_history = [];
             previous_multi_violation = true;
             not_reached_SS = true;
-            disp('Multi_Violations time step solve');
+           % disp('Multi_Violations time step solve');
             continue
         elseif previous_multi_violation
             obj.SS_Soln();
@@ -739,7 +739,7 @@ while not_reached_SS && the_big_counter<=more_iterations
 end
 
 if not_reached_SS
-    fprintf('Failed to converge to steady state solution \n')
+  % fprintf('Failed to converge to steady state solution \n')
 end
 
     function Plot_Waveforms(statenum,oppstatenum,plotxparam)

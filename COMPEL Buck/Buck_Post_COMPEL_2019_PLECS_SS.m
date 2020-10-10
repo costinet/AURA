@@ -13,6 +13,7 @@
 
 clear
 try
+    tic
     Ls = 6e-6;
     Ron = 0.0015;
     Vg = 12;
@@ -63,9 +64,9 @@ toc
     
     counter = 0;
     
-    type = 2;
+    type = 1;
     
-    tic
+    toc
     Time_stamp = toc;
     switch type
         %% Strait Lsim
@@ -122,7 +123,7 @@ toc
                 
                 
             end
-            
+            toc
             
             C1_error = (abs(C1_V_data(:)-C1_V_data(end))./abs(C1_V_data(end)));
             
@@ -579,4 +580,8 @@ set(gca,'FontName','Times New Roman','FontSize',24,'YTick',[0 1]);
 legend({},'Orientation','horizontal')
 
 
+
+ tic
+ plsteadystate('Buck_COMPEL_2019/Steady-State Analysis');
+ toc
 

@@ -13,7 +13,7 @@
 
 tic
 % Place in the filename
-filename = 'MR_Buck.net'; % Place netlist filename here that you want to run
+filename = 'HDSC_AURA.net'; % Place netlist filename here that you want to run
 
 % Can also place component values here to get their voltage and
 % current output waveforms such as: 
@@ -27,52 +27,126 @@ Current = {'V1'
 %% This is all caluclations to set up the variables need to find the SS
 % Solution
 
-%{
-Vg = 12;
-L1 = 1e-6; %L
-C1 = 1*10^-6; %Cout
-L2 = 0.01e-9; % Resonate inductor
-fs = 1e6;
+Vg = 24;
+V = 5;
+Io = 10;
+u = [Vg 1 1 1 1 1 1 1 1]';
+L1 = 2*72e-9;
+RL = (0.007-2.65e-3 + 2*.35e-3);
+Da = 1;
+M = 5/6;
+
+fs = 500e3;
 Ts = 1/fs;
-V = 3;
-Io = 1;% 0.1; % was 1
-M1_C = 1.5e-9; % CHS
-M2_C = 1.5e-9; % LHS
 
-M1_R_ON = 0.002; % ronHS
-M2_R_ON = 0.002; % ronLS
+dt = 1/fs/Ts;
 
+C4 = 100e-6; % Cout
+C1 = 13.38e-6;
+% C1 = 1e-6;
+C2 = 12.49e-6;
+C3 = 10.27e-6;
 
-D = 5/12;
-%dead = 0.001/fs;
-dead = 0.01/fs;
-% ts = [25e-9 25e-9 25e-9 25e-9];
-ts = [Ts/4 3*Ts/4];
-u = [Vg 1 1 Io]';
-%}
-
-
-Vg = 12;
-L1 = 1e-6; %L
-C1 = 1*10^-6; %Cout
-L2 = 20e-9; % Resonate inductor
-fs = 1e6;
-Ts = 1/fs;
-V = 3;
-Io = 1;% 0.1; % was 1
-M1_C = 1.5e-9; % CHS
-M2_C = 1.5e-9; % LHS
-
-M1_R = 0.002; % ronHS
-M2_R = 0.002; % ronLS
+ESRx = 3e-3;
+R3 = 1.1e-3+ESRx;
+R2 = 2.3e-3+ESRx;
+R4 = 2.3e-3+ESRx;
+ron = 2.5e-3;
+R1 = 0.5;
+R5 = 0.001;
+Lp = 0e-9;
+Lp1 = Lp;
+Lp2 = 2*Lp;
+Lp3 = 3*Lp;
 
 
-D = 5/12;
-%dead = 0.001/fs;
-dead = 0.01/fs;
-ts = [25e-9 25e-9 25e-9 25e-9];
-%ts = [Ts/4 3*Ts/4];
-u = [Vg 1 1 Io]';
+kc = 1;
+Coss = kc*2.5e-9;
+Coss6 = kc*2.26e-9;
+Coss12 = kc*1.99e-9;
+Qg = 18e-9;
+
+Phase1a = [1 0 1 1 0 0 0 1];
+Phase1b = [1 0 0 1 0 0 0 1];
+Phase2a = 1 - Phase1a;
+Phase2b = Phase2a; Phase2b(6) = 0;
+Phase3 = [0 0 0 1 1 0 1 1];
+swseq = [Phase1a; Phase1b; Phase3;  Phase2a; Phase2b;  Phase3];
+
+
+M1_C = Coss6; % CHS
+M2_C = Coss12; % LHS
+M3_C = Coss12; % CHS
+M4_C = Coss6; % LHS
+M5_C = Coss6; % CHS
+M6_C = Coss6; % LHS
+M7_C = Coss6; % CHS
+M8_C = Coss6; % LHS
+
+Order = [1 2 3 4 5 6]; % The order that the states must go in after being parsed
+Order = [1 2 3 4];
+SW_OFF = ones(1,8).*10000000;
+
+SW_ON = ones(1,8).*2.5e-3;
+
+SW = [SW_OFF;SW_ON];
+
+M1 = [1
+    1
+    1
+    0
+    0
+    1];
+
+M4 = M1;
+
+M2 = [0
+    0
+    1
+    1
+    1
+    1];
+
+M3 = M2;
+
+M5 = [0
+    0
+    0
+    1
+    0
+    0];
+
+M6 = [1
+    1
+    0
+    0
+    0
+    0];
+
+M7 = [0
+    0
+    0
+    1
+    1
+    0];
+
+M8 = [1
+    0
+    0
+    0
+    0
+    0];
+
+Binary_for_DAB = [M1 M2 M3 M4 M5 M6 M7 M8]; % But its really for HDSC
+
+Binary_for_DAB(5,:) = [];
+Binary_for_DAB(2,:) = [];
+
+ts = [Da*Ts/2*M, (1-Da)*Ts/2*M, Ts/2*(1-M), Da*Ts/2*M, (1-Da)*Ts/2*M, Ts/2*(1-M)];
+ts(5) = [];
+ts(2) = [];
+
+
 
 
 
@@ -83,7 +157,7 @@ u = [Vg 1 1 Io]';
 % Voltage Soruces MOSFET Forward Votlage (in order of netlist)
 % Independent Current Sources]'
 %%%% Example u  = [Vg Vfwd1 Vfwd2 Iout]';
-u = [Vg 1 1 Io]';
+u = u;
 
 
 % Define the inital guess of time intervals. This only defines the
@@ -93,7 +167,7 @@ u = [Vg 1 1 Io]';
 %%%% But a non-synchronous buck covnerter would be
 %%%%% ts = [Ts*(D-dead) Ts*(1-(D-dead))];
 
-% ts = [Ts/4 3*Ts/4]; % The inital guess of time intervals % The inital guess of time intervals
+ts = ts; % The inital guess of time intervals % The inital guess of time intervals
 
 
 
@@ -101,36 +175,51 @@ u = [Vg 1 1 Io]';
 % FETs you must use the syntax used below:
           Numerical_Components = {
             'C1' C1
+            'C2' C2
+            'C3' C3
+            'C4' C4
             'L1' L1
-            'L2' L2
+            'R1' R1
+            'R2' R2
+            'R3' R3
+            'R4' R4
+            'R5' R5
             'M1_C' M1_C
             'M2_C' M2_C
+            'M3_C' M3_C
+            'M4_C' M4_C
+            'M5_C' M5_C
+            'M6_C' M6_C
+            'M7_C' M7_C
+            'M8_C' M8_C
             };
 
 % List out all char variables in the 
         Switch_Resistors = {'M1_R'
-            'M2_R'};
+            'M2_R'
+            'M3_R'
+            'M4_R'
+            'M5_R'
+            'M6_R'
+            'M7_R'
+            'M8_R'};
 % List of the switch sequency. Organized by: the FETs (column) vs time
 % interval (rows) matching Switch_Resistors and ts respectivly
 
 ON = 1;
 OFF = 0;
-Switch_Sequence = [
-            ON ON
-            ON OFF
-            ON ON
-            OFF ON];
+Switch_Sequence = Binary_for_DAB;
 
 
 % List all the resistances of the diodes or FETS when they are on or
 % off
-SW_OFF = ones(1,2).*10000000;
+SW_OFF = ones(1,8).*10000000;
 
-SW_ON = [M1_R,M2_R];
-
+%SW_ON = [M1_R,M2_R];
+SW_ON = ones(1,8).*2.5e-3;
 SW = [SW_OFF;SW_ON;SW_ON];
 
-Diode_Forward_Voltage = [1 1]';
+Diode_Forward_Voltage = [1 1 1 1 1 1 1 1]';
 
 
 

@@ -1,5 +1,4 @@
 
-
 %     _   _   _  ____    _    
 %    / \ | | | |/ _  |  / \   
 %   / _ \| | | | (_| | / _ \  
@@ -12,8 +11,9 @@
 % on)
 
 tic
+
 % Place in the filename
-filename = 'MR_Buck.net'; % Place netlist filename here that you want to run
+filename = 'Buck_Boost.net'; % Place netlist filename here that you want to run
 
 % Can also place component values here to get their voltage and
 % current output waveforms such as: 
@@ -27,54 +27,92 @@ Current = {'V1'
 %% This is all caluclations to set up the variables need to find the SS
 % Solution
 
-%{
-Vg = 12;
-L1 = 1e-6; %L
-C1 = 1*10^-6; %Cout
-L2 = 0.01e-9; % Resonate inductor
-fs = 1e6;
-Ts = 1/fs;
-V = 3;
-Io = 1;% 0.1; % was 1
-M1_C = 1.5e-9; % CHS
-M2_C = 1.5e-9; % LHS
-
-M1_R_ON = 0.002; % ronHS
-M2_R_ON = 0.002; % ronLS
 
 
-D = 5/12;
-%dead = 0.001/fs;
-dead = 0.01/fs;
-% ts = [25e-9 25e-9 25e-9 25e-9];
-ts = [Ts/4 3*Ts/4];
-u = [Vg 1 1 Io]';
-%}
 
+        Vg = 5;
+        Pout = 25;
+        Dbuck = 0.92;
+        Dboost = 0.3118;
+        M = Dbuck/(1-Dboost);
+        Vout = M*Vg;
+        Iout = Pout/Vout;
+        R1 = .73+.73;
+        L1 = 200e-9;
+        C1 = 23.5e-6;
+        C2 = 4.4e-6;
+        
+        % EPC 2024
+        r_on = 1.5e-3;
+        Cds = 1620e-12;
+        [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R] = deal(r_on);
+        [M1_C,M2_C,M3_C,M4_C,M5_C,M6_C] = deal(Cds);
+        
+        
+        Numerical_Components = {'V1' Vg
+            'C1' C1
+            'C2' C2
+            'L1' L1
+            'M1_C' M1_C
+            'M2_C' M2_C
+            'M3_C' M3_C
+            'M4_C' M4_C
+            'M5_C' M5_C
+            'M6_C' M6_C
+            'R1' R1 };
+        
+        
+        Switch_Resistors = {'M1_R'
+            'M2_R'
+            'M3_R'
+            'M4_R'
+            'M5_R'
+            'M6_R'};
+        
+        fs = 1000e3;
+        Ts = 1/fs;
+        dt = 5e-9;
+        
+        ON = 1;
+        OFF = 0;
+        
+        
+        SW_OFF = ones(1,6).*10000000;
+        
+        SW_ON = [r_on r_on r_on r_on r_on r_on];
+        
+        SW = [SW_OFF;SW_ON;SW_ON];
+        
+        Order = [1 2 3 4 5 6 7 8 9 10 11 12];
+        
+        
+        u = [Vg 1 1 1 1 1 1]';
+        
+        
+        % Duty cycle is in pu
 
-Vg = 12;
-L1 = 1e-6; %L
-C1 = 1*10^-6; %Cout
-L2 = 20e-9; % Resonate inductor
-fs = 1e6;
-Ts = 1/fs;
-V = 3;
-Io = 1;% 0.1; % was 1
-M1_C = 1.5e-9; % CHS
-M2_C = 1.5e-9; % LHS
-
-M1_R = 0.002; % ronHS
-M2_R = 0.002; % ronLS
-
-
-D = 5/12;
-%dead = 0.001/fs;
-dead = 0.01/fs;
-ts = [25e-9 25e-9 25e-9 25e-9];
-%ts = [Ts/4 3*Ts/4];
-u = [Vg 1 1 Io]';
-
-
+        
+        
+        ts = [Dboost*Ts-dt  dt  (Dbuck/2-Dboost)*Ts-dt  dt  (0.5-Dbuck/2)*Ts-dt  dt  Dboost*Ts-dt  dt  (Dbuck/2-Dboost)*Ts-dt  dt  (0.5-Dbuck/2)*Ts-dt  dt];
+        
+        Binary_for_DAB = [
+         ON  OFF OFF ON  OFF ON   % Q6 ON
+         ON  OFF OFF ON  OFF OFF  % Dead Q6 Q3
+         ON  OFF ON  ON  OFF OFF  % Q3 ON
+         OFF OFF ON  ON  OFF OFF  % Dead Q1 Q2
+         OFF ON  ON  ON  OFF OFF  % Q2 ON
+         OFF OFF ON  OFF OFF OFF  % Dead
+         
+         ON  OFF ON  OFF ON  OFF  % Q5 Q1 ON
+         ON  OFF ON  OFF OFF OFF  % Dead Q5 Q4
+         ON  OFF ON  ON  OFF OFF  % Q4 ON
+         OFF OFF ON  ON  OFF OFF  % Dead Q1 Q2         
+         OFF ON  ON  ON  OFF OFF  % Q2 ON
+         OFF OFF OFF ON  OFF OFF  % Dead
+        ];
+         
+    
+M1_C_Resist = 10000;
 
 
 %% There are several variable that must be filled out here:
@@ -83,7 +121,7 @@ u = [Vg 1 1 Io]';
 % Voltage Soruces MOSFET Forward Votlage (in order of netlist)
 % Independent Current Sources]'
 %%%% Example u  = [Vg Vfwd1 Vfwd2 Iout]';
-u = [Vg 1 1 Io]';
+u = [Vg 1 1 1 1 1 1]';
 
 
 % Define the inital guess of time intervals. This only defines the
@@ -93,44 +131,64 @@ u = [Vg 1 1 Io]';
 %%%% But a non-synchronous buck covnerter would be
 %%%%% ts = [Ts*(D-dead) Ts*(1-(D-dead))];
 
-% ts = [Ts/4 3*Ts/4]; % The inital guess of time intervals % The inital guess of time intervals
+ ts = ts; % The inital guess of time intervals % The inital guess of time intervals
 
 
 
 % List all of the numerical components in the netlist file for all
 % FETs you must use the syntax used below:
-          Numerical_Components = {
-            'C1' C1
+        Numerical_Components = {'C1' C1
+            'C2' C2
             'L1' L1
-            'L2' L2
             'M1_C' M1_C
             'M2_C' M2_C
+            'M3_C' M3_C
+            'M4_C' M4_C
+            'M5_C' M5_C
+            'M6_C' M6_C
+            'R1' R1
+
             };
 
 % List out all char variables in the 
-        Switch_Resistors = {'M1_R'
-            'M2_R'};
+       Switch_Resistors = {'M1_R'
+            'M2_R'
+            'M3_R'
+            'M4_R'
+            'M5_R'
+            'M6_R'};
 % List of the switch sequency. Organized by: the FETs (column) vs time
 % interval (rows) matching Switch_Resistors and ts respectivly
 
 ON = 1;
 OFF = 0;
 Switch_Sequence = [
-            ON ON
-            ON OFF
-            ON ON
-            OFF ON];
+    ON  OFF OFF ON  OFF ON   % Q6 ON
+    ON  OFF OFF ON  OFF OFF  % Dead Q6 Q3
+    ON  OFF ON  ON  OFF OFF  % Q3 ON
+    OFF OFF ON  ON  OFF OFF  % Dead Q1 Q2
+    OFF ON  ON  ON  OFF OFF  % Q2 ON
+    OFF OFF ON  OFF OFF OFF  % Dead
+    
+    ON  OFF ON  OFF ON  OFF  % Q5 Q1 ON
+    ON  OFF ON  OFF OFF OFF  % Dead Q5 Q4
+    ON  OFF ON  ON  OFF OFF  % Q4 ON
+    OFF OFF ON  ON  OFF OFF  % Dead Q1 Q2
+    OFF ON  ON  ON  OFF OFF  % Q2 ON
+    OFF OFF OFF ON  OFF OFF  % Dead
+    ];
 
 
 % List all the resistances of the diodes or FETS when they are on or
 % off
-SW_OFF = ones(1,2).*10000000;
+SW_OFF = ones(1,6).*10000000;
 
-SW_ON = [M1_R,M2_R];
+SW_ON = [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R];
 
 SW = [SW_OFF;SW_ON;SW_ON];
 
-Diode_Forward_Voltage = [1 1]';
+
+Diode_Forward_Voltage = [1 1 1 1 1 1]';
 
 
 
@@ -177,6 +235,8 @@ conv.Element_Properties  = {'C1' C1
     };
 
 sim = Run_SS_Converter(conv);
+
+
 
 % Example to find the best frequency for the covnerter
 
@@ -301,11 +361,4 @@ end
 
 
 
-
-
-
-
-
-
-
-
+         

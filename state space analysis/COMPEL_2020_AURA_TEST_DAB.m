@@ -11,7 +11,7 @@
 % Current konwn issues use FETs for diodes. (Just have them never turn
 % on)
 
-
+tic
 % Place in the filename
 filename = 'DAB_Resistors_Cap.net'; % Place netlist filename here that you want to run
 
@@ -191,7 +191,7 @@ conv.Fwd_Voltage = Diode_Forward_Voltage;
 
 
 sim = Run_SS_Converter(conv);
-
+toc
 
 return
 

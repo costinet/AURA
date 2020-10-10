@@ -145,12 +145,18 @@ try
             end
             
             if(ts(Tc)<0)
+                %ts(Tc) = obj.ts(Tc)*0.1;
+                %ts(Ti) = obj.ts(Ti)+obj.ts(Tc)*0.9;
                 change = abs(ts(Tc))*0.1;
                 ts(Ti) = ts(Ti)-abs(ts(Tc))-change;
                 ts(Tc) = change;
+                if(ts(Ti)<0)
+                    ts(Tc) = obj.ts(Tc)*0.1;
+                    ts(Ti) = obj.ts(Ti)+obj.ts(Tc)*0.9;
+                end
             end
             
-          if(debug), disp(['-- Vsw increasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
+       %     if(debug), disp(['-- Vsw increasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
         elseif(Vio==0)
             tdelta = (Vmin-Xs(Sir,Xic))/(dxsdt(Sir,Xic));
             % tdelta = min(max(tdelta, -ts(Ti) + delta_DTs), tsmax(Ti) - ts(Ti));
@@ -166,9 +172,13 @@ try
                 change = abs(ts(Tc))*0.1;
                 ts(Ti) = ts(Ti)-abs(ts(Tc))-change;
                 ts(Tc) = change;
+                if(ts(Ti)<0)
+                ts(Tc) = obj.ts(Tc)*0.1;
+                ts(Ti) = obj.ts(Ti)+obj.ts(Tc)*0.9;
+                end
             end
             
-           if(debug), disp(['-- Vsw decreasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
+        %   if(debug), disp(['-- Vsw decreasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
         end
         
         
@@ -213,22 +223,18 @@ try
 %         end
         
 
-%tdelta_act = ts(Ti)-obj.ts(Ti);
+tdelta_act = ts(Ti)-obj.ts(Ti);
 
-%New_Xs = tdelta_act*dxsdt+Xs;
-%obj.Xs = New_Xs;
+New_Xs = tdelta_act*dxsdt+Xs;
+obj.Xs = New_Xs;
 
 obj.setts(ts);
 
-obj.SS_Soln();
-obj.CorrectXs();
+%obj.SS_Soln();
+%obj.CorrectXs();
 
    % end % this is the end for the massive overshoot if statement
     return
-    
-    
-    
-    
     
     %end
     

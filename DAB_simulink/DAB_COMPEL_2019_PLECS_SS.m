@@ -11,7 +11,7 @@
 % /_/   \_\___//_/ |_/_/   \_\
 
 clear
-
+tic
 Cp = 110e-12;
 Cs = 1620e-12;
 Ls = 76e-6;
@@ -104,7 +104,7 @@ end
 
 ts = [power pri_sw ps sec_sw power pri_sw ps sec_sw];
 
-
+Ts = sum(ts);
 fs_adj = 1/sum(ts);
 
 
@@ -118,6 +118,128 @@ M14_ON = sum(ts(3:5))/sum(ts);
 M58_ON = sum(ts(5:7))/sum(ts);
 M67_ON = sum(ts(1:3))/sum(ts);
 M23_ON = sum(ts(2:6))/sum(ts); %%%% Normally ON *******
+
+
+
+M1_V = 0;
+M2_V = 0;
+M3_V = 0;
+M4_V = 0;
+M5_V = 0;
+M6_V = 0;
+M7_V = 0;
+M8_V = 0;
+L1_I = 0;
+C1_V = 0;
+C2_V = 0;
+
+M1_V_data = 0;
+M2_V_data = 0;
+M3_V_data = 0;
+M4_V_data = 0;
+M5_V_data = 0;
+M6_V_data = 0;
+M7_V_data = 0;
+M8_V_data = 0;
+L1_I_data = 0;
+C1_V_data = 0;
+C2_V_data = 0;
+        
+        
+        
+        
+        
+        
+        sim('DAB_COMPEL_2019'); % This is like pressing play in Simulink
+        toc
+        C1_V_data(end+1) = C1sim.data(end);
+        L1_I_data(end+1) = L1sim.data(end);
+        M1_V_data(end+1) = M1sim.data(end);
+        M2_V_data(end+1) = M2sim.data(end);
+        M3_V_data(end+1) = M3sim.data(end);
+        M4_V_data(end+1) = M4sim.data(end);
+        M5_V_data(end+1) = M5sim.data(end);
+        M6_V_data(end+1) = M6sim.data(end);
+        M7_V_data(end+1) = M7sim.data(end);
+        M8_V_data(end+1) = M8sim.data(end);
+        C2_V_data(end+1) = C2sim.data(end);
+
+        
+        
+        C1_V = C1sim.data(end);
+        L1_I = L1sim.data(end);
+        M1_V = M1sim.data(end);
+        M2_V = M2sim.data(end);
+        M3_V = M3sim.data(end);
+        M4_V = M4sim.data(end);
+        M5_V = M5sim.data(end);
+        M6_V = M6sim.data(end);
+        M7_V = M7sim.data(end);
+        M8_V = M8sim.data(end);
+        C2_V = C2sim.data(end);
+
+        
+        
+        while abs(C1_V_data(end)-C1_V_data(end-1))>1e-6 && abs(L1_I_data(end)-L1_I_data(end-1))>1e-6
+            
+            sim('DAB_COMPEL_2019'); % This is like pressing play in Simulink
+            
+        C1_V_data(end+1) = C1sim.data(end);
+        L1_I_data(end+1) = L1sim.data(end);
+        M1_V_data(end+1) = M1sim.data(end);
+        M2_V_data(end+1) = M2sim.data(end);
+        M3_V_data(end+1) = M3sim.data(end);
+        M4_V_data(end+1) = M4sim.data(end);
+        M5_V_data(end+1) = M5sim.data(end);
+        M6_V_data(end+1) = M6sim.data(end);
+        M7_V_data(end+1) = M7sim.data(end);
+        M8_V_data(end+1) = M8sim.data(end);
+        C2_V_data(end+1) = C2sim.data(end);
+
+        
+        
+        C1_V = C1sim.data(end);
+        L1_I = L1sim.data(end);
+        M1_V = M1sim.data(end);
+        M2_V = M2sim.data(end);
+        M3_V = M3sim.data(end);
+        M4_V = M4sim.data(end);
+        M5_V = M5sim.data(end);
+        M6_V = M6sim.data(end);
+        M7_V = M7sim.data(end);
+        M8_V = M8sim.data(end);
+        C2_V = C2sim.data(end);
+        end
+
+
+
+toc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -200,7 +322,7 @@ end
 
 % The one that uses PLECS SS solver (uses setting set in GUI from Simulink)
 % tic
-% plsteadystate('DAB_COMPEL_2019/Steady-State Analysis');
+% plsteadystate('Buck_COMPEL_2019/Steady-State Analysis');
 % toc;
 %}
 return

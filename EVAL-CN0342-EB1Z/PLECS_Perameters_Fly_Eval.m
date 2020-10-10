@@ -29,6 +29,8 @@ Rds1 = 0.054;
 Drec_Ron = 0.0305;
 Drec_Vf = 0.2;
 
+R3 = 0.63521-ShortedR;
+
 
 Dsnub_Ron = 0.2834;
 Dsnub_Vf = 0.2;
@@ -47,7 +49,7 @@ np = 1;
 ns = 1;
 
 Ro = 17;
-Vg = 5; 
+Vg = 5;
 fs = 200e3;
 deadtime = 0;
 
@@ -55,6 +57,77 @@ Ts = 1/fs;
 
 Ns = 1000;
 omega = 2*pi()*1.1765e+07;
+tic
+
+M1_V = 0;
+M2_V = 0;
+M3_V = 0;
+L1_I = 0;
+L2_I = 0;
+C1_V = 0;
+C2_V = 0;
+
+M1_V_data = 0;
+M2_V_data = 0;
+M3_V_data = 0;
+L1_I_data = 0;
+L2_I_data = 0;
+C1_V_data = 0;
+C2_V_data = 0;
+
+sim('Flyback_PLECS_Model_EVAL'); % This is like pressing play in Simulink
+toc
+C1_V_data(end+1) = C1sim.data(end);
+L1_I_data(end+1) = L1sim.data(end);
+L2_I_data(end+1) = L2sim.data(end);
+M1_V_data(end+1) = M1sim.data(end);
+M2_V_data(end+1) = M2sim.data(end);
+M3_V_data(end+1) = M3sim.data(end);
+C2_V_data(end+1) = C2sim.data(end);
+
+
+
+C1_V = C1sim.data(end);
+L1_I = L1sim.data(end);
+M1_V = M1sim.data(end);
+M2_V = M2sim.data(end);
+M3_V = M3sim.data(end);
+L2_I = L2sim.data(end);
+C2_V = C2sim.data(end);
+
+
+
+while abs(C1_V_data(end)-C1_V_data(end-1))>1e-6 && abs(L1_I_data(end)-L1_I_data(end-1))>1e-6
+    
+    sim('Flyback_PLECS_Model_EVAL'); % This is like pressing play in Simulink
+    
+    C1_V_data(end+1) = C1sim.data(end);
+    L1_I_data(end+1) = L1sim.data(end);
+    L2_I_data(end+1) = L2sim.data(end);
+    M1_V_data(end+1) = M1sim.data(end);
+    M2_V_data(end+1) = M2sim.data(end);
+    M3_V_data(end+1) = M3sim.data(end);
+    C2_V_data(end+1) = C2sim.data(end);
+    
+    
+    
+    C1_V = C1sim.data(end);
+    L1_I = L1sim.data(end);
+    M1_V = M1sim.data(end);
+    M2_V = M2sim.data(end);
+    M3_V = M3sim.data(end);
+    L2_I = L2sim.data(end);
+    C2_V = C2sim.data(end);
+end
+
+
+
+sim('Flyback_PLECS_Model_EVAL');
+toc
+
+% tic
+% plsteadystate('SS_Flyback_PLECS_Model_EVAL2/Steady-State Analysis');
+% toc;
 
 return
 

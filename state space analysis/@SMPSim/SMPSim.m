@@ -45,6 +45,7 @@ classdef SMPSim < handle
         %         Cw
         %         Dw
         
+        % This set is for using the multi time step solve
         As_saved
         Bs_saved
         Cs_saved
@@ -55,8 +56,14 @@ classdef SMPSim < handle
         ts_saved
         Xs_saved
         
-        
-        
+        % This set is used to not have to eval every time we add a new
+        % set
+        saved_A
+        saved_B
+        saved_C
+        saved_D
+        saved_eigA
+        saved_new_state
         
         
         Xs
@@ -126,7 +133,8 @@ classdef SMPSim < handle
             if sum(ts>0)==length(ts)
                 obj.ts = ts;
             else
-                error('There is a non-postitive time interval length trying to be assigned to the simulation class variable ts')
+                
+                error('There is a non-postitive time interval length trying to be assigned to the simulation class variable ts. Instead using abs(ts)')
             end
         end
         

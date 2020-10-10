@@ -62,29 +62,38 @@ try
         Aas(:,:,i) = [As(:,:,i), Bs(:,:,i)*u;
             zeros(1,size(As,1)+1)];
     end
-    
+    Column_width = length(IC)+1;
     i = 1;
-    Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
-    Samples = max(10000,Samples);
+    Samples = min(pi./abs(imag(eigA(:,i))))/32\ts(i);
+    if Samples<1000
+    Samples = max(1000,Samples);
+    end
+    x = zeros(ceil(Samples),length(IC)+1);
     x(1,:) = [IC',1];
     Xs = [];
+    iteration = 1;
     
     while i <= size(ONorOFF,2)
-        Xs(:,end+1) = x(1:end-1)';
+        Xs(:,end+1) = x(1,1:end-1)';
         
+        if i==30
+            j=456456;
+        end
         
+        iteration = 1;
         % Run lsim for given time period
-        dt = ts(i)/Samples;
+        dt = ts(i)/ceil(Samples);
         
         noviolation = true;
         notend = true;
         count = 0;
         while noviolation && notend
             
-            x(end+1,:) = (expm(Aas(:,:,i)*(dt))*x(end,:)')';
-            noviolation =  ~(sum(sum(x(:,[(ONorOFF(:,i)==-1)'])<-Vf-tol)) | sum(sum(x(:,[(ONorOFF(:,i)==1)'])>-Vf+tol)));
+            x(iteration+1,:) = (expm(Aas(:,:,i)*(dt))*x(iteration,:)')';
+            noviolation =  ~(sum(sum(x(1:iteration+1,[(ONorOFF(:,i)==-1)'])<-Vf-tol)) | sum(sum(x(1:iteration+1,[(ONorOFF(:,i)==1)'])>-Vf+tol)));
             count = count+1;
-            if count == floor(Samples)
+            iteration = iteration+1;
+            if count == ceil(Samples)
                 notend = false;
             end
         end
@@ -93,8 +102,8 @@ try
         % violation
         
         if ~noviolation
-            Infx = x(:,1:end-1);
-            negInfx = x(:,1:end-1);
+            Infx = x(1:iteration,1:end-1);
+            negInfx = x(1:iteration,1:end-1);
             Infx(:,[(ONorOFF(:,i)~=-1)']) = Inf;
             negInfx(:,[(ONorOFF(:,i)~=1)']) = -Inf;
             [Xoff,Yoff] = find(Infx<-Vf); %Diode should be on
@@ -126,10 +135,16 @@ try
         % If there is no violation then continue on to the next interation
         if noviolation
             i = i+1;
-            IC = x(end,:);
-            clear x
-            x = IC;
-            
+            IC = x(iteration,:);
+            if i > size(ONorOFF,2)
+                continue
+            end
+            Samples = min(pi./abs(imag(eigA(:,i))))/32\ts(i);
+    if Samples<1000
+    Samples = max(1000,Samples);
+    end
+            x = zeros(ceil(Samples),Column_width);
+            x(1,:) = IC;
             continue
         end
         
@@ -138,14 +153,14 @@ try
             
             min_index=find(Xon==min_Xon);
             
-           % if min_Xon~=1 && dt>1e-10 && x(Xon(min_index),Yon(min_index))>Vf+0.1 && Samples<50000
-           %     Samples = Samples*2;
-           %     Xs(:,end)= [];
-           %     IC = x(1,:);
-           %     clear x
-           %     x = IC;
-           %     continue
-           % end
+            % if min_Xon~=1 && dt>1e-10 && x(Xon(min_index),Yon(min_index))>Vf+0.1 && Samples<50000
+            %     Samples = Samples*2;
+            %     Xs(:,end)= [];
+            %     IC = x(1,:);
+            %     clear x
+            %     x = IC;
+            %     continue
+            % end
             
             
             
@@ -185,11 +200,14 @@ try
                 
                 
                 i = i+1;
-                IC = x(end,:);
-                clear x
-                x = IC;
-                Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
-                Samples = max(10000,Samples);
+                IC = x(iteration,:);
+                Samples = min(pi./abs(imag(eigA(:,i))))/32\ts(i);
+    if Samples<1000
+    Samples = max(1000,Samples);
+    end
+                x = zeros(ceil(Samples),Column_width);
+                x(1,:) = IC;
+                
                 continue
                 
             elseif min_Xon==1
@@ -227,10 +245,13 @@ try
                 
                 Xs(:,end)= [];
                 IC = x(1,:);
-                clear x
-                x = IC;
-                Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
-                Samples = max(10000,Samples);
+                Samples = min(pi./abs(imag(eigA(:,i))))/32\ts(i);
+      if Samples<1000
+    Samples = max(1000,Samples);
+    end
+                x = zeros(ceil(Samples),Column_width);
+                x(1,:) = IC;
+                
                 continue
                 
                 
@@ -246,14 +267,14 @@ try
             min_index=find(Xoff==min_Xoff);
             
             
-%             if min_Xoff~=1 && dt>1e-10 && x(Xoff(min_index),Yoff(min_index))<Vf-0.1 && Samples<50000
-%                 Samples = Samples*2;
-%                 Xs(:,end)= [];
-%                 IC = x(1,:);
-%                 clear x
-%                 x = IC;
-%                 continue
-%             end
+            %             if min_Xoff~=1 && dt>1e-10 && x(Xoff(min_index),Yoff(min_index))<Vf-0.1 && Samples<50000
+            %                 Samples = Samples*2;
+            %                 Xs(:,end)= [];
+            %                 IC = x(1,:);
+            %                 clear x
+            %                 x = IC;
+            %                 continue
+            %             end
             
             
             if min_Xoff~=1
@@ -289,11 +310,14 @@ try
                 
                 
                 i = i+1;
-                IC = x(end,:);
-                clear x
-                x = IC;
-                Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
-                Samples = max(10000,Samples);
+                IC = x(iteration,:);
+                Samples = min(pi./abs(imag(eigA(:,i))))/32\ts(i);
+         if Samples<1000
+    Samples = max(1000,Samples);
+    end
+                x = zeros(ceil(Samples),Column_width);
+                x(1,:) = IC;
+                
                 continue
                 
             elseif min_Xoff==1 && i~=1
@@ -328,10 +352,13 @@ try
                 
                 Xs(:,end)= [];
                 IC = x(1,:);
-                clear x
-                x = IC;
-                Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
-                Samples = max(10000,Samples);
+                Samples = min(pi./abs(imag(eigA(:,i))))/32\ts(i);
+          if Samples<1000
+    Samples = max(1000,Samples);
+    end
+                x = zeros(ceil(Samples),Column_width);
+                x(1,:) = IC;
+                
                 continue
                 
                 
@@ -406,11 +433,15 @@ try
                 Aas(:,:,i) =  [A, B*u;
                     zeros(1,size(A,1)+1)];
                 
-                clear x
-                x(1,:) = [IC',1];
+                Samples = min(pi./abs(imag(eigA(:,i))))/32\ts(i);
+          if Samples<1000
+    Samples = max(1000,Samples);
+    end
+                x = zeros(ceil(Samples),Column_width);
+                x(1,:) = [IC' 1];
                 Xs = [];
-                Samples = min(pi./abs(imag(eigA(:,i))))/8\ts(i);
-                Samples = max(10000,Samples);
+                
+                continue
             end
             
         end
@@ -418,7 +449,7 @@ try
         
         
     end
-    Xss = x(end,1:end-1)';
+    Xss = x(iteration,1:end-1)';
     Xs(:,end+1) = Xss;
     
     if assign

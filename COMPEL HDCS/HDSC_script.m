@@ -1,5 +1,5 @@
 clear
-
+tic
 Vg = 24;
 V = 5;
 Io = 10;
@@ -122,7 +122,7 @@ switch type
         
         
         sim('COMPEL_2019_HDSC'); % This is like pressing play in Simulink
-        
+        toc
         C1_V_data(end+1) = C1sim.data(end);
         L1_I_data(end+1) = L1sim.data(end);
         Coss1_V_data(end+1) = Coss1sim.data(end);
@@ -187,7 +187,7 @@ switch type
             VC3_V = VC3sim.data(end);
             
         end
-        
+        toc
         figure(1)
         
         plot(abs(C1_V_data(:)-C1_V_data(end))./abs(C1_V_data(end)))
