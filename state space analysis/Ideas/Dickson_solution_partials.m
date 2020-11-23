@@ -1,6 +1,9 @@
 clear all; 
 clc;
 
+addpath('E:\Dropbox\UTK\Research\Hybrid Dickson\old AURA')
+addpath('C:\Users\dcostine\Dropbox\UTK\Research\Hybrid Dickson\old AURA')
+
 plotIterWF = 1;
 
 Vg = 24;

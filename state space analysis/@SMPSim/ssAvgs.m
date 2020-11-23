@@ -45,11 +45,14 @@ function [ avgXs, avgYs ] = ssAvgs(obj, Xss)
         end
 
         for i = 1:n
-            Asp = sparse(As(:,:,i));
-            [~, intEAt] = obj.forcedResponse(Asp, expm(Asp*ts(i)), Bs(:,:,i), u, ts(i));
-            intStates = expm(Asp*ts(i))*Xss(:,i) + intEAt*Bs(:,:,i)*u;
-            avgxs(:,i) = intStates(ns+1:end)/ts(i);
-            avgys(:,i) = Cs(:,:,i)*avgxs(:,i) + Ds(:,:,i)*u;
+            if(ts(i) > 0)    
+                Asp = sparse(As(:,:,i));
+            
+                [~, intEAt] = obj.forcedResponse(Asp, expm(Asp*ts(i)), Bs(:,:,i), u, ts(i));
+                intStates = expm(Asp*ts(i))*Xss(:,i) + intEAt*Bs(:,:,i)*u;
+                avgxs(:,i) = intStates(ns+1:end)/ts(i);
+                avgys(:,i) = Cs(:,:,i)*avgxs(:,i) + Ds(:,:,i)*u;
+            end
         end
         avgXs = sum(avgxs.*repmat(ts,ns,1),2)/sum(ts);
         avgYs = sum(avgys.*repmat(ts,nc,1),2)/sum(ts);  

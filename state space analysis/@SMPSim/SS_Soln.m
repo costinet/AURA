@@ -71,7 +71,7 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
 
     fresp = zeros(ns,1,n); %% Forced response: A^-1(expm(A*T)-eye)*B*u
         for i=1:n
-           [frespNew, intEAt] = obj.forcedResponse(As(:,:,i), expAs(:,:,i), Bs(:,:,i), u, ts(i), 1);
+           [frespNew, intEAt] = obj.forcedResponse(As(:,:,i), expAs(:,:,i), Bs(:,:,i), u, ts(i), 0);
            fresp(:,:,i) = frespNew;
            obj.oldAs(:,:,i) = As(:,:,i);
            obj.oldIntEAt(:,:,i) = intEAt;

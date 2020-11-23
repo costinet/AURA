@@ -7,8 +7,12 @@ classdef SMPStopology < handle
         Bs
         Cs
         Ds
-        Is
-        K
+        Is % Matrices denoting any dependent states
+        K % Matrix of state component values (L's and C's)
+        
+        % Constraints
+        Cbnd
+        Dbnd
         
         stateLabels
         outputLabels
@@ -18,6 +22,10 @@ classdef SMPStopology < handle
         swseq
         
         constraints
+    end
+    
+    properties (SetAccess = private)
+        expAs
     end
     
     methods
@@ -44,6 +52,23 @@ classdef SMPStopology < handle
             end
         end
         
+        function set.As(obj,newAs)
+            obj.As = newAs;
+            obj.refreshCache;
+            % need to notify up the ladder???
+            % obj.converter.refreshcache
+        end
+        
+        function refreshCache(obj)
+            for i = 1:size(obj.As,3)
+                obj.expAs(:,:,i) = expm(obj.As(:,:,i));
+            end 
+        end
+        
+        function expAs = get.expAs(obj)
+            expAs = obj.expAs;
+        end
+        
         function setConstraints(obj, constraints)
             if ~isa(constraints,'constraints')
                 ME = MException('resultisNaN:noSuchVariable', ...
@@ -54,7 +79,16 @@ classdef SMPStopology < handle
             end
         end
         
+        
+        
         function loadPLECsModel(obj, fn, swseq)
+            try
+                plecs('set',fn,'EnableStateSpaceSplitting', 'off');
+            catch
+                warning('Unable to turn of State Space Splitting in PLECS.  Resulting matrices may not be complete')
+            end
+            
+            open_system(fn(1:strfind(fn,'/')-1),'loadonly');
             ssOrder = plecs('get', fn, 'StateSpaceOrder');
 
             obj.switchLabels = cellfun(@(x) x(strfind(x,'FET')+3:end), ssOrder.Switches, 'un', 0)';
@@ -72,6 +106,24 @@ classdef SMPStopology < handle
                     obj.Cs(:,:,i) = names.C;
                     obj.Ds(:,:,i) = names.D;
                     obj.Is(:,:,i) = names.I;
+                end
+            end
+            
+            obj.K = eye(length(obj.stateLabels));
+            
+            for i = 1:length(obj.stateLabels)
+                cloc = strfind(obj.stateLabels{i}, ':');
+                if isempty(cloc)
+                    element = plecs('get',[fn, '/', obj.stateLabels{i}]);
+                else
+                    element = plecs('get',[fn, '/', obj.stateLabels{i}(1:cloc-1)]);
+                end
+                if strcmp(element.Type, 'Capacitor')
+                    obj.K(i,i) = evalin('base',element.C);
+                elseif strcmp(element.Type, 'Inductor')
+                    obj.K(i,i)  = evalin('base',element.L);
+                elseif strcmp(element.Type, 'Transformer')
+                    obj.K(i,i)  = evalin('base',element.Lm);
                 end
             end
 

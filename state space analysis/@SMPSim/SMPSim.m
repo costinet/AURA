@@ -1,7 +1,17 @@
 classdef SMPSim < handle
-    %UNTITLED3 Summary of this class goes here
-    %   Detailed explanation goes here
-    
+    %Simulator object for use with AURA
+    % Methods include
+%         [ Xs] = SS_Soln(obj, Xi, Bi) 
+%         [ Xs] = SS_Soln2(obj, Xi, Bi) 
+%         [ output_args ] = regulate( obj )
+%         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
+%         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
+%         plotAllStates(obj, fn, subplots)
+%         plotAllOutputs(obj, fn, subplots)
+%         
+%         [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)
+%         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
+%     
     properties (Access = private)
         LSQoptions = optimoptions('lsqlin','algorithm','trust-region-reflective','Display','none');
         tryOpt = 1;
@@ -9,6 +19,7 @@ classdef SMPSim < handle
         gmin = 1/100e6;
         
         % speedup varaibles -> solution memory
+        % These are out-of-date (if used)
         oldAs
         oldts
         oldIntEAt
@@ -48,11 +59,13 @@ classdef SMPSim < handle
     methods
         %% Methods from external files
         [ Xs] = SS_Soln(obj, Xi, Bi) 
+        [ Xs] = SS_Soln2(obj, Xi, Bi) 
         [ output_args ] = regulate( obj )
         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
         plotAllStates(obj, fn, subplots)
         plotAllOutputs(obj, fn, subplots)
+        [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order);
         
         [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)
         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
@@ -123,7 +136,7 @@ classdef SMPSim < handle
         end
         
         function set.ts(obj,newT)
-            warning('Setting ts is not recommended for class SMPSsim.  Use methods in SMPSconverter');
+%             warning('Setting ts is not recommended for class SMPSsim.  Use methods in SMPSconverter');
             obj.converter.ts = newT;
         end
         

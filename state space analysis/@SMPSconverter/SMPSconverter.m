@@ -21,7 +21,13 @@ classdef SMPSconverter < handle
         Cs
         Ds
         Is
-        swseq
+        swseq = 1;
+    end
+    
+    properties (SetAccess = private)
+        expAts
+        cachets
+        cacheAs
     end
     
     methods
@@ -44,6 +50,15 @@ classdef SMPSconverter < handle
             assert(~(sum(tnew < 0) && sum(tnew>obj.tsmax)), 'Timing adjustment failed');
             
             obj.ts = tnew;
+            obj.refreshCache();
+        end
+        
+        function refreshCache(obj)
+            if(size(obj.swseq) == size(obj.As,3))
+                for i = 1:size(obj.As,3)
+                    obj.expAts(:,:,i) = expm(obj.As(:,:,obj.swseq(i))*obj.ts(i));
+                end 
+            end
         end
         
         %% Getters
@@ -75,9 +90,19 @@ classdef SMPSconverter < handle
             end
         end
         
+        function expAts = get.expAts(obj)
+            expAts = obj.expAts;
+        end
+        
         %% Setters
         function set.swseq(obj,newSeq)
             obj.swind = newSeq;
+            obj.refreshCache();
+        end
+        
+        function set.ts(obj, newts)
+            obj.ts = newts;
+            obj.refreshCache();
         end
     end
     
