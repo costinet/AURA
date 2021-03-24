@@ -54,11 +54,18 @@ classdef SMPSconverter < handle
              conv = SMPSconverter();
              conv.Topology = top;
              
-             parse.initialize(filename);
              
          end
          
-         
+         function set.Element_Properties(obj,Element_Properties)
+             
+            if sum(sum(cellfun(@isempty,Element_Properties)))==0
+             obj.Element_Properties = Element_Properties;
+            else
+                error('Not all Element Properties have been declared')
+            end
+            
+         end
          
          function set.ts(obj,ts)
             if sum(ts>0)==length(ts)

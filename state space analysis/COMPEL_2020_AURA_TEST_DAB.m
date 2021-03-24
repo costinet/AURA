@@ -103,7 +103,7 @@ Current = {'V1'
 %%%% But a non-synchronous buck covnerter would be
 %%%%% ts = [Ts*(D-dead) Ts*(1-(D-dead))];
 
-ts = [primary_dead PS secondary_dead Power primary_dead PS secondary_dead Power ];% The inital guess of time intervals % The inital guess of time intervals
+ts = [primary_dead PS secondary_dead Power primary_dead PS secondary_dead Power ];% The inital guess of time intervals
 
 
 
@@ -127,7 +127,7 @@ ts = [primary_dead PS secondary_dead Power primary_dead PS secondary_dead Power 
         'R2' R2
         'R3' R3 };
 
-% List out all char variables in the 
+% List out all char variables in the converter
     Switch_Resistors = {'M1_R'
         'M2_R'
         'M3_R'
@@ -153,7 +153,7 @@ Switch_Sequence = [
 
 
 % List all the resistances of the diodes or FETS when they are on or
-% off
+% off in order of Switch Variables as listed above
 SW_OFF = ones(1,8).*10000000;
 
 SW_ON = [0.05 0.05 0.05 0.05 0.0015 0.0015 0.0015 0.0015];

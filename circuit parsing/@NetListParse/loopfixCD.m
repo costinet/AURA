@@ -1,5 +1,5 @@
 function [C,D,Htemp,saved,OutNames] = loopfixCD(obj,A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree)
-%UNTITLED Summary of this function goes here
+%loopfixCD Calculates C and D
 %   Detailed explanation goes here
 
 %     _   _   _  ____    _    
@@ -122,13 +122,14 @@ Htemp(:,H_row2:H_row2+sum(SortedTrees(:,1)==3)-1)=[];
 
 if ~isempty(C)
 
-    if j~=0
+    if j~=0 
         % This takes the currents and voltages that were solved for
         % previously in loopfixAB.m that should be the opposite of the
         % state vector, so for C its I and for L its V. From there for
         % those state that are dependent could have a current
         % component for capacitors so add back in the current that was
         % found in the previous C and D matrix
+        
         for i = 1:1:size(saved,2)
             Htemp(:,H_row2:end-size(s,2)) = Htemp(:,H_row2:end-size(s,2)) + repmat(C(end-size(saved,2)+i,1:end-size(saved,2)),H_row2-1,1).*-saved(:,i);
             Htemp(:,end+1-size(s,2):end) = Htemp(:,end+1-size(s,2):end) + repmat(D(end-size(saved,2)+i,:),H_row2-1,1).*-saved(:,i);

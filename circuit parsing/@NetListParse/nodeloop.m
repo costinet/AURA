@@ -45,7 +45,7 @@ try
         Tree(i) = find(REF(i,:),1,'first');
     end
 catch
-    error('Possible Singular Incidence Matrix. Check ground nodes in netlist (No isolation across transformer)')
+    error('ossiPble Singular Incidence Matrix. Check ground nodes in netlist (No isolation across transformer)')
 end
 
 
@@ -217,11 +217,11 @@ CoTree = SortedCoTree(:,5);
 
 %% Finding A, B, and D Matrix
 A_a = [incidence(:,Tree(:)),incidence(:,CoTree(:))]; % Complete incidence matrix
-A = [incidence_1(:,Tree(:)),incidence_1(:,CoTree(:))]; % Reduced incidence matrix
+A = [incidence_1(:,Tree(:)),incidence_1(:,CoTree(:))]; % Reduced incidence matrix 
 A_T = [incidence_1(:,Tree(:))]; % Tree Branches
-A_L = [incidence_1(:,Tree(:))]; % Loops
+A_L = [incidence_1(:,CoTree(:))]; % Link Branches
 D = inv(A_T)*A; % Fundamental Cutset Matrix
-D_L = [REF(:,CoTree(:))];
+D_L = [REF(:,CoTree(:))]; % Links Matrix
 B_T = -D_L.';
 [temp,~] = size(B_T);
 B = [B_T,eye(temp)]; % Fundamental Loop Matrix
@@ -268,7 +268,7 @@ else % if there are resistors in tree
     Y_R = inv(Z_R);
 end
 
-ya = find(SortedCoTree(:,1)==numG,1,'last'); % find last index of resistor (R) in tree
+ya = find(SortedCoTree(:,1)==numG,1,'last'); % find last index of resistor (R) in cotree
 if isempty(ya) % if there are no resistors in cotree then set to zero
     G = 0;
     Y_G = 0;

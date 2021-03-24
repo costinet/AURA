@@ -81,6 +81,11 @@ preH = test';
 
 % Sorts Indexes in tree columns
 
+% The idea with this code is to sort into preH by sorting based on
+% taking the transverse of preH then sorting the columns, then taking
+% the transverse of preH and sorthing the columns again so that the
+% rows and columns are sorted correctly
+
 Ecol = preH(:,1:lastE);
 
 if isempty(Ecol)
@@ -177,8 +182,6 @@ depent = [EBcol,JBcol];
 measure = [EBcol,JBcol];
 state = [E_state,J_state];
 
-preH = [state,depent,const]';
-
 
 %% Organize
 
@@ -208,17 +211,6 @@ if isempty(F)
     H = H_11;
     s = H_14;
 else
-    % Error out here for DAB converter due to H_31 not having 2 rows
-    
-    % New development: this only happens when there is an output current
-    % source instead of a resistor (need to figure that one out)
-    
-    % Confrim this happens with flyback when there is a current source on
-    % the output as well
-    
-    % Conclusion so far is that indexing is not performed properly when
-    % constant current sources are in the circuit (do not see it in non
-    % transformer converter because it does not matter for them)
     
     H = H_11+H_12*((eye(size(F))-F)^-1)*K*H_31;
     s = H_14+H_12*((eye(size(F))-F)^-1)*K*H_34;

@@ -1,4 +1,4 @@
-function [ ts, dxsdt, hardSwNecessary, multcross, overresonant,keep_SS] = Baxter_adjustDiodeConduction(obj, Xs, Xic, Sir, Vmax, Vmin, progBar,Vio,keep_SS)
+function [ ts, dxsdt, hardSwNecessary, multcross, overresonant,keep_SS] = Baxter_adjustDiodeConduction_2order(obj, Xs, Xic, Sir, Vmax, Vmin, progBar,Vio,keep_SS)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -118,20 +118,9 @@ try
         %         % no diode conduction problem
         
         %% check for ZVS where possible
-        %{
-        There are some possible issues with the sensitivity beign too
-        large when it is close to the zero crossing of the inductor.
-        The sensitivity is too big, currently look to set sensitivity
-        to be very small and see if resutls are okay-ish
-        
-        Test out using eps() and see if I run into any floating point
-        issues
-        
-        %}
-        
-        delta_DTs = max(eps(ts))*1000; %max(min(ts)/1000, sum(ts)/100000); % This is the area where there is an issue
-        [dXs,delta_DTs] = obj.Baxter_StateSensitivity2(keep_SS, 'ts', Ti, delta_DTs, Tc);
-        dxsdt = (dXs-Xs)/delta_DTs;
+        delta_DTs = max(min(ts)/1000, sum(ts)/100000);
+        [dXs1,dXs2,delta_DTs] = obj.Baxter_StateSensitivity_2order(keep_SS, 'ts', Ti, delta_DTs, Tc);
+        dxsdt = (-3/2*Xs + 2*dXs1 - 1/2*dXs2)/delta_DTs;
         %Backwards_dXs = obj.Baxter_StateSensitivity(keep_SS, 'ts', Ti, (-1)*delta_DTs, Tc);
         %Second_Derivative = (dXs-2*Xs+Backwards_dXs+dXs)/(delta_DTs^2);
         
@@ -167,14 +156,11 @@ try
                 end
             end
             
-            if(debug), disp(['-- Vsw increasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
+           if(debug), disp(['-- Vsw increasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
         elseif(Vio==0)
             tdelta = (Vmin-Xs(Sir,Xic))/(dxsdt(Sir,Xic));
             % tdelta = min(max(tdelta, -ts(Ti) + delta_DTs), tsmax(Ti) - ts(Ti));
             tdelta = sign(tdelta)*min(abs(tdelta), maxStep);
-           % if tdelta*direction == -1
-           %     tdelta = -tdelta;
-           % end
             ts(Ti) = ts(Ti) + tdelta;
             ts(Tc) = ts(Tc) - tdelta;
             if(ts(Ti)<0)
@@ -191,8 +177,6 @@ try
                 ts(Ti) = obj.ts(Ti)+obj.ts(Tc)*0.9;
                 end
             end
-            
-            
             
            if(debug), disp(['-- Vsw decreasing.  Adjusted dead time Ti=' num2str(Ti) ' by ' num2str(tdelta/sum(ts)*100) '%']); end
         end

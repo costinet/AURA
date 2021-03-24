@@ -9,16 +9,11 @@ function [A,B,C,D] = ABCD(obj)
 % boost.net
 
 
-%     %%%%%%   %      %  %%%%%%%    %%%%%%
-%    %      %  %      %  %      %  %      %
-%    %      %  %      %  %      %  %      %
-%    %%%%%%%%  %      %  %%%%%%%   %%%%%%%%
-%    %      %  %      %  %%        %      %
-%    %      %  %      %  % %       %      %
-%    %      %  %      %  %  %      %      %
-%    %      %  %      %  %   %     %      %
-%    %      %   %    %   %    %    %      %
-%    %      %    %%%%    %     %   %      %
+%     _   _   _  ____    _    
+%    / \ | | | |/ _  |  / \   
+%   / _ \| | | | (_| | / _ \  
+%  / ___ | |_| |> _  |/ ___ \ 
+% /_/   \_\___//_/ |_/_/   \_\
 
 
 %% Read in file:
@@ -35,10 +30,7 @@ end
 %% Get binary representation of number of states to change R and C for D and M
 number_of_states = 2^length(switches);
 
-% Changed due to the time required to calculate this for a large
-% number of swithc circuits
-%bin=de2bi(0:number_of_states-1);
-%state = bin;
+
 state  = 1;
 % to find body diodes for DAB
 %[state] = obj.bodydiode_correction(switches,state);
@@ -61,48 +53,6 @@ obj.ON_States = cell(length(switches),1);
 obj.OFF_States = cell(length(switches),1);
 
 
-%{
-ON = [1 0];
-OFF = [0 0];
-
-Binary_for_DAB = [
-    OFF ON ON OFF OFF ON ON OFF % Reverse power
-    OFF OFF OFF OFF OFF ON ON OFF % primary sw
-    ON OFF OFF ON OFF ON ON OFF % phase shift
-    ON OFF OFF ON OFF OFF OFF OFF % secondary sw
-    ON OFF OFF ON ON OFF OFF ON % POWER
-    OFF OFF OFF OFF ON OFF OFF ON %primary sw
-    OFF ON ON OFF ON OFF OFF ON % phase shift
-    OFF ON ON OFF OFF OFF OFF OFF]; % secondary sw
-
-The_Codex = []; % Initialize matrix
-    for i = 1:1:size(Binary_for_DAB,1)
-        Binary_for_DAB_test = Binary_for_DAB(i,:);
-        The_Codex(i) = find(sum(repmat(Binary_for_DAB_test,size(state,1),1)==state,2)==size(state,2)==1);
-       
-    end
-
-
-
-
-Combinations = The_Codex;
-
-% From THE_LIST, indicate by indicies which state you are wanting to
-% model. For eample, if you do not want o
-%Combinations = [2 1 4 1];  
-[b,m1,~] = unique(Combinations,'first');
-[~,d1] =sort(m1);
-Combinations = b(d1);
-
-
-[Combinations] = obj.BDCheck(Combinations,state,switches);
-
-state_old = state;
-state = state(Combinations,:);
-
-number_of_states = size(Combinations,2);
-
-%}
 number_of_states = 1;
 
 
@@ -111,16 +61,13 @@ number_of_states = 1;
 for i = 1:1:number_of_states
 
     [NewNL,NewNLnets,forward_pass]=obj.Single_states(state,i,switches);
+   
     % symbolic
     [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),HtempAB(:,:,i),dependsAB(:,:,i),HtempCD(:,:,i),savedCD(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i),OutputNames(:,i),DependentNames(:,i),SortedTree(:,:,i),SortedCoTree(:,:,i),ConstantNames(:,i),OrderedNamesnum(:,i)] = obj.nodeloop(NewNL,NewNLnets);
     
     % numeric
     % [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),HtempAB(:,:,i),dependsAB(:,:,i),HtempCD(:,:,i),savedCD(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i),OutputNames(:,i),DependentNames(:,i),SortedTree(:,:,i),SortedCoTree(:,:,i),ConstantNames(:,i),OrderedNamesnum(:,i)] = obj.nodeloop_num(NewNL,NewNLnets);
-    
-    % old stuff
-    % key = [ones(size(B(:,:,i),2)-size(forward_pass,1)-sum(SortedCoTree(:,1)==12),1);forward_pass;ones(sum(SortedCoTree(:,1)==12),1)]'; % Fit the forward voltage for body diodes in between other voltage sources and current sources to achive corret orientation in B
-    % B(:,:,i)=B(:,:,i).*repmat(key,size(B(:,:,i),1),1); % Multiply the key times B to get rid of the columns of B where there is not a diode on during ith state
-    
+   
     J = 98631;
 end
 

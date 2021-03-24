@@ -1,5 +1,4 @@
 
-
 %     _   _   _  ____    _    
 %    / \ | | | |/ _  |  / \   
 %   / _ \| | | | (_| | / _ \  
@@ -11,9 +10,10 @@
 % Current konwn issues use FETs for diodes. (Just have them never turn
 % on)
 
+tic
 
 % Place in the filename
-filename = 'EVAL_FLY_LR.net'; % Place netlist filename here that you want to run
+filename = '3levelbuck.net'; % Place netlist filename here that you want to run
 
 % Can also place component values here to get their voltage and
 % current output waveforms such as: 
@@ -30,48 +30,43 @@ Current = {'V1'
 
 
 
-Vg = 5;
+        Vg = 16;
+        Vout = 4.1;
+        
 
-fs = 200e3;
-fs = 2.0367e+05;
-Ts = 1/fs;
-dt = 0.02/fs;
-dt = 0.1*Ts;
+        D1 = Vout/Vg;
+        
+        R1 = 0.0045;
+        R2 = 1.5;
+        L1 = 600e-9;
+        C1 = 10e-6;
+        C2 = 10e-6;
+        
+        % EPC 2020
+        r_on = 2.2e-3;
+        Cds = 1020e-12;
+        [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R] = deal(r_on);
+        [M1_C,M2_C,M3_C,M4_C,M5_C,M6_C] = deal(Cds);
+        
+        
 
-ShortedL = 0.47382e-6;
-ShortedR = 326.9e-3;
+        fs = 500e3;
+        Ts = 1/fs;
+        dt = 30e-9;
+        
 
-L4 = 1.0393e-6-ShortedL;  % Resonate indcutor
-L3 = 16.228e-6-ShortedL; % Magnetizing inductance
-
-R10 = 1000000; % Parallel to L4
-
-L1 = 1e-3; % Primary turns
-L2 = 1e-3; % Secondary turns
-C2 = 220e-9; % Resonate Cap
-C1 = 158e-6; % Output Cap
+        
 
 
+        
+        
+        ts = [ (D1)*Ts-dt  dt  (0.5-D1)*Ts-dt  dt  (D1)*Ts-dt  dt  (0.5-D1)*Ts-dt dt ];
+        
 
-R1 = 17;
-R2 = 390;
-R3 = 0.63521-ShortedR; % Inductor series resistance
-R9 = 0.001; % input resistance
-
-M1_R = 0.054;
-M2_R = 0.0305;
-M3_R = 0.2834;
-
-M1_C = 166e-12;
-M2_C = 272e-12;
-M3_C = 28.47e-12;
-
-M3_C_Resist = 10000;
-M2_C_Resist = 10000;
+         
+    
 M1_C_Resist = 10000;
 
-L20 = 0.1e-3;
-R20 = 5;
 
 %% There are several variable that must be filled out here:
 
@@ -79,7 +74,7 @@ R20 = 5;
 % Voltage Soruces MOSFET Forward Votlage (in order of netlist)
 % Independent Current Sources]'
 %%%% Example u  = [Vg Vfwd1 Vfwd2 Iout]';
-u = [Vg 0.2 0.2 0.2]';
+u = [Vg 1.6 1.6 1.6 1.6 ]';
 
 
 % Define the inital guess of time intervals. This only defines the
@@ -89,59 +84,59 @@ u = [Vg 0.2 0.2 0.2]';
 %%%% But a non-synchronous buck covnerter would be
 %%%%% ts = [Ts*(D-dead) Ts*(1-(D-dead))];
 
- ts = [2.575e-6 Ts-2.575e-6]; % The inital guess of time intervals % The inital guess of time intervals
+ ts = ts; % The inital guess of time intervals % The inital guess of time intervals
 
 
 
 % List all of the numerical components in the netlist file for all
 % FETs you must use the syntax used below:
-        Numerical_Components = {'C1' C1
+        Numerical_Components = {'V1' Vg
+            'C1' C1
             'C2' C2
             'L1' L1
-            'L2' L2
-            'L3' L3
-            'L3' L3
-            'L4' L4
             'M1_C' M1_C
             'M2_C' M2_C
             'M3_C' M3_C
+            'M4_C' M4_C
             'R1' R1
             'R2' R2
-            'R3' R3
-            'R9' R9
-            'R10' R10
-            'M3_C_Resist' M3_C_Resist
-            'M2_C_Resist' M2_C_Resist
-            'M1_C_Resist' M1_C_Resist
-            'L20' L20;
-            'R20' R20;
             };
 
 % List out all char variables in the 
-        Switch_Resistors = {'M1_R'
+       Switch_Resistors = {'M1_R'
             'M2_R'
-            'M3_R'};
+            'M3_R'
+            'M4_R'};
 % List of the switch sequency. Organized by: the FETs (column) vs time
 % interval (rows) matching Switch_Resistors and ts respectivly
 
 ON = 1;
 OFF = 0;
 Switch_Sequence = [
-ON OFF OFF
-OFF OFF OFF
+        
+        OFF ON  OFF ON
+        OFF ON  OFF OFF
+        ON  ON  OFF OFF
+        ON  OFF OFF OFF
+        
+        ON  OFF ON  OFF
+        ON  OFF OFF OFF
+        ON  ON  OFF OFF
+        OFF ON  OFF OFF
     ];
 
 
 % List all the resistances of the diodes or FETS when they are on or
 % off
-SW_OFF = ones(1,3).*10000000;
+SW_OFF = ones(1,4).*10000000;
 
-SW_ON = [M1_R,M2_R,M3_R];
+SW_ON = [M1_R,M2_R,M3_R,M4_R];
 
 SW = [SW_OFF;SW_ON;SW_ON];
 
 
-Diode_Forward_Voltage = [0.2 0.2 0.2]';
+Diode_Forward_Voltage = [1.6 1.6 1.6 1.6]';
+
 
 
 %% This creates and runs the parser to set up the converter
@@ -171,7 +166,7 @@ conv.Fwd_Voltage = Diode_Forward_Voltage;
 
 
 sim = Run_SS_Converter(conv);
-
+toc
 
 return
 
@@ -187,6 +182,8 @@ conv.Element_Properties  = {'C1' C1
     };
 
 sim = Run_SS_Converter(conv);
+
+
 
 % Example to find the best frequency for the covnerter
 
@@ -311,11 +308,4 @@ end
 
 
 
-
-
-
-
-
-
-
-
+         

@@ -23,6 +23,8 @@ numJ = 12;
 SortedTrees = SortedTree;
 SortedCoTrees = SortedCoTree;
 
+% Eliminate Elements that no longer exist in the Hybrid Matrix from
+% the Tree and CoTree Matrices
 SortedCoTrees(SortedCoTrees(:,1)==numG,:)=[];
 SortedTrees(SortedTrees(:,1)==numR,:)=[];
 SortedCoTrees(SortedCoTrees(:,1)==numJ,:)=[];
@@ -66,7 +68,7 @@ end
 
 % Pluggs in all the C and L values to from M*x_dot = Ax+Bu equations
 % If the number exits in the M matrix then the entire row gets
-% devided by that elements either L or C
+% divided by that elements either L or C
 % The position for that element however does not since it forms either
 % di/dt or dv/dt
 
@@ -101,11 +103,13 @@ while i<loop
         
         % Set up so each depends row is a linear combination of the
         % independent state remaining:
-        % depends does not include DC sorces because dv/dt of DC source is
+        % depends does not include DC sources because dv/dt of DC source is
         % zero
         depends(j,:)=Htemp(i,H_row2+1:2*H_row2);
         depends(j,i) = 0;
         
+        % Any d /dt dependence based on this states gets added back to
+        % the M Matrix
         Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*repmat(Htemp(:,i),1,H_row2);
         Htemp(i,:)=[];
         Htemp(:,i+H_row2) = [];
@@ -143,6 +147,9 @@ if j==0
 end
 
 if H_row2 < sym_comput
+    
+   % COMPEL_2020_AURA_TEST_DAB
+    
     
     Htemp = rref(Htemp);
     

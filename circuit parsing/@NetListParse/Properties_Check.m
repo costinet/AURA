@@ -1,4 +1,4 @@
-function [] = read_file(obj)
+function [Numerical_Components,Switch_Resistors] = Properties_Check(obj,filename)
 %
 % The code reads the NETlist file from LTSpice to be used in finding ABCD
 %
@@ -44,7 +44,7 @@ function [] = read_file(obj)
 
 %% Open File
 
-filename = obj.filename;
+%filename = obj.filename;
 
 if exist(filename,'file') == 2 % if the file exists
 
@@ -116,8 +116,8 @@ numK = 8;
 m = 0;
 IndtoTrans = [];
 MutInd = [];
-
-
+Numerical_Components = {};
+Switch_Resistors = {};
 %% Parse data from file
 
 % Check NetList file to see if it has a proper header:
@@ -148,17 +148,31 @@ for i = 1:1:length(NLraw) % Step though netlist
                 for j = 1:1:length(Net)
                     ALL(i,j) = Net(j);  % Add contents of row to all array
                     NL(1+m,j) = Net(j); % Add contents of row to character netlist only array
-                    NL2(1+m,:) = [k;Net(2);Net(3);1+m]; % Change letter to number add contents to numerical netlist array
+                    
+                end
+                   NL2(1+m,:) = [k;Net(2);Net(3);1+m]; % Change letter to number add contents to numerical netlist array
                     if k == numM % Fix FET Nodes
                         NL2(1+m,3)= Net(5); % Re assign nodes for FETs to have drain and source in rows 2 and 3
+                         Switch_Resistors(1+end,1) = [strcat(Net(1),{'_R'})];
+                         Numerical_Components(1+end,1) = [strcat(Net(1),{'_C'})];
+                    else
+                       
+                        Value = obj.sip2num(Net{4});
+                        
+                        Numerical_Components(1+end,:) = [Net(1),Value];
+                        
                     end
 
-                end
+                
             end
             m = m+1;
         end
     end
 end
+
+
+%% Setting grabbing the values of the code
+
 
 if isempty(NL2)
     error('No branches found in %s',filename)
@@ -243,10 +257,5 @@ obj.NL = NL3;
 obj.NLnets = NL;
 obj.NLwhole = ALL;
 
-obj.addmeasure; % Adds measurement nodes for 
-% Find and set transformers
-if ~isempty(IndtoTrans) || ~isempty(MutInd)
-obj.transformers(IndtoTrans,MutInd,position);
-end
 
 end % That's all Folks
