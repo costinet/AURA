@@ -16,6 +16,7 @@ function [not_reached_SS] = Three_tier_diode_correct(obj,iterations,debug,re_sta
 % obj.Xs(:,end) = [0;0;0;0;0;0;0];
 % obj.Xs(:,end) = [0;0;0;0;0];
 
+
 if re_start
     if ~isempty(obj.As_saved)
         obj.As = obj.As_saved ;
@@ -739,7 +740,7 @@ while not_reached_SS && the_big_counter<=more_iterations
 end
 
 if not_reached_SS
-  % fprintf('Failed to converge to steady state solution \n')
+   fprintf('Failed to converge to steady state solution \n')
 end
 
     function Plot_Waveforms(statenum,oppstatenum,plotxparam)

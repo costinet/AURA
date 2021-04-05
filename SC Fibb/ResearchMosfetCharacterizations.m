@@ -2009,6 +2009,18 @@ Qg7_m999=[116.4E-12
 10.86E-9
 11.34E-9];
 Qg7_vgs_5=[Qg7_m60(20,1) Qg7_m125(20,1) Qg7_m250(20,1) Qg7_m500(20,1) Qg7_m999(20,1)];
+
+%% JB edits to find W and other thingys
+
+JB_rds_w1=armm1./L1./1e6;
+JB_rds_w2=armm2./L2./1e6;
+JB_rds_w3=armm3./L3./1e6;
+JB_rds_w4=armm4./L4./1e6;
+JB_rds_w5=armm5./L5./1e6;
+JB_rds_w6=armm6./L6./1e6;
+JB_rds_w7=armm7./L7./1e6;
+
+
 %% Plotting
 plot(armm1,Roncalca1)
 hold on

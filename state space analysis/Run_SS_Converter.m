@@ -161,8 +161,8 @@ toc
 
 fail = 1;
 
+
 while fail
-    
 fail = simulator.Three_tier_diode_correct(iterations,0,1);
 cycle = cycle+1;
 end
