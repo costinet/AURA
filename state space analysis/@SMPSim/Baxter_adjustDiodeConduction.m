@@ -132,8 +132,25 @@ try
         delta_DTs = max(eps(ts))*1000; %max(min(ts)/1000, sum(ts)/100000); % This is the area where there is an issue
         [dXs,delta_DTs] = obj.Baxter_StateSensitivity2(keep_SS, 'ts', Ti, delta_DTs, Tc);
         dxsdt = (dXs-Xs)/delta_DTs;
-        %Backwards_dXs = obj.Baxter_StateSensitivity(keep_SS, 'ts', Ti, (-1)*delta_DTs, Tc);
-        %Second_Derivative = (dXs-2*Xs+Backwards_dXs+dXs)/(delta_DTs^2);
+        [dXs_back,delta_DTs_back] = obj.Baxter_StateSensitivity2(keep_SS, 'ts', Tc, delta_DTs, Ti);
+        dxsdt_back = (Xs - dXs_back)/delta_DTs_back;
+        
+        if delta_DTs_back == delta_DTs
+            Central_Difference = (0.5.*dXs-0.5.*dXs_back)/(delta_DTs);
+            if sum(sum((sign(dxsdt) == sign(dxsdt_back))-1)) ~= 0 || sum(sum((sign(dxsdt_back) == sign(Central_Difference))-1))~=0
+                J = 1234123;
+            end
+        end
+        
+        if sum(sum((sign(dxsdt) == sign(dxsdt_back))-1)) ~= 0
+            J = 54654853;
+        end
+        
+        if   sign(dxsdt(Sir,Xic))~= sign(dxsdt_back(Sir,Xic))
+            J = 456456;
+        end
+        
+        % Second_Derivative = (dXs-2*Xs+Backwards_dXs+dXs)/(delta_DTs^2);
         
         
         if(Vio==1)

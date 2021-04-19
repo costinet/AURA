@@ -1,8 +1,9 @@
 
-%     _   _   _  ____    _    
-%    / \ | | | |/ _  |  / \   
-%   / _ \| | | | (_| | / _ \  
-%  / ___ | |_| |> _  |/ ___ \ 
+
+%     _   _   _  ____    _
+%    / \ | | | |/ _  |  / \
+%   / _ \| | | | (_| | / _ \
+%  / ___ | |_| |> _  |/ ___ \
 % /_/   \_\___//_/ |_/_/   \_\
 
 
@@ -11,61 +12,114 @@
 % on)
 
 tic
-
 % Place in the filename
-filename = '3levelbuck.net'; % Place netlist filename here that you want to run
+filename = 'SC_FIB_AURA_R.net'; % Place netlist filename here that you want to run
 
 % Can also place component values here to get their voltage and
-% current output waveforms such as: 
+% current output waveforms such as:
 
 Voltage = {'V1'
+    'V2'
+    'V3'
     };
 Current = {'V1'
+    'V2'
+    'V3'
     };
 
+
+%% Determining Coss and ron based on w
+
+%{
+w = 0.25;
+
+a =  0.001378;
+b = -1;
+ron = a*w^b;
+
+p1 = 2.925e-9;
+p2 = -2.787e-12;
+Coss = p1*w+p2;
+%}
 
 %% This is all caluclations to set up the variables need to find the SS
 % Solution
+Vg = 9.5;
 
 
+Vb1 = 4;
+Vb2 = 4;
+
+Rb = 5e-3;
+RL = 5e-3;
+
+ron = 8.5e-3;%8.5e-3;
+
+Coss = 0.9e-9;%.9e-9;
+
+Co = 2e-6; ESRo = 2e-3;
+Cfly1 = 5e-6; ESR1 = 3e-3;  % 5V Cap
+Cfly2 = 2.5e-6; ESR2 = 3e-3; % 10V Cap
+Lc = 100e-9;
+
+Trace_R = 1e-3;
+
+fs = 2e6;
+Ts = 1/fs;
+
+u = [Vg Vb1 Vb2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]';
+
+modSchemes(:,:,1) = [
+    0     1     1     1     0     1     0     1     1     0     0     1     1     1     0     1
+    0     1     1     1     0     1     0     1     0     1     0     1     1     1     0     1
+    0     1     1     1     0     1     0     1     1     0     0     1     1     1     0     1
+    0     1     1     1     0     1     1     0     1     0     0     1     1     1     0     1
+    ];
+
+modSchemes(:,:,2) = [
+    0     1     1     1     0     1     0     1     0     1     0     1     1     1     0     1
+    0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
+    0     1     1     1     0     1     1     0     1     0     0     1     1     1     0     1
+    0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
+    ];
+
+modSchemes(:,:,3) = [
+    0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
+    0     1     1     0     1     0     1     0     0     1     0     1     1     0     0     1
+    0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
+    1     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
+    ];
+
+modSchemes(:,:,4) = [
+    0     1     1     0     1     0     1     0     0     1     0     1     1     0     0     1
+    0     1     1     1     0     1     1     0     0     1     0     1     1     0     1     0
+    1     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
+    0     1     1     1     0     1     1     0     0     1     1     0     0     1     0     1
+    ];
+
+modSchemes(:,:,5) = [
+    0     1     1     1     0     1     1     0     0     1     0     1     1     0     1     0
+    0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0
+    0     1     1     1     0     1     1     0     0     1     1     0     0     1     0     1
+    1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
+    ];
+
+modSchemes(:,:,6) = [
+    0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0
+    0     1     1     1     0     1     1     0     0     1     1     0     0     0     1     0
+    1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
+    0     1     1     1     0     1     1     0     0     1     1     0     0     0     1     0
+    ];
 
 
-        Vg = 16;
-        Vout = 4.1;
-        
+fs = 2e6;
+Ts = 1/fs;
 
-        D1 = Vout/Vg;
-        
-        R1 = 0.0045;
-        R2 = 1.6; % Was 1.5
-        L1 = 600e-9;
-        C1 = 10e-6;
-        C2 = 10e-6;
-        
-        % EPC 2020
-        r_on = 2.2e-3;
-        Cds = 1020e-12;
-        [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R] = deal(r_on);
-        [M1_C,M2_C,M3_C,M4_C,M5_C,M6_C] = deal(Cds);
-        
-        
+d = 0.7;
 
-        fs = 500e3;
-        Ts = 1/fs;
-        dt = 30e-9;
-        
+ds = [d, 1-d, d,1-d];
 
-        
-
-
-        
-        
-        ts = [ (D1)*Ts-dt  dt  (0.5-D1)*Ts-dt  dt  (D1)*Ts-dt  dt  (0.5-D1)*Ts-dt dt ];
-        
-
-         
-    
-M1_C_Resist = 10000;
+ts = ds/sum(ds)*Ts;
 
 
 %% There are several variable that must be filled out here:
@@ -74,74 +128,105 @@ M1_C_Resist = 10000;
 % Voltage Soruces MOSFET Forward Votlage (in order of netlist)
 % Independent Current Sources]'
 %%%% Example u  = [Vg Vfwd1 Vfwd2 Iout]';
-u = [Vg 1.6 1.6 1.6 1.6 ]';
+u = u;
 
 
 % Define the inital guess of time intervals. This only defines the
 % active switching time. Do not account for diode switching times.
-%%%% For example a synchronous Buck converter would be: 
+%%%% For example a synchronous Buck converter would be:
 %%%%% ts = [Ts*(D-dead) Ts*(dead) Ts*(1-D-dead) Ts*(dead)];
 %%%% But a non-synchronous buck covnerter would be
 %%%%% ts = [Ts*(D-dead) Ts*(1-(D-dead))];
 
- ts = ts; % The inital guess of time intervals % The inital guess of time intervals
+ts = ts; % The inital guess of time intervals % The inital guess of time intervals
 
 
 
 % List all of the numerical components in the netlist file for all
 % FETs you must use the syntax used below:
-        Numerical_Components = {'V1' Vg
-            'C1' C1
-            'C2' C2
-            'L1' L1
-            'M1_C' M1_C
-            'M2_C' M2_C
-            'M3_C' M3_C
-            'M4_C' M4_C
-            'R1' R1
-            'R2' R2
-            };
+Numerical_Components = {
+    'C1' Cfly1
+    'C2' Cfly1
+    'C3' Cfly2
+    'C4' Cfly2
+    'C5' Co
+    'C6' Co
+    'L1' Lc
+    'L2' Lc
+    'R1' Rb
+    'R2' Rb
+    'R3' RL
+    'R4' RL
+    'R5' ESR1
+    'R6' ESR2
+    'R7' ESR1
+    'R8' ESR2
+    'R9' ESRo
+    'R10' ESRo
+    'R11' Trace_R
+    'R12' Trace_R
+    'R13' Trace_R
+    'R14' Trace_R   
+    'M1_C' Coss
+    'M2_C' Coss
+    'M3_C' Coss
+    'M4_C' Coss
+    'M5_C' Coss
+    'M6_C' Coss
+    'M7_C' Coss
+    'M8_C' Coss
+    'M9_C' Coss
+    'M10_C' Coss
+    'M11_C' Coss
+    'M12_C' Coss
+    'M13_C' Coss
+    'M14_C' Coss
+    'M15_C' Coss
+    'M16_C' Coss
+    };
 
-% List out all char variables in the 
-       Switch_Resistors = {'M1_R'
-            'M2_R'
-            'M3_R'
-            'M4_R'};
+% List out all char variables in the
+Switch_Resistors = {
+    'M1_R'
+    'M2_R'
+    'M3_R'
+    'M4_R'
+    'M5_R'
+    'M6_R'
+    'M7_R'
+    'M8_R'
+    'M9_R'
+    'M10_R'
+    'M11_R'
+    'M12_R'
+    'M13_R'
+    'M14_R'
+    'M15_R'
+    'M16_R'
+    };
 % List of the switch sequency. Organized by: the FETs (column) vs time
 % interval (rows) matching Switch_Resistors and ts respectivly
 
 ON = 1;
 OFF = 0;
-Switch_Sequence = [
-        
-        OFF ON  OFF ON
-        OFF ON  OFF OFF
-        ON  ON  OFF OFF
-        ON  OFF OFF OFF
-        
-        ON  OFF ON  OFF
-        ON  OFF OFF OFF
-        ON  ON  OFF OFF
-        OFF ON  OFF OFF
-    ];
+Switch_Sequence = modSchemes(:,:,3);
 
 
 % List all the resistances of the diodes or FETS when they are on or
 % off
-SW_OFF = ones(1,4).*10000000;
+SW_OFF = ones(1,16).*10000000;
 
-SW_ON = [M1_R,M2_R,M3_R,M4_R];
-
+%SW_ON = [M1_R,M2_R,etc...]
+SW_ON = ones(1,16).*ron;
 SW = [SW_OFF;SW_ON;SW_ON];
 
-
-Diode_Forward_Voltage = [1.6 1.6 1.6 1.6]';
+Diode_Forward_Voltage = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]';
 
 
 
 %% This creates and runs the parser to set up the converter
 
-parse = NetListParse(); 
+parse = NetListParse();
 parse.initialize(filename,Voltage,Current);
 parse.ABCD();
 
@@ -182,8 +267,6 @@ conv.Element_Properties  = {'C1' C1
     };
 
 sim = Run_SS_Converter(conv);
-
-
 
 % Example to find the best frequency for the covnerter
 
@@ -308,4 +391,11 @@ end
 
 
 
-         
+
+
+
+
+
+
+
+

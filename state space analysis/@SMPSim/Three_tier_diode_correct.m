@@ -693,7 +693,7 @@ while not_reached_SS && the_big_counter<=more_iterations
         
         
         %if not_physical % If there were no changes made then skip this step
-        % Combine similar adjacent states would be nice!
+        % Combine similar adjacent states would be nice!ex
         
         ONorOFF = obj.Converter.Topology.Parser.ONorOFF;
         time_intervals = size(ONorOFF,2);
@@ -742,6 +742,53 @@ end
 if not_reached_SS
    fprintf('Failed to converge to steady state solution \n')
 end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Space to work on state sensitivity issues
+vector = linspace(1e-12,2.9999e-08,1000);
+
+for i = 1:length(vector)
+    obj.ts(5) = vector(i);
+    obj.ts(6) = 3.0000e-08-vector(i);
+    
+    obj.SS_Soln();
+    obj.CorrectXs();
+    Xs_history_example(:,:,i) = obj.Xs;
+end
+
+
+ns = 7;
+        for z=1:ns
+            ax = subplot(10*ns,1,z*10-9:z*10);
+            hold on;
+            plot(vector,squeeze(Xs_history_example(z,6,:)), 'Linewidth', 3);
+            ylabel(obj.getstatenames{z})
+            box on
+            if(z<ns)
+                set(gca, 'Xticklabel', []);
+            else
+                xlabel('time of Ti=5')
+            end
+        end
+
+        
+        
+delta_DTs = max(eps(obj.ts))*10;
+keep_SS = false;
+
+vector = linspace(delta_DTs,delta_DTs*1000,1000);
+for i = 1:length(vector)
+[dXs,delta_DTs] = obj.Baxter_StateSensitivity2(keep_SS, 'ts', 6, vector(i), 5);
+dxsdt(:,:,i) = (dXs-obj.Xs)/delta_DTs;
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
 
     function Plot_Waveforms(statenum,oppstatenum,plotxparam)
         %PLOT_WAVEFROMS is a nested function that plots all of the states

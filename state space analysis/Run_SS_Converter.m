@@ -35,11 +35,10 @@ for i = 1:1:size(Switch_Resistors,1)
 end
 %}
 
-
+ 
 for i = 1:1:size(Numerical_Components,1)
     eval([Numerical_Components{i,1} '=' 'Numerical_Components{i,2};'])
 end
-
 
 A = parse.Asym;
 B = parse.Bsym;

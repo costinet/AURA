@@ -461,26 +461,30 @@ for i = 1:size(modSchemes,3)
             [ avgX, avgY ] = simulator.ssAvgs(simulator.Xs);
             eff=-((avgY(3)*avgY(30))+(avgY(2)*avgY(29)))/(avgY(1)*avgY(28));
             Pout = ((avgY(3)*avgY(30))+(avgY(2)*avgY(29)));
-            
+            Ploss = (Pout/eff)-Pout;
             
             if eff>1||eff<.8
                 continue
             end
             
             if Pout>100|| Pout<0
-                break
+                continue
             end
+            
+            PlossSim = [PlossSim Ploss];
             etaSim = [etaSim; eff];
             PoutSim = [PoutSim; Pout];
             conditions = [conditions; d, i, Vin];
-
+            
+            
+            
         end
     end
 end
 
 close(h)
 
-%{
+
 J = 45645314565;
 
 
