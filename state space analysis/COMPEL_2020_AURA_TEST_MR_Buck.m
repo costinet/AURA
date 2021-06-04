@@ -70,8 +70,8 @@ M2_R = 0.002; % ronLS
 D = 5/12;
 %dead = 0.001/fs;
 dead = 0.01/fs;
-ts = [25e-9 25e-9 25e-9 25e-9];
-%ts = [Ts/4 3*Ts/4];
+%ts = [25e-9 25e-9 25e-9 25e-9];
+ts = [Ts/4 3*Ts/4];
 u = [Vg 1 1 Io]';
 
 
@@ -115,12 +115,16 @@ u = [Vg 1 1 Io]';
 
 ON = 1;
 OFF = 0;
-Switch_Sequence = [
-            ON ON
-            ON OFF
-            ON ON
-            OFF ON];
+%Switch_Sequence = [
+%            ON ON
+%            ON OFF
+%            ON ON
+%            OFF ON];
 
+
+Switch_Sequence = [
+    ON OFF
+    OFF OFF];
 
 % List all the resistances of the diodes or FETS when they are on or
 % off

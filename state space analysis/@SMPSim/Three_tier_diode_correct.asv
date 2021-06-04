@@ -11,7 +11,7 @@ function [not_reached_SS] = Three_tier_diode_correct(obj,iterations,debug,re_sta
 
 % Set debug flag
 
-%
+% 
 %obj.Xs(:,end) = [0;5;5;0;0;0;0];
 % obj.Xs(:,end) = [0;0;0;0;0;0;0];
 % obj.Xs(:,end) = [0;0;0;0;0];
@@ -32,15 +32,15 @@ if re_start
     
     
 else
-    % Set this for the lsim function to be able to run without issue
-    obj.As_OG = obj.As;
-    obj.Bs_OG = obj.Bs;
-    obj.Cs_OG = obj.Cs;
-    obj.Ds_OG = obj.Ds;
-    obj.u_OG = obj.u;
-    obj.eigA_OG = obj.eigA;
-    obj.ONorOFF_OG = obj.Converter.Topology.Parser.ONorOFF;
-    obj.ts_OG = obj.ts;
+% Set this for the lsim function to be able to run without issue
+obj.As_OG = obj.As;
+obj.Bs_OG = obj.Bs;
+obj.Cs_OG = obj.Cs;
+obj.Ds_OG = obj.Ds;
+obj.u_OG = obj.u;
+obj.eigA_OG = obj.eigA;
+obj.ONorOFF_OG = obj.Converter.Topology.Parser.ONorOFF;
+obj.ts_OG = obj.ts;
 end
 
 
@@ -96,7 +96,7 @@ while not_reached_SS && the_big_counter<=more_iterations
         % The eigenvalue check is done at the beginning of the function to
         % determine which
         
-        
+       
         
         
         imagine_eigA = imag(obj.eigA); % get the imaginary part of the eigenvalue
@@ -106,20 +106,20 @@ while not_reached_SS && the_big_counter<=more_iterations
         
         multi_violations = sum(num_eigA_volations>1)>0;
         
-        %    if multi_violations == 1
-        %        bad_converter = 1;
-        %    end
+    %    if multi_violations == 1
+    %        bad_converter = 1;
+    %    end
         
-        %   if the_big_counter == 10 || the_big_counter == 11 || the_big_counter == 20 || the_big_counter == 21 || the_big_counter == 30 || the_big_counter == 31
-        %       multi_violations = 1;
-        %   end
+     %   if the_big_counter == 10 || the_big_counter == 11 || the_big_counter == 20 || the_big_counter == 21 || the_big_counter == 30 || the_big_counter == 31
+     %       multi_violations = 1;
+     %   end
         
         
         if re_start
             %  For flyback
-           %  if the_big_counter < 2 && mod(the_big_counter,2)
-            %     multi_violations = 1;
-            % end
+           % if the_big_counter < 2 && mod(the_big_counter,2)
+           %     multi_violations = 1;
+           % end
         end
         
         if multi_violations
@@ -169,7 +169,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                 j;% is time interval for Xss
                 k = j-1; % k is time interval for everything else
                 
-                
+
                 if ONorOFF(i,k) ~=0 % if FET or Diode
                     if obj.Converter.Topology.Parser.DMpos(i,2)==1 % if diode
                         
@@ -531,7 +531,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                                 obj.setts(ts);
                                                 order = obj.order;
                                                 not_physical = true;
-                                                
+                                            
                                                 breakbreak = true;
                                                 
                                                 % obj.SS_Soln(1);
@@ -555,7 +555,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                                 obj.setts(ts);
                                                 order = obj.order;
                                                 not_physical = true;
-                                                
+                                           
                                                 breakbreak = true;
                                                 
                                                 % obj.SS_Soln(1);
@@ -594,8 +594,8 @@ while not_reached_SS && the_big_counter<=more_iterations
                                             not_physical = true;
                                             
                                             breakbreak = true;
-                                            
-                                            
+                                      
+
                                         end
                                     else
                                         if last_violations %&& ONorOFF(i,k+1) == 2
@@ -604,7 +604,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                                 obj.setts(ts);
                                                 order = obj.order;
                                                 not_physical = true;
-                                                
+
                                                 breakbreak = true;
                                                 
                                             else
@@ -629,7 +629,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                                             not_physical = true;
                                             
                                             breakbreak = true;
-                                            
+                                          
                                             
                                         else
                                             
@@ -647,9 +647,9 @@ while not_reached_SS && the_big_counter<=more_iterations
                                                 obj.setts(ts);
                                                 order = obj.order;
                                                 not_physical = true;
-                                                
+                                                       
                                                 breakbreak = true;
-                                                
+                                     
                                                 
                                             else
                                                 
@@ -723,7 +723,7 @@ while not_reached_SS && the_big_counter<=more_iterations
         obj.setts(ts);
         
         %end
-        
+       
         
         breakbreak = 0;
         obj.SS_Soln();
@@ -731,7 +731,7 @@ while not_reached_SS && the_big_counter<=more_iterations
         
         obj.ts_hist(obj.ts);
         obj.Xs_hist(obj.Xs);
-        %    Time_stamp(end+1) = toc;
+    %    Time_stamp(end+1) = toc;
     catch ME
         ME
         ME.stack.line
@@ -740,15 +740,14 @@ while not_reached_SS && the_big_counter<=more_iterations
 end
 
 if not_reached_SS
-    fprintf('Failed to converge to steady state solution \n')
+   fprintf('Failed to converge to steady state solution \n')
 end
 
-%{
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Space to work on state sensitivity issues
 vector = linspace(1e-12,2.9999e-08,1000);
 
-%%{
 for i = 1:length(vector)
     obj.ts(11) = vector(i);
     obj.ts(12) = 3.0000e-08-vector(i);
@@ -756,39 +755,76 @@ for i = 1:length(vector)
     obj.SS_Soln();
     obj.CorrectXs();
     Xs_history_example(:,:,i) = obj.Xs;
-    % end
-    
-    %{
-    figure
-    ns = 7;
-    for z=1:ns
-        ax = subplot(10*ns,1,z*10-9:z*10);
-        hold on;
-        plot(vector,squeeze(Xs_history_example(z,6,:)), 'Linewidth', 3);
-        ylabel(obj.getstatenames{z})
-        box on
-        if(z<ns)
-            set(gca, 'Xticklabel', []);
-        else
-            xlabel('time of Ti=11')
+%end
+
+%{
+ns = 7;
+        for z=1:ns
+            ax = subplot(10*ns,1,z*10-9:z*10);
+            hold on;
+            plot(vector,squeeze(Xs_history_example(z,12,:)), 'Linewidth', 3);
+            ylabel(obj.getstatenames{z})
+            box on
+            if(z<ns)
+                set(gca, 'Xticklabel', []);
+            else
+                xlabel('time of Ti=11')
+            end
         end
-    end
-    
-    %}
-    
-    delta_DTs = 10e-12;  % 10e-14;
-    keep_SS = false;
-    
-    %vector = linspace(delta_DTs,delta_DTs*1000,1000);
-    %for i = 1:length(vector)
-    [dXs,delta_DTs] = obj.Baxter_StateSensitivity2(keep_SS, 'ts', 11, delta_DTs, 12);
-    dxsdt(:,:,i) = (dXs-obj.Xs)/delta_DTs;
-    
-    [dXs_back,delta_DTs_back] = obj.Baxter_StateSensitivity2(keep_SS, 'ts', 12, delta_DTs, 11);
-    dxsdt_back(:,:,i) = (obj.Xs - dXs_back)/delta_DTs_back;
-    
-    Second_Derivative(:,:,i) = (dXs_back-2*obj.Xs+dXs)/(delta_DTs^2);
-    
+
+  %}      
+     Xic = 
+   
+keep_SS = false;
+
+
+        delta_DTs =10e-14; %max(min(ts)/1000, sum(ts)/100000); % This is the area where there is an issue
+        if  max(eps(ts))*1000>delta_DTs ||  min(pi./1000./abs(imag(obj.eigA(:,Xic)))) < delta_DTs
+        fprintf('not good')
+   
+        end
+        
+        
+        
+        
+        [dXs,delta_DTs] = obj.Baxter_StateSensitivity2(keep_SS, 'ts', Ti, delta_DTs, Tc);
+        dxsdt = (dXs-Xs)/delta_DTs;
+        [dXs_back,delta_DTs_back] = obj.Baxter_StateSensitivity2(keep_SS, 'ts', Tc, delta_DTs, Ti);
+        dxsdt_back = (Xs - dXs_back)/delta_DTs_back;
+        
+        if delta_DTs_back == delta_DTs
+            Central_Difference = (0.5.*dXs-0.5.*dXs_back)/(delta_DTs);
+            if sum(sum((sign(dxsdt) == sign(dxsdt_back))-1)) ~= 0 || sum(sum((sign(dxsdt_back) == sign(Central_Difference))-1))~=0
+                J = 1234123;
+            end
+        end
+        
+        if sum(sum((sign(dxsdt) == sign(dxsdt_back))-1)) ~= 0
+            J = 54654853;
+        end
+        
+        if   sign(dxsdt(Sir,Xic))~= sign(dxsdt_back(Sir,Xic))
+            J = 456456;
+        end
+        
+         Second_Derivative = (dXs_back-2*Xs+dXs)/(delta_DTs^2);
+
+dxsdt_history_example(:,:,i) = dxsdt;
+dxsdt_back_history_example(:,:,i) = dxsdt_back;
+second_dxsdt_history_example(:,:,i) = Second_Derivative;
+
+end
+         
+         
+         
+         
+         
+
+%{
+vector = linspace(delta_DTs,delta_DTs*1000,1000);
+for i = 1:length(vector)
+[dXs,delta_DTs] = obj.Baxter_StateSensitivity2(keep_SS, 'ts', 6, vector(i), 5);
+dxsdt(:,:,i) = (dXs-obj.Xs)/delta_DTs;
 end
 %}
 
@@ -829,9 +865,9 @@ end
                 hold on;
                 if plotxparam(z)<0
                     plotxparam(z) = abs(plotxparam(z));
-                    plot(t*10^6,-y(plotxparam(z),:), 'Linewidth', 3);
+                plot(t*10^6,-y(plotxparam(z),:), 'Linewidth', 3);
                 else
-                    plot(t*10^6,y(plotxparam(z),:), 'Linewidth', 3);
+                plot(t*10^6,y(plotxparam(z),:), 'Linewidth', 3);
                 end
                 ylabel(plotxparam(z))
                 box on

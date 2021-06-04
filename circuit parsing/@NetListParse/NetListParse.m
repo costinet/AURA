@@ -81,9 +81,19 @@ classdef NetListParse < handle
         Codex
         
         Component_Values
+        index
         
         % Forward votlage values in order of A matrix
         Fwd_Voltage
+        
+        
+        % These are values used for the numerical parser:
+        
+        Cutset
+        SortedTree_cutloop
+        SortedCoTree_cutloop
+        NewNL
+        NewNLnets
         
         
         % Htemp for AB and CD matrix for large converters

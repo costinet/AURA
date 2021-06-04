@@ -158,7 +158,7 @@ try
             J = 456456;
         end
         
-         Second_Derivative = (dXs_back-2*obj.Xs+dXs)/(delta_DTs^2);
+         Second_Derivative = (dXs_back-2*Xs+dXs)/(delta_DTs^2);
         
         
         if(Vio==1)

@@ -78,6 +78,8 @@ Numerical_Components = {'C1' C1
     'R1' R1
     'R2' R2
     'R3' R3
+    'M1_R' M1_R
+    'M2_R' M2_R
     };
 
 % List out all char variables in the 
@@ -114,6 +116,7 @@ Diode_Forward_Voltage = [1 1]';
 
 parse = NetListParse(); 
 parse.initialize(filename,Voltage,Current);
+parse.Component_Values = Numerical_Components; %%% Added to test numerical stuff in code
 parse.ABCD();
 
 top = SMPStopology();

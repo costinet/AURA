@@ -1,4 +1,4 @@
-function [not_reached_SS] = Three_tier_diode_correct(obj,iterations,debug,re_start)
+function [not_reached_SS] = Three_tier_diode_correct_num(obj,iterations,debug,re_start)
 %THREE_TIER_DIODE_CORRECT takes the steady state solution of a
 %converter can checks to determine if there are any diode violations
 %and correct them
@@ -680,7 +680,7 @@ while not_reached_SS && the_big_counter<=more_iterations
             end
             if breakbreak
                 
-                [ts,ONorOFF,gdiode]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off,gdiode) ;
+                [ts,ONorOFF,gdiode]=obj.adjust_time_single_all_num(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off,gdiode) ;
                 break
             end
             j = j+1;
@@ -688,7 +688,7 @@ while not_reached_SS && the_big_counter<=more_iterations
         end
         
         if the_big_counter < 99 && breakbreak == 0
-            [ts,ONorOFF,gdiode]=obj.adjust_time_single_all(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off,gdiode) ;
+            [ts,ONorOFF,gdiode]=obj.adjust_time_single_all_num(ts,last_violations_bd_turn_on,last_violations_bd_turn_off, first_violations_bd_turn_on,  first_violations_bd_turn_off,gdiode) ;
         end
         
         

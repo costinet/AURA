@@ -125,7 +125,17 @@ ts = [primary_dead PS secondary_dead Power primary_dead PS secondary_dead Power 
         'M8_C' M8_C
         'R1' R1
         'R2' R2
-        'R3' R3 };
+        'R3' R3 
+        'M1_R' 0.05
+        'M2_R' 0.05
+        'M3_R' 0.05
+        'M4_R' 0.05
+        'M5_R' 0.0015
+        'M6_R' 0.0015
+        'M7_R' 0.0015
+        'M8_R' 0.0015
+        
+        };
 
 % List out all char variables in the converter
     Switch_Resistors = {'M1_R'
@@ -169,7 +179,9 @@ Diode_Forward_Voltage = [1 1 1 1 1 1 1 1]';
 parse = NetListParse(); 
 parse.initialize(filename,Voltage,Current);
 parse.Component_Values = Numerical_Components; %%% Added to test numerical stuff in code
-parse.ABCD();
+parse.read_file_num();
+parse.
+parse.ABCD_num();
 
 top = SMPStopology();
 top.Parser = parse;

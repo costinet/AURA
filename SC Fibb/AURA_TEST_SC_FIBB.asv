@@ -30,159 +30,17 @@ Current = {'V1'
 
 %% Determining Coss and ron based on w
 
-X = [3.7180    3.0960    7.9940    8.0000    0.3920    2.1500    1.5880    6.3740   1.373];
+%{
+w = 0.25;
 
+a =  0.001378;
+b = -1;
+ron = a*w^b;
 
-if length(X) == 1
-    X_adjust_finmoncon = [0.1859    0.1548    0.3997    0.4000    0.0196    0.1075    0.0794  0.3187].*[20 20 20 20 20 20 20 20];
-    X = [X_adjust_finmoncon X];
-end
-
-
-penalty  = [];
-adjust = [ones(1,length(X)-1)*20, 1e-6] ;
-X = X./adjust;
-
-W_selection = X(1:end-1);
-fs = X(end);
-
-ron = [];
-Coss = [];
-tot_area = 0;
-
-%% Determining Coss and ron based on w
-if length(W_selection)==8
-    FET_selection = [2 2 2 3 3 3 3 3];
-elseif length(W_selection)==9
-    FET_selection = [2 2 2 3 3 3 3 3 3];
-else
-    fprintf('Something went wrong /n')
-end
-
-for select_FET = 1:length(W_selection)
-    
-    switch FET_selection(select_FET)
-        
-        %% 8HVnLDMOS nbl
-        case 1
-            a =  0.001378;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
-            
-            p1 = 2.925e-9;
-            p2 = -2.787e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L1=800*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L1;
-            
-            
-            %% 8HVnLDMOS iso
-        case 2
-            a =  0.001453;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
-            
-            p1 = 2.093e-9;
-            p2 = -1.058e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L2=900*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L2;
-            
-            
-            %% 12HVnLDMOS iso hp mac
-        case 3
-            a =  0.001447;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
-            
-            p1 = 2.487e-9;
-            p2 = -6.393e-13;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L3=900*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L3;
-            
-            
-            %% 12HVnLDMOS iso mac
-        case 4
-            a =  0.001656;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
-            
-            p1 = 2.281e-9;
-            p2 = -3.1e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L4=1*10^-6;
-            
-            
-            tot_area = tot_area+W_selection(select_FET)*L4;
-            
-            %% 12HVnLDMOS nbl hp mac
-        case 5
-            a =  0.001447;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
-            
-            p1 = 2.487e-9;
-            p2 = -6.393e-13;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L5=0.9*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L5;
-            
-            
-            %% 12HVnLDMOS nbl mac
-        case 6
-            a =  0.001585;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
-            
-            p1 = 3.176e-9;
-            p2 = -7.226e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L6=1*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L6;
-            
-            %% 12HVnLDMOS nbl mr mac
-        case 7
-            a =  0.002556;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
-            
-            p1 = 2.828e-9;
-            p2 = -1.703e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L7=.9*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L7;
-            
-        otherwise
-            
-            stick = 100;
-            return
-            
-    end
-    
-end
-
-if 2*tot_area > (1.00001e-6)*100
-    
-    penalty = 2*tot_area*1e6;
-    
-else
-    penalty = 0;
-    
-end
+p1 = 2.925e-9;
+p2 = -2.787e-12;
+Coss = p1*w+p2;
+%}
 
 %% This is all caluclations to set up the variables need to find the SS
 % Solution
@@ -195,14 +53,16 @@ Vb2 = 4;
 Rb = 5e-3;
 RL = 5e-3;
 
+ron = 8.5e-3;%8.5e-3;
 
+Coss = 0.9e-9;%.9e-9;
 
 Co = 2e-6; ESRo = 2e-3;
 Cfly1 = 5e-6; ESR1 = 3e-3;  % 5V Cap
 Cfly2 = 2.5e-6; ESR2 = 3e-3; % 10V Cap
 Lc = 100e-9;
 
-
+fs = 2e6;
 Ts = 1/fs;
 
 u = [Vg Vb1 Vb2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]';
@@ -250,8 +110,8 @@ modSchemes(:,:,6) = [
     ];
 
 
-
-
+fs = 2e6;
+Ts = 1/fs;
 
 d =  0.0500;
 
@@ -293,7 +153,7 @@ Numerical_Components = {
     'L2' Lc
     'R1' Rb
     'R2' Rb
-    'R3' 1e6
+    'R3' RL
     'R4' RL
     'R5' ESR1
     'R6' ESR2
@@ -301,38 +161,22 @@ Numerical_Components = {
     'R8' ESR2
     'R9' ESRo
     'R10' ESRo
-    'M1_C' Coss(1)
-    'M2_C' Coss(2)
-    'M3_C' Coss(3)
-    'M4_C' Coss(2)
-    'M5_C' Coss(1)
-    'M6_C' Coss(3)
-    'M7_C' Coss(4)
-    'M8_C' Coss(5)
-    'M9_C' Coss(5)
-    'M10_C' Coss(4)
-    'M11_C' Coss(6)
-    'M12_C' Coss(7)
-    'M13_C' Coss(8)
-    'M14_C' Coss(7)
-    'M15_C' Coss(6)
-    'M16_C' Coss(8)
-    'M1_R' ron(1)
-    'M2_R' ron(2)
-    'M3_R' ron(3)
-    'M4_R' ron(2)
-    'M5_R' ron(1)
-    'M6_R' ron(3)
-    'M7_R' ron(4)
-    'M8_R' ron(5)
-    'M9_R' ron(5)
-    'M10_R' ron(4)
-    'M11_R' ron(6)
-    'M12_R' ron(7)
-    'M13_R' ron(8)
-    'M14_R' ron(7)
-    'M15_R' ron(6)
-    'M16_R' ron(8)
+    'M1_C' Coss
+    'M2_C' Coss
+    'M3_C' Coss
+    'M4_C' Coss
+    'M5_C' Coss
+    'M6_C' Coss
+    'M7_C' Coss
+    'M8_C' Coss
+    'M9_C' Coss
+    'M10_C' Coss
+    'M11_C' Coss
+    'M12_C' Coss
+    'M13_C' Coss
+    'M14_C' Coss
+    'M15_C' Coss
+    'M16_C' Coss
     };
 
 % List out all char variables in the
@@ -367,7 +211,7 @@ Switch_Sequence = modSchemes(:,:,2);
 SW_OFF = ones(1,16).*10000000;
 
 %SW_ON = [M1_R,M2_R,etc...]
-SW_ON = ones(1,16).*[ron(1) ron(2) ron(3) ron(2) ron(1) ron(3) ron(4) ron(5) ron(5) ron(4) ron(6) ron(7) ron(8) ron(7) ron(6) ron(8)];
+SW_ON = ones(1,16).*ron;
 SW = [SW_OFF;SW_ON;SW_ON];
 
 Diode_Forward_Voltage = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]';

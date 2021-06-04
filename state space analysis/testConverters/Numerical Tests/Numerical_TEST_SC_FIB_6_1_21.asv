@@ -30,6 +30,7 @@ Current = {'V1'
 
 %% Determining Coss and ron based on w
 
+
 X = [3.7180    3.0960    7.9940    8.0000    0.3920    2.1500    1.5880    6.3740   1.373];
 
 
@@ -186,23 +187,26 @@ end
 
 %% This is all caluclations to set up the variables need to find the SS
 % Solution
-Vg = 12;
+Vg = 9.5;
 
 
 Vb1 = 4;
 Vb2 = 4;
 
+VgPOS = 1;
+Vb1POS = 2;
+Vb2POS = 3;
+
+
+
 Rb = 5e-3;
 RL = 5e-3;
-
 
 
 Co = 2e-6; ESRo = 2e-3;
 Cfly1 = 5e-6; ESR1 = 3e-3;  % 5V Cap
 Cfly2 = 2.5e-6; ESR2 = 3e-3; % 10V Cap
 Lc = 100e-9;
-
-
 Ts = 1/fs;
 
 u = [Vg Vb1 Vb2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]';
@@ -253,11 +257,17 @@ modSchemes(:,:,6) = [
 
 
 
-d =  0.0500;
-
-ds = [d, 1-d, d,1-d];
-
-ts = ds/sum(ds)*Ts;
+    %% FET Pairs
+    %{
+M1 and M5    (1)
+M2 and M4    (2)
+M3 and M6    (3)
+M9 and M12   (4)
+M10 and M11  (5)
+M13 and M17  (6)
+M14 and M16  (7)
+M15 and M18  (8)
+    %}
 
 
 %% There are several variable that must be filled out here:
@@ -266,7 +276,7 @@ ts = ds/sum(ds)*Ts;
 % Voltage Soruces MOSFET Forward Votlage (in order of netlist)
 % Independent Current Sources]'
 %%%% Example u  = [Vg Vfwd1 Vfwd2 Iout]';
-u = u;
+% Assigned later
 
 
 % Define the inital guess of time intervals. This only defines the
@@ -276,8 +286,8 @@ u = u;
 %%%% But a non-synchronous buck covnerter would be
 %%%%% ts = [Ts*(D-dead) Ts*(1-(D-dead))];
 
-ts = ts; % The inital guess of time intervals % The inital guess of time intervals
-
+% The inital guess of time intervals % The inital guess of time intervals
+% Assigned later dynamically
 
 
 % List all of the numerical components in the netlist file for all
@@ -293,7 +303,7 @@ Numerical_Components = {
     'L2' Lc
     'R1' Rb
     'R2' Rb
-    'R3' 1e6
+    'R3' RL
     'R4' RL
     'R5' ESR1
     'R6' ESR2
@@ -359,7 +369,7 @@ Switch_Resistors = {
 
 ON = 1;
 OFF = 0;
-Switch_Sequence = modSchemes(:,:,2);
+Switch_Sequence = modSchemes(:,:,3);
 
 
 % List all the resistances of the diodes or FETS when they are on or
@@ -367,7 +377,7 @@ Switch_Sequence = modSchemes(:,:,2);
 SW_OFF = ones(1,16).*10000000;
 
 %SW_ON = [M1_R,M2_R,etc...]
-SW_ON = ones(1,16).*[ron(1) ron(2) ron(3) ron(2) ron(1) ron(3) ron(4) ron(5) ron(5) ron(4) ron(6) ron(7) ron(8) ron(7) ron(6) ron(8)];
+SW_ON = [ron(1) ron(2) ron(3) ron(2) ron(1) ron(3) ron(4) ron(5) ron(5) ron(4) ron(6) ron(7) ron(8) ron(7) ron(6) ron(8)];
 SW = [SW_OFF;SW_ON;SW_ON];
 
 Diode_Forward_Voltage = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]';
@@ -378,7 +388,8 @@ Diode_Forward_Voltage = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]';
 
 parse = NetListParse();
 parse.initialize(filename,Voltage,Current);
-parse.ABCD();
+parse.Component_Values = Numerical_Components; %%% Added to test numerical stuff in code
+parse.cutset_loop_num();
 
 top = SMPStopology();
 top.Parser = parse;
@@ -386,11 +397,11 @@ top.Parser = parse;
 conv = SMPSconverter();
 conv.Topology = top;
 
-Order  = 1:length(ts);
+Order  = 1:4;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-conv.ts = ts;
+%conv.ts = ts;
 conv.u = u;
 conv.order = Order;
 conv.Element_Properties = Numerical_Components;
@@ -398,9 +409,211 @@ conv.Switch_Resistors = Switch_Resistors;
 conv.Switch_Resistor_Values = SW;
 conv.Switch_Sequence = Switch_Sequence;
 conv.Fwd_Voltage = Diode_Forward_Voltage;
+sim = SMPSim;
+sim.Converter = conv;
 
 
-sim = Run_SS_Converter(conv);
+
+
+
+
+    etaSim = [];
+    PlossSim = [];
+    PoutSim = [];
+    conditions = [];
+    PossSim = [];
+    drange = linspace(0.05, .95, 8);
+    Vscloc1 = 38;
+    Vscloc2 = 39;
+    %h = waitbar(0, 'Simulating');
+    
+   for i = 2:size(modSchemes,3)
+  %  for i = 3:6
+        swvec = modSchemes(:,:,i);
+        conv.Switch_Sequence = swvec;
+        %  waitbar((i-1)/size(modSchemes,3), h);
+        for d = drange
+            ds = [d, 1-d, d, 1-d];
+            ts = ds/sum(ds)*Ts;
+            conv.ts = ts;
+            
+            %% Find zero-power Vin
+            parse.Component_Values(11,2) = {1e6};
+            conv.Element_Properties(11,2) = {1e6};
+
+            sim=Run_SS_Converter_num_no_diode(sim,conv);
+
+            Xss = sim.SS_Soln();
+            [ avgXs, avgYs ] = sim.ssAvgs(Xss);
+            
+            OLVin = avgYs(Vscloc1)+avgYs(Vscloc2);
+           % MaxVin = OLVin+1;
+            MaxVin = OLVin+2;
+            if OLVin<5
+                continue
+            end
+            %{
+        if i==2 && MaxVin>10
+            continue
+        end
+        
+        if i==3 && MaxVin>15
+            continue
+        end
+        
+        if i==4 && MaxVin>16 && OLVin<13
+            continue
+        end
+        
+        if i==5 && MaxVin>23 && OLVin<18
+            continue
+        end
+        
+        if i==6 && MaxVin>27 && OLVin<19
+            continue
+        end
+            %}
+            
+            parse.Component_Values(11,2) = {RL};
+            conv.Element_Properties(11,2) = {RL};
+
+            sim=Run_SS_Converter_num_no_diode(sim,conv);
+            
+            % waitbar((i-1)/size(modSchemes,3) + 1/size(modSchemes,3)*(find(drange==d)-1)/length(drange) , h);
+            
+            Vinrange = OLVin:.1:MaxVin;
+            for Vin = Vinrange
+                u(VgPOS) = Vin;
+                conv.u = u;
+                sim.u = u;
+                
+                Xss = sim.SS_Soln();
+                [ avgXs, avgYs ] = sim.ssAvgs(Xss);
+                
+                [ xs, t, ys ] = sim.SS_WF_Reconstruct;
+                
+                RMS_Iin = rms(xs(3,:));
+                RMS_Ib1 = rms(ys(1,:));
+                RMS_Ib2 = rms(ys(2,:));
+                
+
+                
+                %             avgYs(1:2)
+                %     sim.plotAllStates(1)
+                %     sim.plotAllOutputs(2)
+                
+                %             swActions = sum(abs(diff([swvec; swvec(1,:)],1)))/2;
+                %             Vblock = [Vb1 Vb1 Vb1 Vb2 Vb2 Vb2 Vb1 Vb1 Vb2 Vb2 2*Vb1 2*Vb1 2*Vb1 2*Vb2 2*Vb2 2*Vb2];
+                %             Poss = sum(1/2*Coss*Vblock.^2.*swActions*fs);
+                Poss = 0;
+                
+                % for when there is no rms calculation
+                %{
+                eta = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2 - Poss)/(Vin*avgXs(Illoc) - avgYs(Ib1loc)^2*Rb - avgYs(Ib2loc)^2*Rb);
+                Ploss = -(avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) + (Vin*avgXs(Illoc)) + Poss;
+                Pout = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) - Poss;
+                %}
+                
+                % True input to output eff output of converter
+                
+                P_calc_Vin = Vin-(RMS_Iin*(RL*2));
+                P_calc_Vout1 = Vb1+RMS_Ib1*Rb;
+                P_calc_Vout2 = Vb2+RMS_Ib2*Rb;
+                
+                eta = (P_calc_Vout1*avgYs(Ib1loc) + P_calc_Vout2*avgYs(Ib2loc)) / (P_calc_Vin*avgXs(Illoc));
+                Ploss = -(P_calc_Vout1*avgYs(Ib1loc)+P_calc_Vout2*avgYs(Ib2loc))+(P_calc_Vin*avgXs(Illoc));
+                Pout = (P_calc_Vout1*avgYs(Ib1loc)+P_calc_Vout2*avgYs(Ib2loc));
+                
+                if eta>1||eta<.3
+                    continue
+                end
+                
+                if Pout<0 || Ploss<0
+                    continue
+                end
+                
+                % for specific power
+                %{
+                if Pout<40 || Pout>60
+                    continue
+                end
+                %}
+                
+                etaSim = [etaSim; eta];
+                PlossSim = [PlossSim; Ploss];
+                PoutSim = [PoutSim; Pout];
+                %             PossSim = [PossSim; Poss];
+                conditions = [conditions; d, i, Vin];
+                
+                if Pout > 100
+                    break;
+                end
+                
+                %             effSim(i,j) = eta;
+                %             PlossSim(i,j) = Ploss;
+                %             PoutSim(i,j) = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2);
+            end
+            
+            
+            % %         %% Modeling
+            % %         Ig = avgXs(Illoc);
+            % %
+            % %         dVc5 = Ig*sum(swvec(:,13-2).*ts')/Cfly2;
+            % %         dVc1 = Ig*sum(swvec(:,1).*ts')/Cfly1;
+            % %
+            % %         Pdir = Vb1*Ig*sum(swvec(:,9-2).*ts')/Ts + Vb2*Ig*sum(swvec(:,12-2).*ts')/Ts;
+            % %         Plossdir = 2*Ig^2*( ron*sum(swvec(:,9-2).*ts') + ...
+            % %             ron*sum(swvec(:,13-2).*ts') + ...
+            % %             2*ron*sum((1-swvec(:,13-2)).*ts') + ...
+            % %             ron*sum(swvec(:,1).*ts') + ...
+            % %             2*ron*sum((1-swvec(:,1)).*ts') + ...
+            % %             Rb*Ts ...
+            % %             )/Ts;
+            % %
+            % %
+            % %         Psc = 2*1/2*Cfly2*((8+dVc5)^2 - 8^2)*fs + 2*1/2*Cfly1*((4+dVc1)^2 - 4^2)*fs;
+            % %         PlossSc = 2*1/2*Cfly2*(dVc5^2)*fs + 2*1/2*Cfly1*(dVc1^2)*fs;
+            % %
+            % %         Poutsim = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2);
+            % %         Poutmodel = Pdir + Psc;
+            % %
+            % %     %     Plosssim = Ploss;
+            % %     %     Plossmodel = Plossdir + PlossSc;
+            % %
+            % %         PoutModel(i,j) = Pdir + Psc;
+            % %         PlossModel(i,j) =  Plossdir + PlossSc;
+            % %         effModel(i,j) = Poutmodel/(Poutmodel + Plossdir + PlossSc);
+            
+            
+        end
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 toc
 
 return
@@ -491,6 +704,12 @@ end
 drawnow;
 
 end
+
+
+
+
+
+
 
 
 
