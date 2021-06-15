@@ -1,5 +1,7 @@
 
 
+%AURA_Eff_Sweep()
+
 %     _   _   _  ____    _
 %    / \ | | | |/ _  |  / \
 %   / _ \| | | | (_| | / _ \
@@ -34,20 +36,20 @@ Current = {'V1'
 %% Determining Coss and ron based on w
 
 
-X = [3.7180    3.0960    7.9940    8.0000    0.3920    2.1500    1.5880    6.3740   1.373];
+X = [4 4 1 6 2 4 2 4 1.2392];
 
 
 if length(X) == 1
-    X_adjust_finmoncon = [0.1859    0.1548    0.3997    0.4000    0.0196    0.1075    0.0794  0.3187].*[20 20 20 20 20 20 20 20];
+    X_adjust_finmoncon = [0.1859    0.1548    0.3997    0.4000    0.0196    0.1075    0.0794     0.3187].*[20 20 20 20 20 20 20 20];
     X = [X_adjust_finmoncon X];
 end
 
 
 penalty  = [];
-adjust = [ones(1,length(X)-1)*20, 1e-6] ;
+adjust = [ones(1,length(X)-1), 1e-6] ;
 X = X./adjust;
 
-W_selection = X(1:end-1);
+FET_selection = X(1:end-1);
 fs = X(end);
 
 ron = [];
@@ -55,120 +57,47 @@ Coss = [];
 tot_area = 0;
 
 %% Determining Coss and ron based on w
-if length(W_selection)==8
-    FET_selection = [2 2 2 3 3 3 3 3];
-elseif length(W_selection)==9
-    FET_selection = [2 2 2 3 3 3 3 3 3];
-else
-    fprintf('Something went wrong /n')
-end
 
-for select_FET = 1:length(W_selection)
-    
+for select_FET = 1:length(FET_selection)
+    % Use typical value for Coss and max value for rds from data sheet
+    % for inial look
     switch FET_selection(select_FET)
         
-        %% 8HVnLDMOS nbl
+            %% EPC 2023
         case 1
-            a =  0.001378;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.925e-9;
-            p2 = -2.787e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 1.45e-3;
+            Coss(select_FET) = 1530e-12;
             
-            L1=800*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L1;
-            
-            
-            %% 8HVnLDMOS iso
+            %% EPC 2014C
         case 2
-            a =  0.001453;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.093e-9;
-            p2 = -1.058e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 16e-3;
+            Coss(select_FET) = 1530e-12;
             
-            L2=900*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L2;
-            
-            
-            %% 12HVnLDMOS iso hp mac
+            %% EPC 2015C
         case 3
-            a =  0.001447;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.487e-9;
-            p2 = -6.393e-13;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 4e-3;
+            Coss(select_FET) = 710e-12;
             
-            L3=900*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L3;
-            
-            
-            %% 12HVnLDMOS iso mac
+            %% EPC 2055
         case 4
-            a =  0.001656;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.281e-9;
-            p2 = -3.1e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 3.6e-3;
+            Coss(select_FET) = 480e-12;
             
-            L4=1*10^-6;
-            
-            
-            tot_area = tot_area+W_selection(select_FET)*L4;
-            
-            %% 12HVnLDMOS nbl hp mac
+            %% EPC 2030
         case 5
-            a =  0.001447;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.487e-9;
-            p2 = -6.393e-13;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 2.4e-3;
+            Coss(select_FET) = 1120e-12;
             
-            L5=0.9*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L5;
-            
-            
-            %% 12HVnLDMOS nbl mac
+            %% EPC 2024
         case 6
-            a =  0.001585;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 3.176e-9;
-            p2 = -7.226e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L6=1*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L6;
-            
-            %% 12HVnLDMOS nbl mr mac
-        case 7
-            a =  0.002556;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
-            
-            p1 = 2.828e-9;
-            p2 = -1.703e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L7=.9*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L7;
+            ron(select_FET) = 1.5e-3;
+            Coss(select_FET) = 1620e-12;
             
         otherwise
             
@@ -179,14 +108,7 @@ for select_FET = 1:length(W_selection)
     
 end
 
-if 2*tot_area > (1.00001e-6)*100
-    
-    penalty = 2*tot_area*1e6;
-    
-else
-    penalty = 0;
-    
-end
+
 
 %% This is all caluclations to set up the variables need to find the SS
 % Solution
@@ -216,44 +138,68 @@ u = [Vg Vb1 Vb2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]';
 
 modSchemes(:,:,1) = [
     0     1     1     1     0     1     0     1     1     0     0     1     1     1     0     1
+    0     1     1     1     0     1     0     1     0     0     0     1     1     1     0     1
     0     1     1     1     0     1     0     1     0     1     0     1     1     1     0     1
+    0     1     1     1     0     1     0     1     0     0     0     1     1     1     0     1
     0     1     1     1     0     1     0     1     1     0     0     1     1     1     0     1
+    0     1     1     1     0     1     0     0     1     0     0     1     1     1     0     1
     0     1     1     1     0     1     1     0     1     0     0     1     1     1     0     1
+    0     1     1     1     0     1     0     0     1     0     0     1     1     1     0     1
     ];
 
 modSchemes(:,:,2) = [
     0     1     1     1     0     1     0     1     0     1     0     1     1     1     0     1
+    0     1     1     1     0     1     0     0     0     1     0     1     1     1     0     1
     0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
+    0     1     1     1     0     1     1     0     0     0     0     1     1     1     0     1
     0     1     1     1     0     1     1     0     1     0     0     1     1     1     0     1
+    0     1     1     1     0     1     1     0     0     0     0     1     1     1     0     1
     0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
+    0     1     1     1     0     1     0     0     0     1     0     1     1     1     0     1
     ];
 
 modSchemes(:,:,3) = [
     0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
+    0     1     1     0     0     0     1     0     0     1     0     1     1     0     0     1
     0     1     1     0     1     0     1     0     0     1     0     1     1     0     0     1
+    0     1     1     0     0     0     1     0     0     1     0     1     1     0     0     1
     0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
+    0     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
     1     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
+    0     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
     ];
 
 modSchemes(:,:,4) = [
     0     1     1     0     1     0     1     0     0     1     0     1     1     0     0     1
+    0     1     1     0     0     0     1     0     0     1     0     1     1     0     0     0
     0     1     1     1     0     1     1     0     0     1     0     1     1     0     1     0
+    0     0     0     1     0     1     1     0     0     1     0     0     1     0     0     0 
     1     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
+    0     0     0     1     0     1     1     0     0     1     0     0     0     1     0     1
     0     1     1     1     0     1     1     0     0     1     1     0     0     1     0     1
+    0     1     1     0     0     0     1     0     0     1     0     0     0     0     0     1
     ];
 
 modSchemes(:,:,5) = [
     0     1     1     1     0     1     1     0     0     1     0     1     1     0     1     0
+    0     1     1     0     0     0     1     0     0     1     0     1     1     0     1     0
     0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0
+    0     1     1     0     0     0     1     0     0     1     0     0     0     0     0     0
     0     1     1     1     0     1     1     0     0     1     1     0     0     1     0     1
+    0     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
     1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
+    0     0     0     1     0     1     1     0     0     1     0     0     0     0     0     0
     ];
 
 modSchemes(:,:,6) = [
     0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0
+    0     1     1     0     0     0     1     0     0     1     0     0     0     0     1     0
     0     1     1     1     0     1     1     0     0     1     1     0     0     0     1     0
+    0     0     0     1     0     1     1     0     0     1     1     0     0     0     0     0
     1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
+    0     0     0     1     0     1     1     0     0     1     1     0     0     0     0     0
     0     1     1     1     0     1     1     0     0     1     1     0     0     0     1     0
+    0     1     1     0     0     0     1     0     0     1     0     0     0     0     1     0
     ];
 
 
@@ -400,7 +346,7 @@ top.Parser = parse;
 conv = SMPSconverter();
 conv.Topology = top;
 
-Order  = 1:4;
+Order  = 1:8;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -439,7 +385,8 @@ for i = 2:size(modSchemes,3)
     conv.Switch_Sequence = swvec;
     %  waitbar((i-1)/size(modSchemes,3), h);
     for d = drange
-        ds = [d, 1-d, d, 1-d];
+        dt = 0.005;
+        ds = [d-dt, dt, 1-d-dt, dt, d-dt, dt, 1-d-dt, dt];
         ts = ds/sum(ds)*Ts;
         conv.ts = ts;
         
@@ -449,7 +396,35 @@ for i = 2:size(modSchemes,3)
         
         sim=Run_SS_Converter_num_no_diode(sim,conv);
         
+        % This is all working on trying to get diode conduction in the
+        % optimizaiton
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        for i = 1:1:length(parse.StateNumbers)
+            if strcmp(parse.OutputNamesCD{parse.StateNumbers(i),1}(1,end),'A')
+                top.stateLabels(end+1,1) = strcat('I_{', parse.StateNames(i,1),'} (A)');
+                top.stateLabels_Opp(end+1,1) = strcat('V_{', parse.StateNames(i,1),'} (V)');
+            else
+                top.stateLabels(end+1,1) = strcat(parse.OutputNamesCD{parse.StateNumbers(i),1}(1,end),'_{', parse.StateNames(i,1),'} (V)');
+                top.stateLabels_Opp(end+1,1) = strcat('I_{', parse.StateNames(i,1),'} (A)');
+            end
+        end
+        
+        
+        
+        parse.find_diode_new(conv.Order,conv.Switch_Sequence,conv.Fwd_Voltage)
         Xss = sim.SS_Soln();
+        iterations = 50;
+        cycle = 0;
+        fail = 1;
+        fail = sim.Three_tier_diode_correct_num(iterations,0,0);
+        
+        while fail
+            fail = sim.Three_tier_diode_correct_num(iterations,0,1);
+            cycle = cycle+1;
+        end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         [ avgXs, avgYs ] = sim.ssAvgs(Xss);
         
         OLVin = avgYs(Vscloc1)+avgYs(Vscloc2);
@@ -743,12 +718,14 @@ weighted_vals=F(X1,X2).*(Z+Z([length(PoutRange):-1:1],[length(Vgrange):-1:1]));
 
 
 catch ME
-
-
-
-
-toc
-
+    
+    
+    ME
+    ME.stack.line
+    rethrow(ME)
+    
+    toc
+    
 end
 toc
 return

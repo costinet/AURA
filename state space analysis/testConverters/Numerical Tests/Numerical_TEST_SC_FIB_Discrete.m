@@ -1,5 +1,7 @@
 
 
+%AURA_Eff_Sweep()
+
 %     _   _   _  ____    _
 %    / \ | | | |/ _  |  / \
 %   / _ \| | | | (_| | / _ \
@@ -11,6 +13,9 @@
 % Current konwn issues use FETs for diodes. (Just have them never turn
 % on)
 
+clear
+
+try
 tic
 % Place in the filename
 filename = 'SC_FIB_AURA.net'; % Place netlist filename here that you want to run
@@ -31,20 +36,20 @@ Current = {'V1'
 %% Determining Coss and ron based on w
 
 
-X = [3.7180    3.0960    7.9940    8.0000    0.3920    2.1500    1.5880    6.3740   1.373];
+X = [3    4    1    1    2   5    6    1   0.9];
 
 
 if length(X) == 1
-    X_adjust_finmoncon = [0.1859    0.1548    0.3997    0.4000    0.0196    0.1075    0.0794  0.3187].*[20 20 20 20 20 20 20 20];
+    X_adjust_finmoncon = [0.1859    0.1548    0.3997    0.4000    0.0196    0.1075    0.0794     0.3187].*[20 20 20 20 20 20 20 20];
     X = [X_adjust_finmoncon X];
 end
 
 
 penalty  = [];
-adjust = [ones(1,length(X)-1)*20, 1e-6] ;
+adjust = [ones(1,length(X)-1), 1e-6] ;
 X = X./adjust;
 
-W_selection = X(1:end-1);
+FET_selection = X(1:end-1);
 fs = X(end);
 
 ron = [];
@@ -52,120 +57,47 @@ Coss = [];
 tot_area = 0;
 
 %% Determining Coss and ron based on w
-if length(W_selection)==8
-    FET_selection = [2 2 2 3 3 3 3 3];
-elseif length(W_selection)==9
-    FET_selection = [2 2 2 3 3 3 3 3 3];
-else
-    fprintf('Something went wrong /n')
-end
 
-for select_FET = 1:length(W_selection)
-    
+for select_FET = 1:length(FET_selection)
+    % Use typical value for Coss and max value for rds from data sheet
+    % for inial look
     switch FET_selection(select_FET)
         
-        %% 8HVnLDMOS nbl
+            %% EPC 2023
         case 1
-            a =  0.001378;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.925e-9;
-            p2 = -2.787e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 1.45e-3;
+            Coss(select_FET) = 1530e-12;
             
-            L1=800*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L1;
-            
-            
-            %% 8HVnLDMOS iso
+            %% EPC 2014C
         case 2
-            a =  0.001453;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.093e-9;
-            p2 = -1.058e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 16e-3;
+            Coss(select_FET) = 1530e-12;
             
-            L2=900*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L2;
-            
-            
-            %% 12HVnLDMOS iso hp mac
+            %% EPC 2015C
         case 3
-            a =  0.001447;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.487e-9;
-            p2 = -6.393e-13;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 4e-3;
+            Coss(select_FET) = 710e-12;
             
-            L3=900*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L3;
-            
-            
-            %% 12HVnLDMOS iso mac
+            %% EPC 2055
         case 4
-            a =  0.001656;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.281e-9;
-            p2 = -3.1e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 3.6e-3;
+            Coss(select_FET) = 480e-12;
             
-            L4=1*10^-6;
-            
-            
-            tot_area = tot_area+W_selection(select_FET)*L4;
-            
-            %% 12HVnLDMOS nbl hp mac
+            %% EPC 2030
         case 5
-            a =  0.001447;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.487e-9;
-            p2 = -6.393e-13;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 2.4e-3;
+            Coss(select_FET) = 1120e-12;
             
-            L5=0.9*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L5;
-            
-            
-            %% 12HVnLDMOS nbl mac
+            %% EPC 2024
         case 6
-            a =  0.001585;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 3.176e-9;
-            p2 = -7.226e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L6=1*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L6;
-            
-            %% 12HVnLDMOS nbl mr mac
-        case 7
-            a =  0.002556;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
-            
-            p1 = 2.828e-9;
-            p2 = -1.703e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L7=.9*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L7;
+            ron(select_FET) = 1.5e-3;
+            Coss(select_FET) = 1620e-12;
             
         otherwise
             
@@ -176,18 +108,11 @@ for select_FET = 1:length(W_selection)
     
 end
 
-if 2*tot_area > (1.00001e-6)*100
-    
-    penalty = 2*tot_area*1e6;
-    
-else
-    penalty = 0;
-    
-end
+
 
 %% This is all caluclations to set up the variables need to find the SS
 % Solution
-Vg = 9.5;
+Vg = 12;
 
 
 Vb1 = 4;
@@ -257,8 +182,8 @@ modSchemes(:,:,6) = [
 
 
 
-    %% FET Pairs
-    %{
+%% FET Pairs
+%{
 M1 and M5    (1)
 M2 and M4    (2)
 M3 and M6    (3)
@@ -267,7 +192,7 @@ M10 and M11  (5)
 M13 and M17  (6)
 M14 and M16  (7)
 M15 and M18  (8)
-    %}
+%}
 
 
 %% There are several variable that must be filled out here:
@@ -417,42 +342,45 @@ sim.Converter = conv;
 
 
 
-    etaSim = [];
-    PlossSim = [];
-    PoutSim = [];
-    conditions = [];
-    PossSim = [];
-    drange = linspace(0.05, .95, 8);
-    Vscloc1 = 38;
-    Vscloc2 = 39;
-    %h = waitbar(0, 'Simulating');
-    
-   for i = 2:size(modSchemes,3)
-  %  for i = 3:6
-        swvec = modSchemes(:,:,i);
-        conv.Switch_Sequence = swvec;
-        %  waitbar((i-1)/size(modSchemes,3), h);
-        for d = drange
-            ds = [d, 1-d, d, 1-d];
-            ts = ds/sum(ds)*Ts;
-            conv.ts = ts;
-            
-            %% Find zero-power Vin
-            parse.Component_Values(11,2) = {1e6};
-            conv.Element_Properties(11,2) = {1e6};
+etaSim = [];
+PlossSim = [];
+PoutSim = [];
+conditions = [];
+PossSim = [];
+drange = linspace(0.05, .95, 8);
+Vscloc1 = 38;
+Vscloc2 = 39;
+Illoc = 1;
+Ib1loc = 2;
+Ib2loc = 3;
+%h = waitbar(0, 'Simulating');
 
-            sim=Run_SS_Converter_num_no_diode(sim,conv);
-
-            Xss = sim.SS_Soln();
-            [ avgXs, avgYs ] = sim.ssAvgs(Xss);
-            
-            OLVin = avgYs(Vscloc1)+avgYs(Vscloc2);
-           % MaxVin = OLVin+1;
-            MaxVin = OLVin+2;
-            if OLVin<5
-                continue
-            end
-            %{
+for i = 2:size(modSchemes,3)
+    %  for i = 3:6
+    swvec = modSchemes(:,:,i);
+    conv.Switch_Sequence = swvec;
+    %  waitbar((i-1)/size(modSchemes,3), h);
+    for d = drange
+        ds = [d, 1-d, d, 1-d];
+        ts = ds/sum(ds)*Ts;
+        conv.ts = ts;
+        
+        %% Find zero-power Vin
+        parse.Component_Values(11,2) = {1e6};
+        conv.Element_Properties(11,2) = {1e6};
+        
+        sim=Run_SS_Converter_num_no_diode(sim,conv);
+        
+        Xss = sim.SS_Soln();
+        [ avgXs, avgYs ] = sim.ssAvgs(Xss);
+        
+        OLVin = avgYs(Vscloc1)+avgYs(Vscloc2);
+        % MaxVin = OLVin+1;
+        MaxVin = OLVin+2;
+        if OLVin<5 
+            continue
+        end
+        %{
         if i==2 && MaxVin>10
             continue
         end
@@ -472,150 +400,279 @@ sim.Converter = conv;
         if i==6 && MaxVin>27 && OLVin<19
             continue
         end
+        %}
+        
+        parse.Component_Values(11,2) = {RL};
+        conv.Element_Properties(11,2) = {RL};
+        
+        sim=Run_SS_Converter_num_no_diode(sim,conv);
+        
+        % waitbar((i-1)/size(modSchemes,3) + 1/size(modSchemes,3)*(find(drange==d)-1)/length(drange) , h);
+        
+        Vinrange = OLVin:.1:MaxVin;
+        for Vin = Vinrange
+            u(VgPOS) = Vin;
+            conv.u = u;
+            sim.u = u;
+            
+            Xss = sim.SS_Soln();
+            [ avgXs, avgYs ] = sim.ssAvgs(Xss);
+            %{
+            [ xs, t, ys ] = sim.SS_WF_Reconstruct;
+            
+            RMS_Iin = rms(ys(Illoc,:));
+            RMS_Ib1 = rms(ys(Ib1loc,:));
+            RMS_Ib2 = rms(ys(Ib2loc,:));
+            
             %}
             
-            parse.Component_Values(11,2) = {RL};
-            conv.Element_Properties(11,2) = {RL};
-
-            sim=Run_SS_Converter_num_no_diode(sim,conv);
+            %             avgYs(1:2)
+            %     sim.plotAllStates(1)
+            %     sim.plotAllOutputs(2)
             
-            % waitbar((i-1)/size(modSchemes,3) + 1/size(modSchemes,3)*(find(drange==d)-1)/length(drange) , h);
+            %             swActions = sum(abs(diff([swvec; swvec(1,:)],1)))/2;
+            %             Vblock = [Vb1 Vb1 Vb1 Vb2 Vb2 Vb2 Vb1 Vb1 Vb2 Vb2 2*Vb1 2*Vb1 2*Vb1 2*Vb2 2*Vb2 2*Vb2];
+            %             Poss = sum(1/2*Coss*Vblock.^2.*swActions*fs);
+            Poss = 0;
             
-            Vinrange = OLVin:.1:MaxVin;
-            for Vin = Vinrange
-                u(VgPOS) = Vin;
-                conv.u = u;
-                sim.u = u;
-                
-                Xss = sim.SS_Soln();
-                [ avgXs, avgYs ] = sim.ssAvgs(Xss);
-                
-                [ xs, t, ys ] = sim.SS_WF_Reconstruct;
-                
-                RMS_Iin = rms(xs(3,:));
-                RMS_Ib1 = rms(ys(1,:));
-                RMS_Ib2 = rms(ys(2,:));
-                
-
-                
-                %             avgYs(1:2)
-                %     sim.plotAllStates(1)
-                %     sim.plotAllOutputs(2)
-                
-                %             swActions = sum(abs(diff([swvec; swvec(1,:)],1)))/2;
-                %             Vblock = [Vb1 Vb1 Vb1 Vb2 Vb2 Vb2 Vb1 Vb1 Vb2 Vb2 2*Vb1 2*Vb1 2*Vb1 2*Vb2 2*Vb2 2*Vb2];
-                %             Poss = sum(1/2*Coss*Vblock.^2.*swActions*fs);
-                Poss = 0;
-                
-                % for when there is no rms calculation
-                %{
-                eta = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2 - Poss)/(Vin*avgXs(Illoc) - avgYs(Ib1loc)^2*Rb - avgYs(Ib2loc)^2*Rb);
-                Ploss = -(avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) + (Vin*avgXs(Illoc)) + Poss;
+            % for when there is no rms calculation
+            %%{
+                eta = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2 - Poss)/(Vin*-avgYs(Illoc) - avgYs(Ib1loc)^2*Rb - avgYs(Ib2loc)^2*Rb);
+                Ploss = -(avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) + -(Vin*avgYs(Illoc)) + Poss;
                 Pout = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) - Poss;
-                %}
-                
-                % True input to output eff output of converter
-                
-                P_calc_Vin = Vin-(RMS_Iin*(RL*2));
-                P_calc_Vout1 = Vb1+RMS_Ib1*Rb;
-                P_calc_Vout2 = Vb2+RMS_Ib2*Rb;
-                
-                eta = (P_calc_Vout1*avgYs(Ib1loc) + P_calc_Vout2*avgYs(Ib2loc)) / (P_calc_Vin*avgXs(Illoc));
-                Ploss = -(P_calc_Vout1*avgYs(Ib1loc)+P_calc_Vout2*avgYs(Ib2loc))+(P_calc_Vin*avgXs(Illoc));
-                Pout = (P_calc_Vout1*avgYs(Ib1loc)+P_calc_Vout2*avgYs(Ib2loc));
-                
-                if eta>1||eta<.3
-                    continue
-                end
-                
-                if Pout<0 || Ploss<0
-                    continue
-                end
-                
-                % for specific power
-                %{
+            %}
+            
+            % True input to output eff output of converter
+            %{
+            P_calc_Vin = Vin-(RMS_Iin*(RL*2));
+            P_calc_Vout1 = Vb1+RMS_Ib1*Rb;
+            P_calc_Vout2 = Vb2+RMS_Ib2*Rb;
+            
+            eta = (P_calc_Vout1*avgYs(Ib1loc) + P_calc_Vout2*avgYs(Ib2loc)) / -(P_calc_Vin*avgYs(Illoc));
+            Ploss = -(P_calc_Vout1*avgYs(Ib1loc)+P_calc_Vout2*avgYs(Ib2loc))-(P_calc_Vin*avgYs(Illoc));
+            Pout = (P_calc_Vout1*avgYs(Ib1loc)+P_calc_Vout2*avgYs(Ib2loc));
+            %}
+            if eta>1||eta<.3
+                continue
+            end
+            
+            if Pout<0 || Ploss<0
+                continue
+            end
+            
+            % for specific power
+            %{
                 if Pout<40 || Pout>60
                     continue
                 end
-                %}
-                
-                etaSim = [etaSim; eta];
-                PlossSim = [PlossSim; Ploss];
-                PoutSim = [PoutSim; Pout];
-                %             PossSim = [PossSim; Poss];
-                conditions = [conditions; d, i, Vin];
-                
-                if Pout > 100
-                    break;
-                end
-                
-                %             effSim(i,j) = eta;
-                %             PlossSim(i,j) = Ploss;
-                %             PoutSim(i,j) = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2);
+            %}
+            
+            etaSim = [etaSim; eta];
+            PlossSim = [PlossSim; Ploss];
+            PoutSim = [PoutSim; Pout];
+            %             PossSim = [PossSim; Poss];
+            conditions = [conditions; d, i, Vin];
+            
+            if Pout > 100
+                break;
             end
             
-            
-            % %         %% Modeling
-            % %         Ig = avgXs(Illoc);
-            % %
-            % %         dVc5 = Ig*sum(swvec(:,13-2).*ts')/Cfly2;
-            % %         dVc1 = Ig*sum(swvec(:,1).*ts')/Cfly1;
-            % %
-            % %         Pdir = Vb1*Ig*sum(swvec(:,9-2).*ts')/Ts + Vb2*Ig*sum(swvec(:,12-2).*ts')/Ts;
-            % %         Plossdir = 2*Ig^2*( ron*sum(swvec(:,9-2).*ts') + ...
-            % %             ron*sum(swvec(:,13-2).*ts') + ...
-            % %             2*ron*sum((1-swvec(:,13-2)).*ts') + ...
-            % %             ron*sum(swvec(:,1).*ts') + ...
-            % %             2*ron*sum((1-swvec(:,1)).*ts') + ...
-            % %             Rb*Ts ...
-            % %             )/Ts;
-            % %
-            % %
-            % %         Psc = 2*1/2*Cfly2*((8+dVc5)^2 - 8^2)*fs + 2*1/2*Cfly1*((4+dVc1)^2 - 4^2)*fs;
-            % %         PlossSc = 2*1/2*Cfly2*(dVc5^2)*fs + 2*1/2*Cfly1*(dVc1^2)*fs;
-            % %
-            % %         Poutsim = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2);
-            % %         Poutmodel = Pdir + Psc;
-            % %
-            % %     %     Plosssim = Ploss;
-            % %     %     Plossmodel = Plossdir + PlossSc;
-            % %
-            % %         PoutModel(i,j) = Pdir + Psc;
-            % %         PlossModel(i,j) =  Plossdir + PlossSc;
-            % %         effModel(i,j) = Poutmodel/(Poutmodel + Plossdir + PlossSc);
-            
-            
+            %             effSim(i,j) = eta;
+            %             PlossSim(i,j) = Ploss;
+            %             PoutSim(i,j) = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2);
         end
+        
+        
+        % %         %% Modeling
+        % %         Ig = avgXs(Illoc);
+        % %
+        % %         dVc5 = Ig*sum(swvec(:,13-2).*ts')/Cfly2;
+        % %         dVc1 = Ig*sum(swvec(:,1).*ts')/Cfly1;
+        % %
+        % %         Pdir = Vb1*Ig*sum(swvec(:,9-2).*ts')/Ts + Vb2*Ig*sum(swvec(:,12-2).*ts')/Ts;
+        % %         Plossdir = 2*Ig^2*( ron*sum(swvec(:,9-2).*ts') + ...
+        % %             ron*sum(swvec(:,13-2).*ts') + ...
+        % %             2*ron*sum((1-swvec(:,13-2)).*ts') + ...
+        % %             ron*sum(swvec(:,1).*ts') + ...
+        % %             2*ron*sum((1-swvec(:,1)).*ts') + ...
+        % %             Rb*Ts ...
+        % %             )/Ts;
+        % %
+        % %
+        % %         Psc = 2*1/2*Cfly2*((8+dVc5)^2 - 8^2)*fs + 2*1/2*Cfly1*((4+dVc1)^2 - 4^2)*fs;
+        % %         PlossSc = 2*1/2*Cfly2*(dVc5^2)*fs + 2*1/2*Cfly1*(dVc1^2)*fs;
+        % %
+        % %         Poutsim = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2);
+        % %         Poutmodel = Pdir + Psc;
+        % %
+        % %     %     Plosssim = Ploss;
+        % %     %     Plossmodel = Plossdir + PlossSc;
+        % %
+        % %         PoutModel(i,j) = Pdir + Psc;
+        % %         PlossModel(i,j) =  Plossdir + PlossSc;
+        % %         effModel(i,j) = Poutmodel/(Poutmodel + Plossdir + PlossSc);
+        
+        
     end
+end
+
+
+    
+    %close(h)
+    
+    % figure(4)
+    % subplot(2,1,1)
+    % plot(PoutSim, PlossSim, 'ok');
+    % hold on;
+    % plot(PoutModel, PlossModel)
+    %
+    % subplot(2,1,2)
+    % plot(PoutSim, effSim, 'ok');
+    % hold on;
+    % plot(PoutModel, effModel)
+    %
+    
+    % % [f,c] = contourf(repmat(Vgrange,length(drange),1),PoutSim,effSim*100);
+    % % xlabel('Vg');
+    % % ylabel('P_{out}');
+    % % ylim([0 100])
+    % % colorbar
+    % % c.LevelList = [.8 .9 .95 .96 .97 .98 .99]*100;
+    %{
+mineff = .3;
+etaSim(etaSim<mineff) = mineff;
+etaSim(etaSim>1) = mineff;
+
+locs = etaSim > mineff;
+
+VgSim = conditions(locs,end);
+F = scatteredInterpolant(VgSim, PoutSim(locs), etaSim(locs)*100, 'linear','none');
+
+figure(101)
+
+Vgrange = 5:.25:22;
+PoutRange = 0:1:80;
+[VgMesh, PoutMesh] = meshgrid(Vgrange, PoutRange);
+[f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
+xlabel('Vg');
+ylabel('P_{out}');
+% ylim([0 80])
+colorbar
+% c.LevelList = [.8 .9 .95 .96 .97 .98 .99]*100;
+
+hold on;
 
 
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+mineff = .3;
+etaSim(etaSim<mineff) = mineff;
+etaSim(etaSim>1) = mineff;
+
+locs = etaSim > mineff;
+
+VgSim = conditions(locs,end);
+F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
+
+figure(102)
+
+Vgrange = 5:.25:22;
+PoutRange = 0:1:80;
+[VgMesh, PoutMesh] = meshgrid(Vgrange, PoutRange);
+[f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
+xlabel('Vg');
+ylabel('P_{out}');
+% ylim([0 80])
+colorbar
+c.LevelList = [0 1 2 3 4 5 6 7 8 9];
+
+hold on;
+
+
+Vq = interp2(Vgrange,PoutRange,F(VgMesh,PoutMesh,,Yq)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+    
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+figure(3)
+
+
+%
+% figure(2)
+% subplot(2,1,1)
+% F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
+% [f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
+% levels = c.LevelList;
+% colorbar
+%
+% subplot(2,1,2)
+% F = scatteredInterpolant(VgSim, PoutSim(locs), PossSim(locs), 'linear','none');
+% [f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
+% colorbar
+%
+F2 = scatteredInterpolant(VgSim, PoutSim(locs), conditions(locs,2), 'linear','none');
+contourf(Vgrange,PoutRange,F2(VgMesh,PoutMesh),'ShowText','on');
+scatter(VgSim, PoutSim(locs),[],conditions(locs,2));
+colorbar
+[c] = scatter(conditions(:,end),PoutSim,[],etaSim*100);
+xlabel('Vg');
+ylabel('P_{out}');
+ylim([0 100])
+colorbar
+
+    %}
 
 
 
 
 
+mineff = .3;
+etaSim(etaSim<mineff) = mineff;
+etaSim(etaSim>1) = mineff;
+
+locs = etaSim > mineff;
+
+VgSim = conditions(locs,end);
+F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
+    
+
+Vgrange = 10:.25:20;
+PoutRange = 20:1:60; 
+    
+sigma1 = 30;
+sigma2 = 750;
+
+mu = [16 50];
+Sigma = [sigma1, sqrt(sigma1*sigma2-1); sqrt(sigma1*sigma2-1), sigma2];
+
+[X1,X2] = meshgrid(Vgrange',PoutRange');
+X = [X1(:) X2(:)];
+
+p = mvncdf(X,mu,Sigma);
+
+Z = reshape(p,length(PoutRange),length(Vgrange));
+
+weighted_vals=F(X1,X2).*(Z+Z([length(PoutRange):-1:1],[length(Vgrange):-1:1]));
 
 
 
 
 
-
-
-
-
-
-
-
-
+catch ME
 
 
 
 
 toc
 
+end
+toc
 return
 
 

@@ -151,14 +151,27 @@ if j==0
     depends = [];
     DependentNames = cell.empty(1,0);
 end
-
+count = 0;
 if H_row2 < sym_comput
     
-   % COMPEL_2020_AURA_TEST_DAB
-    
-    
-    Htemp = rref(Htemp,0.9);
-    
+    Htemp_torref = Htemp;
+    [Htemp,jb]= rref(Htemp);
+    if length(jb)~= size(Htemp,1)
+        %%{
+        rref_tol = max(size(Htemp_torref))*eps(class(Htemp_torref))*norm(Htemp_torref,inf);
+        while length(jb)~= size(Htemp,1)
+            
+            rref_tol = rref_tol/10;
+            
+            [Htemp,jb] = rref(Htemp_torref,rref_tol);
+            count = count+1;
+        end
+        
+        rref_tol = rref_tol/100;
+        %}
+        [Htemp,jb] = rref(Htemp_torref,0.9);
+        
+    end
     OutputHtemp = Htemp;
     
     if j~=0

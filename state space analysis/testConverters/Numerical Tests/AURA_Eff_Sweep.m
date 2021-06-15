@@ -1,4 +1,4 @@
-
+function [stick] = AURA_Eff_Sweep(X)
 
 %     _   _   _  ____    _
 %    / \ | | | |/ _  |  / \
@@ -11,10 +11,9 @@
 % Current konwn issues use FETs for diodes. (Just have them never turn
 % on)
 
-clear
 
 try
-tic
+
 % Place in the filename
 filename = 'SC_FIB_AURA.net'; % Place netlist filename here that you want to run
 
@@ -33,21 +32,11 @@ Current = {'V1'
 
 %% Determining Coss and ron based on w
 
-
-X = [3.7180    3.0960    7.9940    8.0000    0.3920    2.1500    1.5880    6.3740   1.373];
-
-
-if length(X) == 1
-    X_adjust_finmoncon = [0.1859    0.1548    0.3997    0.4000    0.0196    0.1075    0.0794  0.3187].*[20 20 20 20 20 20 20 20];
-    X = [X_adjust_finmoncon X];
-end
-
-
-penalty  = [];
-adjust = [ones(1,length(X)-1)*20, 1e-6] ;
+penalty  = 0;
+adjust = [ones(1,length(X)-1), 1e-6] ;
 X = X./adjust;
 
-W_selection = X(1:end-1);
+FET_selection = X(1:end-1);
 fs = X(end);
 
 ron = [];
@@ -55,120 +44,47 @@ Coss = [];
 tot_area = 0;
 
 %% Determining Coss and ron based on w
-if length(W_selection)==8
-    FET_selection = [2 2 2 3 3 3 3 3];
-elseif length(W_selection)==9
-    FET_selection = [2 2 2 3 3 3 3 3 3];
-else
-    fprintf('Something went wrong /n')
-end
 
-for select_FET = 1:length(W_selection)
-    
+for select_FET = 1:length(FET_selection)
+    % Use typical value for Coss and max value for rds from data sheet
+    % for inial look
     switch FET_selection(select_FET)
         
-        %% 8HVnLDMOS nbl
+            %% EPC 2023
         case 1
-            a =  0.001378;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.925e-9;
-            p2 = -2.787e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 1.45e-3;
+            Coss(select_FET) = 1530e-12;
             
-            L1=800*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L1;
-            
-            
-            %% 8HVnLDMOS iso
+            %% EPC 2014C
         case 2
-            a =  0.001453;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.093e-9;
-            p2 = -1.058e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 16e-3;
+            Coss(select_FET) = 150e-12;
             
-            L2=900*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L2;
-            
-            
-            %% 12HVnLDMOS iso hp mac
+            %% EPC 2015C
         case 3
-            a =  0.001447;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.487e-9;
-            p2 = -6.393e-13;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 4e-3;
+            Coss(select_FET) = 710e-12;
             
-            L3=900*10^-9;
-            
-            tot_area = tot_area+W_selection(select_FET)*L3;
-            
-            
-            %% 12HVnLDMOS iso mac
+            %% EPC 2055
         case 4
-            a =  0.001656;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.281e-9;
-            p2 = -3.1e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 3.6e-3;
+            Coss(select_FET) = 480e-12;
             
-            L4=1*10^-6;
-            
-            
-            tot_area = tot_area+W_selection(select_FET)*L4;
-            
-            %% 12HVnLDMOS nbl hp mac
+            %% EPC 2030
         case 5
-            a =  0.001447;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 2.487e-9;
-            p2 = -6.393e-13;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            ron(select_FET) = 2.4e-3;
+            Coss(select_FET) = 1120e-12;
             
-            L5=0.9*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L5;
-            
-            
-            %% 12HVnLDMOS nbl mac
+            %% EPC 2024
         case 6
-            a =  0.001585;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            p1 = 3.176e-9;
-            p2 = -7.226e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L6=1*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L6;
-            
-            %% 12HVnLDMOS nbl mr mac
-        case 7
-            a =  0.002556;
-            b = -1;
-            ron(select_FET) = a*W_selection(select_FET)^b;
-            
-            p1 = 2.828e-9;
-            p2 = -1.703e-12;
-            Coss(select_FET) = p1*W_selection(select_FET)+p2;
-            
-            L7=.9*10^-6;
-            
-            tot_area = tot_area+W_selection(select_FET)*L7;
+            ron(select_FET) = 1.5e-3;
+            Coss(select_FET) = 1620e-12;
             
         otherwise
             
@@ -179,14 +95,7 @@ for select_FET = 1:length(W_selection)
     
 end
 
-if 2*tot_area > (1.00001e-6)*100
-    
-    penalty = 2*tot_area*1e6;
-    
-else
-    penalty = 0;
-    
-end
+
 
 %% This is all caluclations to set up the variables need to find the SS
 % Solution
@@ -455,7 +364,7 @@ for i = 2:size(modSchemes,3)
         OLVin = avgYs(Vscloc1)+avgYs(Vscloc2);
         % MaxVin = OLVin+1;
         MaxVin = OLVin+2;
-        if OLVin<5 
+        if OLVin<5 || OLVin>30 
             continue
         end
         %{
@@ -495,7 +404,7 @@ for i = 2:size(modSchemes,3)
             
             Xss = sim.SS_Soln();
             [ avgXs, avgYs ] = sim.ssAvgs(Xss);
-            %{
+            %%{
             [ xs, t, ys ] = sim.SS_WF_Reconstruct;
             
             RMS_Iin = rms(ys(Illoc,:));
@@ -514,14 +423,14 @@ for i = 2:size(modSchemes,3)
             Poss = 0;
             
             % for when there is no rms calculation
-            %%{
+            %{
                 eta = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2 - Poss)/(Vin*-avgYs(Illoc) - avgYs(Ib1loc)^2*Rb - avgYs(Ib2loc)^2*Rb);
                 Ploss = -(avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) + -(Vin*avgYs(Illoc)) + Poss;
                 Pout = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) - Poss;
             %}
             
             % True input to output eff output of converter
-            %{
+            %%{
             P_calc_Vin = Vin-(RMS_Iin*(RL*2));
             P_calc_Vout1 = Vb1+RMS_Ib1*Rb;
             P_calc_Vout2 = Vb2+RMS_Ib2*Rb;
@@ -739,122 +648,51 @@ Z = reshape(p,length(PoutRange),length(Vgrange));
 weighted_vals=F(X1,X2).*(Z+Z([length(PoutRange):-1:1],[length(Vgrange):-1:1]));
 
 
-
-
+    
+    
+    
+    
+    
+    Added_ploss = [];
+    stick = [];
+    stick = mean(weighted_vals,'all');
+    stick = stick+penalty;
+    %{
+    Added_ploss = (1*(median(PlossSim(conditions(:,3)>18 & PoutSim<20)))) + ...
+        (4*(median(PlossSim(conditions(:,3)>18 & PoutSim>60)))) + ...
+        (3*(median(PlossSim(conditions(:,3)>18 & PoutSim<60 & PoutSim>40)))) + ...
+        (2*(median(PlossSim(conditions(:,3)>18 & PoutSim<40 & PoutSim>20)))) + ...
+        (4*(median(PlossSim(conditions(:,3)<10 & PoutSim<20)))) + ...
+        (0*(median(PlossSim(conditions(:,3)<10 & PoutSim>60)))) + ...
+        (1*(median(PlossSim(conditions(:,3)<10 & PoutSim<60 & PoutSim>40)))) + ...
+        (2*(median(PlossSim(conditions(:,3)<10 & PoutSim<40 & PoutSim>20)))) + ...
+        (3*(median(PlossSim(conditions(:,3)>10 & conditions(:,3)<14 & PoutSim<20)))) + ...
+        (1*(median(PlossSim(conditions(:,3)>10 & conditions(:,3)<14 & PoutSim>60)))) + ...
+        (2*(median(PlossSim(conditions(:,3)>10 & conditions(:,3)<14 & PoutSim<60 & PoutSim>40)))) + ...
+        (4*(median(PlossSim(conditions(:,3)>10 & conditions(:,3)<14 & PoutSim<40 & PoutSim>20)))) + ...
+        (2*(median(PlossSim(conditions(:,3)>14 & conditions(:,3)<18 & PoutSim<20)))) + ...
+        (2*(median(PlossSim(conditions(:,3)>14 & conditions(:,3)<18 & PoutSim>60)))) + ...
+        (4*(median(PlossSim(conditions(:,3)>14 & conditions(:,3)<18 & PoutSim<60 & PoutSim>40)))) + ...
+        (3*(median(PlossSim(conditions(:,3)>14 & conditions(:,3)<18 & PoutSim<40 & PoutSim>20))));
+    
+    stick = Added_ploss/38;
+    %}
+    
+   % stick = median(PlossSim);
+    
+    
+    
+    if isnan(stick)||isinf(stick)||stick<0
+        stick = 100;
+    end
 
 catch ME
 
 
+stick = 100;
 
 
-toc
-
-end
-toc
-return
-
-
-
-function Plot_Waveforms(sim,statenum,oppstatenum,plotxparam)
-%PLOT_WAVEFROMS is a function that plots all of the states
-%and the inverse states (V->I or I->V). They will appear in
-%figures 100 and 101. (Only input needed is simulation class)
-
-
-
-
-[xs, t, y, time_interval] = sim.SS_WF_Reconstruct();
-StateNumbers = sim.Converter.Topology.Parser.StateNumbers;
-StateNumbers_Opp = sim.Converter.Topology.Parser.StateNumbers_Opposite;
-
-switch nargin
-    case 1
-        statenum = 100;
-        oppstatenum = 101;
-        plotxparam  = 0;
-    case 2
-        oppstatenum = 101;
-        plotxparam = 0;
-    case 3
-        plotxparam = plotxparam;
-end
-
-if plotxparam~=0
-    ns = length(plotxparam);
-    figure(50)
-    for z=1:ns
-        ax = subplot(10*ns,1,z*10-9:z*10);
-        hold on;
-        if plotxparam(z)<0
-            plotxparam(z) = abs(plotxparam(z));
-            plot(t*10^6,-y(plotxparam(z),:), 'Linewidth', 3);
-        else
-            plot(t*10^6,y(plotxparam(z),:), 'Linewidth', 3);
-        end
-        ylabel(plotxparam(z))
-        box on
-        %ax.YLim = [min(xs(z,:))-abs(0.5*min(xs(z,:))) max(xs(z,:))+abs(0.5*max(xs(z,:)))];
-        if(z<ns)
-            set(gca, 'Xticklabel', []);
-        else
-            xlabel('t [\mus]')
-        end
-    end
-end
-
-
-figure(statenum)
-ns = size(xs,1);
-for z=1:ns
-    ax = subplot(10*ns,1,z*10-9:z*10);
-    hold on;
-    plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
-    ylabel(sim.getstatenames{z})
-    box on
-    ax.YLim = [min(y(StateNumbers(z),:))-abs(0.5*min(y(StateNumbers(z),:))) max(y(StateNumbers(z),:))+abs(0.5*max(y(StateNumbers(z),:)))];
-    if(z<ns)
-        set(gca, 'Xticklabel', []);
-    else
-        xlabel('t(s)')
-    end
-end
-drawnow;
-
-
-figure(oppstatenum)
-ns = size(xs,1);
-for z=1:ns
-    ax = subplot(10*ns,1,z*10-9:z*10);
-    hold on;
-    plot(t,y(StateNumbers_Opp(z),:), 'Linewidth', 3);
-    ylabel(sim.getstatenames_Opp{z})
-    box on
-    ax.YLim = [min(y(StateNumbers_Opp(z),:))-abs(0.5*min(y(StateNumbers_Opp(z),:))) max(y(StateNumbers_Opp(z),:))+abs(0.5*max(y(StateNumbers_Opp(z),:)))];
-    if(z<ns)
-        set(gca, 'Xticklabel', []);
-    else
-        xlabel('t(s)')
-    end
-end
-drawnow;
 
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+end
