@@ -1,4 +1,4 @@
-function [ Xs] = SS_Soln(obj, Xi, Bi)
+function [ Xs] = SS_Soln2(obj, Xi, Bi)
 % Steady-state solution of switched system using state-space matrices
 %
 % [ Xs] = SS_Soln( As, Bs, ts, u, Xi, Bi) finds the state values Xs in

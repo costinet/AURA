@@ -73,7 +73,33 @@ classdef componentDB < handle
             s = size(obj.components);
         end
         
-        varargout = subsref(obj, index)
+        function ind = end(obj, k, n)
+            %% redefined to aid in subsref
+            ind = length(obj.components);
+        end
+        
+        function n = numArgumentsFromSubscript(obj,s,indexingContext)
+            %% redefined to aid in subsref
+            if strcmp(s(1).type, '()') 
+                if strcmp(s(1).subs{:}, ':')
+                    n = length(obj.components(s(1).subs{:}));
+                else
+                    if length(s) == 1
+                        n = builtin('numArgumentsFromSubscript',obj.components,s,indexingContext);
+                    else
+                        n = 0;
+                        comps = obj.components(s(1).subs{:});
+                        for i = 1:length(comps)
+                            n = n + builtin('numArgumentsFromSubscript',obj.components(i),s(2:end),indexingContext);
+                        end
+                    end
+                end
+            else
+                n = builtin('numArgumentsFromSubscript',obj,s,indexingContext);
+            end
+        end
+        
+%         varargout = subsref(obj, index)
     end
         
 end

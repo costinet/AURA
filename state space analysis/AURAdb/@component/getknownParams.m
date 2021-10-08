@@ -48,6 +48,8 @@ function getknownParams()
             'defaultUnits = ' defaultUnits newline ...
             'defaultMultipliers = ' defaultMultipliers newline...
             'paramDict = ' paramDict newline ...
-            'paramNames = ' paramNames]
+            'paramNames = ' paramNames];
+        
+%         SQLtable = 
 
     end

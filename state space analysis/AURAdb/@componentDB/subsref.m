@@ -1,5 +1,22 @@
 function varargout = subsref(obj,s)
-    [varargout{1:nargout}] = builtin('subsref',obj,s);
+%     [varargout{1:nargout}] = builtin('subsref',obj,s);
+    
+    %numerical indexing is passed on to components list
+    if strcmp(s(1).type, '()')
+        if length(s) == 1
+            varargout = {obj.components(s(1).subs{:})};
+        else 
+            comps = obj.components(s(1).subs{:});
+            varargout = {};
+            for i = 1:length(comps)
+%                 [varargout{i}] = builtin('subsref',comps(i),s(2:end));
+                component = comps(i);
+                varargout = {varargout{:}, [subsref(component,s(2:end))]};
+            end
+        end
+    else
+        [varargout{1:nargout}] = builtin('subsref',obj,s);
+    end
     
     %% MATLAB TEMPLATE
 %    switch s(1).type

@@ -10,24 +10,56 @@ function plotAllStates(obj, fn, subplots)
     end
     
     if(subplots)
-        for i=1:ns
-            subplot(10*ns,1,i*10-9:i*10)
-            plot(t,xs(i,:), 'Linewidth', 3);
-            hold on;
-            ylims = ylim;
-            ylim(ylims)
-            for j = 1:length(obj.ts)
-                plot(sum(obj.ts(1:j))*ones(1,2), ylims, ':k');
+        nrMax = 10;
+        nGrid = 10;
+        nc = ceil(ns/nrMax);
+        nr = min(ns,nrMax);
+        for j = 1:nc
+            for i=1:nr
+                nsi = i+nr*(j-1);
+                if nsi > ns
+                    break
+                end
+                inds = [((i-1)*nGrid+1):(i*nGrid)]*nc - (nc-1) + (j-1);
+                subplot(nGrid*nr,nc,inds)
+                plot(t,xs(nsi,:), 'Linewidth', 3);
+                hold on;
+                ylims = ylim;
+                ylim(ylims)
+                for k = 1:length(obj.ts)
+                    plot(sum(obj.ts(1:k))*ones(1,2), ylims, ':k');
+                end
+                hold off;
+                ylabel(obj.stateNames{nsi});
+                box on
+                if(i<nrMax)
+                    set(gca, 'Xticklabel', []);
+                else
+                    xlabel('t')
+                end
             end
-            hold off;
-            ylabel(obj.getstatenames{i});
-            box on
-            if(i<ns)
-                set(gca, 'Xticklabel', []);
-            else
-                xlabel('t')
+            if nsi > ns
+                break
             end
         end
+%         for i=1:ns
+%             subplot(10*ns,1,i*10-9:i*10)
+%             plot(t,xs(i,:), 'Linewidth', 3);
+%             hold on;
+%             ylims = ylim;
+%             ylim(ylims)
+%             for j = 1:length(obj.ts)
+%                 plot(sum(obj.ts(1:j))*ones(1,2), ylims, ':k');
+%             end
+%             hold off;
+%             ylabel(obj.getstatenames{i});
+%             box on
+%             if(i<ns)
+%                 set(gca, 'Xticklabel', []);
+%             else
+%                 xlabel('t')
+%             end
+%         end
     else
         lines = findobj(gca,'Type','Line');
         firstrun = (numel(lines) == 0);
@@ -38,7 +70,7 @@ function plotAllStates(obj, fn, subplots)
 
         plot(t,xs, 'linewidth',2);
         if(firstrun)
-            legend(obj.converter.topology.stateLabels);
+            legend(obj.stateNames);
         end
         hold on;
 %         plot(t, obj.converter.topology.constraints.regtarget*ones(size(t)), '-.k', 'linewidth',3);

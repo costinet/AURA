@@ -41,7 +41,7 @@ try
     n = size(As,1);
     
     if nargin < 8
-        tsteps = min(max(Ts/min(ts)*100, 1e3),10e3);
+        tsteps = min(max(Ts/min(ts)*100, 100e3),1000e3);
     end
     if nargin < 7
         Ds = zeros(1,1,nsub);

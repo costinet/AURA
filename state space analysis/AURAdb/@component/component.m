@@ -48,20 +48,138 @@ classdef component < handle
 %             obj.Property1 = inputArg1 + inputArg2;
 %         end
         
-        function addParameter(obj,param)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            assert(length(param)==1, 'addParameter() can only be used with a single parameter at a time');
+        function addParameter(obj,varargin)
+            %obj.addParameter(param) add parameter to component
+            %   param -> componentTableData
+            %obj.addParameter(name, value)
+            %  name -> parameter name as string
+            %  value -> parameter typical value in units with SI base 1
+            %obj.addParameter(name, value, type)
+            %  type -> "min", "max", or "typ"
+            %obj.addParameter(name, [typ max min])
+            %obj.addParameter(..., conditions)
+            
+%             addparameter(name, value)
+%             addparameter(name, value, conditions)
+%             
+%             addparameter(name, value, type)
+%             addparameter(name, value, type, conditions)
+%             addparameter(name, value, conditions)
+%             
+%             addparameter(name, [value])
+%             addparameter(name, [value], conditions)
+%             
+            typVal = [];
+            maxVal = [];
+            minVal = [];
+            testConditions = {};
+            typeStr = [];
+%             
+
+            if nargin == 1+1
+                param = varargin{1};
+            else
+                paramName = varargin{1};
+                [~, paramValid] = isParamOf(obj, paramName);
+                assert(paramValid, [paramName ' is not a valid parameter of component type ' class(obj)]);
+                
+                %commented out and moved to componentTableData constructor
+                %varargin{2} = convertUnitsToDefault(obj, varargin{1}, varargin{2}, '');
+                
+                if nargin == 4+1
+                    testConditions = varargin{4};
+                    typeStr = varargin{3};
+                elseif nargin == 3+1
+                    if any(strcmpi(varargin{3}, {'min', 'max', 'typ'}))
+                        typeStr = varargin{3};
+                    else
+                        testConditions = varargin{3};
+                    end
+                end
+                    
+                if length(varargin{2}) == 1
+                    if isempty(typeStr)
+                        typVal = varargin{2};
+                    else
+                        if strcmpi(typeStr, 'min')
+                            minVal = varargin{2};
+                        elseif strcmpi(typeStr, 'max')
+                            maxVal = varargin{2};
+                        elseif strcmpi(typeStr, 'typ')
+                            typVal = varargin{2};
+                        else
+                            error('Invalid type specified');
+                        end
+                    end
+                elseif length(varargin{2}) == 3
+                    typVal = varargin{2}(1);
+                    maxVal = varargin{2}(2);
+                    minVal = varargin{2}(3);
+                    assert(maxVal > typVal && minVal < typVal, 'values must be specified such that min < typ < max');
+                else
+                    error('parameter value must be singleton or a vector of three values');
+                end
+                
+                param = componentTableData(obj, paramName,typVal,maxVal,minVal,testConditions);
+                
+            end
+                
+% %                 else
+% %                     error('addParameter not defined for this input configuration');
+% %                 end
+% %                     
+% %                 
+% %                 
+% %                 
+% %                 
+% %             elseif nargin == 3
+% %                 if length(varargin{2}) == 1
+% %                     param = componentTableData(obj, varargin{1}, varargin{2}, [], [], []);
+% %                 elseif length(varargin{2}) == 3
+% %                     assert(varargin{2}(1) < varargin{2}(2) && varargin{2}(1) > varargin{2}(3), 'values must be specified such that min < typ < max');
+% %                     param = componentTableData(obj, varargin{1}, varargin{2}(1), varargin{2}(2), varargin{2}(3), []);
+% %                 else
+% %                     error('addParameter not defined for this input configuration');
+% %                 end
+% %             elseif nargin >=4
+% %                 if length(varargin{2}) == 1
+% %                     varargin{2} = convertUnitsToDefault(obj, varargin{1}, varargin{2}, '');
+% %                     if strcmpi(varargin{3} == "typ")
+% %                         param = componentTableData(obj, varargin{1}, varargin{2}, [], [], []);
+% %                     elseif strcmpi(varargin{3} == "min")
+% %                         param = componentTableData(obj, varargin{1}, [], [], varargin{2}, [], []);
+% %                     elseif strcmpi(varargin{3} == "max")
+% %                         param = componentTableData(obj, varargin{1}, [], varargin{2}, [], []);
+% %                     end
+% %                 elseif  length(varargin{2}) == 3
+% %                     assert(varargin{2}(1) < varargin{2}(2) && varargin{2}(1) > varargin{2}(3), 'values must be specified such that min < typ < max');
+% %                     varargin{2} = convertUnitsToDefault(obj, varargin{1}, varargin{2}, varargin{3});
+% %                     param = componentTableData(obj, varargin{1}, varargin{2}(1), varargin{2}(2), varargin{2}(3), []);
+% %             elseif nargin == 5
+% %                 param = componentTableData(obj, varargin{1}, varargin{2}, [], [], []);
+% %             elseif nargin == 6
+% %                 param = componentTableData(obj, varargin{1}, varargin{2}, [], [], []);
+% %             elseif nargin == 7
+% %                 param = componentTableData(obj, varargin{1}, varargin{2}, [], [], []);
+% % %                 componentTableData(type, paramName,typVal,maxVal,minVal,testConditions)
+% %             end
+            
+            %assert(length(param)==1, 'addParameter() can only be used with a single parameter at a time');
+            if length(param) > 1
+                for i = 1:length(param)
+                    obj.addParameter(param(i));
+                end
+            end
             if isa(param, 'componentTableData')
                 if isempty(obj.parameters)
                     obj.parameters = param;
                 else
-                    [sameData, sameParam] = eq(obj.parameters,graph);
+                    [sameData, sameParam] = eq(obj.parameters,param);
                     if ~any(sameParam)
                         % New plot
                         obj.parameters(length(obj.parameters)+1) = param; 
                     elseif ~any(sameData)
-                        % Existing plot, but new data
+                        % Existing parameter, but new data
                         if isempty(obj.parameters(sameParam).min)
                             obj.parameters(sameParam).min = param.min;
                         elseif ~isempty(param.min) && obj.parameters(sameParam).min ~= param.min
@@ -81,7 +199,7 @@ classdef component < handle
                             obj.parameters(length(obj.parameters)+1) = param;
                         end
                     else
-                        % Plot already present, do nothing
+                        % parameter already present, do nothing
                     end
 %                     obj.parameters(length(obj.parameters)+1) = param; 
                 end
@@ -91,7 +209,12 @@ classdef component < handle
         end
         
         function addGraph(obj, graph)
-            assert(length(graph)==1, 'addGraph() can only be used with a single graph at a time');
+%             assert(length(graph)==1, 'addGraph() can only be used with a single graph at a time');
+             if length(graph) > 1
+                for i = 1:length(graph)
+                    obj.addGraph(graph(i));
+                end
+            end
             if isa(graph, 'componentPlotData')
                 if isempty(obj.graphs)
                     obj.graphs = graph;
@@ -102,8 +225,11 @@ classdef component < handle
                         obj.graphs(length(obj.graphs)+1) = graph; 
                     elseif ~any(sameData)
                         % Existing plot, but new data
-                        obj.graphs(length(obj.graphs)+1) = graph; 
-                        warning(['Adding a duplicate plot for ', graph.title]);
+                        % obj.graphs(length(obj.graphs)+1) = graph; 
+                        % warning(['Adding a duplicate plot for ', graph.title]);
+                        
+                        obj.graphs(find(sameData,1)).merge(graph);
+                        
                     else
                         % Plot already present, do nothing
                     end
@@ -141,17 +267,31 @@ classdef component < handle
            end
            
         end
+        
+        function convValues = convertUnitsToDefault(obj, param, values, units)
+            if isempty(units) 
+                mult = 1;
+            elseif any(strcmp(units(1), obj.SIprefixes.keys))
+                mult = obj.SIprefixes(units(1));
+            elseif any(strcmp(units, obj.signalUnits)) || isempty(units)
+                mult = 1;
+            else
+                error('Invalid unit specified');
+            end
+            defaultMult = obj.SIprefixes(obj.defaultMultipliers{strcmp(isParamOf(obj,param), obj.knownParams)});
+            convValues = values*mult/defaultMult;
+        end
     end
     
     methods (Hidden)
-        function varargout = subsref(obj, param)
+        function varargout = subsref(obj, s)
         %subsref overloads dot-indexing to give back parameters when
         %they are available.  Returns two paramters:
         %   res is a single value best-guess for the response
         %   full is a struct or array of the full relevant data
         % The value in res is determined based on the request and the
         % available data.
-            [varargout{1:nargout}] = builtin('subsref',obj,param);
+% %             [varargout{1:nargout}] = builtin('subsref',obj,s);
 %             if (length(param) == 1 && length(obj) == 1) || ...
 %                     (length(param) == 1 && length(obj) > 1 && strcmp(param(1).type, '.'))
 %                 %% THIS IS STILL WIP -- can I do "tdb(1:3).ron"?
@@ -174,7 +314,66 @@ classdef component < handle
 %             else
 %                  [varargout{1:nargout}] = builtin('subsref',obj,param);
 %             end 
+
+            if strcmp(s(1).type, '.')
+                try 
+                    [varargout{1:nargout}] = builtin('subsref',obj,s);
+                catch e
+                    if strcmp(e.identifier,'MATLAB:noSuchMethodOrField')
+                       [name,valid] = isParamOf(obj, s(1).subs);
+                       if valid
+                           loc = strcmpi({obj.parameters.name}, name);
+                           if any(loc)
+                               if length(s) == 1
+                                    varargout{1} = obj.parameters(loc);
+                               else
+                                   [varargout{1}] = builtin('subsref',obj.parameters(loc),s(2:end));
+                               end
+                           else
+                               blankParam = componentTableData(obj, name, [], [], [], [], '');
+                               if length(s) == 1
+                                    varargout{1} = blankParam;
+                               else
+                                   [varargout{1}] = builtin('subsref',blankParam,s(2:end));
+                               end
+                           end
+                       else
+                           rethrow(e)
+                       end
+                           
+                    end
+                end
+            else
+                 [varargout{1:nargout}] = builtin('subsref',obj,s);
+            end
+                
         end
+        
+%          function n = numArgumentsFromSubscript(obj,s,indexingContext)
+%             %% redefined to aid in subsref
+% %             if strcmp(s(1).type, '()') 
+% %                 if strcmp(s(1).subs{:}, ':')
+% %                     n = length(obj.components(s(1).subs{:}));
+% %                 else
+% %                     if length(s) == 1
+% %                         n = builtin('numArgumentsFromSubscript',obj.components,s,indexingContext);
+% %                     else
+% %                         n = 0;
+% %                         comps = obj.components(s(1).subs{:});
+% %                         for i = 1:length(comps)
+% %                             n = n + builtin('numArgumentsFromSubscript',obj.components(i),s(2:end),indexingContext);
+% %                         end
+% %                     end
+% %                 end
+% %             else
+%                 x=1;
+%                 if x==1
+%                     n = builtin('numArgumentsFromSubscript',obj,s,indexingContext);
+%                 else
+%                     n=2;
+%                 end
+% %             end
+%         end
         
         function [name, valid] = isParamOf(obj, name)
             %isParamOf(obj, name) checks if the parameter name is
@@ -197,6 +396,7 @@ classdef component < handle
             [~,IA,~] = intersect(obj(1).paramDict.keys, name);
             if ~isempty(IA)
                 name = obj(1).paramDict(name);
+                name = obj.knownParams{strcmp(name, obj.paramNames)};
                 valid = true;
             else
                 valid = false;

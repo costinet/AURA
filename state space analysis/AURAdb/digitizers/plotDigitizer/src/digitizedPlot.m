@@ -1283,22 +1283,22 @@ classdef digitizedPlot < handle
             
             if(0)
                 %% Debug testing
-                imshow(L);
-                hold on;
-                plot([xloc,xloc], [1 size(imgPlot,2)],':r');
-                plot(xloc*ones(size(startPtsY)), startPtsY, 'ob');
-                
-                if exist('yVals', 'var')
-                    for i=1:size(yVals,2)
-                        plot(ximg(i), yVals(:,i), 'ob');
-                    end
-                end
-                
-                if exist('trace', 'var')
-                    for i = 1:size(trace,2)
-                        plot(ximg, trace(:,i), ':g', 'LineWidth',3);
-                    end
-                end
+%                 imshow(L);
+%                 hold on;
+%                 plot([xloc,xloc], [1 size(imgPlot,2)],':r');
+%                 plot(xloc*ones(size(startPtsY)), startPtsY, 'ob');
+%                 
+%                 if exist('yVals', 'var')
+%                     for i=1:size(yVals,2)
+%                         plot(ximg(i), yVals(:,i), 'ob');
+%                     end
+%                 end
+%                 
+%                 if exist('trace', 'var')
+%                     for i = 1:size(trace,2)
+%                         plot(ximg, trace(:,i), ':g', 'LineWidth',3);
+%                     end
+%                 end
             end
             
             trace = nan*ones(50,nTraces);

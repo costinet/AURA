@@ -4,7 +4,8 @@ classdef componentPlotData
     
     properties
         plotData    % x-y data extracted from plot
-        testConditions   
+        testConditions
+        dataLabels  % labels for individual traces
         title
     end
     
@@ -19,9 +20,9 @@ classdef componentPlotData
     
     properties (Hidden)
         axisLabels  % string axislabel
-        dataLabels  % labels for individual traces
-        axisType    % two-element {x,y}, values 'log', 'norm', or 'lin'
+        axisType = {'lin', 'lin'}    % two-element {x,y}, values 'log', 'norm', or 'lin'
         SIUnits
+        conversionEps = 1e-8; %relative change in data acceptable from sync
     end
     
     properties (Dependent, Hidden)
@@ -76,14 +77,22 @@ classdef componentPlotData
                 obj.dataLabels  = dP.dataLabels;
                 obj.testConditions = dP.testConditions;
                 obj.title = dP.getPlotTitle('short');
+            elseif nargin == 2 && isa(varargin{1}, 'componentPlotData')
+                dP = varargin{1};
+                obj.plotData = dP.plotData;
+                obj.SIUnits  = dP.SIUnits;
+                obj.axisType = dP.axisType;
+                obj.axisLabels  = dP.axisLabels;
+                obj.dataLabels  = dP.dataLabels;
+                obj.testConditions = dP.testConditions;
+                obj.title = dP.title;
             end
 
         end
         
         function plot(obj, axes)
            hold(axes, 'off');
-           
-           
+                     
            xM = obj.componentType.defaultMultipliers(strcmp(obj.xSignal, obj.componentType.knownParams));
            xMn = obj.componentType.SIprefixes(xM{1});
            yM = obj.componentType.defaultMultipliers(strcmp(obj.ySignal,obj.componentType.knownParams));
@@ -94,7 +103,7 @@ classdef componentPlotData
            
            for i=1:obj.nTraces
 
-               plot(axes, obj.plotData{i}(:,1)/xMn, obj.plotData{i}(:,2)/yMn);
+               plot(axes, obj.plotData{i}(:,1)/xMn, obj.plotData{i}(:,2)/yMn, '-o');
                hold(axes, 'on');
            end
            legend(axes, obj.dataLabels);
@@ -199,22 +208,22 @@ classdef componentPlotData
         end
 
     
-        function [tf, plotTF] = eq(obj, graph)
+        function [exact, plotTF] = eq(obj, graph)
             % [tf, plotTF] = eq(obj, graph)
-            % tf is true if the two grpahs are identical
+            % tf is true if the two graphs are identical
             % plotTF is true if the two are the same plot, but with
             % different data
             if length(obj) > 1 && length(graph) == 1
                 for i = 1:length(obj)
                     [xtf, xplotTF] = eq(obj(i), graph);
-                    tf(i) = xtf;
+                    exact(i) = xtf;
                     plotTF(i) = xplotTF;
                 end
                 return
             elseif length(obj) == 1 && length(graph) > 1
                 for i = 1:length(graph)
                     [xtf, xplotTF] = eq(obj, graph(i));
-                    tf(i) = xtf;
+                    exact(i) = xtf;
                     plotTF(i) = xplotTF;
                 end
                 return
@@ -222,29 +231,117 @@ classdef componentPlotData
                 error('eq() is only defined when one object is singleton');
             else
                 if ~isa(graph, class(obj))
-                    tf = false; 
-                elseif length(obj.plotData) ~= length(graph.plotData)
-                    tf = false; 
+                    plotTF = false; 
+%                 elseif length(obj.plotData) ~= length(graph.plotData)
+%                     tf = false; 
                 elseif ~strcmp(obj.xSignal, graph.xSignal)
-                    tf = false; 
+                    plotTF = false; 
                 elseif ~strcmp(obj.ySignal, graph.ySignal)
-                    tf = false; 
-                elseif ~all(strcmp(obj.axisType, graph.axisType))
-                    tf = false; 
-                elseif ~all(strcmp(obj.dataLabels, graph.dataLabels))
-                    tf = false; 
-                else
-                    tf = true;
-                end
-
-                if ~tf
-                    plotTF = false; return
+                    plotTF = false; 
+                elseif ~strcmp(obj.title, graph.title)
+                    plotTF = false; 
+                %elseif ~all(strcmp(obj.axisType, graph.axisType))
+                    %tf = false; 
+%                 elseif ~all(strcmp(obj.dataLabels, graph.dataLabels))
+%                     tf = false; 
                 else
                     plotTF = true;
+                end
+
+                if ~plotTF
+                    exact = false; return
+                else
+                    exact = true;
                     for i = 1:length(obj.plotData)
-                        tf = all([tf, all(obj.plotData{i} == graph.plotData{i})]);
+                        % Due to storing online and returning, some
+                        % resolution may be lost, so check for less then
+                        % 1e-6 % difference in values
+                        exact =  all([exact ...
+                            all(abs(obj.plotData{i} - graph.plotData{i})./max(abs(graph.plotData{i}),eps) < obj.conversionEps) ...
+                            ]);
                     end
                 end
+            end
+        end
+        
+        function merge(obj, newGraph, mode)
+            if nargin ==2
+                mode = 0;
+            end
+            
+            %mode == 0 --> graphical
+            %mode == 1 --> replace
+            %mode == 2 --> keep old data
+            %mode == 3 --> merge
+            
+            assert(isa(newGraph, class(obj)), ...
+                ['merge can only be used on objects of the same type'] );
+            [exact, plotTF] = obj.eq(newGraph);
+            assert(any(plotTF), 'merge can only be used on two plots of the same type');
+            if any(exact)
+                warning('Merge should not be called on two identical copies');
+                return
+            end
+            
+            % so it is definitely same plot, different data
+            for i = 1:length(obj.plotData)
+                for j = 1:length(newGraph.plotData)
+                    minL = min(length(obj.plotData{i}), length(newGraph.plotData{j}));
+                    exact(i,j) =  all(abs(obj.plotData{i}(1:minL,:) - newGraph.plotData{j}(1:minL,:))./max(abs(newGraph.plotData{j}(1:minL,:)),eps) < obj.conversionEps, 1:2);
+                end
+            end
+            newCurves = sum(exact,1) ~=1;
+            
+            %create a copy of the object for editing 
+            %(NOT A HANDLE CLASS, so this was unecessary      
+            mergedGraph = componentPlotData(obj.componentType, obj);
+            
+            for i = find(newCurves)
+                sameLabel = find(strcmp(newGraph.dataLabels, obj.dataLabels(i)));
+                if sameLabel
+                   %We already have the curve, but the new graph has different data
+                   mergedGraph.plotData{sameLabel} = unique(sortrows([obj.plotData{sameLabel}; newGraph.plotData{i}], 1), 'rows');
+                else
+                    % The label is different, so it may be a new curve on
+                    % the same plot
+                     mergedGraph.plotData{end+1} = newGraph.plotData{i};
+                     mergedGraph.dataLabels{end+1} =  newGraph.dataLabels{end+1};
+                end
+                mergedGraph.testConditions = table2cell(unique(cell2table([ ...
+                    obj.testConditions;newGraph.testConditions])));
+            end
+            
+            if mode == 1
+                obj = newGraph;
+            elseif mode == 2
+                return
+            elseif mode == 3
+                obj = mergedGraph;
+            elseif mode == 0
+                figure;
+                subplot(3,1,1)
+                plot(obj, gca);
+                subplot(3,1,2)
+                plot(mergedGraph, gca);
+                subplot(3,1,3)
+                plot(newGraph, gca);
+                while(1)
+                    uI = input(['Conflicting data found for plot title: ' newGraph.title '\n' ...
+                        'Top plot is old data, middle plot is merged data, bottom plot is new data' ... 
+                        '\n Select Top [T], Middle [M], or Bottom [B] plot to save \n'], 's');
+                    if strcmpi(uI,'T')
+                        break
+                    elseif strcmpi(uI,'B')
+                        obj = mergedGraph;
+                        break
+                    elseif strcmpi(uI,'M')
+                        obj = newGraph;
+                        break
+                    else
+                        display('Invalid Input');
+                    end     
+                end
+                close(gcf);
             end
         end
     end

@@ -13,8 +13,8 @@ classdef SMPSim < handle
 %         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
 %     
     properties (Access = private)
-        LSQoptions = optimoptions('lsqlin','algorithm','trust-region-reflective','Display','none');
-        tryOpt = 1;
+%         LSQoptions = optimoptions('lsqlin','algorithm','trust-region-reflective','Display','none');
+        tryOpt = 0;
         condThreshold = 1e9;
         gmin = 1/100e6;
         
@@ -35,6 +35,11 @@ classdef SMPSim < handle
         Ds
         Is
         topology
+        
+        stateNames
+        outputNames
+        switchNames
+        inputNames
     end
     
     properties (Dependent = true)
@@ -45,6 +50,10 @@ classdef SMPSim < handle
     properties
         Xs
         converter
+    end
+    
+    properties (Hidden)
+        caching = 0
     end
     
     methods (Access = private)
@@ -59,16 +68,26 @@ classdef SMPSim < handle
     methods
         %% Methods from external files
         [ Xs] = SS_Soln(obj, Xi, Bi) 
-        [ Xs] = SS_Soln2(obj, Xi, Bi) 
-        [ output_args ] = regulate( obj )
         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
+        
         plotAllStates(obj, fn, subplots)
         plotAllOutputs(obj, fn, subplots)
-        [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order);
         
-        [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)
+        [ Xs] = perturbedSteadyState(obj, dts) 
+        [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order);
         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
+        
+        [ output_args ] = regulate( obj )
+        [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)
+        [ Xs] = SS_Soln2(obj, Xi, Bi) 
+        
+        %% 
+        %[margins(before,after,with &w/o hysteresit)] = checkDiscreteErrors
+        % checkContinuousError
+        %[altered] = updateForUncontrolledSwitching
+        %[deltaTs] = switchingErrorGradientDescent
+
         
         %% Constructors
         function obj = SMPSim(conv)
@@ -122,6 +141,22 @@ classdef SMPSim < handle
                 res = obj.oldAs;
             end
         end
+        
+        function res = get.stateNames(obj)
+            res = obj.converter.topology.stateLabels;
+        end
+        
+        function res = get.outputNames(obj)
+            res = obj.converter.topology.outputLabels;
+        end
+        
+        function res = get.inputNames(obj)
+            res = obj.converter.topology.inputLabels;
+        end
+        
+        function res = get.switchNames(obj)
+            res = obj.converter.topology.switchLabels;
+        end
             
         
         %% Setters
@@ -136,8 +171,8 @@ classdef SMPSim < handle
         end
         
         function set.ts(obj,newT)
-%             warning('Setting ts is not recommended for class SMPSsim.  Use methods in SMPSconverter');
-            obj.converter.ts = newT;
+             error('Setting ts is not recommended for class SMPSsim.  Use methods in SMPSconverter');
+%             obj.converter.ts = newT;
         end
         
         
@@ -167,16 +202,20 @@ classdef SMPSim < handle
 %             obj.Xs = [];
 %         end
 
+        function Xss = steadyState(obj)
+            Xss = SS_Soln(obj);
+        end
+
         function clearStoredResults(obj)
-            obj.oldAs = zeros(size(obj.As));
-            obj.oldIntEAt = zeros(size(obj.As));
-            obj.oldts = zeros(size(obj.ts));
-            obj.Xs = [];
+            if obj.caching
+                obj.oldAs = zeros(size(obj.As));
+                obj.oldIntEAt = zeros(size(obj.As));
+                obj.oldts = zeros(size(obj.ts));
+            end
+            obj.Xs = [];     
         end    
         
-        function sn = getstatenames(obj)
-            sn = obj.converter.topology.stateLabels;
-        end
+
         
         function loc = sigLoc(obj, name, type)
             if nargin == 3

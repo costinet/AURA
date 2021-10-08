@@ -23,12 +23,12 @@ classdef componentTableData
         componentType
     end
     
-    properties (Dependent)
+    properties (Dependent, Hidden)
        type 
     end
     
     methods
-        function obj = componentTableData(type, paramName,typVal,maxVal,minVal,testConditions)
+        function obj = componentTableData(type, paramName,typVal,maxVal,minVal,testConditions, units)
             %componentTableData Construct an instance of this class
             %   Detailed explanation goes here
             
@@ -39,16 +39,25 @@ classdef componentTableData
             %Check that paramName is a valid paramter of component class
             [name, valid] = isParamOf(obj.componentType, paramName);
             if valid
-                obj.name = name;
+%                 knownParamIndex = strcmp(type.paramNames, fullName);
+%                 obj.name = type.knownParams{knownParamIndex};
+            	obj.name = name;
             else
                 warning(['Unknown parameter ' paramName ' for components of type ' class(obj.componentType) '.' newline...
                     'Known parameters are ' strjoin(obj.componentType.knownParams, ', ')]);
             end
             
-            obj.typ = typVal;
-            obj.max = maxVal;
-            obj.min = minVal;
+            if nargin < 7
+                units = '';
+            end
+            
+            obj.typ = convertUnitsToDefault(type, obj.name, typVal, units);
+            obj.max = convertUnitsToDefault(type, obj.name, maxVal, units);
+            obj.min = convertUnitsToDefault(type, obj.name, minVal, units);
             obj.conditions = testConditions;
+            
+            obj.baseUnit = type.defaultUnits(strcmp(type.knownParams, obj.name));
+            obj.multiplier = type.defaultMultipliers(strcmp(type.knownParams, obj.name));
         end
         
         function out = approx(obj)

@@ -8,11 +8,11 @@ clc
 addpath(genpath(pwd))
 
 deviceNumbers = Transistor.listDevices;
-for i = 1:length(deviceNumbers)
+for i = 1:1;%length(deviceNumbers)
     t{i} = Transistor(deviceNumbers{i}, 1);
 end
 
-URL = 'http://localhost/powerLib';
+URL = 'http://powerlib.ddns.net/powerlib';
 
 %% Check capabilities
 data = webread([URL '/upload?apiKey=qR06gPrxTo&action=handshake']);

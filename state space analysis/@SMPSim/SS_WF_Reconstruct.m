@@ -41,7 +41,8 @@ Ds = obj.Ds;
 try
     %wrapped in try block for debugging purposes
     Ts = sum(ts);
-    totalts = [0 cumsum(ts)];
+    totalts(1) = 0;
+    totalts(2:length(ts)+1) = cumsum(ts);
 
     nsub = size(As,3);
     n = size(As,1);

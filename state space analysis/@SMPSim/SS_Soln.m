@@ -1,4 +1,4 @@
-function [ Xs] = SS_Soln(obj, Xi, Bi)
+function [ Xs] = SS_Soln(obj)
 % Steady-state solution of switched system using state-space matrices
 %
 % [ Xs] = SS_Soln( As, Bs, ts, u, Xi, Bi) finds the state values Xs in
@@ -32,11 +32,11 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
     ts = obj.ts;
     u = obj.u;
 
-    if(nargin == 1 || obj.tryOpt == 0)
-        tryOpt = 0;
-    else
-        tryOpt = obj.tryOpt;
-    end
+%     if(nargin == 1 || obj.tryOpt == 0)
+%         tryOpt = 0;
+%     else
+%         tryOpt = obj.tryOpt;
+%     end
 
     n = size(As,3);
     ns = size(Bs,1);
@@ -79,7 +79,9 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
            RHSsum = RHSsum +  cumProdExpRev(:,:,i)*frespNew;
         end
 
+    warning('OFF', 'MATLAB:singularMatrix')
     Xss = (eye(ns) - cumProdExp(:,:,n))^-1*RHSsum;
+    
     
     %% Check for depdendent states
     if(sum(isnan(Xss)) || sum(isinf(Xss)))
@@ -95,8 +97,13 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
                 % Solution worked, replace the dependent states that were
                 % removed
                 Xss = obj.Is(:,:,1)*Xss;
-                tryOpt = 0;
+%                 tryOpt = 0;
             end
+            
+%             %% Debugging:
+%             if rcond(A2) < 1e-15
+%                 test=1
+%             end
         end
 
 
@@ -104,14 +111,20 @@ function [ Xs] = SS_Soln(obj, Xi, Bi)
         % Use linprog to solve without inversion through error minimization
         % I'm not sure if this addresses any real issue, i.e. if there is a
         % case where this would work but the above would not.
-        if(tryOpt)
-            if(abs(Xss(1) - Xi(1)) > 2 || isnan(Xss(1)))
-                warning(['Unable to find SS solution directly for Xi = ' num2str(Xi)]);        
-                X = linprog( Xss2*0+1, [], [], A2, b2);
-                Xss = obj.Is(:,:,1)*X;
-            end
-        end
+        
+        %% 09/28/21 -- Removed this
+        %currently left as commented out including Xi and tryopt in case it
+        %is needed anytime later.  Should move to another function, if so.
+%         if(tryOpt)
+%             if(abs(Xss(1) - Xi(1)) > 2 || isnan(Xss(1)))
+%                 warning(['Unable to find SS solution directly for Xi = ' num2str(Xi)]);        
+%                 X = linprog( Xss2*0+1, [], [], A2, b2);
+%                 Xss = obj.Is(:,:,1)*X;
+%             end
+%         end
     end
+    
+    warning('ON', 'MATLAB:singularMatrix')
 
     %% from steady-state solution, go through and find states at each subinterval
     Xs(:,1) = Xss;
