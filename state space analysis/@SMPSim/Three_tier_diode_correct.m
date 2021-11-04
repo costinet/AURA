@@ -735,6 +735,7 @@ while not_reached_SS && the_big_counter<=more_iterations
     catch ME
         ME
         ME.stack.line
+        ME.stack.file
         rethrow(ME)
     end
 end
@@ -805,6 +806,7 @@ end
         
         
         [xs, t, y, time_interval] = obj.SS_WF_Reconstruct();
+        [ avgXs, avgYs ] = obj.ssAvgs(obj.Xs);
         StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
         StateNumbers_Opp = obj.Converter.Topology.Parser.StateNumbers_Opposite;
         

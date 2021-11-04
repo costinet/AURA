@@ -35,10 +35,6 @@ i = 1;
 % openvar('variable_name')
 
 % Update class
-obj.Asym = A;
-obj.Bsym = B;
-obj.Csym = C;
-obj.Dsym = D;
 obj.HtempAB = HtempAB;
 obj.HtempCD = HtempCD;
 obj.dependsAB = dependsAB;

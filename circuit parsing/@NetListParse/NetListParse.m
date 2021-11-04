@@ -125,6 +125,15 @@ classdef NetListParse < handle
     end
     methods
         
+        function set.ONorOFF(obj,value)
+            obj.ONorOFF = value;
+        end
+        
+        function [value] = get.ONorOFF(obj)
+            value = obj.ONorOFF;
+        end
+            
+            
         function initialize(obj,Filename,Voltage,Current,Num_solve)
             % This function checks to see if all variables are of the
             % correct class

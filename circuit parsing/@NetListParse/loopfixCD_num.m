@@ -145,5 +145,9 @@ if ~isempty(C)
 
     C = [Htemp(:,size(Htemp,1)+1:end-size(s,2)),zeros(size(Htemp,1),j)];
     D = Htemp(:,end-size(s,2)+1:end);
+    
+    if j == 0
+        saved = [];
+    end
 end
 end

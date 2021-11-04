@@ -1,6 +1,4 @@
-
-
-%AURA_Eff_Sweep()
+function [stick] = AURA_Eff_Sweep_reduce_comp(X)
 
 %     _   _   _  ____    _
 %    / \ | | | |/ _  |  / \
@@ -13,10 +11,9 @@
 % Current konwn issues use FETs for diodes. (Just have them never turn
 % on)
 
-clear
 
 try
-tic
+
 % Place in the filename
 filename = 'SC_FIB_AURA.net'; % Place netlist filename here that you want to run
 
@@ -35,17 +32,7 @@ Current = {'V1'
 
 %% Determining Coss and ron based on w
 
-
-X = [4 4 1 6 2 4 2 4 1.2392];
-
-
-if length(X) == 1
-    X_adjust_finmoncon = [0.1859    0.1548    0.3997    0.4000    0.0196    0.1075    0.0794     0.3187].*[20 20 20 20 20 20 20 20];
-    X = [X_adjust_finmoncon X];
-end
-
-
-penalty  = [];
+penalty  = 0;
 adjust = [ones(1,length(X)-1), 1e-6] ;
 X = X./adjust;
 
@@ -73,7 +60,7 @@ for select_FET = 1:length(FET_selection)
         case 2
             
             ron(select_FET) = 16e-3;
-            Coss(select_FET) = 1530e-12;
+            Coss(select_FET) = 150e-12;
             
             %% EPC 2015C
         case 3
@@ -138,68 +125,44 @@ u = [Vg Vb1 Vb2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]';
 
 modSchemes(:,:,1) = [
     0     1     1     1     0     1     0     1     1     0     0     1     1     1     0     1
-    0     1     1     1     0     1     0     1     0     0     0     1     1     1     0     1
     0     1     1     1     0     1     0     1     0     1     0     1     1     1     0     1
-    0     1     1     1     0     1     0     1     0     0     0     1     1     1     0     1
     0     1     1     1     0     1     0     1     1     0     0     1     1     1     0     1
-    0     1     1     1     0     1     0     0     1     0     0     1     1     1     0     1
     0     1     1     1     0     1     1     0     1     0     0     1     1     1     0     1
-    0     1     1     1     0     1     0     0     1     0     0     1     1     1     0     1
     ];
 
 modSchemes(:,:,2) = [
     0     1     1     1     0     1     0     1     0     1     0     1     1     1     0     1
-    0     1     1     1     0     1     0     0     0     1     0     1     1     1     0     1
     0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
-    0     1     1     1     0     1     1     0     0     0     0     1     1     1     0     1
     0     1     1     1     0     1     1     0     1     0     0     1     1     1     0     1
-    0     1     1     1     0     1     1     0     0     0     0     1     1     1     0     1
     0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
-    0     1     1     1     0     1     0     0     0     1     0     1     1     1     0     1
     ];
 
 modSchemes(:,:,3) = [
     0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
-    0     1     1     0     0     0     1     0     0     1     0     1     1     0     0     1
     0     1     1     0     1     0     1     0     0     1     0     1     1     0     0     1
-    0     1     1     0     0     0     1     0     0     1     0     1     1     0     0     1
     0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
-    0     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
     1     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
-    0     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
     ];
 
 modSchemes(:,:,4) = [
     0     1     1     0     1     0     1     0     0     1     0     1     1     0     0     1
-    0     1     1     0     0     0     1     0     0     1     0     1     1     0     0     0
     0     1     1     1     0     1     1     0     0     1     0     1     1     0     1     0
-    0     0     0     1     0     1     1     0     0     1     0     0     1     0     0     0 
     1     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
-    0     0     0     1     0     1     1     0     0     1     0     0     0     1     0     1
     0     1     1     1     0     1     1     0     0     1     1     0     0     1     0     1
-    0     1     1     0     0     0     1     0     0     1     0     0     0     0     0     1
     ];
 
 modSchemes(:,:,5) = [
     0     1     1     1     0     1     1     0     0     1     0     1     1     0     1     0
-    0     1     1     0     0     0     1     0     0     1     0     1     1     0     1     0
     0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0
-    0     1     1     0     0     0     1     0     0     1     0     0     0     0     0     0
     0     1     1     1     0     1     1     0     0     1     1     0     0     1     0     1
-    0     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
     1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
-    0     0     0     1     0     1     1     0     0     1     0     0     0     0     0     0
     ];
 
 modSchemes(:,:,6) = [
     0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0
-    0     1     1     0     0     0     1     0     0     1     0     0     0     0     1     0
     0     1     1     1     0     1     1     0     0     1     1     0     0     0     1     0
-    0     0     0     1     0     1     1     0     0     1     1     0     0     0     0     0
     1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
-    0     0     0     1     0     1     1     0     0     1     1     0     0     0     0     0
     0     1     1     1     0     1     1     0     0     1     1     0     0     0     1     0
-    0     1     1     0     0     0     1     0     0     1     0     0     0     0     1     0
     ];
 
 
@@ -234,6 +197,8 @@ M15 and M18  (8)
 %%%%% ts = [Ts*(D-dead) Ts*(dead) Ts*(1-D-dead) Ts*(dead)];
 %%%% But a non-synchronous buck covnerter would be
 %%%%% ts = [Ts*(D-dead) Ts*(1-(D-dead))];
+ts = [0.5 0.5 0.5 0.5]/2*Ts;
+
 
 % The inital guess of time intervals % The inital guess of time intervals
 % Assigned later dynamically
@@ -346,11 +311,11 @@ top.Parser = parse;
 conv = SMPSconverter();
 conv.Topology = top;
 
-Order  = 1:8;
+Order  = 1:4;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%conv.ts = ts;
+conv.ts = ts;
 conv.u = u;
 conv.order = Order;
 conv.Element_Properties = Numerical_Components;
@@ -360,6 +325,8 @@ conv.Switch_Sequence = Switch_Sequence;
 conv.Fwd_Voltage = Diode_Forward_Voltage;
 sim = SMPSim;
 sim.Converter = conv;
+sim_Rb = SMPSim;
+sim_Rb.Converter = conv;
 
 
 
@@ -383,54 +350,35 @@ for i = 2:size(modSchemes,3)
     %  for i = 3:6
     swvec = modSchemes(:,:,i);
     conv.Switch_Sequence = swvec;
+    
+    parse.Component_Values(11,2) = {1e6};
+    conv.Element_Properties(11,2) = {1e6};
+    
+    sim_Rb=Run_SS_Converter_num_no_diode(sim_Rb,conv);
+    
+    parse.Component_Values(11,2) = {RL};
+    conv.Element_Properties(11,2) = {RL};
+    
+    sim=Run_SS_Converter_num_no_diode(sim,conv);
+    
+    
     %  waitbar((i-1)/size(modSchemes,3), h);
     for d = drange
-        dt = 0.005;
-        ds = [d-dt, dt, 1-d-dt, dt, d-dt, dt, 1-d-dt, dt];
+        ds = [d, 1-d, d, 1-d];
         ts = ds/sum(ds)*Ts;
         conv.ts = ts;
+        sim_Rb.ts = ts;
+        sim.ts = ts;
         
-        %% Find zero-power Vin
-        parse.Component_Values(11,2) = {1e6};
-        conv.Element_Properties(11,2) = {1e6};
+       
         
-        sim=Run_SS_Converter_num_no_diode(sim,conv);
-        
-        % This is all working on trying to get diode conduction in the
-        % optimizaiton
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
-        for i = 1:1:length(parse.StateNumbers)
-            if strcmp(parse.OutputNamesCD{parse.StateNumbers(i),1}(1,end),'A')
-                top.stateLabels(end+1,1) = strcat('I_{', parse.StateNames(i,1),'} (A)');
-                top.stateLabels_Opp(end+1,1) = strcat('V_{', parse.StateNames(i,1),'} (V)');
-            else
-                top.stateLabels(end+1,1) = strcat(parse.OutputNamesCD{parse.StateNumbers(i),1}(1,end),'_{', parse.StateNames(i,1),'} (V)');
-                top.stateLabels_Opp(end+1,1) = strcat('I_{', parse.StateNames(i,1),'} (A)');
-            end
-        end
-        
-        
-        
-        parse.find_diode_new(conv.Order,conv.Switch_Sequence,conv.Fwd_Voltage)
-        Xss = sim.SS_Soln();
-        iterations = 50;
-        cycle = 0;
-        fail = 1;
-        fail = sim.Three_tier_diode_correct_num(iterations,0,0);
-        
-        while fail
-            fail = sim.Three_tier_diode_correct_num(iterations,0,1);
-            cycle = cycle+1;
-        end
-        
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        [ avgXs, avgYs ] = sim.ssAvgs(Xss);
+        Xss = sim_Rb.SS_Soln();
+        [ avgXs, avgYs ] = sim_Rb.ssAvgs(Xss);
         
         OLVin = avgYs(Vscloc1)+avgYs(Vscloc2);
         % MaxVin = OLVin+1;
         MaxVin = OLVin+2;
-        if OLVin<5 
+        if OLVin<5 || OLVin>30 
             continue
         end
         %{
@@ -455,10 +403,7 @@ for i = 2:size(modSchemes,3)
         end
         %}
         
-        parse.Component_Values(11,2) = {RL};
-        conv.Element_Properties(11,2) = {RL};
         
-        sim=Run_SS_Converter_num_no_diode(sim,conv);
         
         % waitbar((i-1)/size(modSchemes,3) + 1/size(modSchemes,3)*(find(drange==d)-1)/length(drange) , h);
         
@@ -714,124 +659,51 @@ Z = reshape(p,length(PoutRange),length(Vgrange));
 weighted_vals=F(X1,X2).*(Z+Z([length(PoutRange):-1:1],[length(Vgrange):-1:1]));
 
 
-
-
+    
+    
+    
+    
+    
+    Added_ploss = [];
+    stick = [];
+    stick = mean(weighted_vals,'all');
+    stick = stick+penalty;
+    %{
+    Added_ploss = (1*(median(PlossSim(conditions(:,3)>18 & PoutSim<20)))) + ...
+        (4*(median(PlossSim(conditions(:,3)>18 & PoutSim>60)))) + ...
+        (3*(median(PlossSim(conditions(:,3)>18 & PoutSim<60 & PoutSim>40)))) + ...
+        (2*(median(PlossSim(conditions(:,3)>18 & PoutSim<40 & PoutSim>20)))) + ...
+        (4*(median(PlossSim(conditions(:,3)<10 & PoutSim<20)))) + ...
+        (0*(median(PlossSim(conditions(:,3)<10 & PoutSim>60)))) + ...
+        (1*(median(PlossSim(conditions(:,3)<10 & PoutSim<60 & PoutSim>40)))) + ...
+        (2*(median(PlossSim(conditions(:,3)<10 & PoutSim<40 & PoutSim>20)))) + ...
+        (3*(median(PlossSim(conditions(:,3)>10 & conditions(:,3)<14 & PoutSim<20)))) + ...
+        (1*(median(PlossSim(conditions(:,3)>10 & conditions(:,3)<14 & PoutSim>60)))) + ...
+        (2*(median(PlossSim(conditions(:,3)>10 & conditions(:,3)<14 & PoutSim<60 & PoutSim>40)))) + ...
+        (4*(median(PlossSim(conditions(:,3)>10 & conditions(:,3)<14 & PoutSim<40 & PoutSim>20)))) + ...
+        (2*(median(PlossSim(conditions(:,3)>14 & conditions(:,3)<18 & PoutSim<20)))) + ...
+        (2*(median(PlossSim(conditions(:,3)>14 & conditions(:,3)<18 & PoutSim>60)))) + ...
+        (4*(median(PlossSim(conditions(:,3)>14 & conditions(:,3)<18 & PoutSim<60 & PoutSim>40)))) + ...
+        (3*(median(PlossSim(conditions(:,3)>14 & conditions(:,3)<18 & PoutSim<40 & PoutSim>20))));
+    
+    stick = Added_ploss/38;
+    %}
+    
+   % stick = median(PlossSim);
+    
+    
+    
+    if isnan(stick)||isinf(stick)||stick<0
+        stick = 100;
+    end
 
 catch ME
-    
-    
-    ME
-    ME.stack.line
-    rethrow(ME)
-    
-    toc
-    
-end
-toc
-return
 
 
-
-function Plot_Waveforms(sim,statenum,oppstatenum,plotxparam)
-%PLOT_WAVEFROMS is a function that plots all of the states
-%and the inverse states (V->I or I->V). They will appear in
-%figures 100 and 101. (Only input needed is simulation class)
+stick = 100;
 
 
-
-
-[xs, t, y, time_interval] = sim.SS_WF_Reconstruct();
-StateNumbers = sim.Converter.Topology.Parser.StateNumbers;
-StateNumbers_Opp = sim.Converter.Topology.Parser.StateNumbers_Opposite;
-
-switch nargin
-    case 1
-        statenum = 100;
-        oppstatenum = 101;
-        plotxparam  = 0;
-    case 2
-        oppstatenum = 101;
-        plotxparam = 0;
-    case 3
-        plotxparam = plotxparam;
-end
-
-if plotxparam~=0
-    ns = length(plotxparam);
-    figure(50)
-    for z=1:ns
-        ax = subplot(10*ns,1,z*10-9:z*10);
-        hold on;
-        if plotxparam(z)<0
-            plotxparam(z) = abs(plotxparam(z));
-            plot(t*10^6,-y(plotxparam(z),:), 'Linewidth', 3);
-        else
-            plot(t*10^6,y(plotxparam(z),:), 'Linewidth', 3);
-        end
-        ylabel(plotxparam(z))
-        box on
-        %ax.YLim = [min(xs(z,:))-abs(0.5*min(xs(z,:))) max(xs(z,:))+abs(0.5*max(xs(z,:)))];
-        if(z<ns)
-            set(gca, 'Xticklabel', []);
-        else
-            xlabel('t [\mus]')
-        end
-    end
-end
-
-
-figure(statenum)
-ns = size(xs,1);
-for z=1:ns
-    ax = subplot(10*ns,1,z*10-9:z*10);
-    hold on;
-    plot(t,y(StateNumbers(z),:), 'Linewidth', 3);
-    ylabel(sim.getstatenames{z})
-    box on
-    ax.YLim = [min(y(StateNumbers(z),:))-abs(0.5*min(y(StateNumbers(z),:))) max(y(StateNumbers(z),:))+abs(0.5*max(y(StateNumbers(z),:)))];
-    if(z<ns)
-        set(gca, 'Xticklabel', []);
-    else
-        xlabel('t(s)')
-    end
-end
-drawnow;
-
-
-figure(oppstatenum)
-ns = size(xs,1);
-for z=1:ns
-    ax = subplot(10*ns,1,z*10-9:z*10);
-    hold on;
-    plot(t,y(StateNumbers_Opp(z),:), 'Linewidth', 3);
-    ylabel(sim.getstatenames_Opp{z})
-    box on
-    ax.YLim = [min(y(StateNumbers_Opp(z),:))-abs(0.5*min(y(StateNumbers_Opp(z),:))) max(y(StateNumbers_Opp(z),:))+abs(0.5*max(y(StateNumbers_Opp(z),:)))];
-    if(z<ns)
-        set(gca, 'Xticklabel', []);
-    else
-        xlabel('t(s)')
-    end
-end
-drawnow;
 
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+end

@@ -58,7 +58,7 @@ more_iterations=iterations;
 not_reached_SS = true;
 previous_multi_violation = false;
 breakbreak = false;
-tol = 0.05;
+tol = 0.1;
 keep_SS = false; % dont really use this anymore but it is still riddled throughout the code
 
 Vf = obj.Converter.Topology.Parser.Fwd_Voltage;
@@ -70,6 +70,10 @@ if debug
 end
 
 while not_reached_SS && the_big_counter<=more_iterations
+    
+    if the_big_counter >15
+        that_a_lot = 5645648456;
+    end
     
     if re_start && the_big_counter ==2
         
@@ -740,7 +744,7 @@ while not_reached_SS && the_big_counter<=more_iterations
 end
 
 if not_reached_SS
-    fprintf('Failed to converge to steady state solution \n')
+   % fprintf('Failed to converge to steady state solution \n')
 end
 
 %{

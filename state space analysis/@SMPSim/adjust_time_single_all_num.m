@@ -38,6 +38,37 @@ try
     count = 1;
     k = 1;
     while k <=size(ONorOFF,2)
+        %{
+        if tot_F_ON(k)~=0
+            
+            % Check that last state has FET or Diode on in given
+            % postion if not skip
+            
+            Ti = k-1; % Index of last time interval
+            Tc = k; % Current time interval
+            
+            
+            if Ti ==0
+                % If the next time interval reaches the before the defined period
+                % then restart at the beginning
+                Ti = size(ONorOFF,2);
+            end
+            
+            % If the last time interval already ends in a diode
+            % conduction then we need to continue it. If not then the
+            % last time interval should take care of the problem
+            if ONorOFF(F_ON(:,k)==1,Ti)==1
+                
+                
+                new_state = ONorOFF(:,k); % Find state that needs to be copied
+                new_state(F_ON(:,k)==1) = 1; % make correction in state
+                
+            end
+        end
+        %}
+        
+        
+        
         
         if tot_L_ON(k)~=0
             

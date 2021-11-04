@@ -4,7 +4,7 @@ clear
 
 %%{
 %% Set up optimization for 9 Variables
-Nvars = 9;
+Nvars = 10;
 % Variables in order:
 %{
  FET Selection:
@@ -31,19 +31,19 @@ frequency
 
 %}
 
-
-LB = [1 1 1 1 1 1 1 1 0.5e6];
-UB = [6 6 6 6 6 6 6 6 1.5e6];
-sf = [1 1 1 1 1 1 1 1 1e-6];  %scale factor to ~ equalize magnitudes of variables
-
+LB = [0.005 0.005 0.005 0.005 0.005 0.005 0.005 0.005 1e6 0.001];
+UB = [0.4 0.4 0.4 0.4 0.4 0.4 0.4 0.4 2e6 0.0075];
+sf = [20 20 20 20 20 20 20 20 1e-6 100];  %scale factor to ~ equalize magnitudes of variables
 
 
+L23=900*10^-9;
 
 Aeq = [];
 beq = [];
-A = [];
-b = [];
-INTCON = [1 2 3 4 5 6 7 8];
+A = [2 2 2 2 2 2 2 2 0 0].*L23./sf;
+b = 2.0001e-6;
+
+INTCON = [];
 
 %% Particle Swarm
 % options = optimoptions(@particleswarm,'PlotFcn','pswplotbestf');
@@ -62,22 +62,19 @@ INTCON = [1 2 3 4 5 6 7 8];
 %b = Pout*.025;
 
 options = optimoptions('ga','PlotFcn',@gaplotbestf,'Display','iter',...
-    'MaxGenerations',100,'MaxTime',60*60*6, 'MaxStallGenerations',50, 'PopulationSize', 50);
+    'MaxGenerations',100,'MaxTime',60*60*5, 'MaxStallGenerations',50, 'PopulationSize', 20);
 options.InitialPopulation = [
-    3         4         1         1         2         5         6         1         0.9e6
-    4         4         1         6         2         4         2         4         1.2392e6
-    1         1         1         1         1         1         1         1         1.2392e6
-    4         4         4         4         4         4         4         4         1.2392e6
-    6         6         6         6         6         6         6         6         1.2392e6
-    4.0000    2.0000    1.0000    1.0000    2.0000    4.0000    2.0000    4.0000    1.3002e6
-    4.0000    2.0000    1.0000    1.0000    2.0000    4.0000    2.0000    4.0000    1.3002e6
-    4.0000    2.0000    1.0000    1.0000    2.0000    4.0000    2.0000    4.0000    1.3629e6
-
-    
+    0.1273   0.0608   0.2518   0.3007   0.0050   0.1087   0.0474   0.2074   1.5244e6 0.0025
+    0.1268   0.0618   0.2513   0.2994   0.0050   0.1086   0.0505   0.2078   1.5250e6 0.0025
+    0.1285   0.0599   0.2469   0.2988   0.0050   0.0928   0.0477   0.2311   1.5177e6 0.0025
+    0.1285   0.0641   0.2768   0.3030   0.0050   0.0871   0.0524   0.1885   1.5480e6 0.0025
+    0.1295   0.0674   0.2780   0.2988   0.0050   0.0842   0.0588   0.1893   1.5902e6 0.0025
+    0.1097   0.0686   0.2877   0.2794   0.0052   0.0880   0.0590   0.2125   1.5662e6 0.0025
+    0.1217   0.0669   0.2847   0.2795   0.0051   0.0881   0.0572   0.2082   1.5709e6 0.0025
     ].*sf;
 % Add initial guess into initial population matrix to speed up process
 [x,fval,exitflag,output,population,scores] = ...
-    ga(@AURA_Eff_Sweep, Nvars, A, b, Aeq, beq, LB.*sf, UB.*sf, [], INTCON, options);
+    ga(@AURA_Eff_Sweep_IC_reduce, Nvars, A, b, Aeq, beq, LB.*sf, UB.*sf, [], INTCON, options);
 % save('gaResults.mat', 'x', 'fval', 'exitflag', 'output','population','scores')
 % load('gaResults.mat');
 %}

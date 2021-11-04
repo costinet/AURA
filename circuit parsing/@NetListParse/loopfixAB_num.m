@@ -157,7 +157,7 @@ if H_row2 < sym_comput
     Htemp_torref = Htemp;
     [Htemp,jb]= rref(Htemp);
     if length(jb)~= size(Htemp,1)
-        %%{
+        %{
         rref_tol = max(size(Htemp_torref))*eps(class(Htemp_torref))*norm(Htemp_torref,inf);
         while length(jb)~= size(Htemp,1)
             

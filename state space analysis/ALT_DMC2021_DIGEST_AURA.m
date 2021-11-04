@@ -1,27 +1,29 @@
 
-%     _   _   _  ____    _    
-%    / \ | | | |/ _  |  / \   
-%   / _ \| | | | (_| | / _ \  
-%  / ___ | |_| |> _  |/ ___ \ 
+%     _   _   _  ____    _
+%    / \ | | | |/ _  |  / \
+%   / _ \| | | | (_| | / _ \
+%  / ___ | |_| |> _  |/ ___ \
 % /_/   \_\___//_/ |_/_/   \_\
 
 
 
 % Current konwn issues use FETs for diodes. (Just have them never turn
 % on)
-
+clear
 tic
 
 % Place in the filename
-filename = 'Buck_Boost.net'; % Place netlist filename here that you want to run
+filename = '3levelbuck_outV.net'; % Place netlist filename here that you want to run
 
 % Can also place component values here to get their voltage and
-% current output waveforms such as: 
+% current output waveforms such as:
 
 Voltage = {'V1'
+    'V2'
     };
 Current = {'V1'
-    };
+    'V2'
+};
 
 
 %% This is all caluclations to set up the variables need to find the SS
@@ -30,88 +32,46 @@ Current = {'V1'
 
 
 
-        Vg = 20;
-        Pout = 25;
-        Dbuck = 0.32;
-        Dboost = 0.15;
-        M = Dbuck/(1-Dboost);
-        Vout = M*Vg;
-        Iout = Pout/Vout;
-        R1 = .73+.73;
-        L1 = 200e-9;
-        C1 = 23.5e-6;
-        C2 = 4.4e-6;
-        
-        % EPC 2024
-        r_on = 1.5e-3;
-        Cds = 1620e-12;
-        [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R] = deal(r_on);
-        [M1_C,M2_C,M3_C,M4_C,M5_C,M6_C] = deal(Cds);
-        
-        
-        Numerical_Components = {'V1' Vg
-            'C1' C1
-            'C2' C2
-            'L1' L1
-            'M1_C' M1_C
-            'M2_C' M2_C
-            'M3_C' M3_C
-            'M4_C' M4_C
-            'M5_C' M5_C
-            'M6_C' M6_C
-            'R1' R1 };
-        
-        
-        Switch_Resistors = {'M1_R'
-            'M2_R'
-            'M3_R'
-            'M4_R'
-            'M5_R'
-            'M6_R'};
-        
-        fs = 1000e3;
-        Ts = 1/fs;
-        dt = 5e-9;
-        
-        ON = 1;
-        OFF = 0;
-        
-        
-        SW_OFF = ones(1,6).*10000000;
-        
-        SW_ON = [r_on r_on r_on r_on r_on r_on];
-        
-        SW = [SW_OFF;SW_ON;SW_ON];
-        
-        Order = [1 2 3 4 5 6 7 8 9 10 11 12];
-        
-        
-        u = [Vg 1 1 1 1 1 1]';
-        
-        
-        % Duty cycle is in pu
+Vg = 25;
+Vout = 8;
 
-        
-        
-        ts = [Dboost*Ts-dt  dt  (Dbuck/2-Dboost)*Ts-dt  dt  (0.5-Dbuck/2)*Ts-dt  dt  Dboost*Ts-dt  dt  (Dbuck/2-Dboost)*Ts-dt  dt  (0.5-Dbuck/2)*Ts-dt  dt];
-        
-        Binary_for_DAB = [
-         ON  OFF OFF ON  OFF ON   % Q6 ON
-         ON  OFF OFF ON  OFF OFF  % Dead Q6 Q3
-         ON  OFF ON  ON  OFF OFF  % Q3 ON
-         OFF OFF ON  ON  OFF OFF  % Dead Q1 Q2
-         OFF ON  ON  ON  OFF OFF  % Q2 ON
-         OFF OFF ON  OFF OFF OFF  % Dead
-         
-         ON  OFF ON  OFF ON  OFF  % Q5 Q1 ON
-         ON  OFF ON  OFF OFF OFF  % Dead Q5 Q4
-         ON  OFF ON  ON  OFF OFF  % Q4 ON
-         OFF OFF ON  ON  OFF OFF  % Dead Q1 Q2         
-         OFF ON  ON  ON  OFF OFF  % Q2 ON
-         OFF OFF OFF ON  OFF OFF  % Dead
-        ];
-         
-    
+
+D1 = Vout/(Vg);
+
+Vg = 18;
+
+
+R1 = 0.0045;
+R2 = 0.005;
+R3 = 0.002;
+R4 = 0.002;
+L1 = 600e-9;
+C1 = 10e-6;
+C2 = 10e-6;
+
+% EPC 2020
+r_on = 2.2e-3;
+Cds = 1020e-12;
+[M1_R,M2_R,M3_R,M4_R,M5_R,M6_R] = deal(r_on);
+[M1_C,M2_C,M3_C,M4_C,M5_C,M6_C] = deal(Cds);
+
+
+
+fs = 500e3;
+Ts = 1/fs;
+dt = 30e-9;
+
+
+
+
+
+
+
+ts = [ (D1)*Ts-dt  dt  (0.5-D1)*Ts-dt  dt  (D1)*Ts-dt  dt  (0.5-D1)*Ts-dt dt ];
+
+
+
+
 M1_C_Resist = 10000;
 
 
@@ -121,80 +81,77 @@ M1_C_Resist = 10000;
 % Voltage Soruces MOSFET Forward Votlage (in order of netlist)
 % Independent Current Sources]'
 %%%% Example u  = [Vg Vfwd1 Vfwd2 Iout]';
-u = [Vg 1 1 1 1 1 1]';
+u = [Vg Vout 1.6 1.6 1.6 1.6 ]';
 
 
 % Define the inital guess of time intervals. This only defines the
 % active switching time. Do not account for diode switching times.
-%%%% For example a synchronous Buck converter would be: 
+%%%% For example a synchronous Buck converter would be:
 %%%%% ts = [Ts*(D-dead) Ts*(dead) Ts*(1-D-dead) Ts*(dead)];
 %%%% But a non-synchronous buck covnerter would be
 %%%%% ts = [Ts*(D-dead) Ts*(1-(D-dead))];
 
- ts = ts; % The inital guess of time intervals % The inital guess of time intervals
+ts = ts; % The inital guess of time intervals % The inital guess of time intervals
 
 
 
 % List all of the numerical components in the netlist file for all
 % FETs you must use the syntax used below:
-        Numerical_Components = {'C1' C1
-            'C2' C2
-            'L1' L1
-            'M1_C' M1_C
-            'M2_C' M2_C
-            'M3_C' M3_C
-            'M4_C' M4_C
-            'M5_C' M5_C
-            'M6_C' M6_C
-            'R1' R1
+Numerical_Components = {'V1' Vg
+    'C1' C1
+    'C2' C2
+    'L1' L1
+    'M1_C' M1_C
+    'M2_C' M2_C
+    'M3_C' M3_C
+    'M4_C' M4_C
+    'R1' R1
+    'R2' R2
+    'R3' R3
+    'R4' R4
+    
+    };
 
-            };
-
-% List out all char variables in the 
-       Switch_Resistors = {'M1_R'
-            'M2_R'
-            'M3_R'
-            'M4_R'
-            'M5_R'
-            'M6_R'};
+% List out all char variables in the
+Switch_Resistors = {'M1_R'
+    'M2_R'
+    'M3_R'
+    'M4_R'};
 % List of the switch sequency. Organized by: the FETs (column) vs time
 % interval (rows) matching Switch_Resistors and ts respectivly
 
 ON = 1;
 OFF = 0;
 Switch_Sequence = [
-    ON  OFF OFF ON  OFF ON   % Q6 ON
-    ON  OFF OFF ON  OFF OFF  % Dead Q6 Q3
-    ON  OFF ON  ON  OFF OFF  % Q3 ON
-    OFF OFF ON  ON  OFF OFF  % Dead Q1 Q2
-    OFF ON  ON  ON  OFF OFF  % Q2 ON
-    OFF OFF ON  OFF OFF OFF  % Dead
     
-    ON  OFF ON  OFF ON  OFF  % Q5 Q1 ON
-    ON  OFF ON  OFF OFF OFF  % Dead Q5 Q4
-    ON  OFF ON  ON  OFF OFF  % Q4 ON
-    OFF OFF ON  ON  OFF OFF  % Dead Q1 Q2
-    OFF ON  ON  ON  OFF OFF  % Q2 ON
-    OFF OFF OFF ON  OFF OFF  % Dead
-    ];
+OFF ON  OFF ON
+OFF ON  OFF OFF
+ON  ON  OFF OFF
+ON  OFF OFF OFF
+
+ON  OFF ON  OFF
+ON  OFF OFF OFF
+ON  ON  OFF OFF
+OFF ON  OFF OFF
+];
 
 
 % List all the resistances of the diodes or FETS when they are on or
 % off
-SW_OFF = ones(1,6).*10000000;
+SW_OFF = ones(1,4).*10000000;
 
-SW_ON = [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R];
+SW_ON = [M1_R,M2_R,M3_R,M4_R];
 
 SW = [SW_OFF;SW_ON;SW_ON];
 
 
-Diode_Forward_Voltage = [1 1 1 1 1 1]';
+Diode_Forward_Voltage = [1.6 1.6 1.6 1.6]';
 
 
 
 %% This creates and runs the parser to set up the converter
 
-parse = NetListParse(); 
+parse = NetListParse();
 parse.initialize(filename,Voltage,Current);
 parse.ABCD();
 
@@ -361,4 +318,3 @@ end
 
 
 
-         

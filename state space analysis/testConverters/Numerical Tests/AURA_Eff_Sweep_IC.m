@@ -1,4 +1,4 @@
-function [stick] = AURA_Eff_Sweep(X)
+function [stick] = AURA_Eff_Sweep_IC(X)
 
 %     _   _   _  ____    _
 %    / \ | | | |/ _  |  / \
@@ -31,12 +31,11 @@ Current = {'V1'
 
 
 %% Determining Coss and ron based on w
-
-penalty  = 0;
-adjust = [ones(1,length(X)-1), 1e-6] ;
+penalty = 0;
+adjust = [ones(1,length(X)-1)*20, 1e-6] ;
 X = X./adjust;
 
-FET_selection = X(1:end-1);
+W_selection = X(1:end-1);
 fs = X(end);
 
 ron = [];
@@ -44,47 +43,120 @@ Coss = [];
 tot_area = 0;
 
 %% Determining Coss and ron based on w
+if length(W_selection)==8
+    FET_selection = [2 2 2 3 3 3 3 3];
+elseif length(W_selection)==9
+    FET_selection = [2 2 2 3 3 3 3 3 3];
+else
+    fprintf('Something went wrong /n')
+end
 
-for select_FET = 1:length(FET_selection)
-    % Use typical value for Coss and max value for rds from data sheet
-    % for inial look
+for select_FET = 1:length(W_selection)
+    
     switch FET_selection(select_FET)
         
-            %% EPC 2023
+        %% 8HVnLDMOS nbl
         case 1
+            a =  0.001378;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            ron(select_FET) = 1.45e-3;
-            Coss(select_FET) = 1530e-12;
+            p1 = 2.925e-9;
+            p2 = -2.787e-12;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
             
-            %% EPC 2014C
+            L1=800*10^-9;
+            
+            tot_area = tot_area+W_selection(select_FET)*L1;
+            
+            
+            %% 8HVnLDMOS iso
         case 2
+            a =  0.001453;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            ron(select_FET) = 16e-3;
-            Coss(select_FET) = 150e-12;
+            p1 = 2.093e-9;
+            p2 = -1.058e-12;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
             
-            %% EPC 2015C
+            L2=900*10^-9;
+            
+            tot_area = tot_area+W_selection(select_FET)*L2;
+            
+            
+            %% 12HVnLDMOS iso hp mac
         case 3
+            a =  0.001447;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            ron(select_FET) = 4e-3;
-            Coss(select_FET) = 710e-12;
+            p1 = 2.487e-9;
+            p2 = -6.393e-13;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
             
-            %% EPC 2055
+            L3=900*10^-9;
+            
+            tot_area = tot_area+W_selection(select_FET)*L3;
+            
+            
+            %% 12HVnLDMOS iso mac
         case 4
+            a =  0.001656;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            ron(select_FET) = 3.6e-3;
-            Coss(select_FET) = 480e-12;
+            p1 = 2.281e-9;
+            p2 = -3.1e-12;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
             
-            %% EPC 2030
+            L4=1*10^-6;
+            
+            
+            tot_area = tot_area+W_selection(select_FET)*L4;
+            
+            %% 12HVnLDMOS nbl hp mac
         case 5
+            a =  0.001447;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            ron(select_FET) = 2.4e-3;
-            Coss(select_FET) = 1120e-12;
+            p1 = 2.487e-9;
+            p2 = -6.393e-13;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
             
-            %% EPC 2024
+            L5=0.9*10^-6;
+            
+            tot_area = tot_area+W_selection(select_FET)*L5;
+            
+            
+            %% 12HVnLDMOS nbl mac
         case 6
+            a =  0.001585;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
             
-            ron(select_FET) = 1.5e-3;
-            Coss(select_FET) = 1620e-12;
+            p1 = 3.176e-9;
+            p2 = -7.226e-12;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            
+            L6=1*10^-6;
+            
+            tot_area = tot_area+W_selection(select_FET)*L6;
+            
+            %% 12HVnLDMOS nbl mr mac
+        case 7
+            a =  0.002556;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
+            
+            p1 = 2.828e-9;
+            p2 = -1.703e-12;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            
+            L7=.9*10^-6;
+            
+            tot_area = tot_area+W_selection(select_FET)*L7;
             
         otherwise
             
@@ -364,7 +436,7 @@ for i = 2:size(modSchemes,3)
         OLVin = avgYs(Vscloc1)+avgYs(Vscloc2);
         % MaxVin = OLVin+1;
         MaxVin = OLVin+2;
-        if OLVin<5 || OLVin>30 
+        if OLVin<8 || OLVin>21 
             continue
         end
         %{
@@ -404,7 +476,7 @@ for i = 2:size(modSchemes,3)
             
             Xss = sim.SS_Soln();
             [ avgXs, avgYs ] = sim.ssAvgs(Xss);
-            %%{
+            %{
             [ xs, t, ys ] = sim.SS_WF_Reconstruct;
             
             RMS_Iin = rms(ys(Illoc,:));
@@ -423,14 +495,14 @@ for i = 2:size(modSchemes,3)
             Poss = 0;
             
             % for when there is no rms calculation
-            %{
+            %%{
                 eta = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2 - Poss)/(Vin*-avgYs(Illoc) - avgYs(Ib1loc)^2*Rb - avgYs(Ib2loc)^2*Rb);
                 Ploss = -(avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) + -(Vin*avgYs(Illoc)) + Poss;
                 Pout = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) - Poss;
             %}
             
             % True input to output eff output of converter
-            %%{
+            %{
             P_calc_Vin = Vin-(RMS_Iin*(RL*2));
             P_calc_Vout1 = Vb1+RMS_Ib1*Rb;
             P_calc_Vout2 = Vb2+RMS_Ib2*Rb;
@@ -460,7 +532,7 @@ for i = 2:size(modSchemes,3)
             %             PossSim = [PossSim; Poss];
             conditions = [conditions; d, i, Vin];
             
-            if Pout > 100
+            if Pout > 70
                 break;
             end
             

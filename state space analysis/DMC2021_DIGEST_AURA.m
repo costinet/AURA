@@ -1,8 +1,8 @@
 
-%     _   _   _  ____    _    
-%    / \ | | | |/ _  |  / \   
-%   / _ \| | | | (_| | / _ \  
-%  / ___ | |_| |> _  |/ ___ \ 
+%     _   _   _  ____    _
+%    / \ | | | |/ _  |  / \
+%   / _ \| | | | (_| | / _ \
+%  / ___ | |_| |> _  |/ ___ \
 % /_/   \_\___//_/ |_/_/   \_\
 
 
@@ -16,7 +16,7 @@ tic
 filename = '3levelbuck.net'; % Place netlist filename here that you want to run
 
 % Can also place component values here to get their voltage and
-% current output waveforms such as: 
+% current output waveforms such as:
 
 Voltage = {'V1'
     };
@@ -30,41 +30,41 @@ Current = {'V1'
 
 
 
-        Vg = 16;
-        Vout = 4.1;
-        
-
-        D1 = Vout/Vg;
-        
-        R1 = 0.0045;
-        R2 = 1.6; % Was 1.5
-        L1 = 600e-9;
-        C1 = 10e-6;
-        C2 = 10e-6;
-        
-        % EPC 2020
-        r_on = 2.2e-3;
-        Cds = 1020e-12;
-        [M1_R,M2_R,M3_R,M4_R,M5_R,M6_R] = deal(r_on);
-        [M1_C,M2_C,M3_C,M4_C,M5_C,M6_C] = deal(Cds);
-        
-        
-
-        fs = 500e3;
-        Ts = 1/fs;
-        dt = 30e-9;
-        
-
-        
+Vg = 9;
+Vout = 4;
 
 
-        
-        
-        ts = [ (D1)*Ts-dt  dt  (0.5-D1)*Ts-dt  dt  (D1)*Ts-dt  dt  (0.5-D1)*Ts-dt dt ];
-        
+D1 = Vout/Vg;
 
-         
-    
+R1 = 0.0045;
+R2 = 1.6; % Was 1.5
+L1 = 600e-9;
+C1 = 10e-6;
+C2 = 10e-6;
+
+% EPC 2020
+r_on = 2.2e-3;
+Cds = 1020e-12;
+[M1_R,M2_R,M3_R,M4_R,M5_R,M6_R] = deal(r_on);
+[M1_C,M2_C,M3_C,M4_C,M5_C,M6_C] = deal(Cds);
+
+
+
+fs = 500e3;
+Ts = 1/fs;
+dt = 30e-9;
+
+
+
+
+
+
+
+ts = [ (D1)*Ts-dt  dt  (0.5-D1)*Ts-dt  dt  (D1)*Ts-dt  dt  (0.5-D1)*Ts-dt dt ];
+
+
+
+
 M1_C_Resist = 10000;
 
 
@@ -79,51 +79,51 @@ u = [Vg 1.6 1.6 1.6 1.6 ]';
 
 % Define the inital guess of time intervals. This only defines the
 % active switching time. Do not account for diode switching times.
-%%%% For example a synchronous Buck converter would be: 
+%%%% For example a synchronous Buck converter would be:
 %%%%% ts = [Ts*(D-dead) Ts*(dead) Ts*(1-D-dead) Ts*(dead)];
 %%%% But a non-synchronous buck covnerter would be
 %%%%% ts = [Ts*(D-dead) Ts*(1-(D-dead))];
 
- ts = ts; % The inital guess of time intervals % The inital guess of time intervals
+ts = ts; % The inital guess of time intervals % The inital guess of time intervals
 
 
 
 % List all of the numerical components in the netlist file for all
 % FETs you must use the syntax used below:
-        Numerical_Components = {'V1' Vg
-            'C1' C1
-            'C2' C2
-            'L1' L1
-            'M1_C' M1_C
-            'M2_C' M2_C
-            'M3_C' M3_C
-            'M4_C' M4_C
-            'R1' R1
-            'R2' R2
-            };
+Numerical_Components = {'V1' Vg
+    'C1' C1
+    'C2' C2
+    'L1' L1
+    'M1_C' M1_C
+    'M2_C' M2_C
+    'M3_C' M3_C
+    'M4_C' M4_C
+    'R1' R1
+    'R2' R2
+    };
 
-% List out all char variables in the 
-       Switch_Resistors = {'M1_R'
-            'M2_R'
-            'M3_R'
-            'M4_R'};
+% List out all char variables in the
+Switch_Resistors = {'M1_R'
+    'M2_R'
+    'M3_R'
+    'M4_R'};
 % List of the switch sequency. Organized by: the FETs (column) vs time
 % interval (rows) matching Switch_Resistors and ts respectivly
 
 ON = 1;
 OFF = 0;
 Switch_Sequence = [
-        
-        OFF ON  OFF ON
-        OFF ON  OFF OFF
-        ON  ON  OFF OFF
-        ON  OFF OFF OFF
-        
-        ON  OFF ON  OFF
-        ON  OFF OFF OFF
-        ON  ON  OFF OFF
-        OFF ON  OFF OFF
-    ];
+    
+OFF ON  OFF ON
+OFF ON  OFF OFF
+ON  ON  OFF OFF
+ON  OFF OFF OFF
+
+ON  OFF ON  OFF
+ON  OFF OFF OFF
+ON  ON  OFF OFF
+OFF ON  OFF OFF
+];
 
 
 % List all the resistances of the diodes or FETS when they are on or
@@ -141,7 +141,7 @@ Diode_Forward_Voltage = [1.6 1.6 1.6 1.6]';
 
 %% This creates and runs the parser to set up the converter
 
-parse = NetListParse(); 
+parse = NetListParse();
 parse.initialize(filename,Voltage,Current);
 parse.ABCD();
 
@@ -308,4 +308,3 @@ end
 
 
 
-         
