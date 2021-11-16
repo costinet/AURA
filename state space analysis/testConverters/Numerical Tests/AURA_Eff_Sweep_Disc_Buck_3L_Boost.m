@@ -37,10 +37,11 @@ try
     
     
     penalty  = 0;
-    adjust = [ones(1,6), 1e-6, 100, 100] ;
+    adjust = [ones(1,6), 1, 1e-6, 100, 100] ;
     X = X./adjust;
     
     FET_selection = X(1:6);
+    Select_L = X(end-3);
     fs = X(end-2);
     dt1 = X(end-1);
     dt2 = X(end);
@@ -155,8 +156,40 @@ try
         tot_area = tot_area+w*l;
     end
     
+    switch Select_L
+        
+        case 1
+            %XEL3515-151
+            [R1_L, R2_L, C_L, k1, k2, k3, k4, k5] = deal(57, 4.80E-03, 1.7, 1.87E-05, 3.41E-02, 0.15, 4.81E-04, 2.05E-7);
+            
+        case 2
+            %XEL3520-131
+            [R1_L, R2_L, C_L, k1, k2, k3, k4, k5] = deal(99, 3.50E-03, 2.0, 4.73E-05, 5.50E-02, 0.133, 1.32E-03, 4.50E-06);
+            
+        case 3
+            %XGL4018-121
+            [R1_L, R2_L, C_L, k1, k2, k3, k4, k5] = deal(2, 2.00E-03, 3.4, 1.0E-06, 0.017, 0.12, 1.0E-06, 1.0E-06);
+            
+        case 4
+            %4XAL7020-151
+            [R1_L, R2_L, C_L, k1, k2, k3, k4, k5] = deal(10, 0.0019, 6.9, 2.00E-05, 0.020,  0.15,  1.00E-04, 5.00E-06);
+            
+            
+            
+        otherwise
+            
+            stick = 100;
+            return
+            
+    end
     
-    penalty  = tot_area / 6 ;
+    C_L = C_L*1e-12;
+    Rvar1 = k1*sqrt(fs);
+    Rvar2 = k2*sqrt(fs);
+    Lvar = (k3-k4*log(k5*fs))*1e-6;
+    
+   % penalty  = tot_area / 6 ;
+    penalty = 0;
     %% This is all caluclations to set up the variables need to find the SS
     % Solution
  Vg = 20;
@@ -170,16 +203,22 @@ try
         Dbuck = M*(1-Dboost);
         Vout = M*Vg;
         Iout = Pout/Vout;
-        RL = 0.0024;
+        
         Rg = 1e-3;
         Rbatt = 5e-3;
         Rcap = 2e-3;
         Cout = 2e-6;
         
+        %{
         %L1 = 22e-6;
-        L1 = 200e-9;
         
-       
+        %}
+        
+        %% Equation for Inductance
+        % L1 has already been set by input
+        %RL = L1*(9.32e-3/4.7e-6);
+        
+        
         Cfly = 23.5e-6;
         CflyESR = 2.2e-3;
         
@@ -246,20 +285,24 @@ M15 and M18  (8)
         'C1' Cfly
      'C2' Cout
      'C3' Cout
-     'L1' L1
+     'L1' Lvar
      'M1_C' Coss(1)
      'M2_C' Coss(2)
      'M3_C' Coss(3)
      'M4_C' Coss(4)
      'M5_C' Coss(5)
      'M6_C' Coss(6)
-     'R1' RL
+     'R1' R2_L
      'R2' Rbatt
      'R3' Rbatt
      'R4' Rcap
      'R5' Rcap
      'R6' CflyESR
-     'R7' Rg
+     'R7' Rvar1
+     'R8' R1_L
+     'R9' Rvar2
+     'C4' C_L
+     'R10' Rg
      'M1_R' ron(1)
      'M2_R' ron(2)
      'M3_R' ron(3)
@@ -351,7 +394,7 @@ M15 and M18  (8)
     Ib2loc = 3;
     VgPOS = 1;
     %h = waitbar(0, 'Simulating');
-    
+    Rg_place = 21;
     % Just for the buck boost not for the sc fib one 
     modSchemes = Switch_Sequence;
     
@@ -360,13 +403,13 @@ M15 and M18  (8)
         swvec = modSchemes(:,:,i);
         conv.Switch_Sequence = swvec;
         
-        parse.Component_Values(17,2) = {1e6};
-        conv.Element_Properties(17,2) = {1e6};
+        parse.Component_Values(Rg_place,2) = {1e6};
+        conv.Element_Properties(Rg_place,2) = {1e6};
         
         sim_Rb=Run_SS_Converter_num_no_diode(sim_Rb,conv);
         
-        parse.Component_Values(17,2) = {Rg};
-        conv.Element_Properties(17,2) = {Rg};
+        parse.Component_Values(Rg_place,2) = {Rg};
+        conv.Element_Properties(Rg_place,2) = {Rg};
         
         sim=Run_SS_Converter_num_no_diode(sim,conv);
         
@@ -528,7 +571,7 @@ M15 and M18  (8)
                 
  %}               
                 
-                Poverlap = abs(0.5*Vin*Xss(10,1)*1.4e-9/Ts)+abs(0.5*Vin*Xss(10,4)*1.4e-9/Ts);
+                Poverlap = abs(0.5*Vin*Xss(11,1)*1.4e-9/Ts)+abs(0.5*Vin*Xss(11,4)*1.4e-9/Ts);
                 Poss = 0;
                % Poverlap = 0;
                 % for when there is no rms calculation
