@@ -186,6 +186,7 @@ try
             
     end
     %}
+
      List_of_Inductors = [
         57        0.0048       1.7      1.87e-05     0.0341       0.15       0.000481    0.000205   12.2275
         99        0.0035         2      4.73e-05      0.055      0.133        0.00132     4.5e-06   12.2275
@@ -242,7 +243,8 @@ try
         263         0.002      33.5      2.12e-05      0.126       0.33        0.00419    9.76e-06  167.7
         165         0.002      18.8      2.96e-07       0.03       0.12         0.0002    6.65e-06  130.9111
         296         0.082      36.1      5.16e-05      0.171       0.33        0.00394    9.54e-06  130.9111];
-   
+
+  
     R1_L  = List_of_Inductors(Select_L,1);
     R2_L = List_of_Inductors(Select_L,2);
     C_L = List_of_Inductors(Select_L,3);
@@ -252,13 +254,14 @@ try
     k4 = List_of_Inductors(Select_L,7);
     k5 = List_of_Inductors(Select_L,8);
     L_area = List_of_Inductors(Select_L,9);
+
     C_L = C_L*1e-12;
     Rvar1 = k1*sqrt(fs);
     Rvar2 = k2*sqrt(fs);
     Lvar = (k3-k4*log(k5*fs))*1e-6;
     
-    penalty  = tot_area+L_area / 1;
-    %penalty = 0;
+    %penalty  = tot_area+L_area / 1;
+    penalty = 0;
     %% This is all caluclations to set up the variables need to find the SS
     % Solution
  Vg = 20;
@@ -785,7 +788,7 @@ locs = etaSim > mineff;
 VgSim = conditions(locs,end);
 F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
 
-figure(103)
+figure(104)
 
 Vgrange = 5:.25:22;
 PoutRange = 0:1:80;

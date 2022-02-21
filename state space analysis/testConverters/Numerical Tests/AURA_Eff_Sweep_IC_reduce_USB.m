@@ -1,4 +1,4 @@
-function [stick] = AURA_Eff_Sweep_IC_reduce(X)
+function [stick] = AURA_Eff_Sweep_IC_reduce_USB(X)
 
 %     _   _   _  ____    _
 %    / \ | | | |/ _  |  / \
@@ -14,7 +14,7 @@ function [stick] = AURA_Eff_Sweep_IC_reduce(X)
 try
     
     % Place in the filename
-    filename = 'SC_FIB_AURA.net'; % Place netlist filename here that you want to run
+    filename = 'SC_FIB_AURA_USB.net'; % Place netlist filename here that you want to run
     
     % Can also place component values here to get their voltage and
     % current output waveforms such as:
@@ -203,6 +203,18 @@ try
     Lc = 100e-9;
     Ts = 1/fs;
     
+    
+    RL1 = 35;
+    LL1 = 300e-9;
+    CL1 = 375e-11;
+    
+    
+    RL2 = 0.01;
+    LL2 = 900e-9;
+    
+    
+    
+    
     u = [Vg Vb1 Vb2 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5]';
     
     modSchemes(:,:,1) = [
@@ -319,12 +331,13 @@ M15 and M18  (8)
         'C4' Cfly2
         'C5' Co
         'C6' Co
-        'L1' Lc
-        'L2' Lc
+        'L1' LL2
+        'L2' LL1
+        'R3' RL2
+        'R4' RL1
+        'C7' CL1
         'R1' Rb
         'R2' Rb
-        'R3' RL
-        'R4' RL
         'R5' ESR1
         'R6' ESR2
         'R7' ESR1
@@ -445,8 +458,8 @@ M15 and M18  (8)
     conditions = [];
     PossSim = [];
     drange = linspace(0.05, .95, 8);
-    Vscloc1 = 38;
-    Vscloc2 = 39;
+    Vscloc1 = 39;
+    Vscloc2 = 40;
     Illoc = 1;
     Ib1loc = 2;
     Ib2loc = 3;
@@ -457,13 +470,13 @@ M15 and M18  (8)
         swvec = modSchemes(:,:,i);
         conv.Switch_Sequence = swvec;
         
-        parse.Component_Values(11,2) = {1e6};
-        conv.Element_Properties(11,2) = {1e6};
+        parse.Component_Values(9,2) = {1e6};
+        conv.Element_Properties(9,2) = {1e6};
         
         sim_Rb=Run_SS_Converter_num_no_diode(sim_Rb,conv);
         
-        parse.Component_Values(11,2) = {RL};
-        conv.Element_Properties(11,2) = {RL};
+        parse.Component_Values(9,2) = {RL2};
+        conv.Element_Properties(9,2) = {RL2};
         
         sim=Run_SS_Converter_num_no_diode(sim,conv);
         

@@ -431,6 +431,13 @@ M15 and M18  (8)
     
     for i = 2:size(modSchemes,3)
         %  for i = 3:6
+        
+        if i ==3
+            
+            help_hooo = 5465;
+            
+        end
+        
         swvec = modSchemes(:,:,i);
         conv.Switch_Sequence = swvec;
         
