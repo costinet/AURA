@@ -20,7 +20,11 @@ function plotAllOutputs(obj, fn, subplots)
                 plot(sum(obj.ts(1:j))*ones(1,2), ylims, ':k');
             end
             hold off;
-            ylabel(obj.converter.topology.outputLabels{i});
+            try
+                ylabel(obj.converter.topology.outputLabels{i});
+            catch
+                warning('Output Labels not set in topology subclass');
+            end
             box on
             if(i<ns)
                 set(gca, 'Xticklabel', []);

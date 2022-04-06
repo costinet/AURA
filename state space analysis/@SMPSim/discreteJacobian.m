@@ -21,7 +21,7 @@ function [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
     X0 = obj.Xs;    %store original steady-state
     
     [dts, ~] = getDeltaT(obj.converter);
-    dts = min([dts, circshift(dts,-1)],[],2);
+    dts = min([dts; circshift(dts,-1)],[],1);
     
     for i = 1:nt % each switching interval
 %         t0 = obj.ts(i);

@@ -25,12 +25,17 @@ function plotAllStates(obj, fn, subplots)
                 plot(t,xs(nsi,:), 'Linewidth', 3);
                 hold on;
                 ylims = ylim;
-                ylim(ylims)
+                ylim(ylims);
+                xlim([min(t) max(t)]);
                 for k = 1:length(obj.ts)
                     plot(sum(obj.ts(1:k))*ones(1,2), ylims, ':k');
                 end
                 hold off;
-                ylabel(obj.stateNames{nsi});
+                try
+                    ylabel(obj.stateNames{nsi});
+                catch
+                    warning('State Names not set in topology subclass');
+                end
                 box on
                 if(i<nrMax)
                     set(gca, 'Xticklabel', []);

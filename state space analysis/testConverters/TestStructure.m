@@ -15,23 +15,13 @@ end
 % addpath(sdir);
 
 %% Load test circuit
-% modelfile = 'AsyncBoost';
-% PLECsModel = 'Boost_Async';
-% 
-% modelfile = 'MRBuck';
-% PLECsModel = 'MRBuck';
-
-% modelfile = 'DSC4to1';
-% PLECsModel = 'HDSC';
-
-% modelfile = 'DAB';
-% PLECsModel = 'DAB_oneCap';
-% 
-% modelfile = 'DSC4to1Diodes';
-% PLECsModel = 'HDSC_withDiodes';
-
-modelfile = 'Flyback';
-PLECsModel = 'PC_Flyback';
+% modelfile = 'AsyncBoost'; PLECsModel = 'Boost_Async';
+% modelfile = 'MRBuck'; PLECsModel = 'MRBuck';
+% modelfile = 'DSC4to1'; PLECsModel = 'HDSC';
+% modelfile = 'DAB'; PLECsModel = 'DAB_oneCap';
+% modelfile = 'DABfull'; PLECsModel = 'DAB_8Cap';
+% modelfile = 'DSC4to1Diodes'; PLECsModel = 'HDSC_withDiodes';
+modelfile = 'Flyback'; PLECsModel = 'PC_Flyback';
 
 % find_system(modelfile,'SearchDepth',1, 'IncludeCommented', 'on')
 open_system(modelfile,'loadonly');
@@ -52,29 +42,33 @@ sim = SMPSim();
 conv = sim.converter;
 top = sim.topology;
 
-% top.loadPLECsModel(circuitPath,swvec);
 top.loadCircuit(circuitPath,swvec,1);
-
 sim.u = us';
-% sim.ts = ts;
-
 conv.setSwitchingPattern(1:size(swvec,1), ts)
 
 Xss = sim.steadyState;
 if(debug)
     sim.plotAllStates(1);
 end
-% sim.plotAllOutputs(2);
-
 
 % ssOrder = plecs('get', circuitPath, 'StateSpaceOrder');
 % outputs = ssOrder.Outputs;
 
 outputs = top.outputLabels;
 
-%     if 0
-        eigs2tis(conv);
-%     end
+%% finalRun 
+% once everything seems to be error-free based on discrete time points,
+% goes through once more with eigenvalue-based spacing to make sure no 
+% inter-sample violations are occuring.  
+finalRun = 0;
+
+%% Symmetry check
+% May be useful but not doing anything with it yet.  Can identify that DAB,
+% etc. exhibit half-cycle symmetry
+TF = conv.checkForSymmetry;
+
+%%
+[Xf,ts,swinds] = timeSteppingPeriod(sim);
 
 tic
 while(1)
@@ -100,16 +94,17 @@ while(1)
     end
 
     %% Discrete timepoint violation margin
-    violateMarginStart = zeros(size(Cbnd,1) ,length(conv.swind));
-    targetValStart = violateMarginStart;
-    violateMarginEnd = zeros(size(Cbnd,1) ,length(conv.swind));
-    targetValEnd = violateMarginEnd;
-    for i = 1:length(conv.swind)
-        violateMarginStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us' - hyst(:,1) + hyst(:,2);
-        targetValStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us' - hyst(:,1);
-        violateMarginEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us' - hyst(:,1) + hyst(:,2);
-        targetValEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us' - hyst(:,1);
-    end
+% %     violateMarginStart = zeros(size(Cbnd,1) ,length(conv.swind));
+% %     targetValStart = violateMarginStart;
+% %     violateMarginEnd = zeros(size(Cbnd,1) ,length(conv.swind));
+% %     targetValEnd = violateMarginEnd;
+% %     for i = 1:length(conv.swind)
+% %         violateMarginStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us' - hyst(:,1) + hyst(:,2);
+% %         targetValStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us' - hyst(:,1);
+% %         violateMarginEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us' - hyst(:,1) + hyst(:,2);
+% %         targetValEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us' - hyst(:,1);
+% %     end
+    [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = sim.checkDiscreteErr;
     errBefore = min(violateMarginStart,0);
     errAfter = min(violateMarginEnd,0);
 
@@ -140,20 +135,26 @@ while(1)
     % Note, this was to not inser again when the error was addressable by
     % the altready
     
-    errLocs = (errAfter<0 & (errBefore<0));
-    unadjustableLocs = (errAfter<0  & (ints ~= circshift(ints,-1))) | ...
-        (errBefore<0 & (ints ~= circshift(ints,1)));
-    tLocs = errLocs | unadjustableLocs;
-    insertAt = any(tLocs,1);
+%     errLocs = (errAfter<0 & (errBefore<0));
+%     unadjustableLocs = (errAfter<0  & (ints ~= circshift(ints,-1))) | ...
+%         (errBefore<0 & (ints ~= circshift(ints,1)));
+%     adjustableButSameInterval = (errAfter<0  & ...
+%         ((ints == circshift(ints,-1)) & (conv.swind == circshift(conv.swind,-1)))) | ...
+%         (errBefore<0 & ...
+%         ((ints == circshift(ints,1)) & (conv.swind == circshift(conv.swind,1))));
+%     tLocs = errLocs | unadjustableLocs | adjustableButSameInterval;
+%     insertAt = any(tLocs,1);
+%     
+%     adjType = zeros(size(Cbnd,1), length(conv.ts), 2);
+%     adjType(:,:,1) = (errAfter<0)+0;
+%     adjType(:,:,2) = (-1)*(errBefore<0);
     
-    adjType = zeros(size(Cbnd,1), length(conv.ts), 2);
-    adjType(:,:,1) = (errAfter<0)+0;
-    adjType(:,:,2) = (-1)*(errBefore<0);
+    [tLocs,insertAt,adjType] = sim.findRequiredUncontrolledSwitching(violateMarginStart,violateMarginEnd);
 
     altered = 0;
     
     
-    warning("Need something so it doesn't do corrections both before and after");
+%     warning("Need something so it doesn't do corrections both before and after");
     for i = flip(find(insertAt))
         % addUncontrolledSwitching(obj, interval, beforeAfter, initialTime, switches, newStates)
         dt = min( min(conv.controlledts)/20 , conv.ts(i)/20);
@@ -169,10 +170,19 @@ while(1)
         sim.plotAllStates(1);
     end
     
+
+    
     if ~altered
         
-        if ~any(any(errBefore) | any(errAfter))
+        if ~any(any(errBefore) | any(errAfter)) && finalRun == 0
+            finalRun = 1;
+            eigs2tis(conv);
+            Xss = sim.steadyState;
+            continue;
+        elseif ~any(any(errBefore) | any(errAfter)) && finalRun == 1
             break;
+        else
+            finalRun = 0;
         end
         %% Correct based on discrete jacobian
         
@@ -313,7 +323,7 @@ while(1)
 
         %% Attempt: add zero net perturbation to time as a part of the
         %% equations -- MAY NOT  because some times are dropped.
-        scaleF = norm(A(:,~unChangeable));
+        scaleF = norm(A(:,~unChangeable))/numel(A);
         [~, timeInts, ~] = conv.getIntervalts;
         A = [A; zeros(max(timeInts), size(A,2))];
         b = [b; zeros(max(timeInts), 1)];
@@ -327,9 +337,13 @@ while(1)
 
         tsolve(~unChangeable) = -(A\b);
         
+        if any(isnan(tsolve))
+            tsolve(~unChangeable) = -pinv(A)*b;
+        end
+        
         [~,dtLims] = getDeltaT(sim.converter);
         
-        tr = tsolve'./dtLims;
+        tr = tsolve./dtLims;
         tr = max(tr(tr>1));
         
         if ~isempty(tr)
@@ -358,7 +372,7 @@ while(1)
 % % %         conv.adjustUncontrolledTimingVector(1:length(tsolve), tsolve)
         newts = conv.ts;
 
-        warning('Can get stuck trying to make intervals longer when it cannot');
+%         warning('Can get stuck trying to make intervals longer when it cannot');
 
 
         % for i = 1:length(intV)
@@ -377,12 +391,14 @@ while(1)
         % sim.ts(4) = sim.ts(4) - dt;
         
         if(debug)
+%             disp(tsolve)
+%             disp(sum(errBefore + errAfter, 'all'))
             Xss = sim.steadyState;
             sim.plotAllStates(10);
         end
         
         niter = niter+1;
-        disp(niter);
+        disp([niter sum(errBefore + errAfter, 'all')]);
         
         if(~any(tsolve))
             error('timing not modified');
@@ -393,8 +409,8 @@ while(1)
 end
 toc
 
-% Xss = sim.steadyState;
-% sim.plotAllStates(10);
+Xss = sim.steadyState;
+sim.plotAllStates(10);
 
 function Xs = getSSforJacobian(sim, newTs)
     [tps] = sim.converter.validateTimePerturbations([1:length(newTs)], newTs/1e12);

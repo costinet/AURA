@@ -34,9 +34,18 @@ Xss = obj.Xs;
 As = obj.As;
 Bs = obj.Bs;
 ts = obj.ts;
-u = obj.u;
+% u = obj.u;
 Cs = obj.Cs;
 Ds = obj.Ds;
+
+    if size(obj.u,3) == 1
+        %% HEY THIS SHOULD BE MOVED ELSEWHERE
+        u = repmat(obj.u,1,1,(length(ts)));
+    elseif size(obj.u,3) == length(ts)
+        u = obj.u;
+    else
+        error('invalid input vector u specificed');
+    end
 
 try
     %wrapped in try block for debugging purposes
@@ -76,7 +85,7 @@ try
 
         if length(ti) > 1
             SS = ss(As(:,:,i), Bs(:,:,i), Cs(:,:,i), Ds(:,:,i));
-            [y, ~, x] = lsim(SS, u*ones(size(ti)), t(ti)-t(ti(1)), Xss(:,i));
+            [y, ~, x] = lsim(SS, u(:,:,i)*ones(size(ti)), t(ti)-t(ti(1)), Xss(:,i));
 
             xs(:,ti) = x';
             ys(:,ti) = y';
@@ -84,7 +93,7 @@ try
         elseif length(ti) == 1 % special case if only one timestep in range
            tinter = linspace(0, t(2), 100);
            SS = ss(As(:,:,i), Bs(:,:,i), Cs(:,:,i), Ds(:,:,i));
-           [y, ~, x] = lsim(SS, u*ones(size(tinter)), tinter, xs(:,max(ti(1)-1,1)));
+           [y, ~, x] = lsim(SS, u(:,:,i)*ones(size(tinter)), tinter, xs(:,max(ti(1)-1,1)));
            ind = find(abs(tinter + tmin - t(ti)) == min(abs(tinter + tmin - t(ti))),1);
            xs(:,ti) = x(ind);
            ys(:,ti) = y(ind);

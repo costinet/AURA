@@ -29,8 +29,6 @@ classdef SMPStopology < handle
         bndHyst     %[mean, std]
         switchRef   %[SwitchNo, State its in]
         
-        
-        
         stateLabels
         outputLabels
         inputLabels
@@ -56,6 +54,10 @@ classdef SMPStopology < handle
 %             end
             if nargin < 4
                 force = 0;
+            end
+            
+            if isempty(fn) && ~isempty(obj.circuitParser) && ~isempty(obj.sourcefn)
+                fn = obj.sourcefn;
             end
             
             if isempty(obj.circuitParser)

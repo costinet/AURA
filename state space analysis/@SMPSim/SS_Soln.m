@@ -30,7 +30,15 @@ function [ Xs] = SS_Soln(obj)
     As = obj.As;
     Bs = obj.Bs;
     ts = obj.ts;
-    u = obj.u;
+    
+    if size(obj.u,3) == 1
+        %% HEY THIS SHOULD BE MOVED ELSEWHERE
+        u = repmat(obj.u,1,1,(length(ts)));
+    elseif size(obj.u,3) == length(ts)
+        u = obj.u;
+    else
+        error('invalid input vector u specificed');
+    end
 
 %     if(nargin == 1 || obj.tryOpt == 0)
 %         tryOpt = 0;
@@ -71,7 +79,7 @@ function [ Xs] = SS_Soln(obj)
 
     fresp = zeros(ns,1,n); %% Forced response: A^-1(expm(A*T)-eye)*B*u
         for i=1:n
-           [frespNew, intEAt] = obj.forcedResponse(As(:,:,i), expAs(:,:,i), Bs(:,:,i), u, ts(i), 0);
+           [frespNew, intEAt] = obj.forcedResponse(As(:,:,i), expAs(:,:,i), Bs(:,:,i), u(:,:,i), ts(i), 0);
            fresp(:,:,i) = frespNew;
            obj.oldAs(:,:,i) = As(:,:,i);
            obj.oldIntEAt(:,:,i) = intEAt;

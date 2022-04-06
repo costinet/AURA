@@ -135,12 +135,26 @@ classdef SMPSconverter < handle
                 fastestResFreq(i) =  max([1; abs(eigA(imag(eigA)>0))]);
                 fastestFreq(i) = max(abs(eigA));
             end
-            
+
+
             %% that = good approx for small-signal perturbations
-            that = min( [2*pi./fastestFreq/4, obj.ts'/100], [],2); 
+%             that = min( [2*pi./fastestFreq/4, obj.ts'/100], [],2);             
+            if size(fastestFreq) == size(obj.ts)
+                that = min( [2*pi./fastestFreq/4, obj.ts(ind)/100], [],2); 
+            else
+                that = min( [2*pi./fastestFreq/4, obj.ts(ind)'/100], [],2); 
+            end
+            that = reshape(that, 1, length(that));
             
             %% dts = allowable large-signal perturbation to avoid introducing error between discrete samples
-            dts =  min( [2*pi./fastestResFreq/4, obj.ts'], [],2); 
+%             dts =  min( [2*pi./fastestResFreq/4, obj.ts'], [],2); 
+            if size(fastestResFreq) == size(obj.ts)
+                dts = min( [2*pi./fastestResFreq/4, obj.ts(ind)], [],2); 
+            else
+                dts = min( [2*pi./fastestResFreq/4, obj.ts(ind)'], [],2); 
+            end
+            dts = reshape(dts, 1, length(dts));
+            
                              
         end
         
@@ -271,6 +285,23 @@ classdef SMPSconverter < handle
             subInts = reshape(subInts,length(subInts),1);
         end
         
+        function TF = checkForSymmetry(obj) 
+            if mod(length(obj.ts),2) == 0
+                halfPoint = length(obj.ts)/2;
+                Mat1 = reshape(cat(2, obj.As(:,:,1:halfPoint), obj.Bs(:,:,1:halfPoint)), size(obj.As(:,:,1:halfPoint),1),...
+                    (size(obj.As(:,:,1:halfPoint),2) + size(obj.Bs(:,:,1:halfPoint),2))*size(obj.As(:,:,1:halfPoint),3) );
+                Mat2 = reshape(cat(2, obj.As(:,:,halfPoint+1:end), obj.Bs(:,:,halfPoint+1:end)), size(obj.As(:,:,halfPoint+1:end),1),...
+                    (size(obj.As(:,:,halfPoint+1:end),2) + size(obj.Bs(:,:,halfPoint+1:end),2))*size(obj.As(:,:,halfPoint+1:end),3) );
+                if abs(Mat1) == abs(Mat2)
+                    TF = 1;
+                else
+                    TF = 0;
+                end
+            else
+                TF = 0;
+            end
+        end
+        
         
 %         function [tnew] = adjustTiming(obj, ti, dt)
 %             tnew = obj.ts;
@@ -302,11 +333,10 @@ classdef SMPSconverter < handle
         
 
         function eigs2tis(obj)
-            try
             for i = length(obj.ts):-1:1
                 eigA = obj.topology.eigAs(:,:,obj.swind(i));%eigs(obj.As(:,:,i));
                 fastestResFreq =  max([1; abs(eigA(imag(eigA)>0))]);
-                dt =  min( [2*pi./fastestResFreq/4, obj.ts(i)'], [],2);
+                dt =  min( [2*pi./fastestResFreq/8, obj.ts(i)'], [],2);
                 
                 ratio = ceil(obj.ts(i)/dt - eps);
                 
@@ -314,11 +344,6 @@ classdef SMPSconverter < handle
                     obj.addUncontrolledSwitching(i, 1, dt, [], [], 1);
                 end
             end
-            catch e
-                x=1
-                rethrow(e)
-            end
-            
         end
 
         function refreshCache(obj)
@@ -372,6 +397,7 @@ classdef SMPSconverter < handle
         
         function res = get.swind(obj)
              res = obj.fullswind(obj.fullswind ~=0)';
+             res = reshape(res,1,length(res));
         end
         
         function res = get.swseq(obj)
@@ -403,14 +429,15 @@ classdef SMPSconverter < handle
         end
         
         function set.ts(obj, newts)
-            error('Needs to be updated or disallowed');
+            error('Needs to be updated or disallowed -- use setSwitchingPattern instead or other methods');
 %             obj.ts = newts;
 %             obj.refreshCache();
         end
         
         function set.u(obj, newU)
             % enforce it being a tall vector
-            obj.u = reshape(newU,length(newU),1);
+            assert(min(size(newU,1:2)) == 1, 'invalid dimensions for u');
+            obj.u = reshape(newU,max(size(newU,1:2)),1, size(newU,3));
         end
         
     end

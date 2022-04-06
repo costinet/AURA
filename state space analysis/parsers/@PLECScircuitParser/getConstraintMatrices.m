@@ -1,10 +1,14 @@
-function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath)
+function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, forceRefresh)
 %getPLECSConstraintMatrics get Cbnd and Dbnd from PLECs model
 %   Note that the PLECs model must have probes added to all switching
 %   device currents and voltages (double-click -> assertions -> (+))
 
     if nargin == 1
         circuitPath = obj.sourcefn;
+    end
+    
+    if nargin < 3
+        forceRefresh = 0;
     end
 
     S = strsplit(circuitPath,'/');
@@ -21,12 +25,19 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath)
     hyst = zeros(size(obj.topology.Ds,1), 2);
     switchRef = zeros(size(obj.topology.Ds,1), 2);
     
-    isFET = zeros(size(switchNames));
-    isDiode = isFET;
-    for i = 1:length(switchNames)
-        devType = plecs('get',[modelFile '/' switchNames{i}], 'Type');
-        isFET(i) = strcmp(devType, 'MosfetWithDiode') || strcmp(devType, 'Mosfet');
-        isDiode(i) = strcmp(devType, 'Diode');
+    if isempty(obj.devType) || forceRefresh
+        % Only re-run this once per file
+        obj.isFET = zeros(size(switchNames));
+        obj.isDiode = obj.isFET;
+        obj.Vf = obj.isFET;
+        for i = 1:length(switchNames)
+            obj.devType = plecs('get',[modelFile '/' switchNames{i}], 'Type');
+            obj.isFET(i) = strcmp(obj.devType, 'MosfetWithDiode') || strcmp(obj.devType, 'Mosfet');
+            obj.isDiode(i) = strcmp(obj.devType, 'Diode');
+            if obj.isDiode(i) 
+                obj.Vf(i) = evalin('base', plecs('get', [modelFile '/' switchNames{i}], 'Vf'));
+            end
+        end
     end
     
     % For finding parallel devices
@@ -60,7 +71,7 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath)
            switchInds(j) = find(~cellfun(@isempty,sameVolts))';
        end
        
-       if isDiode(i)
+       if obj.isDiode(i)
            %on-state current > 0
            Cbnd(devCurrent, :, swvec(:,i)==1) = obj.topology.Cs(devCurrent, :, swvec(:,i)==1);
            Dbnd(devCurrent, :, swvec(:,i)==1) = obj.topology.Ds(devCurrent, :, swvec(:,i)==1);
@@ -73,13 +84,12 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath)
            Cbnd(devVoltage, :, all(swvec(:,switchInds)==0,2)) = -obj.topology.Cs(devVoltage, :, all(swvec(:,switchInds)==0,2));
            Dbnd(devVoltage, :, all(swvec(:,switchInds)==0,2)) = -obj.topology.Ds(devVoltage, :, all(swvec(:,switchInds)==0,2));
            
-           devStr = outputs{devVoltage};
-           devStr = devStr(1:find(devStr==':',1)-1);
-           Vf = evalin('base', plecs('get', [modelFile '/' devStr], 'Vf'));
-           hyst(devVoltage,:)=[-Vf, Vf/10];
+          
+           
+           hyst(devVoltage,:)=[-obj.Vf(i), obj.Vf(i)/10];
            switchRef(devVoltage,:) = [i, 0];
           
-       elseif isFET(i) && ~(any(isFET(switchInds)) && any(isDiode(switchInds)))
+       elseif obj.isFET(i) && ~(any(obj.isFET(switchInds)) && any(obj.isDiode(switchInds)))
            % If a FET and there is no parallel diode
            %off-state voltage > 0
            %% I got rid of this because:
@@ -121,7 +131,7 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath)
     
     % eliminate redundant constraints
     combBnd = reshape(cat(2, Cbnd, Dbnd), size(Cbnd,1), (size(Cbnd,2) + size(Dbnd,2))*size(Cbnd,3) );
-    [c, ia, ic] = unique(combBnd,'rows');
+    [~, ia, ~] = unique(combBnd,'rows');
     
     Cbnd = Cbnd(ia,:,:);
     Dbnd = Dbnd(ia,:,:);

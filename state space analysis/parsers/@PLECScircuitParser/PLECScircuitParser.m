@@ -7,15 +7,22 @@ classdef PLECScircuitParser < circuitParser
         sourcefdate
         topology
    end
+   
+   properties (Hidden, SetAccess = private)
+        devType
+        isFET
+        isDiode
+        Vf
+   end
     
    properties (Hidden)
-       diodeCurrentThreshold = 100e-6;
+       diodeCurrentThreshold = 1e-2;
        bodyDiodeVoltage = 0.5;
        bodyDiodeVoltageHysteresis = 0.25;
    end
     
     methods
-        [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath)
+        [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, forceRefresh)
         loadModel(obj, fn, swseq, force)
         
          function obj = PLECScircuitParser(topology)

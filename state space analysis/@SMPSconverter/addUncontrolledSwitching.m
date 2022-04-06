@@ -97,7 +97,8 @@ function [altered] = addUncontrolledSwitching(obj, interval, beforeAfter, initia
     if ~ismember(newSwVec, obj.topology.swseq, 'rows')
         %with force == 0, should just add the additional switching
         %states
-        obj.topology.loadCircuit(obj.topology.sourcefn, [obj.swvec; newSwVec], 0);
+%         obj.topology.loadCircuit(obj.topology.sourcefn, [obj.swvec; newSwVec], 0);
+        obj.topology.loadCircuit([], [obj.swvec; newSwVec], 0);
     end
     [~, newSwInd] = ismember(newSwVec, obj.topology.swseq, 'rows'); 
     

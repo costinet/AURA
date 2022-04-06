@@ -59,8 +59,8 @@ classdef SMPSim < handle
     methods (Access = private)
         %% Private Methods from external files
         [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
-        [ valid, newt, dist ] = validByInterval(obj, si, Xs)
-        [ x, xdot ] = stateValue_at_t(obj, x0, t, si)
+        [ valid, newt, dist ] = validByInterval(obj, si, Xs) % DEPRICATED
+        [ x, xdot ] = stateValue_at_t(obj, x0, t, si)% DEPRICATED
         %AdjustDiodeConduction
         
     end
@@ -78,15 +78,19 @@ classdef SMPSim < handle
         [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order);
         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
         
-        [ output_args ] = regulate( obj )
-        [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)
-        [ Xs] = SS_Soln2(obj, Xi, Bi) 
+        [ output_args ] = regulate( obj )% DEPRICATED
+        [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)% DEPRICATED
+        [ Xs] = SS_Soln2(obj, Xi, Bi) % DEPRICATED
         
         %% 
+        [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = checkDiscreteErr(obj)
+        [tLocs,insertAt,adjType] = findRequiredUncontrolledSwitching(obj,violateMarginStart,violateMarginEnd)
         %[margins(before,after,with &w/o hysteresit)] = checkDiscreteErrors
         % checkContinuousError
         %[altered] = updateForUncontrolledSwitching
         %[deltaTs] = switchingErrorGradientDescent
+        
+        [Xf,ts,swinds] = timeSteppingPeriod(obj)
 
         
         %% Constructors
