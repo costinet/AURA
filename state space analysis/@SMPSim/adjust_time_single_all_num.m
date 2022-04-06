@@ -157,7 +157,7 @@ try
                 % new changed time interval 
                 new_state = ONorOFF(:,k); % Find state that needs to be copied
                 new_state(L_ON(:,k)==1) = 1; % make correction in state
-                
+                J = 4564582
                 mark  = 1;
             end
                 
@@ -214,12 +214,14 @@ try
     obj.eigA = new_eigA;
     
     
-    if ~mark && sum(sum(gdiode))~=0
-        groupeddiodes = gdiode;
+%    if ~mark && sum(sum(gdiode))~=0
+%        groupeddiodes = gdiode;
+%    end
+    
+    
+    if size(new_state_space,2)~= size(groupeddiodes,2)
+        J = 456456;
     end
-    
-    
-    
     
     
     %{

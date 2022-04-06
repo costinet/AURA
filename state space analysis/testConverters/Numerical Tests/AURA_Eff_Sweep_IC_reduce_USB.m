@@ -565,10 +565,11 @@ M15 and M18  (8)
                 
                 
                 parse.find_diode_new(conv.order,conv.Switch_Sequence,conv.Fwd_Voltage)
-                iterations = 50;
+                iterations = 20;
                 cycle = 0;
                 fail = 1;
                 %fprintf('--------------\n')
+                
                 fail = sim.Three_tier_diode_correct_num(iterations,0,0);
                 
                 while fail && cycle < 2

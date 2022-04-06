@@ -711,6 +711,7 @@ while not_reached_SS && the_big_counter<=more_iterations
                 obj.Ds(:,:,key+1) = [];
                 obj.eigA(:,key+1) = [];
                 ONorOFF(:,key+1) = [];
+                gdiode(:,key+1) = [];
                 ts(key) = ts(key) + ts(key+1);
                 ts(key+1) = [];
                 
@@ -743,9 +744,11 @@ while not_reached_SS && the_big_counter<=more_iterations
     end
 end
 
-if not_reached_SS
-   % fprintf('Failed to converge to steady state solution \n')
-end
+%if not_reached_SS
+%    fprintf('Failed to converge to steady state solution \n')
+%end
+
+
 
 %{
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

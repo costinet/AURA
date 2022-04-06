@@ -556,12 +556,12 @@ M15 and M18  (8)
                 cycle = 0;
                 fail = 1;
                 %fprintf('--------------\n')
-                fail = sim.Three_tier_diode_correct_num(iterations,0,0);
+               % fail = sim.Three_tier_diode_correct_num(iterations,0,0);
                 
-                while fail && cycle < 2
-                    fail = sim.Three_tier_diode_correct_num(iterations,0,1);
-                    cycle = cycle+1;
-                end
+               % while fail && cycle < 2
+               %     fail = sim.Three_tier_diode_correct_num(iterations,0,1);
+               %     cycle = cycle+1;
+               % end
                 
                
                 
@@ -737,9 +737,9 @@ PoutRange = 0:1:80;
 [f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
 xlabel('Vg');
 ylabel('P_{out}');
-% ylim([0 80])
+% ylim([0 40])
 colorbar
-c.LevelList = [0 0.25 0.5 1 1.5 2 3 4 5 10 15 20];
+c.LevelList = [0 0.25 0.5 1 1.5 2 3 4 5];
 
 hold on;
 

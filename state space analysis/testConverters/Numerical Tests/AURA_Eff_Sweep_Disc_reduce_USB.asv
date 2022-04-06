@@ -1,4 +1,4 @@
-function [stick] = AURA_Eff_Sweep_Disc_reduce(X)
+function [stick] = AURA_Eff_Sweep_Disc_reduce_USB(X)
 
 %     _   _   _  ____    _
 %    / \ | | | |/ _  |  / \
@@ -14,7 +14,7 @@ function [stick] = AURA_Eff_Sweep_Disc_reduce(X)
 try
     
     % Place in the filename
-    filename = 'SC_FIB_AURA.net'; % Place netlist filename here that you want to run
+    filename = 'SC_FIB_AURA_USB.net'; % Place netlist filename here that you want to run
     
     % Can also place component values here to get their voltage and
     % current output waveforms such as:
@@ -33,7 +33,7 @@ try
     
     
     
-    
+     
     penalty  = 0;
     adjust = [ones(1,8), 1e-6, 100, 100, 100, 100] ;
     X = X./adjust;
@@ -47,6 +47,7 @@ try
     ron = [];
     Coss = [];
     tot_area = 0;
+    
     
     %% Determining Coss and ron based on w
     
@@ -145,17 +146,18 @@ try
                 w = 6.05;
                 l = 2.3;
                 
-            otherwise
-                
-                stick = 100;
-                return
+        otherwise
+            
+            stick = 100;
+            return
+       
                 
         end
-        tot_area = tot_area+w*l;
+        
     end
     
     
-    penalty  = tot_area / 3 ;
+    
     %% This is all caluclations to set up the variables need to find the SS
     % Solution
     Vg = 12;
@@ -175,10 +177,22 @@ try
     
     
     Co = 2e-6; ESRo = 2e-3;
-    Cfly1 = 9.4e-6; ESR1 = 3e-3;  % 5V Cap
-    Cfly2 = 9.4e-6; ESR2 = 3e-3; % 10V Cap
+    Cfly1 = 5e-6; ESR1 = 3e-3;  % 5V Cap
+    Cfly2 = 2.5e-6; ESR2 = 3e-3; % 10V Cap
     Lc = 100e-9;
     Ts = 1/fs;
+    
+    
+    RL1 = 35;
+    LL1 = 300e-9;
+    CL1 = 375e-11;
+    
+    
+    RL2 = 0.154;
+    LL2 = 900e-9;
+    
+    
+    
     
     u = [Vg Vb1 Vb2 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5]';
     
@@ -296,12 +310,13 @@ M15 and M18  (8)
         'C4' Cfly2
         'C5' Co
         'C6' Co
-        'L1' Lc
-        'L2' Lc
+        'L1' LL2
+        'L2' LL1
+        'R3' RL2
+        'R4' RL1
+        'C7' CL1
         'R1' Rb
         'R2' Rb
-        'R3' RL
-        'R4' RL
         'R5' ESR1
         'R6' ESR2
         'R7' ESR1
@@ -422,32 +437,25 @@ M15 and M18  (8)
     conditions = [];
     PossSim = [];
     drange = linspace(0.05, .95, 8);
-    Vscloc1 = 38;
-    Vscloc2 = 39;
+    Vscloc1 = 39;
+    Vscloc2 = 40;
     Illoc = 1;
     Ib1loc = 2;
     Ib2loc = 3;
     %h = waitbar(0, 'Simulating');
     
-    for i = 2:size(modSchemes,3)
+    for i = 1:size(modSchemes,3)
         %  for i = 3:6
-        
-        if i ==3
-            
-            help_hooo = 5465;
-            
-        end
-        
         swvec = modSchemes(:,:,i);
         conv.Switch_Sequence = swvec;
         
-        parse.Component_Values(11,2) = {1e6};
-        conv.Element_Properties(11,2) = {1e6};
+        parse.Component_Values(9,2) = {1e6};
+        conv.Element_Properties(9,2) = {1e6};
         
         sim_Rb=Run_SS_Converter_num_no_diode(sim_Rb,conv);
         
-        parse.Component_Values(11,2) = {RL};
-        conv.Element_Properties(11,2) = {RL};
+        parse.Component_Values(9,2) = {RL2};
+        conv.Element_Properties(9,2) = {RL2};
         
         sim=Run_SS_Converter_num_no_diode(sim,conv);
         
@@ -486,7 +494,7 @@ M15 and M18  (8)
             OLVin = avgYs(Vscloc1)+avgYs(Vscloc2);
             % MaxVin = OLVin+1;
             MaxVin = OLVin+2;
-            if OLVin<6 || OLVin>22
+            if OLVin<4 || OLVin>21
                 continue
             end
             %{
@@ -536,20 +544,19 @@ M15 and M18  (8)
                 
                 
                 parse.find_diode_new(conv.order,conv.Switch_Sequence,conv.Fwd_Voltage)
-                iterations = 50;
+                iterations = 20;
                 cycle = 0;
                 fail = 1;
                 %fprintf('--------------\n')
-                fail = sim.Three_tier_diode_correct_num(iterations,0,0);
                 
-                while fail && cycle < 2
-                    fail = sim.Three_tier_diode_correct_num(iterations,0,1);
-                    cycle = cycle+1;
-                end
+                %fail = sim.Three_tier_diode_correct_num(iterations,0,0);
                 
-              %  if fail == true
-
-               % end
+                %while fail && cycle < 2
+                %    fail = sim.Three_tier_diode_correct_num(iterations,0,1);
+                %    cycle = cycle+1;
+                %end
+                
+               
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
@@ -605,18 +612,17 @@ M15 and M18  (8)
                 end
                 %}
                 
+                if Vin> 10 && Vin <11 && Pout>15 && Pout <20
+                    J = 4564564;
+                end
+                
                 etaSim = [etaSim; eta];
                 PlossSim = [PlossSim; Ploss];
                 PoutSim = [PoutSim; Pout];
                 %             PossSim = [PossSim; Poss];
                 conditions = [conditions; d, i, Vin];
                 
-                if i ==4
-                
-                Paused_VAR = 24;
-                end
-                
-                if Pout > 45
+                if Pout > 50
                     break;
                 end
                 
@@ -723,15 +729,14 @@ F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
 figure(103)
 
 Vgrange = 5:.25:22;
-%PoutRange = 0:1:80;
-PoutRange = 0:1:40; 
+PoutRange = 0:1:80;
 [VgMesh, PoutMesh] = meshgrid(Vgrange, PoutRange);
 [f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
 xlabel('Vg');
 ylabel('P_{out}');
 % ylim([0 80])
 colorbar
-c.LevelList = [0 0.25 0.5 0.75 1 1.5 2 3 4 5];
+c.LevelList = [0 0.25 0.5 1 1.5 2 3 4 5 10 15 20];
 
 hold on;
 
@@ -786,8 +791,8 @@ colorbar
     F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
     
     
-    Vgrange = 10:.25:20;
-    PoutRange = 20:1:60;
+    Vgrange = 7:.25:20;
+    PoutRange = 10:1:40;
     
     sigma1 = 30;
     sigma2 = 750;

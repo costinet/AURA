@@ -11,20 +11,39 @@
 % the d ON period and must account for indexing starting at zero
 
 %% Variable Declaration
-fpga_fs = 133e6;
-recomended_fs = 1e6;
-max_mod_value = 2*floor(fpga_fs/recomended_fs/2);
-max_mod_value = 108;
+fpga_fs = 38e6;
+fpga_multi = 9;
+recomended_fs = 1.25e6;
+max_mod_value = 2*floor(fpga_fs*fpga_multi/recomended_fs/2);
+%max_mod_value = 216;
+Ts = 1/(fpga_fs*fpga_multi)*max_mod_value;
 ideal_input_Voltage_index = 3;
 d = 0.5;
-dt1 = 0.01;
-dt2 = 0.01;
+dt1 = 0.001;
+dt2 = 0.001;
 
 dt1_length = ceil(dt1*max_mod_value);
 dt2_length = ceil(dt2*max_mod_value);
+dt1_length = 0;
+dt2_length = 0;
+
 mod_for_d = max_mod_value - (dt1_length*2 + dt1_length*2);
 d_length = floor(d*mod_for_d/2);
 d_prime_length = (mod_for_d-2*d_length)/2;
+
+%% Added for the use of approx 24 ns delay of half bridge gate drivers
+
+gate_driver_delay = 16e-9;
+
+
+clk_ts = 1/(fpga_fs*fpga_multi);
+
+offset = round(gate_driver_delay/clk_ts);
+
+difference_between = abs(offset*clk_ts-gate_driver_delay);
+
+
+
 
 switch ideal_input_Voltage_index
     
@@ -139,8 +158,8 @@ switch ideal_input_Voltage_index
         g2.rise = 0;
         g2.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
         
-        g3.rise = 0;
-        g3.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
+        g3.rise = offset + 0;
+        g3.fall = offset + (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
         
         g4.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g4.fall = (-1) + d_length;
@@ -148,8 +167,8 @@ switch ideal_input_Voltage_index
         g5.rise = d_length + dt1_length ;
         g5.fall = (-1) + d_length + dt1_length + d_prime_length;
         
-        g6.rise = d_length + dt1_length + d_prime_length + dt2_length;
-        g6.fall = (-1) + d_length;
+        g6.rise = offset + d_length + dt1_length + d_prime_length + dt2_length;
+        g6.fall = offset + (-1) + d_length;
         
         g7.rise = 0;
         g7.fall = 999;
@@ -337,6 +356,7 @@ switch ideal_input_Voltage_index
         
 
 end
+
 
 
 

@@ -165,11 +165,11 @@ end
 
 %% This is all caluclations to set up the variables need to find the SS
 % Solution
-Vg = 14.97;
+Vg = 11.35;
 
 Vin  = Vg;
-Vb1 = 4;
-Vb2 = 4.15;
+Vb1 = 4.24;
+Vb2 = 4.43;
 
 VgPOS = 1;
 Vb1POS = 2;
@@ -288,10 +288,10 @@ M15 and M18  (8)
 %%%% But a non-synchronous buck covnerter would be
 %%%%% ts = [Ts*(D-dead) Ts*(1-(D-dead))];
 d = 0.5;
-dt1 = 0.00370;
-dt2 = 0.00370;
-dt3 = 0.00370;
-dt4 = 0.00370;
+dt1 = 0.00370/2;
+dt2 = 0.00370/2;
+dt3 = 0.00370/2;
+dt4 = 0.00370/2;
 ds = [d-dt1, dt1, 1-d-dt2, dt2, d-dt3, dt3, 1-d-dt4, dt4];
 ts = ds/sum(ds)*Ts;
 
@@ -379,7 +379,7 @@ Switch_Resistors = {
 
 ON = 1;
 OFF = 0;
-Switch_Sequence = modSchemes(:,:,4);
+Switch_Sequence = modSchemes(:,:,3);
 
 
 % List all the resistances of the diodes or FETS when they are on or

@@ -41,7 +41,7 @@ L23=900*10^-9;
 Aeq = [];
 beq = [];
 A = [2 2 2 2 2 2 2 2 0 0 0].*L23./sf;
-b = 2.0001e-6;
+b = 1.0001e-6;
 
 INTCON = [];
 
@@ -62,7 +62,7 @@ INTCON = [];
 %b = Pout*.025;
 
 options = optimoptions('ga','PlotFcn',@gaplotbestf,'TolCon',1e-9,'Display','iter',...
-    'MaxGenerations',100,'MaxTime',60*60*2, 'MaxStallGenerations',50, 'PopulationSize', 20);
+    'MaxGenerations',100,'MaxTime',60*60*4, 'MaxStallGenerations',50, 'PopulationSize', 20);
 options.InitialPopulation = [
 
     0.1355    0.0843    0.2507    0.3038    0.0274    0.0764    0.0461    0.1828    1.3327e6    0.004395  0.001267

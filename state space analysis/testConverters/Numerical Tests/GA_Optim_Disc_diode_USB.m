@@ -70,7 +70,7 @@ options.InitialPopulation = [
 ].*sf;
 % Add initial guess into initial population matrix to speed up process
 [x,fval,exitflag,output,population,scores] = ...
-    ga(@AURA_Eff_Sweep_Disc_reduce, Nvars, A, b, Aeq, beq, LB.*sf, UB.*sf, [], INTCON, options);
+    ga(@AURA_Eff_Sweep_Disc_reduce_USB, Nvars, A, b, Aeq, beq, LB.*sf, UB.*sf, [], INTCON, options);
 % save('gaResults.mat', 'x', 'fval', 'exitflag', 'output','population','scores')
 % load('gaResults.mat');
 %}

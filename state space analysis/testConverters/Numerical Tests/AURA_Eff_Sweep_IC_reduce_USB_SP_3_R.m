@@ -1,4 +1,4 @@
-function [stick] = AURA_Eff_Sweep_Disc_reduce(X)
+function [stick] = AURA_Eff_Sweep_IC_reduce_USB_SP_3_R(X)
 
 %     _   _   _  ____    _
 %    / \ | | | |/ _  |  / \
@@ -14,7 +14,7 @@ function [stick] = AURA_Eff_Sweep_Disc_reduce(X)
 try
     
     % Place in the filename
-    filename = 'SC_FIB_AURA.net'; % Place netlist filename here that you want to run
+    filename = 'SC_FIB_AURA_USB_SP.net'; % Place netlist filename here that you want to run
     
     % Can also place component values here to get their voltage and
     % current output waveforms such as:
@@ -35,18 +35,31 @@ try
     
     
     penalty  = 0;
-    adjust = [ones(1,8), 1e-6, 100, 100, 100, 100] ;
+    adjust = [ones(1,length(X)-3).*20, 1e-6, 100, 100] ;
     X = X./adjust;
     
-    FET_selection = X(1:8);
-    fs = X(end-4);
-    dt1 = X(end-3);
-    dt2 = X(end-2);
-    dt3 = X(end-1);
-    dt4 = X(end);
+    W_selection = X(1:end-3);
+    fs = X(end-2);
+    dt1 = X(end-1);
+    dt2 = X(end);
     ron = [];
     Coss = [];
     tot_area = 0;
+    
+    if length(W_selection)==8
+        FET_selection = [2 2 2 3 3 3 3 3];
+    elseif length(W_selection)==9
+        FET_selection = [2 2 2 3 3 3 3 3 3];
+    elseif length(W_selection)==5
+        FET_selection = [3 3 3 3 3];
+    elseif length(W_selection)==2
+        FET_selection = [3 3];
+    else
+        fprintf('Something went wrong /n')
+    end
+    
+    
+    
     
     %% Determining Coss and ron based on w
     
@@ -55,107 +68,121 @@ try
         % for inial look
         switch FET_selection(select_FET)
             
-            %% EPC 2023
-            case 1
-                
-                ron(select_FET) = 1.45e-3;
-                Coss(select_FET) = 1530e-12;
-                w = 6.05;
-                l = 2.3;
-                
-                %% EPC 2014C
-            case 2
-                
-                ron(select_FET) = 16e-3;
-                Coss(select_FET) = 1530e-12;
-                w = 1.7;
-                l = 1.1;
-                
-                %% EPC 2015C
-            case 3
-                
-                ron(select_FET) = 4e-3;
-                Coss(select_FET) = 710e-12;
-                w = 4.1;
-                l = 1.6;
-                
-                %% EPC 2055
-            case 4
-                
-                ron(select_FET) = 3.6e-3;
-                Coss(select_FET) = 408e-12;
-                w = 2.5;
-                l = 1.5;
-                
-                %% EPC 2030
-            case 5
-                
-                ron(select_FET) = 2.4e-3;
-                Coss(select_FET) = 1120e-12;
-                w = 4.6;
-                l = 2.6;
-                
-                %% EPC 2024
-            case 6
-                
-                ron(select_FET) = 1.5e-3;
-                Coss(select_FET) = 1620e-12;
-                w = 6.05;
-                l = 2.3;
-                
-                %% EPC 2031
-            case 7
-                
-                ron(select_FET) = 2.6e-3;
-                Coss(select_FET) = 980e-12;
-                w = 4.6;
-                l = 2.6;
-                
-                
-                %% EPC 2020
-            case 8
-                
-                ron(select_FET) = 2.2e-3;
-                Coss(select_FET) = 1020e-12;
-                w = 6.05;
-                l = 2.3;
-                
-                %% EPC 2065
-            case 9
-                
-                ron(select_FET) = 3.6e-3;
-                Coss(select_FET) = 534e-12;
-                w = 3.5;
-                l = 1.95;
-                
-                %% EPC 2029
-            case 10
-                
-                ron(select_FET) = 3.2e-3;
-                Coss(select_FET) = 820e-12;
-                w = 4.6;
-                l = 2.6;
-                
-                
-                %% EPC 2021
-            case 11
-                
-                ron(select_FET) = 2.2e-3;
-                Coss(select_FET) = 1100e-12;
-                w = 6.05;
-                l = 2.3;
-                
-            otherwise
-                
-                stick = 100;
-                return
+           %% 8HVnLDMOS nbl
+        case 1
+            a =  0.001378;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
+            
+            p1 = 2.925e-9;
+            p2 = -2.787e-12;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            
+            L1=800*10^-9;
+            
+            tot_area = tot_area+W_selection(select_FET)*L1;
+            
+            
+            %% 8HVnLDMOS iso
+        case 2
+            a =  0.001453;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
+            
+            p1 = 2.093e-9;
+            p2 = -1.058e-12;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            
+            L2=900*10^-9;
+            
+            tot_area = tot_area+W_selection(select_FET)*L2;
+            
+            
+            %% 12HVnLDMOS iso hp mac
+        case 3
+            a =  0.001447;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
+            
+            p1 = 2.487e-9;
+            p2 = -6.393e-13;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            
+            L3=900*10^-9;
+            
+            tot_area = tot_area+W_selection(select_FET)*L3;
+            
+            
+            %% 12HVnLDMOS iso mac
+        case 4
+            a =  0.001656;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
+            
+            p1 = 2.281e-9;
+            p2 = -3.1e-12;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            
+            L4=1*10^-6;
+            
+            
+            tot_area = tot_area+W_selection(select_FET)*L4;
+            
+            %% 12HVnLDMOS nbl hp mac
+        case 5
+            a =  0.001447;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
+            
+            p1 = 2.487e-9;
+            p2 = -6.393e-13;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            
+            L5=0.9*10^-6;
+            
+            tot_area = tot_area+W_selection(select_FET)*L5;
+            
+            
+            %% 12HVnLDMOS nbl mac
+        case 6
+            a =  0.001585;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
+            
+            p1 = 3.176e-9;
+            p2 = -7.226e-12;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            
+            L6=1*10^-6;
+            
+            tot_area = tot_area+W_selection(select_FET)*L6;
+            
+            %% 12HVnLDMOS nbl mr mac
+        case 7
+            a =  0.002556;
+            b = -1;
+            ron(select_FET) = a*W_selection(select_FET)^b;
+            
+            p1 = 2.828e-9;
+            p2 = -1.703e-12;
+            Coss(select_FET) = p1*W_selection(select_FET)+p2;
+            
+            L7=.9*10^-6;
+            
+            tot_area = tot_area+W_selection(select_FET)*L7;
+            
+        otherwise
+            
+            stick = 100;
+            return
+       
                 
         end
-        tot_area = tot_area+w*l;
+        
     end
     
     
-    penalty  = tot_area / 3 ;
+    
     %% This is all caluclations to set up the variables need to find the SS
     % Solution
     Vg = 12;
@@ -174,11 +201,26 @@ try
     RL = 5e-3;
     
     
-    Co = 2e-6; ESRo = 2e-3;
-    Cfly1 = 9.4e-6; ESR1 = 3e-3;  % 5V Cap
-    Cfly2 = 9.4e-6; ESR2 = 3e-3; % 10V Cap
+    Co = 20e-6; ESRo = 2e-3;
+    %Cfly1 = 5e-6; ESR1 = 3e-3;  % 5V Cap
+    %Cfly2 = 2.5e-6; ESR2 = 3e-3; % 10V Cap
+    Cfly1 = 10e-6; ESR1 = 3e-3;  % 5V Cap
+    Cfly2 = 10e-6; ESR2 = 3e-3; % 10V Cap
+    
     Lc = 100e-9;
     Ts = 1/fs;
+    
+    
+    RL1 = 35;
+    LL1 = 300e-9;
+    CL1 = 375e-11;
+    
+    
+    RL2 = 0.01;
+    LL2 = 900e-9;
+    
+    
+    
     
     u = [Vg Vb1 Vb2 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5]';
     
@@ -206,48 +248,47 @@ try
     
     modSchemes(:,:,3) = [
         0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
-        0     1     1     0     0     0     1     0     0     1     0     1     1     0     0     1
-        0     1     1     0     1     0     1     0     0     1     0     1     1     0     0     1
-        0     1     1     0     0     0     1     0     0     1     0     1     1     0     0     1
+        0     1     1     1     0     1     1     0     0     1     0     0     0     1     0     1
+        0     1     1     1     0     1     1     0     0     1     1     0     0     1     0     1
+        0     1     1     1     0     1     1     0     0     1     0     0     0     1     0     1
         0     1     1     1     0     1     1     0     0     1     0     1     1     1     0     1
-        0     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
-        1     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
-        0     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
+        0     1     1     1     0     1     1     0     0     1     0     1     1     0     0     0
+        0     1     1     1     0     1     1     0     0     1     0     1     1     0     1     0
+        0     1     1     1     0     1     1     0     0     1     0     1     1     0     0     0
         ];
     
     modSchemes(:,:,4) = [
-        0     1     1     0     1     0     1     0     0     1     0     1     1     0     0     1
-        0     1     1     0     0     0     1     0     0     1     0     1     1     0     0     0
-        0     1     1     1     0     1     1     0     0     1     0     1     1     0     1     0
-        0     0     0     1     0     1     1     0     0     1     0     0     1     0     0     0
-        1     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
-        0     0     0     1     0     1     1     0     0     1     0     0     0     1     0     1
-        0     1     1     1     0     1     1     0     0     1     1     0     0     1     0     1
-        0     1     1     0     0     0     1     0     0     1     0     0     0     0     0     1
-        ];
-    
-    modSchemes(:,:,5) = [
-        0     1     1     1     0     1     1     0     0     1     0     1     1     0     1     0
-        0     1     1     0     0     0     1     0     0     1     0     1     1     0     1     0
-        0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0
-        0     1     1     0     0     0     1     0     0     1     0     0     0     0     0     0
         0     1     1     1     0     1     1     0     0     1     1     0     0     1     0     1
         0     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
         1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
         0     0     0     1     0     1     1     0     0     1     0     0     0     0     0     0
-        ];
-    
-    modSchemes(:,:,6) = [
+        0     1     1     1     0     1     1     0     0     1     0     1     1     0     1     0
+        0     1     1     0     0     0     1     0     0     1     0     1     1     0     1     0
         0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0
-        0     1     1     0     0     0     1     0     0     1     0     0     0     0     1     0
-        0     1     1     1     0     1     1     0     0     1     1     0     0     0     1     0
-        0     0     0     1     0     1     1     0     0     1     1     0     0     0     0     0
-        1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
-        0     0     0     1     0     1     1     0     0     1     1     0     0     0     0     0
-        0     1     1     1     0     1     1     0     0     1     1     0     0     0     1     0
-        0     1     1     0     0     0     1     0     0     1     0     0     0     0     1     0
+        0     1     1     0     0     0     1     0     0     1     0     0     0     0     0     0
         ];
     
+    modSchemes(:,:,5) = [
+        1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
+        1     0     0     1     0     1     1     0     0     1     1     0     0     0     0     0
+        1     0     0     1     0     1     1     0     0     1     1     0     0     0     1     0
+        0     0     0     0     0     0     1     0     0     1     0     0     0     0     1     0
+        0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0
+        0     1     1     0     1     0     1     0     0     1     0     0     0     0     1     0
+        0     1     1     0     1     0     1     0     0     1     1     0     0     0     1     0
+        0     0     0     0     0     0     1     0     0     1     1     0     0     0     0     0
+        ]; 
+    
+     modSchemes(:,:,6) = [
+        1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1
+        1     0     0     0     0     0     1     0     0     1     1     0     0     0     0     0
+        1     0     0     0     1     0     1     0     0     1     1     0     0     0     1     0
+        0     0     0     0     1     0     1     0     0     1     0     0     0     0     1     0
+        0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0
+        0     0     0     0     1     0     1     0     0     1     0     0     0     0     1     0
+        1     0     0     0     1     0     1     0     0     1     1     0     0     0     1     0
+        1     0     0     0     0     0     1     0     0     1     1     0     0     0     0     0
+        ]; 
     
     
     
@@ -296,12 +337,13 @@ M15 and M18  (8)
         'C4' Cfly2
         'C5' Co
         'C6' Co
-        'L1' Lc
-        'L2' Lc
+        'L1' LL2
+        'L2' LL1
+        'R3' RL2
+        'R4' RL1
+        'C7' CL1
         'R1' Rb
         'R2' Rb
-        'R3' RL
-        'R4' RL
         'R5' ESR1
         'R6' ESR2
         'R7' ESR1
@@ -310,36 +352,36 @@ M15 and M18  (8)
         'R10' ESRo
         'M1_C' Coss(1)
         'M2_C' Coss(2)
-        'M3_C' Coss(3)
+        'M3_C' Coss(2)
         'M4_C' Coss(2)
         'M5_C' Coss(1)
-        'M6_C' Coss(3)
-        'M7_C' Coss(4)
-        'M8_C' Coss(5)
-        'M9_C' Coss(5)
-        'M10_C' Coss(4)
-        'M11_C' Coss(6)
-        'M12_C' Coss(7)
-        'M13_C' Coss(8)
-        'M14_C' Coss(7)
-        'M15_C' Coss(6)
-        'M16_C' Coss(8)
+        'M6_C' Coss(2)
+        'M7_C' Coss(2)
+        'M8_C' Coss(1)
+        'M9_C' Coss(1)
+        'M10_C' Coss(2)
+        'M11_C' Coss(1)
+        'M12_C' Coss(2)
+        'M13_C' Coss(2)
+        'M14_C' Coss(2)
+        'M15_C' Coss(1)
+        'M16_C' Coss(2)
         'M1_R' ron(1)
         'M2_R' ron(2)
-        'M3_R' ron(3)
+        'M3_R' ron(2)
         'M4_R' ron(2)
         'M5_R' ron(1)
-        'M6_R' ron(3)
-        'M7_R' ron(4)
-        'M8_R' ron(5)
-        'M9_R' ron(5)
-        'M10_R' ron(4)
-        'M11_R' ron(6)
-        'M12_R' ron(7)
-        'M13_R' ron(8)
-        'M14_R' ron(7)
-        'M15_R' ron(6)
-        'M16_R' ron(8)
+        'M6_R' ron(2)
+        'M7_R' ron(2)
+        'M8_R' ron(1)
+        'M9_R' ron(1)
+        'M10_R' ron(2)
+        'M11_R' ron(1)
+        'M12_R' ron(2)
+        'M13_R' ron(2)
+        'M14_R' ron(2)
+        'M15_R' ron(1)
+        'M16_R' ron(2)
         };
     
     % List out all char variables in the
@@ -374,7 +416,7 @@ M15 and M18  (8)
     SW_OFF = ones(1,16).*10000000;
     
     %SW_ON = [M1_R,M2_R,etc...]
-    SW_ON = [ron(1) ron(2) ron(3) ron(2) ron(1) ron(3) ron(4) ron(5) ron(5) ron(4) ron(6) ron(7) ron(8) ron(7) ron(6) ron(8)];
+    SW_ON = [ron(1) ron(2) ron(2) ron(2) ron(1) ron(2) ron(2) ron(1) ron(1) ron(2) ron(1) ron(2) ron(2) ron(2) ron(1) ron(2)];
     SW = [SW_OFF;SW_ON;SW_ON];
     
     Diode_Forward_Voltage = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]'.*1.5;
@@ -422,32 +464,25 @@ M15 and M18  (8)
     conditions = [];
     PossSim = [];
     drange = linspace(0.05, .95, 8);
-    Vscloc1 = 38;
-    Vscloc2 = 39;
+    Vscloc1 = 39;
+    Vscloc2 = 40;
     Illoc = 1;
     Ib1loc = 2;
     Ib2loc = 3;
     %h = waitbar(0, 'Simulating');
     
-    for i = 2:size(modSchemes,3)
+    for i = 1:size(modSchemes,3)
         %  for i = 3:6
-        
-        if i ==3
-            
-            help_hooo = 5465;
-            
-        end
-        
         swvec = modSchemes(:,:,i);
         conv.Switch_Sequence = swvec;
         
-        parse.Component_Values(11,2) = {1e6};
-        conv.Element_Properties(11,2) = {1e6};
+        parse.Component_Values(9,2) = {1e6};
+        conv.Element_Properties(9,2) = {1e6};
         
         sim_Rb=Run_SS_Converter_num_no_diode(sim_Rb,conv);
         
-        parse.Component_Values(11,2) = {RL};
-        conv.Element_Properties(11,2) = {RL};
+        parse.Component_Values(9,2) = {RL2};
+        conv.Element_Properties(9,2) = {RL2};
         
         sim=Run_SS_Converter_num_no_diode(sim,conv);
         
@@ -467,12 +502,26 @@ M15 and M18  (8)
         conv.Ds = sim.Ds;
         conv.eigA = sim.eigA;
         
-        
+        if i==4
+            J = 45645;
+        end
         
         %  waitbar((i-1)/size(modSchemes,3), h);
         for d = drange
+            
+            %if d>0.5 && i==6
+            %    continue
+            %end
+            if d<0.1 && i==5
+                continue
+            end
+            
+            if i==5
+                continue
+            end
+                
            % dt = 0.0025;
-            ds = [d-dt1, dt1, 1-d-dt2, dt2, d-dt3, dt3, 1-d-dt4, dt4];
+            ds = [d-dt1, dt1, 1-d-dt2, dt2, d-dt1, dt1, 1-d-dt2, dt2];
             ts = ds/sum(ds)*Ts;
             conv.ts = ts;
             sim_Rb.ts = ts;
@@ -486,7 +535,7 @@ M15 and M18  (8)
             OLVin = avgYs(Vscloc1)+avgYs(Vscloc2);
             % MaxVin = OLVin+1;
             MaxVin = OLVin+2;
-            if OLVin<6 || OLVin>22
+            if OLVin<4 || OLVin>23
                 continue
             end
             %{
@@ -536,20 +585,19 @@ M15 and M18  (8)
                 
                 
                 parse.find_diode_new(conv.order,conv.Switch_Sequence,conv.Fwd_Voltage)
-                iterations = 50;
+                iterations = 20;
                 cycle = 0;
                 fail = 1;
                 %fprintf('--------------\n')
-                fail = sim.Three_tier_diode_correct_num(iterations,0,0);
+              %  fail = sim.Three_tier_diode_correct_num(iterations,0,0);
+              %  
+              %  while fail && cycle < 1
+              %      fail = sim.Three_tier_diode_correct_num(iterations,0,1);
+              %      cycle = cycle+1;
+              %      
+              %  end
                 
-                while fail && cycle < 2
-                    fail = sim.Three_tier_diode_correct_num(iterations,0,1);
-                    cycle = cycle+1;
-                end
-                
-              %  if fail == true
-
-               % end
+               
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
@@ -611,12 +659,7 @@ M15 and M18  (8)
                 %             PossSim = [PossSim; Poss];
                 conditions = [conditions; d, i, Vin];
                 
-                if i ==4
-                
-                Paused_VAR = 24;
-                end
-                
-                if Pout > 45
+                if Pout > 50
                     break;
                 end
                 
@@ -723,15 +766,14 @@ F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
 figure(103)
 
 Vgrange = 5:.25:22;
-%PoutRange = 0:1:80;
-PoutRange = 0:1:40; 
+PoutRange = 0:1:80;
 [VgMesh, PoutMesh] = meshgrid(Vgrange, PoutRange);
 [f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
 xlabel('Vg');
 ylabel('P_{out}');
 % ylim([0 80])
 colorbar
-c.LevelList = [0 0.25 0.5 0.75 1 1.5 2 3 4 5];
+c.LevelList = [0 0.25 0.5 1 1.5 2 3 4 5];
 
 hold on;
 
@@ -786,8 +828,8 @@ colorbar
     F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
     
     
-    Vgrange = 10:.25:20;
-    PoutRange = 20:1:60;
+    Vgrange = 7:.25:18;
+    PoutRange = 10:1:40;
     
     sigma1 = 30;
     sigma2 = 750;
