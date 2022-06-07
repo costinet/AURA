@@ -146,6 +146,37 @@ try
                 w = 6.05;
                 l = 2.3;
                 
+                              %% EPC 2021
+            case 12
+                
+                ron(select_FET) = 9e-3;
+                Coss(select_FET) = 267-12;
+                w = 6.05;
+                l = 2.3;
+                
+                            case 13
+                
+                ron(select_FET) = 13.5e-3;
+                Coss(select_FET) = 195-12;
+                w = 6.05;
+                l = 2.3;
+                
+                            case 14
+                
+                ron(select_FET) = 6e-3;
+                Coss(select_FET) = 304-12;
+                w = 6.05;
+                l = 2.3;
+                
+                
+                
+                            case 15
+                
+                ron(select_FET) = 3.2e-3;
+                Coss(select_FET) = 562-12;
+                w = 6.05;
+                l = 2.3;
+                
                 
             otherwise
                 
@@ -411,7 +442,7 @@ M15 and M18  (8)
     SW_OFF = ones(1,6).*10000000;
     
     %SW_ON = [M1_R,M2_R,etc...]
-    SW_ON = [ron(1) ron(2) ron(3) ron(4) ron(4) ron(3)];
+    SW_ON = [ron(1)+Ron_adj(1) ron(2)+Ron_adj(2) ron(3)+Ron_adj(3) ron(4)+Ron_adj(4) ron(5)+Ron_adj(5) ron(6)+Ron_adj(6)];
     SW = [SW_OFF;SW_ON;SW_ON];
     
     Diode_Forward_Voltage = [1 1 1 1 1 1]'.*1.5;
@@ -884,7 +915,7 @@ colorbar
     
 catch ME
     
-    
+    graph_values = 100;
     stick = 100;
     
 end

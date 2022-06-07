@@ -16,6 +16,13 @@ Ron_adj = [-4e-3 -4e-3 -4e-3 -4e-3 -4e-3 -4e-3];
 [stick3,graph3]=AURA_Eff_Sweep_Disc_Buck_3L_Boost_delta_CR_compare(x,Coss_adj,Ron_adj);
 
 
+Coss_adj = [-0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9]; 
+Ron_adj = [0 0 0 0 0 0];
+
+[stick9,graph9]=AURA_Eff_Sweep_Disc_Buck_3L_Boost_delta_CR_compare(x,Coss_adj,Ron_adj);
+
+
+
 
 A = 1;
 B = -(0.4e-9/4e-3);

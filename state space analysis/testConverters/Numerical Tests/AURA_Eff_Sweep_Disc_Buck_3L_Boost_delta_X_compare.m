@@ -411,7 +411,7 @@ M15 and M18  (8)
     SW_OFF = ones(1,6).*10000000;
     
     %SW_ON = [M1_R,M2_R,etc...]
-    SW_ON = [ron(1) ron(2) ron(3) ron(4) ron(4) ron(3)];
+    SW_ON = [ron(1) ron(2) ron(3) ron(4) ron(5) ron(6)];
     SW = [SW_OFF;SW_ON;SW_ON];
     
     Diode_Forward_Voltage = [1 1 1 1 1 1]'.*1.5;

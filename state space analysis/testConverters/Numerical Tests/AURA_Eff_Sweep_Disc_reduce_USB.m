@@ -183,13 +183,13 @@ try
     Ts = 1/fs;
     
     
-    RL1 = 35;
-    LL1 = 300e-9;
-    CL1 = 375e-11;
+    RL1 = 10;
+    LL1 = 1522-9;
+    CL1 = 150e-9;
     
     
-    RL2 = 0.7428;
-    LL2 = 900e-9;
+    RL2 = 0.2;
+    LL2 = 128e-9;
     
     
     
@@ -562,7 +562,7 @@ M15 and M18  (8)
                 
                 Xss = sim.SS_Soln();
                 [ avgXs, avgYs ] = sim.ssAvgs(Xss);
-                %{
+                %%{
             [ xs, t, ys ] = sim.SS_WF_Reconstruct;
             
             RMS_Iin = rms(ys(Illoc,:));
@@ -581,21 +581,25 @@ M15 and M18  (8)
                 Poss = 0;
                 
                 % for when there is no rms calculation
-                %%{
+                %{
                 eta = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2 - Poss)/(Vin*-avgYs(Illoc) - avgYs(Ib1loc)^2*Rb - avgYs(Ib2loc)^2*Rb);
                 Ploss = -(avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) + -(Vin*avgYs(Illoc)) + Poss;
                 Pout = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) - Poss;
                 %}
                 
                 % True input to output eff output of converter
-                %{
-            P_calc_Vin = Vin-(RMS_Iin*(RL*2));
+                %%{
+            P_calc_Vin = Vin;
             P_calc_Vout1 = Vb1+RMS_Ib1*Rb;
             P_calc_Vout2 = Vb2+RMS_Ib2*Rb;
             
             eta = (P_calc_Vout1*avgYs(Ib1loc) + P_calc_Vout2*avgYs(Ib2loc)) / -(P_calc_Vin*avgYs(Illoc));
             Ploss = -(P_calc_Vout1*avgYs(Ib1loc)+P_calc_Vout2*avgYs(Ib2loc))-(P_calc_Vin*avgYs(Illoc));
             Pout = (P_calc_Vout1*avgYs(Ib1loc)+P_calc_Vout2*avgYs(Ib2loc));
+            
+            % Need to find voltage of M8 & M9 
+            
+            
                 %}
                 if eta>1||eta<.3
                     continue
@@ -612,9 +616,9 @@ M15 and M18  (8)
                 end
                 %}
                 
-                if Vin> 10 && Vin <11 && Pout>15 && Pout <20
-                    J = 4564564;
-                end
+                % if Vin> 10 && Vin <11 && Pout>15 && Pout <20
+                %     J = 4564564;
+                % end
                 
                 etaSim = [etaSim; eta];
                 PlossSim = [PlossSim; Ploss];
@@ -729,7 +733,8 @@ F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
 figure(103)
 
 Vgrange = 5:.25:22;
-PoutRange = 0:1:80;
+%PoutRange = 0:1:80;
+PoutRange = 0:1:40; 
 [VgMesh, PoutMesh] = meshgrid(Vgrange, PoutRange);
 [f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
 xlabel('Vg');

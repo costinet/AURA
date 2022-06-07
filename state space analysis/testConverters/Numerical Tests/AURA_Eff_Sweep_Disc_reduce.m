@@ -67,7 +67,7 @@ try
             case 2
                 
                 ron(select_FET) = 16e-3;
-                Coss(select_FET) = 1530e-12;
+                Coss(select_FET) = 150e-12;
                 w = 1.7;
                 l = 1.1;
                 
@@ -171,13 +171,13 @@ try
     
     
     Rb = 5e-3;
-    RL = 5e-3;
+    RL = 20e-3;
     
     
     Co = 2e-6; ESRo = 2e-3;
     Cfly1 = 9.4e-6; ESR1 = 3e-3;  % 5V Cap
     Cfly2 = 9.4e-6; ESR2 = 3e-3; % 10V Cap
-    Lc = 100e-9;
+    Lc = 1.3e-6/2;
     Ts = 1/fs;
     
     u = [Vg Vb1 Vb2 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5]';
@@ -415,7 +415,7 @@ M15 and M18  (8)
     
     
     
-    
+    PindSim = [];
     etaSim = [];
     PlossSim = [];
     PoutSim = [];
@@ -540,12 +540,12 @@ M15 and M18  (8)
                 cycle = 0;
                 fail = 1;
                 %fprintf('--------------\n')
-                fail = sim.Three_tier_diode_correct_num(iterations,0,0);
+              %  fail = sim.Three_tier_diode_correct_num(iterations,0,0);
                 
-                while fail && cycle < 2
-                    fail = sim.Three_tier_diode_correct_num(iterations,0,1);
-                    cycle = cycle+1;
-                end
+             %   while fail && cycle < 2
+             %       fail = sim.Three_tier_diode_correct_num(iterations,0,1);
+             %       cycle = cycle+1;
+             %   end
                 
               %  if fail == true
 
@@ -555,7 +555,7 @@ M15 and M18  (8)
                 
                 Xss = sim.SS_Soln();
                 [ avgXs, avgYs ] = sim.ssAvgs(Xss);
-                %{
+                %%{
             [ xs, t, ys ] = sim.SS_WF_Reconstruct;
             
             RMS_Iin = rms(ys(Illoc,:));
@@ -574,21 +574,27 @@ M15 and M18  (8)
                 Poss = 0;
                 
                 % for when there is no rms calculation
-                %%{
+                %{
                 eta = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2 - Poss)/(Vin*-avgYs(Illoc) - avgYs(Ib1loc)^2*Rb - avgYs(Ib2loc)^2*Rb);
                 Ploss = -(avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) + -(Vin*avgYs(Illoc)) + Poss;
                 Pout = (avgYs(Ib1loc)*Vb1 + avgYs(Ib2loc)*Vb2) - Poss;
                 %}
                 
                 % True input to output eff output of converter
-                %{
-            P_calc_Vin = Vin-(RMS_Iin*(RL*2));
+                %%{
+           % P_calc_Vin = Vin-(RMS_Iin*(RL*2));
+           % P_calc_Vout1 = Vb1+RMS_Ib1*Rb;
+           % P_calc_Vout2 = Vb2+RMS_Ib2*Rb;
+            
+            P_calc_Vin = Vin;
             P_calc_Vout1 = Vb1+RMS_Ib1*Rb;
             P_calc_Vout2 = Vb2+RMS_Ib2*Rb;
+            
             
             eta = (P_calc_Vout1*avgYs(Ib1loc) + P_calc_Vout2*avgYs(Ib2loc)) / -(P_calc_Vin*avgYs(Illoc));
             Ploss = -(P_calc_Vout1*avgYs(Ib1loc)+P_calc_Vout2*avgYs(Ib2loc))-(P_calc_Vin*avgYs(Illoc));
             Pout = (P_calc_Vout1*avgYs(Ib1loc)+P_calc_Vout2*avgYs(Ib2loc));
+            Pind = RMS_Iin^2*(RL*2);
                 %}
                 if eta>1||eta<.3
                     continue
@@ -604,7 +610,7 @@ M15 and M18  (8)
                     continue
                 end
                 %}
-                
+                PindSim = [PindSim; Pind];
                 etaSim = [etaSim; eta];
                 PlossSim = [PlossSim; Ploss];
                 PoutSim = [PoutSim; Pout];
@@ -735,11 +741,33 @@ c.LevelList = [0 0.25 0.5 0.75 1 1.5 2 3 4 5];
 
 hold on;
 
-
+interp2(Vgrange,PoutRange,F(VgMesh,PoutMesh),20.28,30.95)
+    
 Vq = interp2(Vgrange,PoutRange,F(VgMesh,PoutMesh,,Yq)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+mineff = .3;
+etaSim(etaSim<mineff) = mineff;
+etaSim(etaSim>1) = mineff;
+
+locs = etaSim > mineff;
+
+VgSim = conditions(locs,end);
+F = scatteredInterpolant(VgSim, PoutSim(locs), PindSim(locs), 'linear','none');
+
+figure(104)
+
+Vgrange = 5:.25:22;
+%PoutRange = 0:1:80;
+PoutRange = 0:1:40; 
+[VgMesh, PoutMesh] = meshgrid(Vgrange, PoutRange);
+[f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
+xlabel('Vg');
+ylabel('P_{out}');
+% ylim([0 80])
+colorbar
+c.LevelList = [0 0.025 0.05 0.1 0.2 0.3 0.4 0.5 0.75 1 1.5 ];
     
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
