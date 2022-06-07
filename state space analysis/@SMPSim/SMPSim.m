@@ -8,7 +8,6 @@ classdef SMPSim < handle
         condThreshold = 1e9;
         gmin = 1/100e6;
         
-        converter;
         
         % speedup varaibles -> solution memory
         oldAs;
@@ -16,14 +15,36 @@ classdef SMPSim < handle
         oldIntEAt;
     end
     
-    properties
+    
+    properties (Dependent = true)
         As
         Bs
         Cs
         Ds
+        Is
+        topology
+        
+        stateNames
+        outputNames
+        switchNames
+        inputNames
+        
         ts
         u
-        Converter % Converter
+    end
+    
+    
+    properties
+        
+        % As
+       % Bs
+       % Cs
+       % Ds
+       % ts
+       % u
+        converter % Converter
+        Converter
+        
         order
         
         eigA
@@ -89,9 +110,6 @@ classdef SMPSim < handle
     end
     
     methods
-        function obj = SMPSim()
-            obj.Xs = [];
-        end
         
         %% Methods from external files
         [Xs] = SS_Soln(obj,keep_SS, As,Bs,ts,u)
@@ -105,7 +123,79 @@ classdef SMPSim < handle
         [m]=binary_search(obj,A,n,T)
         []=Y_Power(obj)
         [X] = SS_Soln_Aug(obj,keep_SS,As,Bs,ts,u)
+        [J, J2, XssF, XssB, X0, dt] = Baxter_Jacobianfunction(obj, order)
         %% Locally-defined methods
+        
+        %% Constructors for the new DC stuff
+        function obj = SMPSim(conv)
+            if nargin == 1
+                obj.converter = conv;
+            elseif nargin == 0
+                conv = SMPSconverter();
+                top = SMPStopology();
+                conv.topology = top;
+                obj.converter = conv;
+            end
+        end
+        
+         %% Getters
+        function res = get.As(obj)
+            res = obj.converter.As;
+        end
+        
+        function res = get.Bs(obj)
+            res = obj.converter.Bs;
+        end
+        
+        function res = get.Cs(obj)
+            res = obj.converter.Cs;
+        end
+        
+        function res = get.Ds(obj)
+            res = obj.converter.Ds;
+        end
+        
+        function res = get.Is(obj)
+            res = obj.converter.Is;
+        end
+        
+        function res = get.ts(obj)
+            res = obj.converter.ts;
+        end
+        
+        function res = get.u(obj)
+            res = obj.converter.u;
+        end
+        
+        function res = get.topology(obj)
+            res = obj.converter.topology;
+        end
+        
+        function res = get.oldAs(obj)
+            if isempty(obj.oldAs)
+                res = zeros(size(obj.As));
+            else
+                res = obj.oldAs;
+            end
+        end
+        
+        function res = get.stateNames(obj)
+            res = obj.converter.topology.stateLabels;
+        end
+        
+        function res = get.outputNames(obj)
+            res = obj.converter.topology.outputLabels;
+        end
+        
+        function res = get.inputNames(obj)
+            res = obj.converter.topology.inputLabels;
+        end
+        
+        function res = get.switchNames(obj)
+            res = obj.converter.topology.switchLabels;
+        end
+        
+        
         function settopology(obj, As, Bs, Cs, Ds)
             obj.As = As;
             obj.Bs = Bs;

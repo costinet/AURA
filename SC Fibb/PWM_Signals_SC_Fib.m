@@ -46,319 +46,332 @@ difference_between = abs(offset*clk_ts-gate_driver_delay);
 
 
 switch ideal_input_Voltage_index
-    
+
     case 1 % Ideal input voltage between 0-4 V
-        
+
         g1.rise = 999;
         g1.fall = 0;
-        
+
         g2.rise = 999;
         g2.fall = 0;
-        
+
         g3.rise = 0;
         g3.fall = 999;
-        
+
         g4.rise = 999;
         g4.fall = 0;
-        
+
         g5.rise = 999;
         g5.fall = 0;
-        
+
         g6.rise = 0;
         g6.fall = 999;
-        
+
         g7.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
         g7.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length ;
-        
+
         g8.rise = 0;
         g8.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
-        
+
         g9.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g9.fall = (-1) + d_length;
-        
+
         g10.rise = d_length + dt1_length;
         g10.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g11.rise = 999;
         g11.fall = 0;
-        
+
         g12.rise = 999;
         g12.fall = 0;
-        
+
         g13.rise = 0;
         g13.fall = 999;
-        
+
         g14.rise = 999;
         g14.fall = 0;
-        
+
         g15.rise = 999;
         g15.fall = 0;
-        
+
         g16.rise = 0;
         g16.fall = 999;
-        
+
 
     case 2 % Ideal input voltage between 4-8 V
-        
+
         g1.rise = 999;
         g1.fall = 0;
-        
+
         g2.rise = 999;
         g2.fall = 0;
-        
+
         g3.rise = 0;
         g3.fall = 999;
-        
+
         g4.rise = 999;
         g4.fall = 0;
-        
+
         g5.rise = 999;
         g5.fall = 0;
-        
+
         g6.rise = 0;
         g6.fall = 999;
-        
+
         g7.rise = d_length + dt1_length ;
         g7.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length ;
-        
+
         g8.rise = 0;
         g8.fall = (-1) + d_length;
-        
+
         g9.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g9.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
-        
+
         g10.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
         g10.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g11.rise = 999;
         g11.fall = 0;
-        
+
         g12.rise = 999;
         g12.fall = 0;
-        
+
         g13.rise = 0;
         g13.fall = 999;
-        
+
         g14.rise = 999;
         g14.fall = 0;
-        
+
         g15.rise = 999;
         g15.fall = 0;
-        
+
         g16.rise = 0;
         g16.fall = 999;
 
-          
+
     case 3 % Ideal input voltage between 8-12 V
-       
-        
+
+
         g1.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
         g1.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length ;
-        
+
         g2.rise = 0;
         g2.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
-        
+
         g3.rise = offset + 0;
         g3.fall = offset + (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
-        
+
         g4.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g4.fall = (-1) + d_length;
-        
+
         g5.rise = d_length + dt1_length ;
         g5.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g6.rise = offset + d_length + dt1_length + d_prime_length + dt2_length;
         g6.fall = offset + (-1) + d_length;
-        
+
         g7.rise = 0;
         g7.fall = 999;
-        
+
         g8.rise = 999;
         g8.fall = 0;
-        
+
         g9.rise = 999;
         g9.fall = 0;
-        
+
         g10.rise = 0;
         g10.fall = 999;
-        
+
         g11.rise = 999;
         g11.fall = 0;
-        
+
         g12.rise = 999;
         g12.fall = 0;
-        
+
         g13.rise = 0;
         g13.fall = 999;
-        
+
         g14.rise = 999;
         g14.fall = 0;
-        
+
         g15.rise = 999;
         g15.fall = 0;
-        
+
         g16.rise = 0;
         g16.fall = 999;
-        
-        
+
+
     case 4 % Ideal input voltage between 12-16 V
-        
+
         g1.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g1.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
-        
+
         g2.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
         g2.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g3.rise = offset + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
         g3.fall = offset + (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g4.rise = d_length + dt1_length;
         g4.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
-        
+
         g5.rise = 0;
         g5.fall = (-1) + d_length;
-        
+
         g6.rise = offset + d_length + dt1_length;
         g6.fall = offset + (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
-        
+
         g7.rise = 0;
         g7.fall = 999;
-        
+
         g8.rise = 999;
         g8.fall = 0;
-        
+
         g9.rise = 999;
         g9.fall = 0;
-        
+
         g10.rise = 0;
         g10.fall = 999;
-        
+
         g11.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
         g11.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
-        
+
         g12.rise = 0;
         g12.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g13.rise = offset + 0;
         g13.fall = offset + (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
-        
+
         g14.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g14.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
-        
+
         g15.rise = d_length + dt1_length;
         g15.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g16.rise = offset + d_length + dt1_length + d_prime_length + dt2_length;
         g16.fall = offset + (-1) + d_length;
-        
-        
+
+
     case 5 % Ideal input voltage between 16-20 V
-        
-        
+
+
         g1.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
         g1.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length ;
-        
+
         g2.rise = 0;
         g2.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
-        
+
         g3.rise = offset + 0;
         g3.fall = offset + (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
-        
+
         g4.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g4.fall = (-1) + d_length;
-        
+
         g5.rise = d_length + dt1_length ;
         g5.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g6.rise = offset + d_length + dt1_length + d_prime_length + dt2_length;
         g6.fall = offset + (-1) + d_length;
-        
+
         g7.rise = 0;
         g7.fall = 999;
-        
+
         g8.rise = 999;
         g8.fall = 0;
-        
+
         g9.rise = 999;
         g9.fall = 0;
-        
+
         g10.rise = 0;
         g10.fall = 999;
-        
+
         g11.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g11.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
-        
+
         g12.rise = 0;
         g12.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g13.rise = offset + 0;
         g13.fall = offset + (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g14.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g14.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
-        
+
         g15.rise = 0;
         g15.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g16.rise = offset + d_length + dt1_length + d_prime_length + dt2_length;
         g16.fall = offset + (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
-        
-        
+
+
     case 6 % Ideal input voltage between 20-24 V
-        
+
         g1.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g1.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
-        
+
         g2.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
         g2.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g3.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
         g3.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g4.rise = d_length + dt1_length;
         g4.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
-        
+
         g5.rise = 0;
         g5.fall = (-1) + d_length;
-        
+
         g6.rise = d_length + dt1_length;
         g6.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
-        
+
         g7.rise = 0;
         g7.fall = 999;
-        
+
         g8.rise = 999;
         g8.fall = 0;
-        
+
         g9.rise = 999;
         g9.fall = 0;
-        
+
         g10.rise = 0;
         g10.fall = 999;
-        
+
         g11.rise = d_length + dt1_length ;
         g11.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
-        
+
         g12.rise = 0;
         g12.fall = (-1) + d_length;
-        
+
         g13.rise = 0;
         g13.fall = (-1) + d_length;
-        
+
         g14.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g14.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
-        
+
         g15.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length ;
         g15.fall = (-1) + d_length + dt1_length + d_prime_length;
-        
+
         g16.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g16.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
-        
+
 
 end
 
+if ideal_input_Voltage_index ==4
+    g6.fall = g6.fall-max_mod_value;
+end
 
-
+if ideal_input_Voltage_index ==5 % && dt2_length ==0
+    g16.fall = g16.fall-max_mod_value;
+end
+%{
+if ideal_input_Voltage_index ==5 && dt2_length >0
+    g16.fall = g16.fall-max_mod_value;
+    g11.fall = g11.fall-max_mod_value;
+    g14.fall = g14.fall-max_mod_value;
+    g1.fall = g1.fall-max_mod_value;
+end
+%}
 
 fprintf('----------\n')
 fprintf('Gate 1 fall: %d\n',g1.fall)
@@ -411,6 +424,7 @@ fprintf('Gate 16 rise: %d\n',g16.rise)
 fprintf('----------\n')
 
 
+
 Numerical_Stack = [
   g1.rise g1.fall
   g2.rise g2.fall
@@ -434,19 +448,21 @@ Numerical_Stack = Numerical_Stack +1; % MATLAB base 1 instead of zero
 Waveform = zeros(16,max_mod_value*2);
 
 for i = 1:max_mod_value*2
-    
+
     if i > max_mod_value
         clock = i - max_mod_value;
     else
         clock = i;
     end
-    
+
+
+
     for j = 1:16
-        
+
         if Numerical_Stack(j,1) == clock
             Waveform(j,i) = 1;
         end
-        
+
         if  Numerical_Stack(j,2) == clock
             Waveform(j,i) = 0;
         end
@@ -469,7 +485,3 @@ figure(129)
         xlabel('Count')
     end
 end
-
-
-
-

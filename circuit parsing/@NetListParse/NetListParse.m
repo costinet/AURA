@@ -79,22 +79,27 @@ classdef NetListParse < handle
         
         % The Codex
         Codex
-        
         Component_Values
+        
         index
         
         % Forward votlage values in order of A matrix
         Fwd_Voltage
         
+    end
+    properties (Dependent = true)
+    %    Component_Values
         
-        % These are values used for the numerical parser:
         
+    end
+    % These are values used for the numerical parser:
+    properties (Access = private)
         Cutset
         SortedTree_cutloop
         SortedCoTree_cutloop
         NewNL
         NewNLnets
-        
+        end
         
         % Htemp for AB and CD matrix for large converters
 
@@ -111,7 +116,7 @@ classdef NetListParse < handle
         % format maybe place in converter class???
 
         % etc...????
-    end
+   
 
 
 
@@ -195,7 +200,22 @@ classdef NetListParse < handle
         function [StateNames]=getStateNames(obj)
             StateNames = obj.StateNames;
         end
+        
+         function obj = LTSpicecircuitParser(topology)
+            assert(isa(topology, 'SMPStopology'), ...
+                'input argument topology must be a handle to an object of class SMPStopology');
+            obj.topology = topology;
+         end
 
-
+        
+         %% Getters
+         
+        % function res = get.Component_Values(obj)
+        %     res = obj.topology.Element_Properties;
+        % end
+         
+         
+         
+         
     end
 end

@@ -549,10 +549,10 @@ M15 and M18  (8)
                 fail = 1;
                 %fprintf('--------------\n')
                 
-                %fail = sim.Three_tier_diode_correct_num(iterations,0,0);
-                
+               % fail = sim.Three_tier_diode_correct_num(iterations,0,0);
+                fail = sim.Three_tier_Jacobian_test(iterations,0,0);
                 %while fail && cycle < 2
-                %    fail = sim.Three_tier_diode_correct_num(iterations,0,1);
+                %    fail = sim.Three_tier_Jacobian_test(iterations,0,1);
                 %    cycle = cycle+1;
                 %end
                 

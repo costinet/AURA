@@ -4,7 +4,7 @@ classdef SMPSconverter < handle
     
     properties
         Topology
-
+        topology
         order % Need right now becuase it breaks code if not here
         Element_Properties % 1st column is char of all element names 2nd column is the value of that element
         Switch_Resistors  % List of chars that represent the switch names plus '_R'

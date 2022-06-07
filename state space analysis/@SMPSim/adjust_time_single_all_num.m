@@ -172,7 +172,7 @@ try
                 [A,B,C,D,eigA] = obj.add_state_matrix_num(new_state); % Calculate the needed
                 
                 
-                % ts = [ts(1:count-1) ts(count)*.05 ts(count)*.95 ts(count+1:end)];
+                 %ts = [ts(1:count-1) ts(count)*.05 ts(count)*.95 ts(count+1:end)];
                 % This is the new one to find a finner mesh grid on the
                 % surface plot
                 ts = [ts(1:count-1) ts(count)*.99 ts(count)*.01 ts(count+1:end)];
