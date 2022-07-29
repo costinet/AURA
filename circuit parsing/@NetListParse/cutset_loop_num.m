@@ -43,7 +43,7 @@ number_of_states = 1;
 
 i = 1;
 
-[NL,NLnets,forward_pass]=obj.Single_states(state,i,switches);
+[NL,NLnets,forward_pass]=obj.Single_states_D(state,i,switches);
 
 
 

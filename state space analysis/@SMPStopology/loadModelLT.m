@@ -1,14 +1,14 @@
 function loadModelLT(obj, fn, swseq, force)
-            % loadModel(obj, fn, swseq, force) (LTSpice Implementation)
-            % fn = path to ltspice model model
-            % swseq = binary vector of switching states to be parsed
-            % force = binary scalar.  If force == 0, the action won't
-            % repeat on subsequent calls unless the file has been updated
-            % or a new swseq is included.
-            % REquired behavior:
-            % populates fields As, Bs, Cs, Ds, Is, K
-            %     switchLabels, stateLabels, outputLabels, inputLabels
-           
+% loadModel(obj, fn, swseq, force) (LTSpice Implementation)
+% fn = path to ltspice model
+% swseq = binary vector of switching states to be parsed
+% force = binary scalar.  If force == 0, the action won't
+% repeat on subsequent calls unless the file has been updated
+% or a new swseq is included.
+% REquired behavior:
+% populates fields As, Bs, Cs, Ds, Is, K
+%     switchLabels, stateLabels, outputLabels, inputLabels
+
 %conv = obj.converter;
 top = obj;
 %ts = conv.ts;
@@ -21,36 +21,123 @@ Switch_Sequence = top.Switch_Sequence;
 Diode_Forward_Voltage = top.Fwd_Voltage;
 Binary_for_DAB = Switch_Sequence;
 obj.circuitParser.Component_Values = Numerical_Components;
-for k = 1:1:size(Switch_Sequence,1)
-    
-    
-    
- [A,B,C,D] = obj.circuitParser.ABCD_num(Switch_Resistors,SW,Switch_Sequence(k,:));
 
+Didoes_POS = contains(Switch_Resistors,'D')';
+Switch_L = length(Didoes_POS);
 
-        parse.Anum(:,:,k) = A;
-        parse.Bnum(:,:,k) = B;
-        parse.Cnum(:,:,k) = C;
-        parse.Dnum(:,:,k) = D;
-        [parse.eigA(:,k)] = eig(A);
+if ~force
+    
+    if nargin > 2
+        if all(ismember(swseq, obj.swseq, 'rows'))
+            return
+        else
+            %% only new swseqs, just add those
+            newSwSeq = setdiff(swseq, obj.swseq, 'rows');
+            
+            for k = 1:1:size(newSwSeq,1)
+                
+                [A,B,C,D] = obj.circuitParser.ABCD_num(Switch_Resistors,SW,newSwSeq(k,:));
+                
+                % Only allows diodes that are on to have non zeros in Bs and
+                % Ds
+                B_R = size(B,1);
+                B_C = size(B,2);
+                Diode_adjust_B = ones(B_R,B_C);
+                D_Key = newSwSeq(k,:).* Didoes_POS;
+                Diode_adjust_B(:,B_C-Switch_L+1:end) = repmat(D_Key,[B_R,1]);
+                B = B.*Diode_adjust_B;
+                
+                D_R = size(D,1);
+                D_C = size(D,2);
+                Diode_adjust_D = ones(D_R,D_C);
+                D_Key = swseq(k,:).* Didoes_POS;
+                Diode_adjust_D(:,D_C-Switch_L+1:end) = repmat(D_Key,[D_R,1]);
+                D = D.*Diode_adjust_D;
+                
+                
+                
+                obj.circuitParser.Anum(:,:,end+1) = A;
+                obj.circuitParser.Bnum(:,:,end+1) = B;
+                obj.circuitParser.Cnum(:,:,end+1) = C;
+                obj.circuitParser.Dnum(:,:,end+1) = D;
+                [obj.circuitParser.eigA(:,end+1)] = eig(A);
+                obj.swseq  = [obj.swseq; newSwSeq(k,:)];
+                
+                
+            end
+        end
+    end
+end
 
+if force
+    
+    obj.swseq = swseq;
+    for k = 1:1:size(swseq,1)
+        
+        
+        
+        [A,B,C,D] = obj.circuitParser.ABCD_num(Switch_Resistors,SW,swseq(k,:));
+        
+        % Only allows diodes that are on to have non zeros in Bs and
+        % Ds
+        B_R = size(B,1);
+        B_C = size(B,2);
+        Diode_adjust_B = ones(B_R,B_C);
+        D_Key = swseq(k,:).* Didoes_POS;
+        Diode_adjust_B(:,B_C-Switch_L+1:end) = repmat(D_Key,[B_R,1]);
+        B = B.*Diode_adjust_B;
+        
+        D_R = size(D,1);
+        D_C = size(D,2);
+        Diode_adjust_D = ones(D_R,D_C);
+        D_Key = swseq(k,:).* Didoes_POS;
+        Diode_adjust_D(:,D_C-Switch_L+1:end) = repmat(D_Key,[D_R,1]);
+        D = D.*Diode_adjust_D;
+        
+        
+        obj.circuitParser.Anum(:,:,k) = A;
+        obj.circuitParser.Bnum(:,:,k) = B;
+        obj.circuitParser.Cnum(:,:,k) = C;
+        obj.circuitParser.Dnum(:,:,k) = D;
+        [obj.circuitParser.eigA(:,k)] = eig(A);
+        
+    end
 end
 
 %%%%%%
 
 
 
+%%% This to account for there being to diodes on at the beginning of
+%%% the run
+B = obj.circuitParser.Bnum;
+B(:,contains(obj.circuitParser.ConstantNames,'C'),:)=0;
+obj.circuitParser.Bnum = B;
+D = obj.circuitParser.Dnum;
+D(:,contains(obj.circuitParser.ConstantNames,'C'),:)=0;
+obj.circuitParser.Dnum = D;
 
-    B = parse.Bnum;
-    B(:,contains(parse.ConstantNames,'VF'),:)=0;
-    parse.Bnum = B;
-    D = parse.Dnum;
-    D(:,contains(parse.ConstantNames,'VF'),:)=0;
-    parse.Dnum = D;
 
-    
-    
-    
+
+
+obj.As = obj.circuitParser.Anum;
+obj.Bs = obj.circuitParser.Bnum;
+obj.Cs = obj.circuitParser.Cnum;
+obj.Ds = obj.circuitParser.Dnum;
+
+
+obj.switchLabels = obj.Switch_Names;
+obj.stateLabels = obj.circuitParser.StateNames;
+obj.outputLabels = obj.circuitParser.OutputNamesCD;
+obj.inputLabels = obj.circuitParser.ConstantNames;
+
+
+
+end
+
+
+
+%{
     
     
     try
@@ -96,7 +183,7 @@ end
                         end
                     end
                 end
-            end  
+            end
             
             open_system(fn(1:strfind(fn,'/')-1),'loadonly');
             ssOrder = plecs('get', fn, 'StateSpaceOrder');
@@ -141,3 +228,4 @@ end
             obj.sourcefdate = file.date;
 
         end
+%}

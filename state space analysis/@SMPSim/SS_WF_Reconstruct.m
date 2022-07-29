@@ -1,4 +1,4 @@
-function [ xs, t, ys, interval_end ] = SS_WF_Reconstruct(obj, tsteps)
+function [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
 % Steady-state waveform reconstruction for periodic switched systems
 %
 % [ xs, t, ys ] = SS_WF_Reconstruct( Xss, As, Bs, ts, u, Cs, Ds ) produces
@@ -29,30 +29,35 @@ function [ xs, t, ys, interval_end ] = SS_WF_Reconstruct(obj, tsteps)
 % tsteps is the number of timesteps in one period, which is auto-selected
 % if left blank, to be between 10k and 100k while trying to keep at least
 % 100 steps per switching subinterval
-%
-% Jared Baxter edit on December 17, 2018
-% Edit to get length of subintervals for quality assurance.
-% interval_end gives end step number of all of the time invervals
 
 Xss = obj.Xs;
 As = obj.As;
 Bs = obj.Bs;
 ts = obj.ts;
-u = obj.u;
+% u = obj.u;
 Cs = obj.Cs;
 Ds = obj.Ds;
+
+    if size(obj.u,3) == 1
+        %% HEY THIS SHOULD BE MOVED ELSEWHERE
+        u = repmat(obj.u,1,1,(length(ts)));
+    elseif size(obj.u,3) == length(ts)
+        u = obj.u;
+    else
+        error('invalid input vector u specificed');
+    end
 
 try
     %wrapped in try block for debugging purposes
     Ts = sum(ts);
-    totalts = [0 cumsum(ts)];
+    totalts(1) = 0;
+    totalts(2:length(ts)+1) = cumsum(ts);
 
     nsub = size(As,3);
     n = size(As,1);
     
     if nargin == 1
-        tsteps = max(Ts/min(ts)*2, 100e3); % Modified to account for small time steps
-        % tsteps = min(max(Ts/min(ts)*100, 10e3),100e3);
+        tsteps = min(max(Ts/min(ts)*100, 10e3),100e3);
     end
 %     if nargin < 7
 %         Ds = zeros(1,1,nsub);
@@ -61,19 +66,11 @@ try
 %         Cs = ones(1,n, nsub);
 %     end
     
-    %----
-    % if there is a very small timestep that takes up too much memeory
-    % find the state that is causing this and set up a special case
-%     if tsteps>1e6
-%         min(ts)
-%     end
-%     
-    %-----
     t = linspace(0,Ts,tsteps);
 
     xs = zeros(n, length(t));
     xs(:,1) = Xss(:,1);
-    interval_end = ones(1,nsub+1); % JB modified
+    
     ys = zeros(size(Cs,1), length(t));
 
     for i = 1:nsub %for each subinterval
@@ -85,12 +82,10 @@ try
         elseif i == nsub
             ti = find(t<=tmax & t>=tmin);
         end
-        
-        interval_end(i+1)=max(ti);  % JB modified
 
         if length(ti) > 1
             SS = ss(As(:,:,i), Bs(:,:,i), Cs(:,:,i), Ds(:,:,i));
-            [y, ~, x] = lsim(SS, u*ones(size(ti)), t(ti)-t(ti(1)), Xss(:,i));
+            [y, ~, x] = lsim(SS, u(:,:,i)*ones(size(ti)), t(ti)-t(ti(1)), Xss(:,i));
 
             xs(:,ti) = x';
             ys(:,ti) = y';
@@ -98,10 +93,10 @@ try
         elseif length(ti) == 1 % special case if only one timestep in range
            tinter = linspace(0, t(2), 100);
            SS = ss(As(:,:,i), Bs(:,:,i), Cs(:,:,i), Ds(:,:,i));
-           [y, ~, x] = lsim(SS, u*ones(size(tinter)), tinter, xs(:,max(ti(1)-1,1)));
+           [y, ~, x] = lsim(SS, u(:,:,i)*ones(size(tinter)), tinter, xs(:,max(ti(1)-1,1)));
            ind = find(abs(tinter + tmin - t(ti)) == min(abs(tinter + tmin - t(ti))),1);
-           xs(:,ti) = x(ind,:)';
-           ys(:,ti) = y(ind,:)';
+           xs(:,ti) = x(ind);
+           ys(:,ti) = y(ind);
 
         end
     end

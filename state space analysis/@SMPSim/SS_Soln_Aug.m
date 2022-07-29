@@ -21,7 +21,7 @@ end
 
 ti= ts;
 
-depends = obj.Converter.Topology.Parser.dependsAB;
+depends = obj.converter.topology.circuitParser.dependsAB;
 
 
     ns = size(As,2);
@@ -80,7 +80,7 @@ Is = [eye(size(As,1)-size(depends,1)) zeros(size(As,1)-size(depends,1),size(depe
     end
     
     Xi(size(As,1)+1:end,:) = [];
-    obj.Converter.Topology.Parser.StateVarIndex();
+    obj.converter.topology.circuitParser.StateVarIndex();
     [Xi] = obj.CorrectXs(0,Xi);
     
     

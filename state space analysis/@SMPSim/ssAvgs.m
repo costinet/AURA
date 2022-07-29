@@ -9,6 +9,11 @@ function [ avgXs, avgYs ] = ssAvgs(obj, Xss)
     ts = obj.ts;
     u = obj.u;
 
+    if ~isrow(ts)
+        ts = ts';
+    end
+        
+        
     invertible = 1;
 
     n = size(As,3);

@@ -37,9 +37,9 @@ elseif nargin == 3
     u = obj.u;
 end
 
-OutputNames = obj.Converter.Topology.Parser.OutputNames;
+OutputNames =  obj.converter.topology.circuitParser.OutputNames;
 % DependentNames = obj.Converter.Topology.Parser.DependentNames;
-StateNumbers = obj.Converter.Topology.Parser.StateNumbers;
+StateNumbers =  obj.converter.topology.circuitParser.StateNumbers;
 
 %% Reconstruction of Dependent variables
 % Dont need anymore due to fix of SS_Soln.m

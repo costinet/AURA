@@ -1,311 +1,10 @@
-clear all;
+function [finalRun]=DMC_SteadyState(sim,conv,top)
+
 
 niter = 0;
 debug = 0;
 debug2 = 0;
 
-if ~debug
-    w = warning ('off','all');
-else
-    w = warning ('on','all');
-end
-
-% sdir = mfilename('fullpath');
-% sdir = sdir(1:find(sdir=='\',1,'last')-1);
-% addpath(sdir);
-
-%% Load test circuit
-% modelfile = 'AsyncBoost'; PLECsModel = 'Boost_Async';
-% modelfile = 'MRBuck'; PLECsModel = 'MRBuck';
-% modelfile = 'DSC4to1'; PLECsModel = 'HDSC';
-% modelfile = 'DAB'; PLECsModel = 'DAB_oneCap';
-% modelfile = 'DABfull'; PLECsModel = 'DAB_8Cap';
-% modelfile = 'DSC4to1Diodes'; PLECsModel = 'HDSC_withDiodes';
-%modelfile = 'SC_FIB_AURA_L.net';
-%modelfile = 'Buck_Boost_Vout.net';
-%modelfile = 'SC_FIB_AURA.net';
-
-
-
-%% Load for PLECS
-% find_system(modelfile,'SearchDepth',1, 'IncludeCommented', 'on')
-%open_system(modelfile,'loadonly');
-%circuitPath = [modelfile '/' PLECsModel];
-%set_param(circuitPath,'Commented','on');
-%simout = sim(modelfile,eps);
-
-%for i = 1:length(simout.properties)
-%    assignin('base',simout.properties{i},eval(['simout.' simout.properties{i}]));
-%end
-
-%set_param(circuitPath,'Commented','off');
-
-
-%% Load for SC FIB:
-
-%%{
-swvec = [
-        0     1     1     0     1     0     1     0     0     1     0     1     1     0     0     1
-        0     1     1     0     0     0     1     0     0     1     0     1     1     0     0     0
-        0     1     1     1     0     1     1     0     0     1     0     1     1     0     1     0
-        0     0     0     1     0     1     1     0     0     1     0     0     1     0     0     0
-        1     0     0     1     0     1     1     0     0     1     0     0     1     1     0     1
-        0     0     0     1     0     1     1     0     0     1     0     0     0     1     0     1
-        0     1     1     1     0     1     1     0     0     1     1     0     0     1     0     1
-        0     1     1     0     0     0     1     0     0     1     0     0     0     0     0     1
-    ];
-
-Ts = 1e-6;
-Numerical_Components = [
-    {'C1'   }    {[9.4000e-06]}
-    {'C2'   }    {[9.4000e-06]}
-    {'C3'   }    {[9.4000e-06]}
-    {'C4'   }    {[9.4000e-06]}
-    {'C5'   }    {[2.0000e-06]}
-    {'C6'   }    {[2.0000e-06]}
-    {'L1'   }    {[1.2800e-06]}
-    {'L2'   }    {[1.2800e-06]}
-    {'L3'   }    {[1.2800e-10]}
-    {'L4'   }    {[1.2800e-10]}
-    {'R1'   }    {[    0.0050]}
-    {'R2'   }    {[    0.0050]}
-    {'R3'   }    {[    0.0370]}
-    {'R4'   }    {[    0.0370]}
-    {'R5'   }    {[    0.0030]}
-    {'R6'   }    {[    0.0030]}
-    {'R7'   }    {[    0.0030]}
-    {'R8'   }    {[    0.0030]}
-    {'R9'   }    {[    0.0020]}
-    {'R10'  }    {[    0.0020]}
-    {'R11'  }    {[    0.0020]}
-    {'R12'  }    {[    0.0020]}
-    {'M1_C' }    {[4.0800e-10]}
-    {'M2_C' }    {[4.0800e-10]}
-    {'M3_C' }    {[4.0800e-10]}
-    {'M4_C' }    {[4.0800e-10]}
-    {'M5_C' }    {[4.0800e-10]}
-    {'M6_C' }    {[4.0800e-10]}
-    {'M7_C' }    {[4.0800e-10]}
-    {'M8_C' }    {[4.0800e-10]}
-    {'M9_C' }    {[4.0800e-10]}
-    {'M10_C'}    {[4.0800e-10]}
-    {'M11_C'}    {[4.0800e-10]}
-    {'M12_C'}    {[4.0800e-10]}
-    {'M13_C'}    {[4.0800e-10]}
-    {'M14_C'}    {[4.0800e-10]}
-    {'M15_C'}    {[4.0800e-10]}
-    {'M16_C'}    {[4.0800e-10]}
-    {'M1_R' }    {[    0.0036]}
-    {'M2_R' }    {[    0.0036]}
-    {'M3_R' }    {[    0.0036]}
-    {'M4_R' }    {[    0.0036]}
-    {'M5_R' }    {[    0.0036]}
-    {'M6_R' }    {[    0.0036]}
-    {'M7_R' }    {[    0.0036]}
-    {'M8_R' }    {[    0.0036]}
-    {'M9_R' }    {[    0.0036]}
-    {'M10_R'}    {[    0.0036]}
-    {'M11_R'}    {[    0.0036]}
-    {'M12_R'}    {[    0.0036]}
-    {'M13_R'}    {[    0.0036]}
-    {'M14_R'}    {[    0.0036]}
-    {'M15_R'}    {[    0.0036]}
-    {'M16_R'}    {[    0.0036]}];
-
-ts_Baxter = [0.25 0.005 0.25 0.005 0.25 0.005 0.25 0.005];
-ts = (ts_Baxter./sum(ts_Baxter)).*Ts;
-
-% The inital guess of time intervals % The inital guess of time intervals
-% Assigned later dynamically
-
-
-% List all of the numerical components in the netlist file for all
-% FETs you must use the syntax used below:
-
-
-% List out all char variables in the
-Switch_Resistors = {
-    'M1_R'
-    'M2_R'
-    'M3_R'
-    'M4_R'
-    'M5_R'
-    'M6_R'
-    'M7_R'
-    'M8_R'
-    'M9_R'
-    'M10_R'
-    'M11_R'
-    'M12_R'
-    'M13_R'
-    'M14_R'
-    'M15_R'
-    'M16_R'
-    };
-% List of the switch sequency. Organized by: the FETs (column) vs time
-% interval (rows) matching Switch_Resistors and ts respectivly
-
-Switch_Names = {
-    'M1'
-    'M2'
-    'M3'
-    'M4'
-    'M5'
-    'M6'
-    'M7'
-    'M8'
-    'M9'
-    'M10'
-    'M11'
-    'M12'
-    'M13'
-    'M14'
-    'M15'
-    'M16'
-    };
-
-
-
-ON = 1;
-OFF = 0;
-
-ron = [0.0036 0.0036 0.0036 0.0036 0.0036 0.0036 0.0036 0.0036];
-
-% List all the resistances of the diodes or FETS when they are on or
-% off
-SW_OFF = ones(1,16).*10000000;
-
-%SW_ON = [M1_R,M2_R,etc...]
-SW_ON = [ron(1) ron(2) ron(3) ron(2) ron(1) ron(3) ron(4) ron(5) ron(5) ron(4) ron(6) ron(7) ron(8) ron(7) ron(6) ron(8)];
-SW = [SW_OFF;SW_ON;SW_ON];
-
-Diode_Forward_Voltage = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]'.*1.5;
-u = [14.3 4 4 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5]';
-Diode_Forward_Voltage = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]'.*0;
-u = [14.3 4 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]';
-Order = [1 2 3 4 5 6 7 8];
-
-%}
-
-
-%% Load for 3 Level Buck
-
-%{
-ON = 1;
-OFF = 0;
-swvec = [
-    ON  OFF ON  ON  OFF OFF   % Q1 ON
-    OFF OFF ON  ON  OFF OFF  % Dead Q1 Q2
-    OFF ON  ON  ON  OFF OFF  % Q2 ON
-    OFF OFF ON  ON  OFF OFF];  % Dead
-
-
-Ts = 0.5e-6;
-Numerical_Components = [
-    {'C1'  }    {[2.3500e-05]}
-    {'C2'  }    {[2.0000e-06]}
-    {'C3'  }    {[2.0000e-06]}
-    {'L1'  }    {[1.2978e-07]}
-    {'M1_C'}    {[4.0800e-10]}
-    {'M2_C'}    {[4.0800e-10]}
-    {'M3_C'}    {[4.0800e-10]}
-    {'M4_C'}    {[4.0800e-10]}
-    {'M5_C'}    {[1.5300e-09]}
-    {'M6_C'}    {[1.5300e-09]}
-    {'R1'  }    {[    0.0015]}
-    {'R2'  }    {[    0.0050]}
-    {'R3'  }    {[    0.0050]}
-    {'R4'  }    {[    0.0020]}
-    {'R5'  }    {[    0.0020]}
-    {'R6'  }    {[    0.0022]}
-    {'R7'  }    {[    0.0017]}
-    {'R8'  }    {[   66.4000]}
-    {'R9'  }    {[  304.4797]}
-    {'C4'  }    {[5.6200e-12]}
-    {'R10' }    {[1.0000e-03]}
-    {'M1_R'}    {[    0.0036]}
-    {'M2_R'}    {[    0.0036]}
-    {'M3_R'}    {[    0.0036]}
-    {'M4_R'}    {[    0.0036]}
-    {'M5_R'}    {[    0.0160]}
-    {'M6_R'}    {[    0.0160]}];
-
-ts_Baxter = [0.70 0.001 0.3 0.001];
-ts = (ts_Baxter./sum(ts_Baxter)).*Ts;
-
-% The inital guess of time intervals % The inital guess of time intervals
-% Assigned later dynamically
-
-
-% List all of the numerical components in the netlist file for all
-% FETs you must use the syntax used below:
-
-
-% List out all char variables in the
-Switch_Resistors = {
-    'M1_R'
-    'M2_R'
-    'M3_R'
-    'M4_R'
-    'M5_R'
-    'M6_R'
-    };
-% List of the switch sequency. Organized by: the FETs (column) vs time
-% interval (rows) matching Switch_Resistors and ts respectivly
-
-Switch_Names = {
-    'M1'
-    'M2'
-    'M3'
-    'M4'
-    'M5'
-    'M6'
-    };
-
-
-
-ON = 1;
-OFF = 0;
-
-ron = [0.0036 0.0036 0.0036 0.0036 0.0160 0.0160];
-
-% List all the resistances of the diodes or FETS when they are on or
-% off
-SW_OFF = ones(1,6).*10000000;
-
-%SW_ON = [M1_R,M2_R,etc...]
-SW_ON = [ron(1) ron(2) ron(3) ron(4) ron(5) ron(6)];
-SW = [SW_OFF;SW_ON;SW_ON];
-
-Diode_Forward_Voltage = [1 1 1 1 1 1]'.*1.5;
-u = [12 4 4 1.5 1.5 1.5 1.5 1.5 1.5]';
-Order = [1 2 3 4];
-%}
-%% Analyze circuit
-
-sim = SMPSim();
-conv = sim.converter;
-top = sim.topology;
-
-% Set to run numerical parsesr
-
-%conv.ts = ts;
-conv.u = u;
-top.order = Order;
-top.Element_Properties = Numerical_Components;
-top.Switch_Resistors = Switch_Resistors;
-top.Switch_Resistor_Values = SW;
-top.Switch_Sequence = swvec;
-top.Fwd_Voltage = Diode_Forward_Voltage;
-top.Switch_Names = Switch_Names;
-%
-
-top.loadCircuit(modelfile,swvec,1);
-
-
-
-sim.u = u';
-conv.setSwitchingPattern(1:size(swvec,1), ts)
 
 Xss = sim.steadyState;
 if(debug)
@@ -329,10 +28,15 @@ finalRun = 0;
 % TF = conv.checkForSymmetry;
 
 %%
-[Xf,ts,swinds] = timeSteppingPeriod(sim);
+% [Xf,ts,swinds] = timeSteppingPeriod(sim);
+
+
+niter = 0;
+debug = 0;
+debug2 = 0;
 
 tic
-while(1)
+while(niter<=75)
     Xss = sim.steadyState;
     
     %% Update constraints per the current switching vector
@@ -346,7 +50,7 @@ while(1)
         [ xs, t] = sim.SS_WF_Reconstruct;
         for i = 1:length(xs)-1
             swstate = find(t(i) <= cumsum(ts),1,'first');
-            violationMargin(:,i) = Cbnd(:,:,swstate)*xs(:,i) + Dbnd(:,:,swstate)*us' - hyst(:,1) + hyst(:,2);
+            violationMargin(:,i) = Cbnd(:,:,swstate)*xs(:,i) + Dbnd(:,:,swstate)*sim.u - hyst(:,1) + hyst(:,2);
         end
         
         figure; plot(t(1:end-1),violationMargin)
@@ -405,6 +109,7 @@ while(1)
     %         ((ints == circshift(ints,1)) & (conv.swind == circshift(conv.swind,1))));
     %     tLocs = errLocs | unadjustableLocs | adjustableButSameInterval;
     %     insertAt = any(tLocs,1);
+    %                                                                                                                                                                     
     %
     %     adjType = zeros(size(Cbnd,1), length(conv.ts), 2);
     %     adjType(:,:,1) = (errAfter<0)+0;
@@ -428,7 +133,7 @@ while(1)
     
     Xss = sim.steadyState;
     if(debug)
-        sim.plotAllStates(1);
+        sim.plotAllStates(2);
     end
     
     
@@ -659,7 +364,7 @@ while(1)
         end
         
         niter = niter+1;
-        disp([niter sum(errBefore + errAfter, 'all')]);
+       disp([niter sum(errBefore + errAfter, 'all')]);
         
         if(~any(tsolve))
             error('timing not modified');
@@ -668,13 +373,15 @@ while(1)
         
     end
 end
-toc
+%toc
 
 Xss = sim.steadyState;
-sim.plotAllStates(10);
+%sim.plotAllStates(10);
 
 function Xs = getSSforJacobian(sim, newTs)
 [tps] = sim.converter.validateTimePerturbations([1:length(newTs)], newTs/1e12);
 Xs = sim.perturbedSteadyState(tps);
 Xs = Xs(:,1:end-1);
+end
+
 end

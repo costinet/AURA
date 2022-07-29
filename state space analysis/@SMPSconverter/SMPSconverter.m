@@ -4,80 +4,420 @@ classdef SMPSconverter < handle
     
     properties
         Topology
-        topology
+        
         order % Need right now becuase it breaks code if not here
         Element_Properties % 1st column is char of all element names 2nd column is the value of that element
         Switch_Resistors  % List of chars that represent the switch names plus '_R'
         Switch_Resistor_Values % [SW_OFF; SW_ON; SW_ON] third one will eventually be diode resistance
         Switch_Sequence % Set of binary on or off values that has the number of colums of swithces and the numer of rows of time intervals
         Fwd_Voltage
-       
         
-        % These are for the active states only 
-        ts % time interval length in seconds
-        u % input variable (must me in certain order)
-        As
-        Bs
-        Cs
-        Ds
-        eigA
+        
         
         Simulator % The simulator Class for the Covnerter
         
     end
     
+    properties
+        topology
+        u
+        
+        %         tcomp % compensation indexes. When ts(i) decreases by dt, ts(tcomp(i)) should increase by dt
+        %         tsmax % max permissible values for ts
+        
+    end
+    
+    properties (Dependent = true)
+        As
+        Bs
+        Cs
+        Ds
+        Is
+        swseq % as integer indexes
+        swvec % as binary switch states
+        
+        ts
+        swind %indices into the 3rd dimension of A/B/C/D etc. matrices stored
+        % by the topology that form the switching pattern. e.g. swseq = [1 3]
+        % will form a period using As(:,:,1) and As(:,:,3)
+    end
+    
+    properties (SetAccess = private)
+        expAts
+        cachets
+        cacheAs
+    end
+    
+    properties (SetAccess = protected, Hidden)
+        fullts
+        fullswind
+        controlledts
+        previousts
+    end
+    
+    properties (Hidden)
+        caching = 0
+        timingThreshold = 1e-15;
+        
+    end
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     methods
         
-         function Parse_circuit(obj,filename)
+        function Parse_circuit(obj,filename)
+            
+            % This will delete and set a new Topology class for the
+            % converter with the topology given iin the filename
+            
+            
+            top = SMPStopology();
+            obj.Topology = top;
+            
+            parse = NetListParse();
+            obj.Topology.Parser = parse;
+            
+            obj.Topology.Parser.initialize(filename);
+            
+            
+            
+            parse = NetListParse();
+            parse.initialize(filename);
+            parse.ABCD();
+            
+            top = SMPStopology();
+            top.Parser = parse;
+            
+            conv = SMPSconverter();
+            conv.Topology = top;
+            
+            
+        end
         
-             % This will delete and set a new Topology class for the
-             % converter with the topology given iin the filename
-             
-             
-             top = SMPStopology();
-             obj.Topology = top;
-             
-             parse = NetListParse();
-             obj.Topology.Parser = parse;
-             
-             obj.Topology.Parser.initialize(filename);
-             
-             
-             
-             parse = NetListParse();
-             parse.initialize(filename);
-             parse.ABCD();
-             
-             top = SMPStopology();
-             top.Parser = parse;
-             
-             conv = SMPSconverter();
-             conv.Topology = top;
-             
-             
-         end
-         
-         function set.Element_Properties(obj,Element_Properties)
-             
+        function set.Element_Properties(obj,Element_Properties)
+            
             if sum(sum(cellfun(@isempty,Element_Properties)))==0
-             obj.Element_Properties = Element_Properties;
+                obj.Element_Properties = Element_Properties;
             else
                 error('Not all Element Properties have been declared')
             end
             
-         end
-         
-         function set.ts(obj,ts)
-            if sum(ts>0)==length(ts)
-                obj.ts = ts;
+        end
+        
+        
+        
+        
+        function setSwitchingPattern(obj, swind, ts)
+            obj.controlledts = ts;
+            
+            obj.fullts = ts;
+            obj.fullswind = swind;
+        end
+        
+        function eigs2tis(obj)
+            for i = length(obj.ts):-1:1
+                eigA = obj.topology.eigAs(:,:,obj.swind(i));%eigs(obj.As(:,:,i));
+                fastestResFreq =  max([1; abs(eigA(imag(eigA)>0))]);
+                dt =  min( [2*pi./fastestResFreq/8, obj.ts(i)'], [],2);
+                
+                ratio = ceil(obj.ts(i)/dt - eps);
+                
+                for j = 1:1:ratio-1
+                    obj.addUncontrolledSwitching(i, 1, dt, [], [], 1);
+                end
+            end
+        end
+        
+        
+        function dt = adjustUncontrolledTiming(obj, ti, dt)
+            obj.previousts = obj.fullts;    %Save old times in case an undo is needed.
+            
+            [ots, ints, subInts] = getIntervalts(obj);
+            numSubInts = sum(ints == ints(ti));
+            
+            if (numSubInts==1)
+                %                 warning('Cannot adjust timing from controlled intervals without inserting an additional state');
+                dt = 0;
+                return
+            elseif ti == length(ints) || ints(ti+1) ~= ints(ti)
+                %selected last interval
+                dt = adjustUncontrolledTiming(obj, ti-1, -dt);
+                return
                 
             else
-                error('There is a non-postitive time interval length trying to be assigned to the simulation class variable ts')
+                if dt > 0
+                    dt = min([dt, ots(ti+1)]);
+                else
+                    dt = max([dt, -ots(ti)]);
+                end
+                
+                obj.fullts(subInts(ti),ints(ti)) = obj.fullts(subInts(ti),ints(ti))+dt;
+                obj.fullts(subInts(ti)+1,ints(ti)) = obj.fullts(subInts(ti)+1,ints(ti))-dt;
             end
-         
-         end
-    
-    
+            
+            obj.eliminateZeroTimeIntervals;
+            
+            assert(all(abs((sum(obj.fullts,1) - obj.controlledts))<obj.timingThreshold), ...
+                'Timing mismatch due to uncontrolled switching');
+        end
+        
+        function [tps] = validateTimePerturbations(obj, tis, dts)
+            assert(length(tis) == length(dts), 'vectors tis and dts must have the same number of elements');
+            scaleFull = 1;          %scales the time perturbations to keep equal change vector
+            individualLimit = 0;    %tries to only reduce the perturbations that violate (needs work)
+            
+            [ots, ints, ~] = getIntervalts(obj);
+            
+            tis(dts == 0) = []; dts(dts == 0) = [];
+            
+            [tis, inds] = sort(tis);
+            dts = dts(inds);
+            
+            numSubInts = zeros(length(tis),1);
+            for i = 1:length(tis)
+                numSubInts(i) = sum(ints == ints(tis(i)));
+                if tis(i) == length(ints) || ints(tis(i)+1) ~= ints(tis(i))
+                    tis(i) = tis(i)-1;
+                    dts(i) = -dts(i);
+                end
+            end
+            
+            dts(numSubInts ==1) = 0;
+            tis(dts == 0) = []; dts(dts == 0) = [];
+            
+            dts(dts > 0) = min([dts(dts > 0), ots(tis(dts > 0)+1)]);
+            dts(dts < 0) = max([dts(dts < 0), -ots(tis(dts < 0))]);
+            
+            if(scaleFull)
+                tps = zeros(1,length(ots));
+                tps(tis)= dts;
+                tps(tis+1) = tps(tis+1)-dts;
+                
+                newTs = ots + tps;
+                errLocs = newTs< 0;
+                if(any(errLocs))
+                    if all(abs(newTs(errLocs)) < abs(tps(errLocs)))
+                        overRatio = abs(ots(errLocs)./tps(errLocs));
+                        tps = tps.*(min(overRatio) - eps);
+                    else
+                        error('a time is negative or zero, already');
+                    end
+                end
+            elseif(individualLimit)
+                nonNegTimes = 0;
+                while nonNegTimes == 0
+                    
+                    tps = zeros(1,length(ots));
+                    tps(tis)= dts;
+                    tps(tis+1) = tps(tis+1)-dts;
+                    
+                    %% because multiple pertubations, still possible to go below zero
+                    errLocs = ots + tps < 0;
+                    errInds = find(errLocs);
+                    
+                    chLoc = errLocs | circshift(errLocs,-1);
+                    chLoc = intersect(find(chLoc), tis);
+                    dtsLoc = ismember(tis,chLoc);
+                    dts(dtsLoc) = -(ots(chLoc) + tps(chLoc) + eps) + dts(dtsLoc);
+                    
+                    tps = zeros(1,length(ots));
+                    tps(tis)= dts;
+                    tps(tis+1) = tps(tis+1)-dts;
+                    
+                    if(any(ots + tps< 0))
+                        nonNegTimes = 0;
+                    else
+                        nonNegTimes = 1;
+                    end
+                end
+            end
+            
+            assert(all(ots + tps >= 0), 'something went wrong, a time is negative');
+            assert(sum(tps) == 0, 'something went wrong, time perturbations sum to non-zero value');
+        end
+        
+        function refreshCache(obj)
+            if obj.caching
+                if(size(obj.swseq) == size(obj.As,3))
+                    for i = 1:size(obj.As,3)
+                        obj.expAts(:,:,i) = expm(obj.As(:,:,obj.swseq(i))*obj.ts(i));
+                    end
+                end
+                if isempty(obj.tsmax)
+                    obj.tsmax = sum(obj.ts)*ones(size(obj.ts));
+                end
+                if isempty(obj.tcomp)
+                    obj.tcomp = circshift(1:length(obj.ts),-1);
+                end
+            end
+        end
+        
+        
+        function [that, dts] = getDeltaT(obj, ind)
+            if nargin <2
+                ind = 1:length(obj.swind);
+            end
+            
+            fastestResFreq = zeros(length(ind),1);
+            fastestFreq = fastestResFreq;
+            for i = 1:length(ind)
+                eigA = obj.topology.eigAs(:,:,obj.swind(i));%eigs(obj.As(:,:,i));
+                fastestResFreq(i) =  max([1; abs(eigA(imag(eigA)>0))]);
+                fastestFreq(i) = max(abs(eigA));
+            end
+            
+            
+            %% that = good approx for small-signal perturbations
+            %             that = min( [2*pi./fastestFreq/4, obj.ts'/100], [],2);
+            if size(fastestFreq) == size(obj.ts)
+                that = min( [2*pi./fastestFreq/4, obj.ts(ind)/100], [],2);
+            else
+                that = min( [2*pi./fastestFreq/4, obj.ts(ind)'/100], [],2);
+            end
+            that = reshape(that, 1, length(that));
+            
+            %% dts = allowable large-signal perturbation to avoid introducing error between discrete samples
+            %             dts =  min( [2*pi./fastestResFreq/4, obj.ts'], [],2);
+            if size(fastestResFreq) == size(obj.ts)
+                dts = min( [2*pi./fastestResFreq/4, obj.ts(ind)], [],2);
+            else
+                dts = min( [2*pi./fastestResFreq/4, obj.ts(ind)'], [],2);
+            end
+            dts = reshape(dts, 1, length(dts));
+            
+            
+        end
+        
+        function eliminateZeroTimeIntervals(obj)
+            %             fts = obj.fullts;
+            %             dts = diff(fts,1);
+            %             [r,c] = find(fts(2:end,:) == dts & fts(2:end,:) ~= 0);
+            [r,c] = find(obj.fullts ==0 & obj.fullswind ~= 0);
+            
+            for i = length(r):-1:1
+                obj.fullts(r(i),c(i)) = 0;
+                obj.fullswind(r(i),c(i)) = 0;
+                
+                if r(i) < size(obj.fullts,1) && obj.fullswind(r(i)+1,c(i)) ~= 0
+                    obj.fullts(:,c(i)) = ...
+                        [obj.fullts(1:r(i)-1,c(i));
+                        obj.fullts(r(i)+1:end,c(i));
+                        0];
+                    obj.fullswind(:,c(i)) = ...
+                        [obj.fullswind(1:r(i)-1,c(i));
+                        obj.fullswind(r(i)+1:end,c(i));
+                        0];
+                end
+            end
+            
+            %             if ~isempty(r)
+            %                 obj.fullts(r,c) = -1;
+            %                 inds = find(obj.ts == -1);
+            %                 obj.swind(inds) = [];
+            %
+            %                 for i = length(r):-1:1
+            %                     obj.fullts(:,c(i)) = ...
+            %                         [obj.fullts(1:r(i)-1,c(i));
+            %                          obj.fullts(r(i)+1:end,c(i));
+            %                          0];
+            %                 end
+            %             end
+        end
+        
+        function undoLatestTimeChange(obj)
+            obj.fullts = obj.previousts;
+        end
+        
+        function [ts, ints, subInts] = getIntervalts(obj)
+            ts = obj.ts;
+            [r,c] = find(obj.fullts ~= 0);
+            ints = c;
+            subInts = r;
+            
+            %Make sure they are tall vectors
+            ints = reshape(ints,length(ints),1);
+            subInts = reshape(subInts,length(subInts),1);
+        end
+        
+        %% Getters
+        function res = get.As(obj)
+            res = obj.topology.As(:,:,obj.swseq);
+        end
+        
+        function res = get.Bs(obj)
+            res = obj.topology.Bs(:,:,obj.swseq);
+        end
+        
+        function res = get.Cs(obj)
+            res = obj.topology.Cs(:,:,obj.swseq);
+        end
+        
+        function res = get.Ds(obj)
+            res = obj.topology.Ds(:,:,obj.swseq);
+        end
+        
+        function res = get.Is(obj)
+            res = obj.topology.Is(:,:,obj.swseq);
+        end
+        
+        function res = get.ts(obj)
+            res = obj.fullts(obj.fullswind ~=0)';
+        end
+        
+        function res = get.swind(obj)
+            res = obj.fullswind(obj.fullswind ~=0)';
+            res = reshape(res,1,length(res));
+        end
+        
+        function res = get.swseq(obj)
+            if isempty(obj.swind)
+                res = 1:size(obj.topology.As,3);
+            else
+                res = obj.swind;
+            end
+        end
+        
+        function res = get.swvec(obj)
+            if isempty(obj.swind)
+                res = obj.topology.swseq(1:size(obj.topology.As,3),:);
+            else
+                res = obj.topology.swseq(obj.swind,:);
+            end
+        end
+        
+        function expAts = get.expAts(obj)
+            expAts = obj.expAts;
+        end
+        
+        %% Setters
+        function set.swseq(obj,newSeq)
+            %             obj.swind = newSeq;
+            [~, index]=ismember(newSeq,obj.topology.swseq,'rows');
+            obj.swind = index;
+            obj.refreshCache();
+        end
+        
+        function set.ts(obj, newts)
+            error('Needs to be updated or disallowed -- use setSwitchingPattern instead or other methods');
+            %             obj.ts = newts;
+            %             obj.refreshCache();
+        end
+        
+        function set.u(obj, newU)
+            % enforce it being a tall vector
+            assert(min(size(newU,1:2)) == 1, 'invalid dimensions for u');
+            obj.u = reshape(newU,max(size(newU,1:2)),1, size(newU,3));
+        end
+        
+        
+        
     end
     
     

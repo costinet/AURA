@@ -103,6 +103,11 @@ classdef SMPSim < handle
         binary % This is the ON and OFF Position of switches for the converter to be simulated
     end
     
+    properties (Hidden)
+        caching = 0
+    end
+    
+    
     methods (Access = private)
         %% Private Methods from external files
         [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
@@ -208,16 +213,37 @@ classdef SMPSim < handle
             obj.Xs = [];
         end
         
-        
+        %{
         function set.ts(obj,ts)
             if sum(ts>0)==length(ts)
                 obj.ts = ts;
             else
                 error('There is a non-postitive time interval length trying to be assigned to the simulation class variable ts')
             end
-            
-            
+        
         end
+          %}  
+            
+        
+        %% Setters
+        function set.converter(obj, conv)
+            obj.converter = conv;
+            obj.Xs = [];
+            obj.clearStoredResults();
+        end
+        
+        function set.u(obj,newU)
+            obj.converter.u = newU;
+        end
+        
+        function set.ts(obj,newT)
+             error('Setting ts is not recommended for class SMPSsim.  Use methods in SMPSconverter');
+%             obj.converter.ts = newT;
+        end
+        
+        
+        
+        
         
         function setts(obj,ts)
             if sum(ts>0)==length(ts)
@@ -283,11 +309,22 @@ classdef SMPSim < handle
            else
                obj.Xs_history(:,:,end+1) = Xs;
            end
-            
-        end    
-            
-          
+           
+        end
         
+        
+        function Xss = steadyState(obj)
+            Xss = SS_Soln(obj);
+        end
+        
+        function clearStoredResults(obj)
+            if obj.caching
+                obj.oldAs = zeros(size(obj.As));
+                obj.oldIntEAt = zeros(size(obj.As));
+                obj.oldts = zeros(size(obj.ts));
+            end
+            obj.Xs = [];
+        end
         
         
         

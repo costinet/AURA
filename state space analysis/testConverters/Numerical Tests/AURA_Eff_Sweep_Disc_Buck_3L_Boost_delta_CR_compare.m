@@ -146,36 +146,37 @@ try
                 w = 6.05;
                 l = 2.3;
                 
-                              %% EPC 2021
+                %% EPC 2059
             case 12
                 
                 ron(select_FET) = 9e-3;
                 Coss(select_FET) = 267-12;
-                w = 6.05;
-                l = 2.3;
+                w = 2.8;
+                l = 1.4;
                 
-                            case 13
+                %% EPC 2052  
+            case 13
                 
                 ron(select_FET) = 13.5e-3;
                 Coss(select_FET) = 195-12;
-                w = 6.05;
-                l = 2.3;
+                w = 1.5;
+                l = 1.5;
                 
-                            case 14
+              %%  EPC 2204
+            case 14
                 
                 ron(select_FET) = 6e-3;
                 Coss(select_FET) = 304-12;
-                w = 6.05;
-                l = 2.3;
+                w = 2.5;
+                l = 1.5;
                 
-                
-                
-                            case 15
+                %%  EPC 2218
+            case 15
                 
                 ron(select_FET) = 3.2e-3;
                 Coss(select_FET) = 562-12;
-                w = 6.05;
-                l = 2.3;
+                w = 3.5;
+                l = 1.95;
                 
                 
             otherwise

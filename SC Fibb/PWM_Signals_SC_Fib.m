@@ -17,8 +17,8 @@ recomended_fs = 1.25e6;
 max_mod_value = 2*floor(fpga_fs*fpga_multi/recomended_fs/2);
 %max_mod_value = 216;
 Ts = 1/(fpga_fs*fpga_multi)*max_mod_value;
-ideal_input_Voltage_index = 5;
-d = 0.75;
+ideal_input_Voltage_index = 6;
+d = 0.50;
 dt1 = 0.001;
 dt2 = 0.001;
 
@@ -312,8 +312,8 @@ switch ideal_input_Voltage_index
         g2.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
         g2.fall = (-1) + d_length + dt1_length + d_prime_length;
 
-        g3.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
-        g3.fall = (-1) + d_length + dt1_length + d_prime_length;
+        g3.rise = offset + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length;
+        g3.fall = offset + (-1) + d_length + dt1_length + d_prime_length;
 
         g4.rise = d_length + dt1_length;
         g4.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
@@ -321,8 +321,8 @@ switch ideal_input_Voltage_index
         g5.rise = 0;
         g5.fall = (-1) + d_length;
 
-        g6.rise = d_length + dt1_length;
-        g6.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
+        g6.rise = offset + d_length + dt1_length;
+        g6.fall = offset + (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length + d_prime_length;
 
         g7.rise = 0;
         g7.fall = 999;
@@ -342,8 +342,8 @@ switch ideal_input_Voltage_index
         g12.rise = 0;
         g12.fall = (-1) + d_length;
 
-        g13.rise = 0;
-        g13.fall = (-1) + d_length;
+        g13.rise = offset + 0;
+        g13.fall = offset + (-1) + d_length;
 
         g14.rise = d_length + dt1_length + d_prime_length + dt2_length;
         g14.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
@@ -351,8 +351,8 @@ switch ideal_input_Voltage_index
         g15.rise = d_length + dt1_length + d_prime_length + dt2_length + d_length + dt1_length ;
         g15.fall = (-1) + d_length + dt1_length + d_prime_length;
 
-        g16.rise = d_length + dt1_length + d_prime_length + dt2_length;
-        g16.fall = (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
+        g16.rise = offset + d_length + dt1_length + d_prime_length + dt2_length;
+        g16.fall = offset + (-1) + d_length + dt1_length + d_prime_length + dt2_length + d_length;
 
 
 end
