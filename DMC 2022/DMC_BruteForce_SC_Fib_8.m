@@ -1,16 +1,19 @@
 clear
 sf = [1 1 1 1 1 1 1e-6 100 100];  
-x = [4.0000    4.0000    4.0000    4.0000    4.0000    4.0000   2e6    0.01    0.01];
+x = [4.0000    4.0000    4.0000    4.0000    4.0000    4.0000   2e6    0.005    0.005];
 x = x.*sf;
 Coss_adj = [0 0 0 0 0 0];
 Ron_adj = [0 0 0 0 0 0];
 
-for i = 1:19
+
+Number_of_FETs = 15;
+
+for i = 1:Number_of_FETs
     x(1:6) = [i i i i i i];
     [stick(i),graph1]=DMC_SC_Fib_8_Sweep(x,Coss_adj,Ron_adj);
 end
 
-    Number_of_FETs = 19;
+
     FETs = zeros(Number_of_FETs,2);
     for i = 1:Number_of_FETs
         [FETs(i,1),FETs(i,2),~,~]=Select_FET(i);

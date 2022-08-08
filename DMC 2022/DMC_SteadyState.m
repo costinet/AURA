@@ -36,7 +36,7 @@ debug = 0;
 debug2 = 0;
 
 tic
-while(niter<=75)
+while(niter<=20)
     Xss = sim.steadyState;
     
     %% Update constraints per the current switching vector
@@ -119,6 +119,9 @@ while(niter<=75)
     
     altered = 0;
     
+    if niter < 50
+        adjType(:,:,2) = zeros(size(adjType(:,:,2)));
+    end
     
     %     warning("Need something so it doesn't do corrections both before and after");
     for i = flip(find(insertAt))
@@ -133,7 +136,7 @@ while(niter<=75)
     
     Xss = sim.steadyState;
     if(debug)
-        sim.plotAllStates(2);
+        sim.plotAllStates(4);
     end
     
     
@@ -364,7 +367,11 @@ while(niter<=75)
         end
         
         niter = niter+1;
-       disp([niter sum(errBefore + errAfter, 'all')]);
+  disp([niter sum(errBefore + errAfter, 'all')]);
+        
+        if niter >5
+            J = 4654654;
+        end
         
         if(~any(tsolve))
             error('timing not modified');
@@ -372,6 +379,7 @@ while(niter<=75)
         end
         
     end
+   % conv.swvec
 end
 %toc
 

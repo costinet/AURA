@@ -89,7 +89,7 @@ for i = 1:length(switchNames)
         
         
         % Vf = evalin('base', plecs('get', [modelFile '/' devStr], 'Vf'));
-        hyst(devVoltage,:)=[-1, 0.1];
+        hyst(devVoltage,:)=[-1.5, 0.75];
         switchRef(devVoltage,:) = [i, 0];
         
         

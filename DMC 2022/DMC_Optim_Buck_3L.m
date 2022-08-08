@@ -2,12 +2,11 @@
 clear
 tic
 try
-    Number_of_FETs = 19;
+    Number_of_FETs = 15;
     FETs = zeros(Number_of_FETs,2);
     for i = 1:Number_of_FETs
         [FETs(i,1),FETs(i,2),~,~]=Select_FET(i);
     end
-
     
     [minronCoss] = min(FETs,[],1);
     minron = minronCoss(1);
@@ -28,19 +27,16 @@ try
     
     saved_fval = ones(6,1).*100;
     big_loop = 0;
-    max_iteration = 3;
+    max_iteration = 100;
     almost_steady_state = [0 0 0 0 0 0];
     
-    
-    x = [6 9 12 19 7 5   2.0000    2.4372    0.2737    0.7965];
-    % 5 10 5 10 5 10
-    % 19 6 1 19 6 1 
-    %2 3 4 2 3 4
+    % x = [6.0000    6.0000    6.0000    6.0000    3.0000   15.0000    2.0000    2.4372    0.2737    0.7965]
+    x = [15 15 2 2 15 15   2.0000    2.4372    0.2737    0.7965];
     saved_x = x;
     FETs_number = 6;
     stick = zeros(6,3);
     deltaRon = -1e-3;
-    deltaCoss = -0.1e-9;
+    deltaCoss = -0.4e-9;
     coss_adjust_values = [0 deltaCoss/minCoss];
     ron_adjust_values = [deltaRon/minron 0];
 
@@ -55,18 +51,18 @@ try
             Coss_adj = [0 0 0 0 0 0];
             Ron_adj = [0 0 0 0 0 0];
             
-            [stick(i,1),graph1]=DMC_BuckBoost_Sweep(x,Coss_adj,Ron_adj);
+            [stick(i,1),graph1]=DMC_BuckBoost_D_Sweep(x,Coss_adj,Ron_adj);
             
             Coss_adj = [0 0 0 0 0 0].*adjust_FET;
             Ron_adj = [-1e-3 -1e-3 -1e-3 -1e-3 -1e-3 -1e-3].*adjust_FET;
             
-            [stick(i,2),graph2]=DMC_BuckBoost_Sweep(x,Coss_adj,Ron_adj);
+            [stick(i,2),graph2]=DMC_BuckBoost_D_Sweep(x,Coss_adj,Ron_adj);
             
             
-            Coss_adj = [-0.1e-9 -0.1e-9 -0.1e-9 -0.1e-9 -0.1e-9 -0.1e-9].*adjust_FET;
+            Coss_adj = [-0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9].*adjust_FET;
             Ron_adj = [0 0 0 0 0 0].*adjust_FET;
             
-            [stick(i,3),graph3]=DMC_BuckBoost_Sweep(x,Coss_adj,Ron_adj);
+            [stick(i,3),graph3]=DMC_BuckBoost_D_Sweep(x,Coss_adj,Ron_adj);
             
             % Move in the steepest direction:
             stick_diff = [stick(i,1)-stick(i,2) stick(i,1)-stick(i,3)];
@@ -147,8 +143,19 @@ try
             
             error_adjusted =combine_distance' +Angle_Error; %+ errorRon*100 + errorCoss*100;
             error_adjusted(x(i)) =  error_adjusted(x(i)) + 100;
-            [~,new_x]=min(error_adjusted);
+            [~,new_xs]=sort(error_adjusted);
             
+            
+            new_Ploss(1)=sum((XY0-FETs(new_xs(1),:)).*stick_delta_ploss_over_delta_x);
+            new_Ploss(2)=sum((XY0-FETs(new_xs(2),:)).*stick_delta_ploss_over_delta_x);
+            new_Ploss(3)=sum((XY0-FETs(new_xs(3),:)).*stick_delta_ploss_over_delta_x);
+            new_Ploss(4)=sum((XY0-FETs(new_xs(4),:)).*stick_delta_ploss_over_delta_x);
+            new_Ploss(5)=sum((XY0-FETs(new_xs(5),:)).*stick_delta_ploss_over_delta_x);
+           
+            
+            [~,new_x_ind] = min(new_Ploss);
+            
+            new_x=new_xs(new_x_ind);
             x_test = x;
             
             x_test(i) = new_x;
@@ -156,7 +163,7 @@ try
             Coss_adj_test = [0 0 0 0 0 0];
             Ron_adj_test = [0 0 0 0 0 0];
             
-            [stick_em,graph1]=DMC_BuckBoost_Sweep(x_test,Coss_adj_test,Ron_adj_test);
+            [stick_em,graph1]=DMC_BuckBoost_D_Sweep(x_test,Coss_adj_test,Ron_adj_test);
             
             % If there is not an improvement to the fval of the converter.
             if stick_em > stick(i,1)
@@ -193,20 +200,34 @@ catch ME
 end
 
 J = 456456456;
+figure
 plot_ron = FETs(:,1).*minron;
 plot_Coss = FETs(:,2).*minCoss;
-scatter(plot_ron,plot_Coss)
+scatter(plot_ron,plot_Coss,'DisplayName','FETs');
 hold on
-plot(plot_ron(saved_x(:,1)),plot_Coss(saved_x(:,1)))
+plot(plot_ron(saved_x(:,1)),plot_Coss(saved_x(:,1)),'DisplayName','M1','LineWidth',3,'LineStyle','--');
 hold on
-plot(plot_ron(saved_x(:,2)),plot_Coss(saved_x(:,2)))
+plot(plot_ron(saved_x(:,2)),plot_Coss(saved_x(:,2)),'DisplayName','M2','LineWidth',3,'LineStyle',':');
 hold on
-plot(plot_ron(saved_x(:,3)),plot_Coss(saved_x(:,3)))
+plot(plot_ron(saved_x(:,3)),plot_Coss(saved_x(:,3)),'DisplayName','M3','LineWidth',3,'LineStyle','-.');
 hold on
-plot(plot_ron(saved_x(:,4)),plot_Coss(saved_x(:,4)))
+plot(plot_ron(saved_x(:,4)),plot_Coss(saved_x(:,4)),'DisplayName','M4','LineWidth',3,'LineStyle','--');
 hold on
-plot(plot_ron(saved_x(:,5)),plot_Coss(saved_x(:,5)))
+plot(plot_ron(saved_x(:,5)),plot_Coss(saved_x(:,5)),'DisplayName','M5','LineWidth',3,'LineStyle',':');
 hold on
-plot(plot_ron(saved_x(:,6)),plot_Coss(saved_x(:,6)))
+plot(plot_ron(saved_x(:,6)),plot_Coss(saved_x(:,6)),'DisplayName','M6','LineWidth',3,'LineStyle','-.');
 hold on
-scatter(plot_ron(x(:,1:6)),plot_Coss(x(:,1:6)),50,'r')
+scatter(plot_ron(x(:,1:6)),plot_Coss(x(:,1:6)),50,'r','DisplayName','Ending Point');
+
+% Create ylabel
+ylabel('Coss (F)','FontSize',20);
+
+% Create xlabel
+xlabel('Ron (\Omega)','FontSize',20);
+
+% Create title
+title('BuckBoost Converter Optimization','FontSize',24);
+
+axis1 = gca;
+set(axis1,'FontName','Times New Roman','FontSize',14);
+legend

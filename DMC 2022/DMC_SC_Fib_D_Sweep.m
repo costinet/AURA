@@ -351,12 +351,12 @@ OFF = 0;
 SW_OFF = ones(1,32).*10000000;
 
 %SW_ON = [M1_R,M2_R,etc...]
-SW_ON = [ron(1) ron(2) ron(3) ron(2) ron(1) ron(3) ron(4) ron(5) ron(5) ron(4) ron(6) ron(7) ron(8) ron(7) ron(6) ron(8) ron(1) ron(2) ron(3) ron(2) ron(1) ron(3) ron(4) ron(5) ron(5) ron(4) ron(6) ron(7) ron(8) ron(7) ron(6) ron(8)];
+SW_ON = [ron(1)+Ron_adj(1) ron(2)+Ron_adj(2) ron(3)+Ron_adj(3) ron(2)+Ron_adj(2) ron(1)+Ron_adj(1) ron(3)+Ron_adj(3) ron(4)+Ron_adj(4) ron(5)+Ron_adj(5) ron(5)+Ron_adj(5) ron(4)+Ron_adj(4) ron(6)+Ron_adj(6) ron(7)+Ron_adj(7) ron(8)+Ron_adj(8) ron(7)+Ron_adj(7) ron(6)+Ron_adj(6) ron(8)+Ron_adj(8) ron(1)+Ron_adj(1) ron(2)+Ron_adj(2) ron(3)+Ron_adj(3) ron(2)+Ron_adj(2) ron(1)+Ron_adj(1) ron(3)+Ron_adj(3) ron(4)+Ron_adj(4) ron(5)+Ron_adj(5) ron(5)+Ron_adj(5) ron(4)+Ron_adj(4) ron(6)+Ron_adj(6) ron(7)+Ron_adj(7) ron(8)+Ron_adj(8) ron(7)+Ron_adj(7) ron(6)+Ron_adj(6) ron(8)+Ron_adj(8)];
 SW = [SW_OFF;SW_ON;SW_ON];
 
 
-Diode_Forward_Voltage = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]'.*1;
-u = [14.3 4 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]';
+Diode_Forward_Voltage = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]'.*1.5;
+u = [14.3 4 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5]';
 Order = [1 2 3 4 5 6 7 8];
 
 
@@ -366,7 +366,7 @@ PlossSim = [];
 PoutSim = [];
 conditions = [];
 PossSim = [];
-drange = linspace(0.05, .95, 12);
+drange = linspace(0.05, .95, 8);
 Vscloc1 = 48;
 Vscloc2 = 49;
 Illoc = 1;
@@ -454,7 +454,7 @@ try
             if OLVin<14 || OLVin>21
                 continue
             end
-            Vinrange = OLVin:0.05:MaxVin;
+            Vinrange = OLVin:0.1:MaxVin;
             
             for Vin = Vinrange
                 
@@ -535,7 +535,7 @@ try
                 %             PossSim = [PossSim; Poss];
                 conditions = [conditions; d, i, Vin];
                 
-                if Pout > 50
+                if Pout > 45
                     break;
                 end
                 
@@ -549,6 +549,7 @@ end
 %{
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
 mineff = .3;
 etaSim(etaSim<mineff) = mineff;
 etaSim(etaSim>1) = mineff;
@@ -561,12 +562,16 @@ F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
 figure(104)
 
 Vgrange = 14:.25:22;
-PoutRange = 0:1:80;
+PoutRange = 0:1:50;
 [VgMesh, PoutMesh] = meshgrid(Vgrange, PoutRange);
 [f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
-xlabel('Vg');
-ylabel('P_{out}');
+xlabel('V_{g} (V)','FontSize',20,'FontName','Times New Roman');
+ylabel('P_{out} (W)','FontSize',20,'FontName','Times New Roman');
+title('SC Fib Power Loss','FontSize',24);
 % ylim([0 80])
+
+axis1 = gca;
+set(axis1,'FontName','Times New Roman','FontSize',16)
 colorbar
 c.LevelList = [0 1 2 3 4 5 6 7 8 9];
 
@@ -607,7 +612,7 @@ weighted_vals=F(X1,X2).*(Z+Z([length(PoutRange):-1:1],[length(Vgrange):-1:1]));
 
 Added_ploss = [];
 stick = [];
-stick = mean(mean(weighted_vals));
+stick = mean(mean(weighted_vals,'omitnan'),'omitnan');
 stick = stick;
 
 graph_values = F(X1,X2);

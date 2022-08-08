@@ -47,10 +47,10 @@ modelfile = 'SC_FIB_4_AURA_D.net';
 %% Load for SC Fib
 
 
-adjust = [ones(1,8), 1e-6, 100, 100] ;
+adjust = [ones(1,5), 1e-6, 100, 100] ;
 X = X./adjust;
 
-FETs = X(1:8);
+FETs = X(1:5);
 fs = X(end-2);
 dt1 = X(end-1);
 dt2 = X(end);
@@ -63,6 +63,18 @@ FET_l = [];
 for i = 1:length(FETs)
     [ron(i),Coss(i),FET_w(i),FET_l(i)]=Select_FET(FETs(i));
 end
+ron(8) = ron(3);
+ron(7) = ron(2);
+ron(6) = ron(1);
+Coss(8) = Coss(3);
+Coss(7) = Coss(2);
+Coss(6) = Coss(1);
+Ron_adj(8) = Ron_adj(3);
+Ron_adj(7) = Ron_adj(2);
+Ron_adj(6) = Ron_adj(1);
+Coss_adj(8) = Coss_adj(3);
+Coss_adj(7) = Coss_adj(2);
+Coss_adj(6) = Coss_adj(1);
 
 % Set switching interval
 ON = 1;
@@ -110,19 +122,9 @@ OFF = 0;
         0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
         0     1     1     0     0     0     1     0     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
         ];
+   
     
-    modSchemes(:,:,5) = [
-        1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-        1     0     0     1     0     1     1     0     0     1     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-        1     0     0     1     0     1     1     0     0     1     1     0     0     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-        0     0     0     0     0     0     1     0     0     1     0     0     0     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-        0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-        0     1     1     0     1     0     1     0     0     1     0     0     0     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-        0     1     1     0     1     0     1     0     0     1     1     0     0     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-        0     0     0     0     0     0     1     0     0     1     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
-        ]; 
-    
-     modSchemes(:,:,6) = [
+     modSchemes(:,:,5) = [
         1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
         1     0     0     0     0     0     1     0     0     1     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
         1     0     0     0     1     0     1     0     0     1     1     0     0     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
@@ -134,8 +136,18 @@ OFF = 0;
         ]; 
 
     
-    
-    
+     %{
+    modSchemes(:,:,5) = [
+        1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
+        1     0     0     1     0     1     1     0     0     1     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
+        1     0     0     1     0     1     1     0     0     1     1     0     0     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
+        0     0     0     0     0     0     1     0     0     1     0     0     0     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
+        0     1     1     0     1     0     1     0     0     1     0     1     1     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
+        0     1     1     0     1     0     1     0     0     1     0     0     0     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
+        0     1     1     0     1     0     1     0     0     1     1     0     0     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
+        0     0     0     0     0     0     1     0     0     1     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
+        ]; 
+    %}
 swvec = [
         1     0     0     1     0     1     1     0     0     1     1     0     0     1     0     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
         1     0     0     1     0     1     1     0     0     1     1     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0     0
@@ -352,12 +364,12 @@ OFF = 0;
 SW_OFF = ones(1,32).*10000000;
 
 %SW_ON = [M1_R,M2_R,etc...]
-SW_ON = [ron(1) ron(2) ron(3) ron(2) ron(1) ron(3) ron(4) ron(5) ron(5) ron(4) ron(6) ron(7) ron(8) ron(7) ron(6) ron(8) ron(1) ron(2) ron(3) ron(2) ron(1) ron(3) ron(4) ron(5) ron(5) ron(4) ron(6) ron(7) ron(8) ron(7) ron(6) ron(8)];
+SW_ON = [ron(1)+Ron_adj(1) ron(2)+Ron_adj(2) ron(3)+Ron_adj(3) ron(2)+Ron_adj(2) ron(1)+Ron_adj(1) ron(3)+Ron_adj(3) ron(4)+Ron_adj(4) ron(5)+Ron_adj(5) ron(5)+Ron_adj(5) ron(4)+Ron_adj(4) ron(6)+Ron_adj(6) ron(7)+Ron_adj(7) ron(8)+Ron_adj(8) ron(7)+Ron_adj(7) ron(6)+Ron_adj(6) ron(8)+Ron_adj(8) ron(1)+Ron_adj(1) ron(2)+Ron_adj(2) ron(3)+Ron_adj(3) ron(2)+Ron_adj(2) ron(1)+Ron_adj(1) ron(3)+Ron_adj(3) ron(4)+Ron_adj(4) ron(5)+Ron_adj(5) ron(5)+Ron_adj(5) ron(4)+Ron_adj(4) ron(6)+Ron_adj(6) ron(7)+Ron_adj(7) ron(8)+Ron_adj(8) ron(7)+Ron_adj(7) ron(6)+Ron_adj(6) ron(8)+Ron_adj(8)];
 SW = [SW_OFF;SW_ON;SW_ON];
 
 
-Diode_Forward_Voltage = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]'.*1;
-u = [14.3 4 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]';
+Diode_Forward_Voltage = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]'.*1.5;
+u = [14.3 4 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5]';
 Order = [1 2 3 4 5 6 7 8];
 
 
@@ -367,7 +379,7 @@ PlossSim = [];
 PoutSim = [];
 conditions = [];
 PossSim = [];
-drange = linspace(0.05, .95, 12);
+drange = linspace(0.05, .95, 8);
 Vscloc1 = 48;
 Vscloc2 = 49;
 Illoc = 1;
@@ -451,11 +463,11 @@ try
             OLVin = avgYs(Vscloc1)+avgYs(Vscloc2);
             
             % MaxVin = OLVin+1;
-            MaxVin = OLVin+0.5;
+            MaxVin = OLVin+1;
             if OLVin<14 || OLVin>21
                 continue
             end
-            Vinrange = OLVin:0.05:MaxVin;
+            Vinrange = OLVin:0.1:MaxVin;
             
             for Vin = Vinrange
                 
@@ -501,9 +513,9 @@ try
                 [ avgXs, avgYs ] = sim.ssAvgs(Xss);
                 
                 
-                Ib1 = (avgYs(79)+avgYs(39)*ESRo-Vb1)/Rb;
-                Ib2 = (avgYs(80)+avgYs(40)*ESRo-Vb2)/Rb;
-                I1 = -avgYs(33);
+                Ib1 = (avgYs(63)+avgYs(23)*ESRo-Vb1)/Rb;
+                Ib2 = (avgYs(64)+avgYs(24)*ESRo-Vb2)/Rb;
+                I1 = -avgYs(17);
                 
                 eta = (Ib1*Vb1 + Ib2*Vb2)/(Vin*-I1 - Ib1^2*Rb - Ib2^2*Rb);
                 Ploss = -(Ib1*Vb1 + Ib2*Vb2) + -(Vin*I1);
@@ -536,7 +548,7 @@ try
                 %             PossSim = [PossSim; Poss];
                 conditions = [conditions; d, i, Vin];
                 
-                if Pout > 50
+                if Pout > 45
                     break;
                 end
                 
@@ -559,15 +571,19 @@ locs = etaSim > mineff;
 VgSim = conditions(locs,end);
 F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
 
-figure(104)
+figure(106)
 
 Vgrange = 14:.25:22;
-PoutRange = 0:1:80;
+PoutRange = 0:1:50;
 [VgMesh, PoutMesh] = meshgrid(Vgrange, PoutRange);
 [f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
-xlabel('Vg');
-ylabel('P_{out}');
+xlabel('V_{g} (V)','FontSize',20,'FontName','Times New Roman');
+ylabel('P_{out} (W)','FontSize',20,'FontName','Times New Roman');
+title('SC Fib 4V Power Loss','FontSize',24);
 % ylim([0 80])
+
+axis1 = gca;
+set(axis1,'FontName','Times New Roman','FontSize',16)
 colorbar
 c.LevelList = [0 1 2 3 4 5 6 7 8 9];
 
@@ -608,7 +624,7 @@ weighted_vals=F(X1,X2).*(Z+Z([length(PoutRange):-1:1],[length(Vgrange):-1:1]));
 
 Added_ploss = [];
 stick = [];
-stick = mean(mean(weighted_vals));
+stick = mean(mean(weighted_vals,'omitnan'),'omitnan');
 stick = stick;
 
 graph_values = F(X1,X2);

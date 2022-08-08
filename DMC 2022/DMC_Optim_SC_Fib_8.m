@@ -26,24 +26,22 @@ try
         end
     end
     
-    saved_fval = ones(8,1).*100;
+    saved_fval = ones(3,1).*100;
     big_loop = 0;
     max_iteration = 50;
-    almost_steady_state = [0 0 0 0 0 0 0 0];
+    almost_steady_state = [0 0 0 ];
     
-    sf = [1 1 1 1 1 1 1 1 1e-6 100 100];  
+    sf = [ 1 1 1 1e-6 100 100];  
+    x = [ 12.0000    6.0000   14.0000  1.2315e6    0.009    0.009];
+    x = x.*sf;
     
-    x = [ 14.0000   12.0000   14.0000    1.0000    8.0000    3.0000    6.0000   12.0000    1.2315    0.9000    0.9000];
-    %x = [ 12.0000    6.0000   14.0000   15.0000    2.0000    6.0000    6.0000   12.0000  1.2315e6    0.009    0.009];
-   % x = x.*sf;
-    
-    %x = [    6.0000    6.0000   14.0000   15.0000    8.0000    6.0000    6.0000   12.0000    1.2315    0.9000    0.9000]
+    % x = [ 6.0000    6.0000   14.0000    1.2315    0.9000    0.9000]
     % 5 10 5 10 5 10
     % 19 6 1 19 6 1 
     %2 3 4 2 3 4
     saved_x = x;
-    FETs_number = 8;
-    stick = zeros(8,3);
+    FETs_number = 3;
+    stick = zeros(3,3);
     deltaRon = -1e-3;
     deltaCoss = -0.4e-9;
     coss_adjust_values = [0 deltaCoss/minCoss];
@@ -54,24 +52,24 @@ try
     while(big_loop<max_iteration)
         for i = 1:FETs_number
             
-            adjust_FET = [0 0 0 0 0 0 0 0];
+            adjust_FET = [0 0 0 ];
             adjust_FET(i) = 1;
             
-            Coss_adj = [0 0 0 0 0 0 0 0];
-            Ron_adj = [0 0 0 0 0 0 0 0];
+            Coss_adj = [0 0 0 ];
+            Ron_adj = [0 0 0 ];
             
-            [stick(i,1),graph1]=DMC_SC_Fib_D_Sweep(x,Coss_adj,Ron_adj);
+            [stick(i,1),graph1]=DMC_SC_Fib_8_Sweep(x,Coss_adj,Ron_adj);
             
-            Coss_adj = [0 0 0 0 0 0 0 0].*adjust_FET;
-            Ron_adj = [-1e-3 -1e-3 -1e-3 -1e-3 -1e-3 -1e-3 -1e-3 -1e-3].*adjust_FET;
+            Coss_adj = [0 0 0  ].*adjust_FET;
+            Ron_adj = [-1e-3 -1e-3 -1e-3 ].*adjust_FET;
             
-            [stick(i,2),graph2]=DMC_SC_Fib_D_Sweep(x,Coss_adj,Ron_adj);
+            [stick(i,2),graph2]=DMC_SC_Fib_8_Sweep(x,Coss_adj,Ron_adj);
             
             
-            Coss_adj = [-0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9].*adjust_FET;
-            Ron_adj = [0 0 0 0 0 0 0 0].*adjust_FET;
+            Coss_adj = [-0.4e-9 -0.4e-9 -0.4e-9 ].*adjust_FET;
+            Ron_adj = [0 0 0 ].*adjust_FET;
             
-            [stick(i,3),graph3]=DMC_SC_Fib_D_Sweep(x,Coss_adj,Ron_adj);
+            [stick(i,3),graph3]=DMC_SC_Fib_8_Sweep(x,Coss_adj,Ron_adj);
             
             % Move in the steepest direction:
             stick_diff = [stick(i,1)-stick(i,2) stick(i,1)-stick(i,3)];
@@ -169,10 +167,10 @@ try
             
             x_test(i) = new_x;
             
-            Coss_adj_test = [0 0 0 0 0 0 0 0];
-            Ron_adj_test = [0 0 0 0 0 0 0 0];
+            Coss_adj_test = [0 0 0 ];
+            Ron_adj_test = [0 0 0 ];
             
-            [stick_em,graph1]=DMC_SC_Fib_D_Sweep(x_test,Coss_adj_test,Ron_adj_test);
+            [stick_em,graph1]=DMC_SC_Fib_8_Sweep(x_test,Coss_adj_test,Ron_adj_test);
             
             % If there is not an improvement to the fval of the converter.
             if stick_em > stick(i,1)
@@ -221,17 +219,7 @@ plot(plot_ron(saved_x(:,2)),plot_Coss(saved_x(:,2)),'DisplayName','M2&M4','LineW
 hold on
 plot(plot_ron(saved_x(:,3)),plot_Coss(saved_x(:,3)),'DisplayName','M3&M6','LineWidth',3,'LineStyle','-.');
 hold on
-plot(plot_ron(saved_x(:,4)),plot_Coss(saved_x(:,4)),'DisplayName','M7&M10','LineWidth',3,'LineStyle','--');
-hold on
-plot(plot_ron(saved_x(:,5)),plot_Coss(saved_x(:,5)),'DisplayName','M8&M9','LineWidth',3,'LineStyle',':');
-hold on
-plot(plot_ron(saved_x(:,6)),plot_Coss(saved_x(:,6)),'DisplayName','M11&M15','LineWidth',3,'LineStyle','-.');
-hold on
-plot(plot_ron(saved_x(:,7)),plot_Coss(saved_x(:,7)),'DisplayName','M12&M14','LineWidth',3,'LineStyle',':');
-hold on
-plot(plot_ron(saved_x(:,8)),plot_Coss(saved_x(:,8)),'DisplayName','M13&M16','LineWidth',3,'LineStyle','-.');
-hold on
-scatter(plot_ron(x(:,1:8)),plot_Coss(x(:,1:8)),50,'r','DisplayName','Ending Point');
+scatter(plot_ron(x(:,1:3)),plot_Coss(x(:,1:3)),50,'r','DisplayName','Ending Point');
 
 % Create ylabel
 ylabel('Coss (F)','FontSize',20);
@@ -240,7 +228,7 @@ ylabel('Coss (F)','FontSize',20);
 xlabel('Ron (\Omega)','FontSize',20);
 
 % Create title
-title('SC Fib Converter Optimization','FontSize',24);
+title('SC Fib 8V Converter Optimization','FontSize',24);
 
 axis1 = gca;
 set(axis1,'FontName','Times New Roman','FontSize',14);

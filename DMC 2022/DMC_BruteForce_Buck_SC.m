@@ -1,23 +1,19 @@
 clear
-sf = [1 1 1 1 1 1 1 1 1e-6 100 100];
-x = [4.0000    4.0000    4.0000    4.0000    4.0000    4.0000    4.0000    4.0000    1.2315e6    0.009    0.009];
-x = x.*sf;
-Coss_adj = [0 0 0 0 0 0 0 0];
-Ron_adj = [0 0 0 0 0 0 0 0];
+x = [6 9 12 19 7 5   2.0000    2.4372    0.2737    0.7965];
+Coss_adj = [0 0 0 0 0 0];
+Ron_adj = [0 0 0 0 0 0];
 
-Number_of_FETs = 15;
-
-for i = 3:Number_of_FETs
-    x(1:8) = [i i i i i i i i];
-    [stick(i),graph1]=DMC_SC_Fib_D_Sweep(x,Coss_adj,Ron_adj);
+for i = 1:19
+    x(1:6) = [i i i i i i];
+    [stick(i),graph1]=DMC_Buck_SC_D_Sweep(x,Coss_adj,Ron_adj);
 end
 
-
-FETs = zeros(Number_of_FETs,2);
-for i = 1:Number_of_FETs
-    [FETs(i,1),FETs(i,2),~,~]=Select_FET(i);
-end
-
+    Number_of_FETs = 19;
+    FETs = zeros(Number_of_FETs,2);
+    for i = 1:Number_of_FETs
+        [FETs(i,1),FETs(i,2),~,~]=Select_FET(i);
+    end
+    
 F = scatteredInterpolant(FETs(:,1), FETs(:,2), stick', 'linear','none');
 
 
@@ -32,25 +28,24 @@ CossRange = linspace(min(FETs(:,2)),max(FETs(:,2)));
 % Create surf
 surf(Ronrange,CossRange,F(RonMesh,CossMesh));
 
-% Create title
-title('SC Fib Transistor Sweep','FontSize',24);
-
 % Create zlabel
-zlabel('Mean P_{loss} (W)','FontSize',20);
+zlabel('Ploss (W)');
 
 % Create ylabel
-ylabel('C_{oss} (F)','FontSize',20);
+ylabel('Coss (F)');
 
 % Create xlabel
-xlabel('R_{on} (\Omega)','FontSize',20);
+xlabel('Ron (\Omega)');
 axis1 = gca;
 % Set the remaining axes properties
-set(axis1,'FontName','Times New Roman','FontSize',14);
+set(axis1,'FontName','Arial','FontSize',24);
 
 hold on
-scatter3(FETs(:,1),FETs(:,2),stick,50,'w','filled','MarkerEdgeColor',[0 0 0]) ;
-hold on
-scatter3(FETs(3,1),FETs(3,2),stick(3),100,'k','filled') ;
+scatter3(FETs(:,1),FETs(:,2),stick,100,'k','filled') ;
+
+
+
+
 
 %{
 
@@ -99,5 +94,43 @@ hold(axes1,'off');
 set(axes1,'FontName','Arial','FontSize',24);
 
 %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -1,4 +1,4 @@
-function [stick,graph_values] = DMC_BuckBoost_D_Sweep(X,Coss_adj,Ron_adj)
+function [stick,graph_values] = DMC_Buck_SC_D_Sweep(X,Coss_adj,Ron_adj)
 
 
 niter = 0;
@@ -23,10 +23,10 @@ end
 % modelfile = 'DABfull'; PLECsModel = 'DAB_8Cap';
 % modelfile = 'DSC4to1Diodes'; PLECsModel = 'HDSC_withDiodes';
 %modelfile = 'SC_FIB_AURA_L.net';
-modelfile = 'Buck_Boost_Vout_D.net';
+% modelfile = 'Buck_Boost_Vout_D.net';
 % modelfile = 'Buck_Boost_Vout.net';
 %modelfile = 'SC_FIB_AURA.net';
-
+modelfile = 'Buck_SC_Vout_D.net';
 
 
 %% Load for PLECS
@@ -89,17 +89,21 @@ end
 ON = 1;
 OFF = 0;
 swvec = [
-    ON  OFF ON  ON  OFF OFF OFF OFF OFF OFF OFF OFF   % Q1 ON
-    OFF OFF ON  ON  OFF OFF OFF OFF OFF OFF OFF OFF  % Dead Q1 Q2
-    OFF ON  ON  ON  OFF OFF OFF OFF OFF OFF OFF OFF % Q2 ON
-    OFF OFF ON  ON  OFF OFF OFF OFF OFF OFF OFF OFF];  % Dead
+    ON  OFF ON  OFF ON  OFF OFF OFF OFF OFF OFF OFF   % Q1 ON
+    OFF OFF ON  OFF ON  OFF OFF OFF OFF OFF OFF OFF  % Dead Q1 Q2
+    OFF ON  ON  OFF ON  OFF OFF OFF OFF OFF OFF OFF % Q2 ON
+    OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF  % Dead
+    ON  OFF OFF ON  OFF ON  OFF OFF OFF OFF OFF OFF   % Q1 ON
+    OFF OFF OFF ON  OFF ON  OFF OFF OFF OFF OFF OFF  % Dead Q1 Q2
+    OFF ON  OFF ON  OFF ON  OFF OFF OFF OFF OFF OFF % Q2 ON
+    OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF];  % Dead
 
 
 Vg = 20;
-Vbat1 = 4;
+Vbat1 = 8;
 Vbat2 = 4;
-M = (Vbat1+Vbat2)/(Vg);
-Vout = (Vbat1+Vbat2);
+M = (Vbat1)/(Vg);
+Vout = (Vbat1);
 Pout = 25;
 Vg = 20.5;
 Dboost = 0.15;
@@ -127,7 +131,7 @@ dt = 5e-9;
 Numerical_Components = {
     'C1' Cfly
     'C2' Cout
-    'C3' Cout
+    'C3' Cfly
     'L1' Lvar
     'M1_C' Coss(1)+Coss_adj(1)
     'M2_C' Coss(2)+Coss_adj(2)
@@ -166,7 +170,7 @@ Numerical_Components = {
     'D6_R' ron(6)+Ron_adj(6)
     };
 
-ts_Baxter = [0.70 0.001 0.3 0.001];
+ts_Baxter = [0.70 0.001 0.3 0.001 0.70 0.001 0.3 0.001];
 ts = (ts_Baxter./sum(ts_Baxter)).*Ts;
 
 % The inital guess of time intervals % The inital guess of time intervals
@@ -224,15 +228,15 @@ SW_ON = [ron(1)+Ron_adj(1) ron(2)+Ron_adj(2) ron(3)+Ron_adj(3) ron(4)+Ron_adj(4)
 SW = [SW_OFF;SW_ON;SW_ON];
 
 Diode_Forward_Voltage = [0 0 0 0 0 0 1 1 1 1 1 1]'.*1.5;
-u = [Vg Vbat1 Vbat2 0 0 0 0 0 0 1.5 1.5 1.5 1.5 1.5 1.5]';
-Order = [1 2 3 4];
+u = [Vg Vbat1 0 0 0 0 0 0 1.5 1.5 1.5 1.5 1.5 1.5]';
+Order = [1 2 3 4 5 6 7 8];
 %}
 etaSim = [];
 PlossSim = [];
 PoutSim = [];
 conditions = [];
 PossSim = [];
-drange = linspace(0.39, .6, 8);
+drange = linspace(0.8, .99, 12);
 Vscloc1 = 15;
 Vscloc2 = 18;
 Illoc = 1;
@@ -271,16 +275,16 @@ top.loadCircuit(modelfile,swvec,1);
 try
     for d = drange
         % dt = 0.0025;
-        ds = [d-dt1, dt1, 1-d-dt2, dt2];
+        ds = [d-dt1, dt1, 1-d-dt2, dt2, d-dt1, dt1, 1-d-dt2, dt2];
         ts = ds/sum(ds)*Ts;
         
-        OLVin = 8/d;
+        OLVin = 16/d;
         % MaxVin = OLVin+1;
         MaxVin = OLVin+2.5;
         if OLVin<14 || OLVin>21
             continue
         end
-        Vinrange = OLVin:.1:MaxVin;
+        Vinrange = OLVin:.05:MaxVin;
         for Vin = Vinrange
             u(VgPOS) = Vin;
             sim.u = u;
@@ -311,6 +315,7 @@ try
             
             %%
             %[Xf,ts,swinds] = timeSteppingPeriod(sim);
+
             
             DMC_SteadyState(sim,conv,top);
             Xss = sim.steadyState;
@@ -319,12 +324,12 @@ try
             
             
             Ib1 = (avgYs(27)+avgYs(10)*Rcap-Vbat1)/Rbatt;
-            Ib2 = (avgYs(25)+avgYs(8)*Rcap-Vbat2)/Rbatt;
+           % Ib2 = (avgYs(25)+avgYs(8)*Rcap-Vbat2)/Rbatt;
             I1 = -avgYs(1);
             
-            eta = (Ib1*Vb1 + Ib2*Vb2)/(Vin*-I1 - Ib1^2*Rb - Ib2^2*Rb);
-            Ploss = -(Ib1*Vb1 + Ib2*Vb2) + -(Vin*I1);
-            Pout = (Ib1*Vb1 + Ib2*Vb2);
+            eta = (Ib1*Vb1)/(Vin*-I1 - Ib1^2*Rb);
+            Ploss = -(Ib1*Vb1) + -(Vin*I1);
+            Pout = (Ib1*Vb1);
             
             
             if eta>1||eta<.3
@@ -348,7 +353,7 @@ try
             %             PossSim = [PossSim; Poss];
             conditions = [conditions; d, i, Vin];
             
-            if Pout >45
+            if Pout > 45
                 break;
             end
             
@@ -379,7 +384,7 @@ PoutRange = 0:1:50;
 [f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
 xlabel('V_{g} (V)','FontSize',20,'FontName','Times New Roman');
 ylabel('P_{out} (W)','FontSize',20,'FontName','Times New Roman');
-title('Buckboost Power Loss','FontSize',24);
+title('Buck SC Power Loss','FontSize',24);
 % ylim([0 80])
 
 axis1 = gca;
@@ -389,6 +394,7 @@ c.LevelList = [0 1 2 3 4 5 6 7 8 9];
 
 hold on;
 scatter(VgSim, PoutSim(locs),[],conditions(locs,2));
+
 
 Vq = interp2(Vgrange,PoutRange,F(VgMesh,PoutMesh,,Yq)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -424,7 +430,7 @@ weighted_vals=F(X1,X2).*(Z+Z([length(PoutRange):-1:1],[length(Vgrange):-1:1]));
 
 Added_ploss = [];
 stick = [];
-stick = mean(mean(weighted_vals));
+stick = mean(mean(weighted_vals,'omitnan'),'omitnan');
 stick = stick;
 
 graph_values = F(X1,X2);

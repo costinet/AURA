@@ -61,10 +61,10 @@ modelfile = 'SC_FIB_8_AURA_D.net';
 %% Load for SC Fib
 
 
-adjust = [ones(1,6), 1e-6, 100, 100] ;
+adjust = [ones(1,3), 1e-6, 100, 100] ;
 X = X./adjust;
 
-FETs = X(1:6);
+FETs = X(1:3);
 fs = X(end-2);
 dt1 = X(end-1);
 dt2 = X(end);
@@ -77,6 +77,21 @@ FET_l = [];
 for i = 1:length(FETs)
     [ron(i),Coss(i),FET_w(i),FET_l(i)]=Select_FET(FETs(i));
 end
+
+ron(4) = ron(1);
+ron(5) = ron(2);
+ron(6) = ron(3);
+Coss(4) = Coss(1);
+Coss(5) = Coss(2);
+Coss(6) = Coss(3);
+Ron_adj(4) = Ron_adj(1);
+Ron_adj(5) = Ron_adj(2);
+Ron_adj(6) = Ron_adj(3);
+Coss_adj(4) = Coss_adj(1);
+Coss_adj(5) = Coss_adj(2);
+Coss_adj(6) = Coss_adj(3);
+
+
 
 % Set switching interval
 ON = 1;
@@ -212,8 +227,8 @@ SW_OFF = ones(1,12).*10000000;
 SW_ON = [ron(1)+Ron_adj(1) ron(2)+Ron_adj(2) ron(3)+Ron_adj(3) ron(4)+Ron_adj(4) ron(5)+Ron_adj(5) ron(6)+Ron_adj(6) ron(1)+Ron_adj(1) ron(2)+Ron_adj(2) ron(3)+Ron_adj(3) ron(4)+Ron_adj(4) ron(5)+Ron_adj(5) ron(6)+Ron_adj(6)];
 SW = [SW_OFF;SW_ON;SW_ON];
 
-Diode_Forward_Voltage = [1 1 1 1 1 1 1 1 1 1 1 1]'.*1;
-u = [Vg Vb1 0 0 0 0 0 0 1 1 1 1 1 1]';
+Diode_Forward_Voltage = [0 0 0 0 0 0 1 1 1 1 1 1]'.*1.5;
+u = [Vg Vb1 0 0 0 0 0 0 1.5 1.5 1.5 1.5 1.5 1.5]';
 Order = [1 2 3 4];
 
 
@@ -223,7 +238,7 @@ PlossSim = [];
 PoutSim = [];
 conditions = [];
 PossSim = [];
-drange = 0.5;% linspace(0.05, .95, 12);
+drange = linspace(0.15, .65, 8);
 Vscloc1 = 48;
 Vscloc2 = 49;
 Illoc = 1;
@@ -306,17 +321,16 @@ try
             
             
             [ avgXs, avgYs ] = sim_Rb.ssAvgs(Xss);
-            OLVin = avgYs(25)+avgYs(26)+avgYs(27);
-            
+            %OLVin = avgYs(25)+avgYs(26)+avgYs(27);
+            OLVin = ((1-d)*16)+8;
             % MaxVin = OLVin+1;
             MaxVin = OLVin+0.5;
             %if OLVin<14 || OLVin>21
             %    continue
             %end
-            Vinrange = OLVin:0.05:MaxVin;
+            Vinrange = OLVin:0.1:MaxVin;
             
             for Vin = Vinrange
-                Vin = 16.5;
                
                 conv.setSwitchingPattern(1:size(swvec,1), ts)
                 
@@ -359,13 +373,13 @@ try
                 [ avgXs, avgYs ] = sim.ssAvgs(Xss);
                 
                 
-                Ib1 = (avgYs(79)+avgYs(39)*ESRo-Vb1)/Rb;
-                Ib2 = (avgYs(80)+avgYs(40)*ESRo-Vb2)/Rb;
-                I1 = -avgYs(33);
+                Ib1 = (avgYs(24)+avgYs(7)*ESRo-Vb1)/Rb;
+               
+                I1 = -avgYs(4);
                 
-                eta = (Ib1*Vb1 + Ib2*Vb2)/(Vin*-I1 - Ib1^2*Rb - Ib2^2*Rb);
-                Ploss = -(Ib1*Vb1 + Ib2*Vb2) + -(Vin*I1);
-                Pout = (Ib1*Vb1 + Ib2*Vb2);
+                eta = (Ib1*Vb1 )/(Vin*-I1 - Ib1^2*Rb );
+                Ploss = -(Ib1*Vb1) + -(Vin*I1);
+                Pout = (Ib1*Vb1 );
                 
                 
                 if eta>1||eta<.3
@@ -417,15 +431,19 @@ locs = etaSim > mineff;
 VgSim = conditions(locs,end);
 F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
 
-figure(104)
+figure(106)
 
 Vgrange = 14:.25:22;
-PoutRange = 0:1:80;
+PoutRange = 0:1:50;
 [VgMesh, PoutMesh] = meshgrid(Vgrange, PoutRange);
 [f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
-xlabel('Vg');
-ylabel('P_{out}');
+xlabel('V_{g} (V)','FontSize',20,'FontName','Times New Roman');
+ylabel('P_{out} (W)','FontSize',20,'FontName','Times New Roman');
+title('SC Fib 8V Power Loss','FontSize',24);
 % ylim([0 80])
+
+axis1 = gca;
+set(axis1,'FontName','Times New Roman','FontSize',16)
 colorbar
 c.LevelList = [0 1 2 3 4 5 6 7 8 9];
 
@@ -466,7 +484,7 @@ weighted_vals=F(X1,X2).*(Z+Z([length(PoutRange):-1:1],[length(Vgrange):-1:1]));
 
 Added_ploss = [];
 stick = [];
-stick = mean(mean(weighted_vals));
+stick = mean(mean(weighted_vals,'omitnan'),'omitnan');
 stick = stick;
 
 graph_values = F(X1,X2);
