@@ -7,8 +7,19 @@ try
     for i = 1:Number_of_FETs
         [FETs(i,1),FETs(i,2),~,~]=Select_FET(i);
     end
-
     
+    for i = 1:length(FETs)
+        for j = 1:length(FETs)
+            
+            FETs_Ron(i,j) = FETs(i,1) - FETs(j,1);
+            FETs_Coss(i,j) = FETs(i,2) - FETs(j,2);
+        end
+    end
+    
+    
+    
+    
+    %{
     [minronCoss] = min(FETs,[],1);
     minron = minronCoss(1);
     minCoss = minronCoss(2);
@@ -25,58 +36,67 @@ try
             
         end
     end
-    
-    saved_fval = ones(8,1).*100;
+    %}
+    saved_fval = ones(5,1).*100;
     big_loop = 0;
     max_iteration = 50;
-    almost_steady_state = [0 0 0 0 0 0 0 0];
+    almost_steady_state = [0 0 0 0 0];
     
-    sf = [1 1 1 1 1 1 1 1 1e-6 100 100];  
+    sf = [1 1 1 1 1 1e-6 100 100];
     
-    x = [ 3 3 3 15 3 3 3 3   1.2315    0.9000    0.9000];
-   %x = [ 14.0000   12.0000   14.0000    1.0000    8.0000    3.0000    6.0000   12.0000    1.2315    0.9000    0.9000];
+    
+    x = [3.0000    3.0000   14.0000   15.0000    3.0000   1.2315    0.9000    0.9000]; % This is the optimized one with the new projection parameters
+    % x = [ 14.0000   12.0000   14.0000    1.0000    8.0000    3.0000    6.0000   12.0000    1.2315    0.9000    0.9000];
     %x = [ 12.0000    6.0000   14.0000   15.0000    2.0000    6.0000    6.0000   12.0000  1.2315e6    0.009    0.009];
-   % x = x.*sf;
+    % x = x.*sf;
     
     %x = [    6.0000    6.0000   14.0000   15.0000    8.0000    6.0000    6.0000   12.0000    1.2315    0.9000    0.9000]
     % 5 10 5 10 5 10
-    % 19 6 1 19 6 1 
+    % 19 6 1 19 6 1
     %2 3 4 2 3 4
     saved_x = x;
-    FETs_number = 8;
-    stick = zeros(8,3);
+    FETs_number = 5;
+    stick = zeros(FETs_number,3);
     deltaRon = -1e-3;
     deltaCoss = -0.4e-9;
-    coss_adjust_values = [0 deltaCoss/minCoss];
-    ron_adjust_values = [deltaRon/minron 0];
-
+    % coss_adjust_values = [0 deltaCoss/minCoss];
+    %  ron_adjust_values = [deltaRon/minron 0];
+    
     
     
     while(big_loop<max_iteration)
         for i = 1:FETs_number
             
-            adjust_FET = [0 0 0 0 0 0 0 0];
+            adjust_FET = [0 0 0 0 0 ];
             adjust_FET(i) = 1;
             
-            Coss_adj = [0 0 0 0 0 0 0 0];
-            Ron_adj = [0 0 0 0 0 0 0 0];
+            Coss_adj = [0 0 0 0 0 ];
+            Ron_adj = [0 0 0 0 0 ];
             
-            [stick(i,1),graph1]=DMC_SC_Fib_D_Sweep(x,Coss_adj,Ron_adj);
+            [stick(i,1),graph1]=Texas_SC_Fib_4_Sweep(x,Coss_adj,Ron_adj);
             
-            Coss_adj = [0 0 0 0 0 0 0 0].*adjust_FET;
-            Ron_adj = [-1e-3 -1e-3 -1e-3 -1e-3 -1e-3 -1e-3 -1e-3 -1e-3].*adjust_FET;
+            Coss_adj = [0 0 0 0 0 ].*adjust_FET;
+            Ron_adj = [-1e-3 -1e-3 -1e-3 -1e-3 -1e-3 ].*adjust_FET;
             
-            [stick(i,2),graph2]=DMC_SC_Fib_D_Sweep(x,Coss_adj,Ron_adj);
+            [stick(i,2),graph2]=Texas_SC_Fib_4_Sweep(x,Coss_adj,Ron_adj);
             
             
-            Coss_adj = [-0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9].*adjust_FET;
-            Ron_adj = [0 0 0 0 0 0 0 0].*adjust_FET;
+            Coss_adj = [-0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 ].*adjust_FET;
+            Ron_adj = [0 0 0 0 0 ].*adjust_FET;
             
-            [stick(i,3),graph3]=DMC_SC_Fib_D_Sweep(x,Coss_adj,Ron_adj);
+            [stick(i,3),graph3]=Texas_SC_Fib_4_Sweep(x,Coss_adj,Ron_adj);
             
             % Move in the steepest direction:
             stick_diff = [stick(i,1)-stick(i,2) stick(i,1)-stick(i,3)];
-            stick_delta_ploss_over_delta_x = stick_diff./(coss_adjust_values+ron_adjust_values);
+            
+            D_Ron = FETs_Ron./deltaRon;
+            D_Coss  = FETs_Coss./deltaCoss;
+            
+            
+            Projected_Ploss = stick(i,1)+D_Ron(x(i),:)*stick_diff(1)+D_Coss(x(i),:)*stick_diff(2);
+            
+            %{
+            stick_delta_ploss_over_delta_x = stick_diff./([deltaRon deltaCoss]);
             
             slope = stick_delta_ploss_over_delta_x(1)/stick_delta_ploss_over_delta_x(2);
             
@@ -140,11 +160,11 @@ try
             % Angle calculation
             perp_m = -1/m; % slope
             
-            perp_b =  -perp_m*XY0(1)+XY0(2); % y interscept
+            perp_b =  -perp_m*XY0(1)+XY0(2); % y interscept for perpendicular line
            
                 perp_y = perp_m.*FETs(:,1)+ perp_b;
                 
-               GraterThan90 = perp_y<=FETs(:,2); % 1 if angle shoul have 90 degrees added to it 
+               GraterThan90 = perp_y<=FETs(:,2); % 1 if angle should have 90 degrees added to it
 
                
             DegreeFromGreatest = rad2deg(asin(FET_distance./distance_between_points(x(i),:)));
@@ -169,14 +189,19 @@ try
             x_test = x;
             
             x_test(i) = new_x;
+            %}
+            [~,new_x] = min(Projected_Ploss);
             
-            Coss_adj_test = [0 0 0 0 0 0 0 0];
-            Ron_adj_test = [0 0 0 0 0 0 0 0];
+            x_test = x;
+            x_test(i) = new_x;
             
-            [stick_em,graph1]=DMC_SC_Fib_D_Sweep(x_test,Coss_adj_test,Ron_adj_test);
+            Coss_adj_test = [0 0 0 0 0];
+            Ron_adj_test = [0 0 0 0 0];
+            
+            [stick_em,graph1]=Texas_SC_Fib_4_Sweep(x_test,Coss_adj_test,Ron_adj_test);
             
             % If there is not an improvement to the fval of the converter.
-            if stick_em > stick(i,1)
+            if stick_em >= stick(i,1)
                 almost_steady_state(i) = 1;
             else
                 x(i) = new_x;
@@ -187,7 +212,7 @@ try
                 toc
             end
             
-
+            
             
             
             
@@ -212,8 +237,8 @@ end
 
 J = 456456456;
 figure
-plot_ron = FETs(:,1).*minron;
-plot_Coss = FETs(:,2).*minCoss;
+plot_ron = FETs(:,1);
+plot_Coss = FETs(:,2);
 scatter(plot_ron,plot_Coss,'DisplayName','FETs');
 hold on
 plot(plot_ron(saved_x(:,1)),plot_Coss(saved_x(:,1)),'DisplayName','M1&M5','LineWidth',3,'LineStyle','--');
@@ -246,7 +271,3 @@ title('SC Fib Converter Optimization','FontSize',24);
 axis1 = gca;
 set(axis1,'FontName','Times New Roman','FontSize',14);
 legend
-
-
-% x = [3.0000    3.0000    3.0000    6.0000    3.0000    3.0000    3.0000    3.0000    1.2315    0.9000    0.9000];
-

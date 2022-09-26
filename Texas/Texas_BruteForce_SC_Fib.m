@@ -1,15 +1,18 @@
 clear
 sf = [1 1 1 1 1 1 1 1 1e-6 100 100];
-x = [4.0000    4.0000    4.0000    4.0000    4.0000    4.0000    4.0000    4.0000    1.2315e6    0.009    0.009];
+x = [3.0000    3.0000    3.0000    3.0000    3.0000    3.0000    3.0000    3.0000    1.2315e6    0.009    0.009];
 x = x.*sf;
 Coss_adj = [0 0 0 0 0 0 0 0];
 Ron_adj = [0 0 0 0 0 0 0 0];
 
+[stick(i),graph1]=Texas_SC_Fib_D_Sweep(x,Coss_adj,Ron_adj);
+
+
 Number_of_FETs = 15;
 
 for i = 3:Number_of_FETs
-    x(1:8) = [3 3 3 15 3 3 3 3];
-    [stick(i),graph1]=DMC_SC_Fib_D_Sweep(x,Coss_adj,Ron_adj);
+    x(1:8) = [i i i i i i i i];
+    [stick(i),graph1]=Texas_SC_Fib_D_Sweep(x,Coss_adj,Ron_adj);
 end
 
 
