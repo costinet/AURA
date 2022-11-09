@@ -1,13 +1,18 @@
-function plotAllStates(obj, fn, subplots)
+function plotAllStates(obj, fn, oSelect, subplots)
 %UNTITLED6 Summary of this function goes here
 %   Detailed explanation goes here
     [ xs, t] = obj.SS_WF_Reconstruct;
     figure(fn);
     ns = size(xs,1);
     
-    if(nargin == 2)
+    if(nargin <= 2)
+        subplots = 1;
+        oSelect = 1:ns; 
+    elseif(nargin <=3)
         subplots = 1;
     end
+    
+    ns = length(oSelect);
     
     if(subplots)
         nrMax = 10;
@@ -22,7 +27,7 @@ function plotAllStates(obj, fn, subplots)
                 end
                 inds = [((i-1)*nGrid+1):(i*nGrid)]*nc - (nc-1) + (j-1);
                 subplot(nGrid*nr,nc,inds)
-                plot(t,xs(nsi,:), 'Linewidth', 3);
+                plot(t,xs(oSelect(nsi),:), 'Linewidth', 3);
                 hold on;
                 ylims = ylim;
                 ylim(ylims);
@@ -32,7 +37,7 @@ function plotAllStates(obj, fn, subplots)
                 end
                 hold off;
                 try
-                    ylabel(obj.stateNames{nsi});
+                    ylabel(obj.stateNames{oSelect(nsi)});
                 catch
                     warning('State Names not set in topology subclass');
                 end
@@ -73,13 +78,13 @@ function plotAllStates(obj, fn, subplots)
           lines(i).LineStyle = ':';
         end
 
-        plot(t,xs, 'linewidth',2);
+        plot(t,xs(oSelect,:), 'linewidth',2);
         if(firstrun)
             legend(obj.stateNames);
         end
         hold on;
 %         plot(t, obj.converter.topology.constraints.regtarget*ones(size(t)), '-.k', 'linewidth',3);
-        ylims = [min(min(xs)) max(max(xs))];
+        ylims = [min(min(xs(oSelect,:))) max(max(xs(oSelect,:)))];
         ylim(ylims)
         for i = 1:length(obj.ts)
             plot(sum(obj.ts(1:i))*ones(1,2), ylims, ':r');

@@ -1,8 +1,8 @@
 <?php
 
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 require('E:\Dropbox\UTK\Research\AURA\AURAdb\@netConnect\webServer\matlabInterface.php');
 $tableParamNames = getTransistorTableColNames();
@@ -47,7 +47,7 @@ elseif (strcmp($action, "upload") == 0  || strcmp($action, "sync") == 0) {
 	//For each FET in the user database
 	if ($numFETS >1) {
 		foreach ($DB as $fet) {
-			//$paramData = getTransistorParams($fet, $userName);
+			$paramData = getTransistorParams($fet, $userName);
 			//syncParamData($paramData, $conn);
 			
 			syncParamData($conn, $fet, $userName);
@@ -65,7 +65,7 @@ elseif (strcmp($action, "upload") == 0  || strcmp($action, "sync") == 0) {
 		//echo 'Number of existing graphs:'.checkGraphDuplicates($graphData[0], $paramData, $userName, $conn).PHP_EOL;
 		//echo var_dump($graphData);
 		
-		syncParamData($paramData, $conn);
+		syncParamData($conn, $fet, $userName);
 		syncGraphData($conn, $graphData, $paramData, $userName);
 		
 	}

@@ -19,13 +19,22 @@ function loadModel(obj, fn, swseq, force)
             end
             
             file = dir([fn(1:strfind(fn,'/')-1) '.slx']);
-            
+            if isempty(file)
+                try
+                    [ST,~] = dbstack;
+                    fullpath = which([ST(end).name '.m']);
+                    slashLocs = strfind(fullpath,'\');
+                    file = dir([fullpath(1:slashLocs(end)) fn(1:strfind(fn,'/')-1) '.slx']);
+                catch
+                    file = [];
+                end
+            end
             
             
             if ~force
                 if ~isempty(obj.sourcefn)
                     if strcmp(obj.sourcefn, fn)
-                        if strcmp(obj.sourcefdate, file.date)
+                        if ~isempty(file) && strcmp(obj.sourcefdate, file.date)
                             if nargin > 2
                                 if all(ismember(swseq, obj.topology.swseq, 'rows'))
                                     return
@@ -56,7 +65,11 @@ function loadModel(obj, fn, swseq, force)
             open_system(fn(1:strfind(fn,'/')-1),'loadonly');
             ssOrder = plecs('get', fn, 'StateSpaceOrder');
 
-            obj.topology.switchLabels = cellfun(@(x) x(strfind(x,'FET')+3:end), ssOrder.Switches, 'un', 0)';
+%             obj.topology.switchLabels = [ ...
+%                 cellfun(@(x) x(strfind(x,'FET')+3:end), ssOrder.Switches, 'un', 0)' ...
+%                 cellfun(@(x) x(strfind(x,'D')+1:end), ssOrder.Switches, 'un', 0)'
+%                 ];
+            obj.topology.switchLabels = cellfun(@(x) x(strfind(x,'/')+1:end), ssOrder.Switches, 'un', 0);
             obj.topology.stateLabels = cellfun(@(x) x(strfind(x,'/')+1:end), ssOrder.States, 'un', 0);
             obj.topology.outputLabels = cellfun(@(x) x(strfind(x,'/')+1:end), ssOrder.Outputs, 'un', 0);
             obj.topology.inputLabels = cellfun(@(x) x(strfind(x,'/')+1:end), ssOrder.Inputs, 'un', 0);
@@ -93,6 +106,10 @@ function loadModel(obj, fn, swseq, force)
             end
             
             obj.sourcefn = fn;
-            obj.sourcefdate = file.date;
+            if isempty(file)
+                obj.sourcefdate = '0';
+            else
+                obj.sourcefdate = file.date;
+            end
 
         end

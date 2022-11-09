@@ -2,12 +2,13 @@
 if(1)
     % Test 1: valid parameters
     t=transistor;
-    try 
-        t.addParameter('Inductance', 5)
-    catch e 
-        err = 1;
-    end
-    assert(err == 1, 'Failed Test 1');
+    t.addParameter('Inductance', 5)
+%     try 
+%         t.addParameter('Inductance', 5)
+%     catch e 
+%         err = 1;
+%     end
+%     assert(err == 1, 'Failed Test 1');
     
     % Test 2: valid parameters
     t=transistor;
@@ -44,6 +45,7 @@ if(1)
         t.parameters(3).max == 5e9 , 'Failed Test 5')
     
     % Test 6: EPC 8002
+    tDB = transistorDB;
     fet = tDB(1);
     fet.addParameter('Vgs', [0 6 -4]);
     fet.addParameter('Ids', 2, 'max', {'Ta' '=' '25' '°C'});

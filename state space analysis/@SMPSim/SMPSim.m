@@ -71,18 +71,20 @@ classdef SMPSim < handle
         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
         
-        plotAllStates(obj, fn, subplots)
-        plotAllOutputs(obj, fn, subplots)
+        plotAllStates(obj, fn, oSelect, subplots)
+        plotAllOutputs(obj, fn, oSelect, subplots)
         
         [ Xs] = perturbedSteadyState(obj, dts) 
-        [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order);
+        [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
+        [JoutStart,JoutEnd] = discreteJacobianConstraint(obj)
         
         [ output_args ] = regulate( obj )% DEPRICATED
         [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)% DEPRICATED
         [ Xs] = SS_Soln2(obj, Xi, Bi) % DEPRICATED
         
         %% 
+        [violateMargin,targetVal] = checkStateValidity(obj, X, u, swind)
         [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = checkDiscreteErr(obj)
         [tLocs,insertAt,adjType] = findRequiredUncontrolledSwitching(obj,violateMarginStart,violateMarginEnd)
         %[margins(before,after,with &w/o hysteresit)] = checkDiscreteErrors
@@ -90,7 +92,15 @@ classdef SMPSim < handle
         %[altered] = updateForUncontrolledSwitching
         %[deltaTs] = switchingErrorGradientDescent
         
-        [Xf,ts,swinds] = timeSteppingPeriod(obj)
+        [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
+        [newts,newswinds] = format1DtimingVector(obj,ts,swinds)
+
+        [weightTotalErr] = getWeightedTotalError(obj, errBefore,errAfter)
+
+        %% Debugging (Verbose) helper functions
+        describeDiscreteErrors(obj)
+        describeInsertedIntervals(obj, allChanges)
+        [T] = describeSwitchState(obj)
 
         
         %% Constructors

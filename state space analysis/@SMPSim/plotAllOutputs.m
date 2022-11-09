@@ -1,18 +1,23 @@
-function plotAllOutputs(obj, fn, subplots)
+function plotAllOutputs(obj, fn, oSelect, subplots)
 %UNTITLED6 Summary of this function goes here
 %   Detailed explanation goes here
     [ ~, t, ys] = obj.SS_WF_Reconstruct;
     figure(fn);
     ns = size(ys,1);
     
-    if(nargin == 2)
+    if(nargin <= 2)
+        subplots = 1;
+        oSelect = 1:ns; 
+    elseif(nargin <=3)
         subplots = 1;
     end
+    
+    ns = length(oSelect);
     
     if(subplots)
         for i=1:ns
             subplot(10*ns,1,i*10-9:i*10)
-            plot(t,ys(i,:), 'Linewidth', 3);
+            plot(t,ys(oSelect(i),:), 'Linewidth', 3);
             hold on;
             ylims = ylim;
             ylim(ylims)
@@ -21,7 +26,7 @@ function plotAllOutputs(obj, fn, subplots)
             end
             hold off;
             try
-                ylabel(obj.converter.topology.outputLabels{i});
+                ylabel(obj.converter.topology.outputLabels{oSelect(i)});
             catch
                 warning('Output Labels not set in topology subclass');
             end
@@ -40,13 +45,13 @@ function plotAllOutputs(obj, fn, subplots)
           lines(i).LineStyle = ':';
         end
 
-        plot(t,xs, 'linewidth',2);
+        plot(t,ys(oSelect,:), 'linewidth',2);
         if(firstrun)
             legend(obj.converter.topology.outputLabels);
         end
         hold on;
 %         plot(t, obj.converter.topology.constraints.regtarget*ones(size(t)), '-.k', 'linewidth',3);
-        ylims = [min(min(ys)) max(max(ys))];
+        ylims = [min(min(ys(oSelect,:))) max(max(ys(oSelect,:)))];
         ylim(ylims)
         for i = 1:length(obj.ts)
             plot(sum(obj.ts(1:i))*ones(1,2), ylims, ':r');

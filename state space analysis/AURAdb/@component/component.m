@@ -32,13 +32,17 @@ classdef component < handle
         SIprefixes = containers.Map({'f','p','n',[char(181)],'m','','k','M','G','T'}, ...
                                     [1e-15 1e-12 1e-9 1e-6 1e-3 1e0 1e3 1e6 1e9 1e12]);    
     end
+
+    properties (Hidden, SetAccess=protected)
+        upDated = 1;
+    end
     
     methods (Abstract)
 %         [guess, full] = subsref(obj, param)
     end
     
     methods
-        datasheet(obj)
+        UIFigure = datasheet(obj)
     end
     
     methods
@@ -173,11 +177,13 @@ classdef component < handle
             if isa(param, 'componentTableData')
                 if isempty(obj.parameters)
                     obj.parameters = param;
+                    obj.upDated = 1;
                 else
-                    [sameData, sameParam] = eq(obj.parameters,param);
+                    [sameParam, sameData] = eq(obj.parameters,param);
                     if ~any(sameParam)
                         % New plot
-                        obj.parameters(length(obj.parameters)+1) = param; 
+                        obj.parameters(length(obj.parameters)+1) = param;
+                        obj.upDated = 1;
                     elseif ~any(sameData)
                         % Existing parameter, but new data
                         if isempty(obj.parameters(sameParam).min)
@@ -198,6 +204,7 @@ classdef component < handle
                             warning(['Adding a duplicate param for ', param.name]);
                             obj.parameters(length(obj.parameters)+1) = param;
                         end
+                        obj.upDated = 1;
                     else
                         % parameter already present, do nothing
                     end
@@ -218,17 +225,20 @@ classdef component < handle
             if isa(graph, 'componentPlotData')
                 if isempty(obj.graphs)
                     obj.graphs = graph;
+                    obj.upDated = 1;
                 else
                     [sameData, samePlots] = eq(obj.graphs,graph);
                     if ~any(samePlots)
                         % New plot
                         obj.graphs(length(obj.graphs)+1) = graph; 
+                        obj.upDated = 1;
                     elseif ~any(sameData)
                         % Existing plot, but new data
                         % obj.graphs(length(obj.graphs)+1) = graph; 
                         % warning(['Adding a duplicate plot for ', graph.title]);
                         
                         obj.graphs(find(sameData,1)).merge(graph);
+                        obj.upDated = 1;
                         
                     else
                         % Plot already present, do nothing

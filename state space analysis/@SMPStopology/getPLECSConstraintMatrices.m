@@ -32,7 +32,7 @@ function [Cbnd, Dbnd, hyst, switchRef] = getPLECSConstraintMatrices(obj,circuitP
            %on-state current > 0
            Cbnd(devCurrent, :, swvec(:,i)==1) = obj.Cs(devCurrent, :, swvec(:,i)==1);
            Dbnd(devCurrent, :, swvec(:,i)==1) = obj.Ds(devCurrent, :, swvec(:,i)==1);
-           hyst(devCurrent,:)=[0, 10e-6];
+           hyst(devCurrent,:)=[0, 100e-3];
            switchRef(devCurrent,:) = [i, 1];
 
            %off-state -(voltage) > 0
@@ -42,7 +42,8 @@ function [Cbnd, Dbnd, hyst, switchRef] = getPLECSConstraintMatrices(obj,circuitP
            devStr = outputs{devVoltage};
            devStr = devStr(1:find(devStr==':',1)-1);
            Vf = evalin('base', plecs('get', [modelFile '/' devStr], 'Vf'));
-           hyst(devVoltage,:)=[-Vf, Vf/10];
+%            Rd = evalin('base', plecs('get', [modelFile '/' devStr], 'Vf'));
+           hyst(devVoltage,:)=[-Vf, Vf/2];
            switchRef(devVoltage,:) = [i, 0];
            
 

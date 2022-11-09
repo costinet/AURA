@@ -121,13 +121,22 @@ classdef componentTableData
                     if isempty(obj.multiplier)
                         curData = [obj.max, obj.typ, obj.min];
                     else
-                        curData = [obj.max, obj.typ, obj.min]*obj.componentType.SIprefixes(obj.multiplier);
+                        if strcmp(class(obj.multiplier), 'cell')
+                            curData = [obj.max, obj.typ, obj.min]*obj.componentType.SIprefixes(obj.multiplier{:});
+                        else
+                            curData = [obj.max, obj.typ, obj.min]*obj.componentType.SIprefixes(obj.multiplier);
+                        end
                     end
                     if isempty(obj.multiplier)
                         newData = [param.max, param.typ, param.min];
                     else
-                        newData = [param.max, param.typ, param.min]*param.componentType.SIprefixes(param.multiplier);
+                        if strcmp(class(param.multiplier), 'cell')
+                            newData = [param.max, param.typ, param.min]*param.componentType.SIprefixes(param.multiplier{:});
+                        else
+                            newData = [param.max, param.typ, param.min]*param.componentType.SIprefixes(param.multiplier);
+                        end
                     end
+
                     
                     if all(newData == curData)
                         paramTF = true;

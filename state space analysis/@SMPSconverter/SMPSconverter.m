@@ -47,7 +47,8 @@ classdef SMPSconverter < handle
     
     methods
         %% Externally Defined
-        [altered] = addUncontrolledSwitching(obj, interval, beforeAfter, initialTime, switches, newStates, force)
+        [altered, newSwInd] = addUncontrolledSwitching(obj, interval, beforeAfter, initialTime, switches, newStates, force)
+        [tps] = validateTimePerturbations2(obj, tis, dts, lim)
         
 %         function dts = adjustUncontrolledTimingVector(obj, ti, dt)
 %             
@@ -91,9 +92,10 @@ classdef SMPSconverter < handle
 % 
 %         end 
             %%%%%%%%%%%%%%%%%%%%
-        function dt = adjustUncontrolledTiming(obj, ti, dt)
+        function [dt, recurs] = adjustUncontrolledTiming(obj, ti, dt)
             obj.previousts = obj.fullts;    %Save old times in case an undo is needed.
-            
+            recurs = 0;
+
             [ots, ints, subInts] = getIntervalts(obj);
             numSubInts = sum(ints == ints(ti));
             
@@ -104,6 +106,7 @@ classdef SMPSconverter < handle
             elseif ti == length(ints) || ints(ti+1) ~= ints(ti)
                 %selected last interval
                 dt = adjustUncontrolledTiming(obj, ti-1, -dt);
+                recurs = 1;
                 return
                 
             else
@@ -149,6 +152,8 @@ classdef SMPSconverter < handle
             %% dts = allowable large-signal perturbation to avoid introducing error between discrete samples
 %             dts =  min( [2*pi./fastestResFreq/4, obj.ts'], [],2); 
             if size(fastestResFreq) == size(obj.ts)
+                %Added the fastestFreq portion due to two dueling
+                %exponentials causing a change in slope
                 dts = min( [2*pi./fastestResFreq/4, obj.ts(ind)], [],2); 
             else
                 dts = min( [2*pi./fastestResFreq/4, obj.ts(ind)'], [],2); 
@@ -159,18 +164,40 @@ classdef SMPSconverter < handle
         end
         
         
-        function [tps] = validateTimePerturbations(obj, tis, dts)
+        function [tps] = validateTimePerturbations(obj, tis, dts, lim)
             assert(length(tis) == length(dts), 'vectors tis and dts must have the same number of elements');
             scaleFull = 1;          %scales the time perturbations to keep equal change vector
             individualLimit = 0;    %tries to only reduce the perturbations that violate (needs work)
             
+            if nargin == 3
+                lim = 0;
+            end
+            
+            odts = dts;
+
+            if lim == 1
+                % Scale all values to make sure we're below 
+                % a reasonable approximation to deltaT
+                [~,dtLims] = getDeltaT(obj);
+        
+                tr = dts./dtLims;
+                tr = max(tr(tr>1));
+                
+                if ~isempty(tr)
+                    dts = dts/tr;
+                end
+            end
+            
             [ots, ints, ~] = getIntervalts(obj);
             
+            % Remove any zero intervals
             tis(dts == 0) = []; dts(dts == 0) = [];
             
+            %% ???
             [tis, inds] = sort(tis);
             dts = dts(inds);
             
+            % deal with controlled switching timing
             numSubInts = zeros(length(tis),1);
             for i = 1:length(tis)
                 numSubInts(i) = sum(ints == ints(tis(i)));
@@ -275,6 +302,9 @@ classdef SMPSconverter < handle
         end
         
         function [ts, ints, subInts] = getIntervalts(obj)
+            % ts -- times
+            % ints -- which controlled switcihng interval
+            % subints -- which subinterval within parent controlled sw int.
             ts = obj.ts;
             [r,c] = find(obj.fullts ~= 0);
             ints = c;
@@ -363,8 +393,20 @@ classdef SMPSconverter < handle
         end
         
         function setSwitchingPattern(obj, swind, ts)  
-            obj.controlledts = ts;
+            if size(ts,2) == 1
+                ts = ts';
+            end
+            if size(swind,2) == 1
+                swind = swind';
+            end
             
+            assert(~any(sum(ts,1)==0), 'Cannot have zero-time intervals');
+            
+            assert(all(size(swind) == size(ts)), 'Dimensions of swind and ts must be the same');
+            assert(all(ts>=0, 'all'), 'times in vector ts must all be positive');
+            assert(all(swind >= 0 & swind <= size(obj.topology.As,3), 'all'), 'swind must be a vector of values indexing topology state matrices');
+            
+            obj.controlledts = sum(ts,1);
             obj.fullts = ts;
             obj.fullswind = swind;
         end

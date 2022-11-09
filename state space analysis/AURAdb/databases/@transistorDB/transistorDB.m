@@ -48,6 +48,12 @@ classdef transistorDB < componentDB
                 obj.components = savedData.obj.transistors;
             end
         end
+
+        function clearUpdated(obj)
+            for i = 1:length(obj.components)
+                obj.components(i).clearUpdated();
+            end
+        end
         
         function sync(obj)
             % Upload all transistors
@@ -91,13 +97,14 @@ classdef transistorDB < componentDB
                 cPD.axisLabels{2} = graphs(i).yLabel;  
                 
                 loc = find(strcmp({obj.transistors.partNumber}, graphs(i).partNumber),1);
-                if isempty(loc)
-                    loc = length(obj.transistors)+1;
-                end
+%                 if isempty(loc)
+%                     loc = length(obj.transistors)+1;
+%                 end
 
                 if isempty(loc) %New part Number
+                    loc = length(obj.transistors)+1;
                     obj.components(loc) = transistor(graphs(i).partNumber);
-                    obj.components(loc).graphs = cPD;
+                    obj.components(loc).addGraph(cPD);
                 else
                     obj.components(loc).addGraph(cPD);
                 end
@@ -105,13 +112,15 @@ classdef transistorDB < componentDB
             end
             
             for i = 1:length(params)
-                warning('you havent written this yet')
+                warning('ParamSync: you havent written this yet')
                 %% REMEMBER component.addParameter(obj,param) -- componentTableData
-                
+                cTD = componentTableData(transistor)
+%                 componentTableData(type, paramName,typVal,maxVal,minVal,testConditions, units)
                 
             end
 
             obj.saveDB;
+            obj.clearUpdated
         end
 
     end

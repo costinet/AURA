@@ -1,12 +1,16 @@
-function [altered] = addUncontrolledSwitching(obj, interval, beforeAfter, initialTime, switches, newStates, force)
+function [altered, newSwInd] = addUncontrolledSwitching(obj, interval, beforeAfter, initialTime, switches, newStates, force)
     assert(initialTime < obj.ts(interval), 'specified initialTime is larger than the interval it subdivides');
     
     if nargin < 7
         force = 0;
     end
-    
+
+    altered = 0;
+    newSwInd  = [];
+
+
+
     if initialTime < obj.timingThreshold
-        altered = 0;
         return
     end
 

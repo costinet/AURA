@@ -58,6 +58,8 @@ try
     
     if nargin == 1
         tsteps = min(max(Ts/min(ts)*100, 10e3),100e3);
+%         [~,dt] = obj.converter.getDeltaT;
+%         tsteps = ts./dt
     end
 %     if nargin < 7
 %         Ds = zeros(1,1,nsub);

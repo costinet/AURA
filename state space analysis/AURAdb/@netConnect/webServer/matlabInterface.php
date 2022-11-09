@@ -207,6 +207,8 @@ function syncParamData($conn, $fet, $userName) {
 	$result = $stmt->get_result();
 	$stmt->close();*/
 	
+	//echo var_dump($fet);
+	
 	$paramData = getTransistorParams($fet, $userName);
 	
 	$fieldStr = implode(",", array_keys($paramData));
@@ -236,6 +238,8 @@ function syncParamData($conn, $fet, $userName) {
 	$query = "REPLACE INTO transistor_table (".$fieldStr.") VALUES (";
 	$query = $query.implode(",",$valStr).")";
 	
+	
+	
 	/*echo "New for prepared statement<br>";
 	echo $query;
 	echo "<br>";
@@ -263,9 +267,9 @@ function syncParamData($conn, $fet, $userName) {
 		echo("Uncomment the above line if your php version is above 5.6");
 		die('PHP version > 5.6 "..." operator needs to be tested');
 	}
-	echo var_dump($stmt);
+	//echo var_dump($stmt);
 	$stmt->execute();
-	echo var_dump($stmt);
+	//echo var_dump($stmt);
 	$result = $stmt->get_result();
 	
 	
@@ -332,12 +336,19 @@ function syncGraphData($conn, $graphData, $paramData, $userName) {
 	foreach ($graphData as $graph){
 		$duplicateData = checkGraphDuplicates($graph, $paramData, $userName, $conn);
 		
-		$xLabel = mysqli_real_escape_string($conn, $graph['xLabel']);
+		/*$xLabel = mysqli_real_escape_string($conn, $graph['xLabel']);
 		$yLabel = mysqli_real_escape_string($conn, $graph['yLabel']);
 		$title = mysqli_real_escape_string($conn, $graph['title']);
 		$testConditions = mysqli_real_escape_string($conn, $graph['testConditions']);
 		$dataLabels = mysqli_real_escape_string($conn, $graph['dataLabels']);
-		$plotData = mysqli_real_escape_string($conn, $graph['plotData']);
+		$plotData = mysqli_real_escape_string($conn, $graph['plotData']);*/
+		
+		$xLabel =  $graph['xLabel'];
+		$yLabel =  $graph['yLabel'];
+		$title =  $graph['title'];
+		$testConditions =  $graph['testConditions'];
+		$dataLabels =  $graph['dataLabels'];
+		$plotData =  $graph['plotData'];
 		
 		if ($duplicateData == 0){
 			//No duplicates, go ahead and insert
@@ -347,8 +358,20 @@ function syncGraphData($conn, $graphData, $paramData, $userName) {
 			//$query = $query."'$partNumber', $dateTime, '$userName', '$plotData', '$testConditions', '$title', '$xLabel', '$yLabel', '$dataLabels')";
 			//$result = $conn->query($query);
 			
-			$stmt = $conn->prepare("INSERT into transistor_graph (partNumber, dateSubmitted, submittedBy, plotData, testConditions, title, xLabel, yLabel, dataLabels) VALUES ( ? $dateTime ? ? ? ? ? ? ?)");
+			/*echo $partNumber.'<br>'.PHP_EOL;
+			echo $userName.'<br>'.PHP_EOL;
+			echo $plotData.'<br>'.PHP_EOL;
+			echo $testConditions.'<br>'.PHP_EOL;
+			echo $title.'<br>'.PHP_EOL;
+			echo $xLabel.'<br>'.PHP_EOL;
+			echo $yLabel.'<br>'.PHP_EOL;
+			echo $dataLabels.'<br>'.PHP_EOL;*/
+			
+			
+			$stmt = $conn->prepare("INSERT INTO transistor_graph (partNumber, dateSubmitted, submittedBy, plotData, testConditions, title, xLabel, yLabel, dataLabels) VALUES ( ?, NOW(), ?, ?, ?, ?, ?, ?, ?)");
+			//var_dump($stmt);
 			$stmt->bind_param("ssssssss", $partNumber, $userName, $plotData, $testConditions, $title, $xLabel, $yLabel, $dataLabels);
+			//var_dump($stmt);
 			$stmt->execute();
 			$result = $stmt->get_result();
 			$stmt->close();
@@ -362,6 +385,7 @@ function syncGraphData($conn, $graphData, $paramData, $userName) {
 		} else {
 			//Duplicates -- maybe insert but flag the old one?  Could still be the same data
 			echo "Duplicate found<br>".PHP_EOL;
+			echo "I don't know what to do with this, yet";
 		}
 	}
 }
@@ -372,7 +396,7 @@ function getGraphDataAfterDate($conn, $lastSyncDate) {
 
 	if ($result->num_rows > 0) {
 		$all = $result->fetch_all(MYSQLI_ASSOC);
-		return json_encode($all);
+		return json_encode($all, JSON_UNESCAPED_SLASHES);
 	} else {
 		return '';
 	}
@@ -396,7 +420,7 @@ function getParamsDataAfterDate($conn, $lastSyncDate) {
 		}
 		
 		
-		return json_encode($all);
+		return json_encode($all, JSON_UNESCAPED_SLASHES);
 	} else {
 		return '';
 	}

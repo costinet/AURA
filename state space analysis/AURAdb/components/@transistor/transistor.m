@@ -80,7 +80,13 @@ classdef transistor < component
                     end
                 end
             end
-            
+            obj.upDated = 1;
+        end
+    end
+
+    methods (Hidden)
+        function clearUpdated(obj)
+            obj.upDated = 0;
         end
     end
     

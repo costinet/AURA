@@ -13,12 +13,16 @@ classdef PLECScircuitParser < circuitParser
         isFET
         isDiode
         Vf
+        allSwitchSignals
+
+        constraintsWarning = 1
    end
     
    properties (Hidden)
        diodeCurrentThreshold = 1e-2;
        bodyDiodeVoltage = 0.5;
        bodyDiodeVoltageHysteresis = 0.25;
+       removeConstraintMeters = 1;
    end
     
     methods

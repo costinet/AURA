@@ -1,0 +1,10 @@
+PACKAGE plecscombo plexim COMPONENTS="plecsedit plecssolve"
+        OPTIONS=SUITE SIGN="00C8 7A1F E1F6 4100 40EE AE92 29AC 6600
+        A0C8 8CA5 004D 8460 4438 F2F1 EB8E"
+FEATURE plecscombo plexim 4.6 permanent uncounted
+        HOSTID="USERHOST=dcostine+b8ca3aa2313a
+        USERHOST=dcostine+8cec4bb21f39" ISSUED=02-feb-2022 SN=5868
+        SIGN="004C ABD4 5E9F 3596 8348 71AA 2081 2500 F102 8ED2 1432
+        A2A1 6932 4366 B0C1"
+		
+		

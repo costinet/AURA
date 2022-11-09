@@ -54,8 +54,18 @@ function [ avgXs, avgYs ] = ssAvgs(obj, Xss)
                 avgys(:,i) = Cs(:,:,i)*avgxs(:,i) + Ds(:,:,i)*u;
             end
         end
-        avgXs = sum(avgxs.*repmat(ts,ns,1),2)/sum(ts);
-        avgYs = sum(avgys.*repmat(ts,nc,1),2)/sum(ts);  
+        try
+            avgXs = sum(avgxs.*repmat(ts,ns,1),2)/sum(ts);
+            avgYs = sum(avgys.*repmat(ts,nc,1),2)/sum(ts);  
+        catch e
+             if (strcmp(e.identifier,'MATLAB:sizeDimensionsMustMatch'))
+                avgXs = sum(avgxs.*repmat(ts',ns,1),2)/sum(ts);
+                avgYs = sum(avgys.*repmat(ts',nc,1),2)/sum(ts);  
+             else
+                 rethrow(e)
+             end
+        end
+            
     end
 
 

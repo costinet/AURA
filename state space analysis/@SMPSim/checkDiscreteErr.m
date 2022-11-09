@@ -12,10 +12,12 @@ function [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = che
     targetValEnd = violateMarginEnd;
 
     for i = 1:length(obj.converter.swind)
-        violateMarginStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1) + obj.topology.bndHyst(:,2);
-        targetValStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1);
-        violateMarginEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1) + obj.topology.bndHyst(:,2);
-        targetValEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1);
+        [violateMarginStart(:,i), targetValStart(:,i)] = obj.checkStateValidity( Xss(:,i), us, obj.converter.swind(i));
+        [violateMarginEnd(:,i), targetValEnd(:,i)] = obj.checkStateValidity( Xss(:,i+1), us, obj.converter.swind(i));
+%         violateMarginStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1) + obj.topology.bndHyst(:,2);
+%         targetValStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1);
+%         violateMarginEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1) + obj.topology.bndHyst(:,2);
+%         targetValEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1);
     end
 
 end

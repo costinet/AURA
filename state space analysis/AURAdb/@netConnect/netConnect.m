@@ -19,7 +19,7 @@ classdef netConnect < handle
                     load('webSettings.mat', 'apiKey', 'serverURL');
                 end
                 if ~exist('apiKey', 'var') || isempty(apiKey)       
-                    warning('no Database or apiKey specified, pleas provide them now');
+                    warning('no Database or apiKey specified, please provide them now');
                     serverURL = input('Enter URL of database server\n', 's');
                     apiKey = input('Enter apiKey \n', 's');
                 end
@@ -41,7 +41,7 @@ classdef netConnect < handle
         function handshakeServer(obj)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
-            options = weboptions('Timeout', 1);
+            options = weboptions('Timeout', 10);
             data = webread([obj.serverURL '/upload?apiKey=' obj.apiKey '&action=handshake'], options);
             if strcmp(data(1:5), 'Error')
                 error(data);
@@ -65,8 +65,15 @@ classdef netConnect < handle
             
             result = '';
             
-            encodedDB = jsonencode(objDB(startIndex:end));
-            
+            %encodedDB = jsonencode(objDB(startIndex:end));
+            newEntries = objDB(startIndex:end);
+            newEntries = newEntries([newEntries.upDated] == 1);
+            if isempty(newEntries)
+                result = '';
+                return
+            end
+            encodedDB = jsonencode(newEntries);
+
             jsonData = whos('encodedDB');
 
             

@@ -24,6 +24,7 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, 
     Dbnd = zeros(size(obj.topology.Ds));
     hyst = zeros(size(obj.topology.Ds,1), 2);
     switchRef = zeros(size(obj.topology.Ds,1), 2);
+    allSwitchSignals = zeros(size(obj.topology.Cs,1),1);
     
     if isempty(obj.devType) || forceRefresh
         % Only re-run this once per file
@@ -46,8 +47,20 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, 
 
     for i = 1:length(switchNames)
        switchSignals = strncmp(switchNames{i},outputs,length(switchNames{i}));
-       assert(sum(switchSignals) >= 2, ['Switching device ' switchNames{i} ' does not have probes attached to both device current and device voltage']);
-
+       if sum(switchSignals) >=2
+           switchSignals = strncmp([switchNames{i} ':'],outputs,length(switchNames{i})+1);
+       end
+       try
+            assert(sum(switchSignals) >= 2, ['Switching device ' switchNames{i} ' does not have probes attached to both device current and device voltage']);
+       catch
+           if obj.constraintsWarning == 1
+                warning( ['Switching device ' switchNames{i} ' does not have probes attached to both device current and device voltage.  All further warnings will be suppressed']);
+                obj.constraintsWarning = 0;
+           end
+           continue;
+       end
+       allSwitchSignals = allSwitchSignals | switchSignals;
+       
        currents = endsWith(outputs,'Am');
        voltages = endsWith(outputs,'Vm');
 
@@ -67,8 +80,10 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, 
        findInds = union(index_A1, index_A2);
        switchInds = zeros(size(findInds));
        for j = 1:length(findInds)
-           sameVolts = strfind(switchNames, outputs{findInds(j)}(1:end-3));
-           switchInds(j) = find(~cellfun(@isempty,sameVolts))';
+%            sameVolts = strfind(switchNames, outputs{findInds(j)}(1:end-3));
+%            switchInds(j) = find(~cellfun(@isempty,sameVolts))';
+            sameVolts = strcmp(switchNames, outputs{findInds(j)}(1:end-3));
+           switchInds(j) = find(sameVolts)';
        end
        
        if obj.isDiode(i)
@@ -85,8 +100,8 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, 
            Dbnd(devVoltage, :, all(swvec(:,switchInds)==0,2)) = -obj.topology.Ds(devVoltage, :, all(swvec(:,switchInds)==0,2));
            
           
-           
-           hyst(devVoltage,:)=[-obj.Vf(i), obj.Vf(i)/10];
+           maxDiodehys = obj.diodeCurrentThreshold*max(10e-3,evalin('base', plecs('get',[modelFile '/' switchNames{i}], 'Ron')))*0.9;
+           hyst(devVoltage,:)=[-obj.Vf(i), maxDiodehys];
            switchRef(devVoltage,:) = [i, 0];
           
        elseif obj.isFET(i) && ~(any(obj.isFET(switchInds)) && any(obj.isDiode(switchInds)))
@@ -137,6 +152,15 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, 
     Dbnd = Dbnd(ia,:,:);
     hyst = hyst(ia,:);
     switchRef = switchRef(ia,:);
+    
+    % remove outputs dedicated to switch measurement meters
+%     if(obj.removeConstraintMeters == 1)
+%         obj.topology.Cs(allSwitchSignals,:,:) = [];
+%         obj.topology.Ds(allSwitchSignals,:,:) = [];
+%     end
+    %The above didn't work when you add new switching states, C & D were
+    %mismatched size.
+    obj.allSwitchSignals = allSwitchSignals;
 
     
     obj.topology.Cbnd = Cbnd;
