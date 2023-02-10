@@ -91,6 +91,10 @@ classdef componentPlotData
         end
         
         function plot(obj, axes)
+
+           if nargin < 2
+               axes = gca;
+           end
            hold(axes, 'off');
                      
            xM = obj.componentType.defaultMultipliers(strcmp(obj.xSignal, obj.componentType.knownParams));
@@ -134,6 +138,18 @@ classdef componentPlotData
            xlabel(axes, [obj.xLabel, ' [', xM{1}, obj.xUnit, ']']);
            ylabel(axes, [obj.yLabel, ' [', yM{1}, obj.yUnit, ']']);
            
+        end
+
+        function obj = deleteTrace(obj,ind)
+            assert(obj.nTraces > length(ind), 'Cannot delete all traces from plot')
+            remainingCurves = setdiff(1:length(obj.plotData), ind);
+            obj.plotData = {obj.plotData{remainingCurves}};
+            obj.dataLabels = {obj.dataLabels{remainingCurves}};
+            obj.title = obj.title(1:strfind(obj.title, "(")-2);
+            if length(obj.dataLabels) > 1
+                obj.title = [obj.title ' (', strjoin(obj.dataLabels, ', '), ')'];
+            end
+
         end
         
         function cT = get.type(obj)

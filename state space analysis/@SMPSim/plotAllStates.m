@@ -42,7 +42,7 @@ function plotAllStates(obj, fn, oSelect, subplots)
                     warning('State Names not set in topology subclass');
                 end
                 box on
-                if(i<nrMax)
+                if(i<nr)
                     set(gca, 'Xticklabel', []);
                 else
                     xlabel('t')

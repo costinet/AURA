@@ -214,7 +214,7 @@ classdef component < handle
                 error([class(obj) '.addParameter() not defined for inputs of type ' class(param) ]);
             end
         end
-        
+     
         function addGraph(obj, graph)
 %             assert(length(graph)==1, 'addGraph() can only be used with a single graph at a time');
              if length(graph) > 1
@@ -247,6 +247,16 @@ classdef component < handle
             else
                 error([class(obj) '.addParameter() not defined for inputs of type ' class(graph) ]);
             end
+        end
+
+        function replaceGraph(obj, ind, graph)
+            assert(length(obj.graphs) >= ind, 'Cannot replace nonexistant graph')
+            obj.graphs(ind) = graph;
+        end
+
+        function deleteGraphTrace(obj,iGraph, iTrace)
+            newGraph = obj.graphs(iGraph).deleteTrace(iTrace);
+            obj.replaceGraph(iGraph, newGraph);
         end
         
         function merge(obj, newComponent)

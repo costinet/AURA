@@ -15,10 +15,10 @@ classdef AURAdb < handle
             addpath(genpath(strrep(mfilename('fullpath'), '\AURAdb', '')));
 
             obj.transistors = transistorDB();
-            obj.inductors = 0
-            obj.capacitors = 0
-            obj.cores = 0
-            obj.wires = 0
+            obj.inductors = 0;
+            obj.capacitors = 0;
+            obj.cores = 0;
+            obj.wires = 0;
         end
         
         function sync(obj)

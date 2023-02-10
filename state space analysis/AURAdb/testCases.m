@@ -92,6 +92,10 @@ if(1)
    
    
    disp('component->subsref tests completed successfully');
+
+%% componentDB->subsref
+
+    tDB(end).graphs(end).plot
    
 end
 
