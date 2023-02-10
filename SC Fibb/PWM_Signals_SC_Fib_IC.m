@@ -17,15 +17,15 @@ recomended_fs = 1.25e6;
 max_mod_value = 2*floor(fpga_fs*fpga_multi/recomended_fs/2);
 %max_mod_value = 216;
 Ts = 1/(fpga_fs*fpga_multi)*max_mod_value;
-ideal_input_Voltage_index = 1;
-d = 0.50;
+ideal_input_Voltage_index = 5;
+d = 0.75;
 dt1 = 0.001;
 dt2 = 0.001;
 
 dt1_length = ceil(dt1*max_mod_value);
 dt2_length = ceil(dt2*max_mod_value);
-dt1_length = 0;
-dt2_length = 0;
+dt1_length = 5;
+dt2_length = 5;
 
 mod_for_d = max_mod_value - (dt1_length*2 + dt1_length*2);
 d_length = floor(d*mod_for_d/2);
@@ -33,7 +33,7 @@ d_prime_length = (mod_for_d-2*d_length)/2;
 
 %% Added for the use of approx 24 ns delay of half bridge gate drivers
 
-gate_driver_delay = 16e-9;
+gate_driver_delay = 0;
 
 
 clk_ts = 1/(fpga_fs*fpga_multi);
@@ -356,7 +356,7 @@ switch ideal_input_Voltage_index
 
 
 end
-
+%{
 if ideal_input_Voltage_index ==4
     g6.fall = g6.fall-max_mod_value;
 end
@@ -372,55 +372,74 @@ if ideal_input_Voltage_index ==5 && dt2_length >0
     g1.fall = g1.fall-max_mod_value;
 end
 %}
-
+%}
+fprintf('----------------------\n')
+fprintf('fs = %.3f MHz  D = %.2f \n',1e-6/Ts,d)
+fprintf('index = %.0f  dt = %.0f clk \n',ideal_input_Voltage_index,dt1_length+1)
+fprintf('----------------------\n')
+fprintf('Gate 1: \n')
+fprintf('     .falling_edge(12''d%d),\n',g1.fall)
+fprintf('     .rising_edge(12''d%d),\n',g1.rise)
 fprintf('----------\n')
-fprintf('Gate 1 fall: %d\n',g1.fall)
-fprintf('Gate 1 rise: %d\n',g1.rise)
+fprintf('Gate 2: \n')
+fprintf('     .falling_edge(12''d%d),\n',g2.fall)
+fprintf('     .rising_edge(12''d%d),\n',g2.rise)
 fprintf('----------\n')
-fprintf('Gate 2 fall: %d\n',g2.fall)
-fprintf('Gate 2 rise: %d\n',g2.rise)
+fprintf('Gate 3: \n')
+fprintf('     .falling_edge(12''d%d),\n',g3.fall)
+fprintf('     .rising_edge(12''d%d),\n',g3.rise)
 fprintf('----------\n')
-fprintf('Gate 3 fall: %d\n',g3.fall)
-fprintf('Gate 3 rise: %d\n',g3.rise)
+fprintf('Gate 4: \n')
+fprintf('     .falling_edge(12''d%d),\n',g4.fall)
+fprintf('     .rising_edge(12''d%d),\n',g4.rise)
 fprintf('----------\n')
-fprintf('Gate 4 fall: %d\n',g4.fall)
-fprintf('Gate 4 rise: %d\n',g4.rise)
+fprintf('Gate 5: \n')
+fprintf('     .falling_edge(12''d%d),\n',g5.fall)
+fprintf('     .rising_edge(12''d%d),\n',g5.rise)
 fprintf('----------\n')
-fprintf('Gate 5 fall: %d\n',g5.fall)
-fprintf('Gate 5 rise: %d\n',g5.rise)
+fprintf('Gate 6: \n')
+fprintf('     .falling_edge(12''d%d),\n',g6.fall)
+fprintf('     .rising_edge(12''d%d),\n',g6.rise)
 fprintf('----------\n')
-fprintf('Gate 6 fall: %d\n',g6.fall)
-fprintf('Gate 6 rise: %d\n',g6.rise)
+fprintf('Gate 7: \n')
+fprintf('     .falling_edge(12''d%d),\n',g7.fall)
+fprintf('     .rising_edge(12''d%d),\n',g7.rise)
 fprintf('----------\n')
-fprintf('Gate 7 fall: %d\n',g7.fall)
-fprintf('Gate 7 rise: %d\n',g7.rise)
+fprintf('Gate 8: \n')
+fprintf('     .falling_edge(12''d%d),\n',g8.fall)
+fprintf('     .rising_edge(12''d%d),\n',g8.rise)
 fprintf('----------\n')
-fprintf('Gate 8 fall: %d\n',g8.fall)
-fprintf('Gate 8 rise: %d\n',g8.rise)
+fprintf('Gate 9: \n')
+fprintf('     .falling_edge(12''d%d),\n',g9.fall)
+fprintf('     .rising_edge(12''d%d),\n',g9.rise)
 fprintf('----------\n')
-fprintf('Gate 9 fall: %d\n',g9.fall)
-fprintf('Gate 9 rise: %d\n',g9.rise)
+fprintf('Gate 10: \n')
+fprintf('     .falling_edge(12''d%d),\n',g10.fall)
+fprintf('     .rising_edge(12''d%d),\n',g10.rise)
 fprintf('----------\n')
-fprintf('Gate 10 fall: %d\n',g10.fall)
-fprintf('Gate 10 rise: %d\n',g10.rise)
+fprintf('Gate 11: \n')
+fprintf('     .falling_edge(12''d%d),\n',g11.fall)
+fprintf('     .rising_edge(12''d%d),\n',g11.rise)
 fprintf('----------\n')
-fprintf('Gate 11 fall: %d\n',g11.fall)
-fprintf('Gate 11 rise: %d\n',g11.rise)
+fprintf('Gate 12: \n')
+fprintf('     .falling_edge(12''d%d),\n',g12.fall)
+fprintf('     .rising_edge(12''d%d),\n',g12.rise)
 fprintf('----------\n')
-fprintf('Gate 12 fall: %d\n',g12.fall)
-fprintf('Gate 12 rise: %d\n',g12.rise)
+fprintf('Gate 13: \n')
+fprintf('     .falling_edge(12''d%d),\n',g13.fall)
+fprintf('     .rising_edge(12''d%d),\n',g13.rise)
 fprintf('----------\n')
-fprintf('Gate 13 fall: %d\n',g13.fall)
-fprintf('Gate 13 rise: %d\n',g13.rise)
+fprintf('Gate 14: \n')
+fprintf('     .falling_edge(12''d%d),\n',g14.fall)
+fprintf('     .rising_edge(12''d%d),\n',g14.rise)
 fprintf('----------\n')
-fprintf('Gate 14 fall: %d\n',g14.fall)
-fprintf('Gate 14 rise: %d\n',g14.rise)
+fprintf('Gate 15: \n')
+fprintf('     .falling_edge(12''d%d),\n',g15.fall)
+fprintf('     .rising_edge(12''d%d),\n',g15.rise)
 fprintf('----------\n')
-fprintf('Gate 15 fall: %d\n',g15.fall)
-fprintf('Gate 15 rise: %d\n',g15.rise)
-fprintf('----------\n')
-fprintf('Gate 16 fall: %d\n',g16.fall)
-fprintf('Gate 16 rise: %d\n',g16.rise)
+fprintf('Gate 16: \n')
+fprintf('     .falling_edge(12''d%d),\n',g16.fall)
+fprintf('     .rising_edge(12''d%d),\n',g16.rise)
 fprintf('----------\n')
 
 
@@ -472,7 +491,7 @@ for i = 1:max_mod_value*2
         end
     end
 end
-
+%%{
 for j = 1:16
 figure(129)
     ax = subplot(16,1,j);
@@ -485,3 +504,4 @@ figure(129)
         xlabel('Count')
     end
 end
+%}

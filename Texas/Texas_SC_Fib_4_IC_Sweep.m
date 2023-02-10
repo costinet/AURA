@@ -1,4 +1,4 @@
-function [stick,graph_values] = DMC_SC_Fib_4_Sweep(X,Coss_adj,Ron_adj)
+function [stick,graph_values] = Texas_SC_Fib_4_IC_Sweep(X,Coss_adj,Ron_adj)
 
 
 niter = 0;
@@ -47,10 +47,10 @@ modelfile = 'SC_FIB_4_AURA_D.net';
 %% Load for SC Fib
 
 
-adjust = [ones(1,5), 1e-6, 100, 100] ;
+adjust = [ones(1,8), 1e-6, 100, 100] ;
 X = X./adjust;
 
-FETs = X(1:5);
+FETs = X(1:8);
 fs = X(end-2);
 dt1 = X(end-1);
 dt2 = X(end);
@@ -60,9 +60,14 @@ ron = [];
 Coss = [];
 FET_w = [];
 FET_l = [];
+
 for i = 1:length(FETs)
-    [ron(i),Coss(i),FET_w(i),FET_l(i)]=Select_FET(FETs(i));
+    [ron(i),Coss(i)]=Select_IC_FET(FETs(i));
 end
+
+  
+
+%{
 ron(8) = ron(3);
 ron(7) = ron(2);
 ron(6) = ron(1);
@@ -75,7 +80,7 @@ Ron_adj(6) = Ron_adj(1);
 Coss_adj(8) = Coss_adj(3);
 Coss_adj(7) = Coss_adj(2);
 Coss_adj(6) = Coss_adj(1);
-
+%}
 % Set switching interval
 ON = 1;
 OFF = 0;
@@ -464,7 +469,7 @@ try
             
             % MaxVin = OLVin+1;
             MaxVin = OLVin+1;
-            if OLVin<14.5 || OLVin>20.5
+            if OLVin<14 || OLVin>21
                 continue
             end
             Vinrange = OLVin:0.1:MaxVin;
@@ -478,6 +483,9 @@ try
                 u(VgPOS) = Vin;
                 sim.u = u;
                 
+                if round(d,4) == 0.4357 && i == 5 && round(Vin,4) == 20.5065
+                    J =456456465;
+                end
                 
                 
                 Xss = sim.steadyState;
@@ -504,11 +512,11 @@ try
                 %%
                 %[Xf,ts,swinds] = timeSteppingPeriod(sim);
                 
-                %[valid]=DMC_SteadyState(sim,conv,top);
-                %if (~valid)
-                %    continue
-                %end
-                %Xss = sim.steadyState;
+                [valid]=DMC_SteadyState(sim,conv,top);
+                if (~valid)
+                    continue
+                end
+                Xss = sim.steadyState;
                 
                 [ avgXs, avgYs ] = sim.ssAvgs(Xss);
                 
@@ -548,7 +556,7 @@ try
                 %             PossSim = [PossSim; Poss];
                 conditions = [conditions; d, i, Vin];
                 
-                if Pout > 45
+                if Pout > 40
                     break;
                 end
                 
@@ -579,7 +587,7 @@ PoutRange = 0:1:50;
 [f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
 xlabel('V_{g} (V)','FontSize',20,'FontName','Times New Roman');
 ylabel('P_{out} (W)','FontSize',20,'FontName','Times New Roman');
-title('SC Fib 4V Power Loss','FontSize',24);
+title('SC Fib IC 4V Power Loss','FontSize',24);
 % ylim([0 80])
 
 axis1 = gca;
@@ -603,8 +611,8 @@ VgSim = conditions(locs,end);
 F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
 
 
-Vgrange = 16:.25:20;
-PoutRange = 20:1:40;
+Vgrange9 = linspace(10,20,17);
+PoutRange9 = linspace(20,60,21);
 
 sigma1 = 30;
 sigma2 = 750;
@@ -612,12 +620,22 @@ sigma2 = 750;
 mu = [16 50];
 Sigma = [sigma1, sqrt(sigma1*sigma2-1); sqrt(sigma1*sigma2-1), sigma2];
 
-[X1,X2] = meshgrid(Vgrange',PoutRange');
+[X1,X2] = meshgrid(Vgrange9',PoutRange9');
 X = [X1(:) X2(:)];
 
 p = mvncdf(X,mu,Sigma);
 
-Z = reshape(p,length(PoutRange),length(Vgrange));
+Z = reshape(p,length(PoutRange9),length(Vgrange9));
+
+% Altered to now accomidate 16 to 20 V and Pout between 20 and 40 W.
+% If ranges change on the area being examined then this will need to
+% change as well.
+
+
+Vgrange = 16:.25:20;
+PoutRange = 20:1:40;
+[X1,X2] = meshgrid(Vgrange',PoutRange');
+X = [X1(:) X2(:)];
 
 weighted_vals=F(X1,X2).*(Z+Z([length(PoutRange):-1:1],[length(Vgrange):-1:1]));
 

@@ -1,4 +1,4 @@
-function [stick,graph_values] = DMC_SC_Fib_4_Sweep(X,Coss_adj,Ron_adj)
+function [stick,graph_values] = Texas_SC_Fib_4_Sweep(X,Coss_adj,Ron_adj)
 
 
 niter = 0;
@@ -478,6 +478,9 @@ try
                 u(VgPOS) = Vin;
                 sim.u = u;
                 
+                if round(d,4) == 0.4357 && i == 5 && round(Vin,4) == 20.5065
+                    J =456456465;
+                end
                 
                 
                 Xss = sim.steadyState;
@@ -548,7 +551,7 @@ try
                 %             PossSim = [PossSim; Poss];
                 conditions = [conditions; d, i, Vin];
                 
-                if Pout > 45
+                if Pout > 40
                     break;
                 end
                 
@@ -603,8 +606,8 @@ VgSim = conditions(locs,end);
 F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
 
 
-Vgrange = 16:.25:20;
-PoutRange = 20:1:40;
+Vgrange9 = linspace(10,20,17);
+PoutRange9 = linspace(20,60,21);
 
 sigma1 = 30;
 sigma2 = 750;
@@ -612,12 +615,22 @@ sigma2 = 750;
 mu = [16 50];
 Sigma = [sigma1, sqrt(sigma1*sigma2-1); sqrt(sigma1*sigma2-1), sigma2];
 
-[X1,X2] = meshgrid(Vgrange',PoutRange');
+[X1,X2] = meshgrid(Vgrange9',PoutRange9');
 X = [X1(:) X2(:)];
 
 p = mvncdf(X,mu,Sigma);
 
-Z = reshape(p,length(PoutRange),length(Vgrange));
+Z = reshape(p,length(PoutRange9),length(Vgrange9));
+
+% Altered to now accomidate 16 to 20 V and Pout between 20 and 40 W.
+% If ranges change on the area being examined then this will need to
+% change as well.
+
+
+Vgrange = 16:.25:20;
+PoutRange = 20:1:40;
+[X1,X2] = meshgrid(Vgrange',PoutRange');
+X = [X1(:) X2(:)];
 
 weighted_vals=F(X1,X2).*(Z+Z([length(PoutRange):-1:1],[length(Vgrange):-1:1]));
 

@@ -1,0 +1,7 @@
+Drain-Source Voltage,Source-Drain Voltage,Gate-Source Voltage,Gate Threshold Voltage,Drain-Source Current,Source-Drain Current,Gate Current,Pulsed Drain-Source Current,Pulsed Source-Drain Current,Gate-Source Leakage Current,Drain-Source Leakage Current,Drain-Source On-State Resistance,Internal Gate Resistance,Total Gate Charge,Gate-Source Charge,Gate-Drain Charge,Output Charge,Reverse Recovery Charge,Reverse Recovery Time,Peak Reverse Recovery Current,Output Capacitance,Input Capacitance,Reverse Transfer Capacitance,Gate-Drain Capacitance,Drain-Source Capacitance,Gate-Source Capacitance,Turn-on Energy,Turn-off Energy,Coss Stored Energy,Junction-Case Thermal Resistance,Junction-Board Thermal Resistance,Junction-Ambient Thermal Resistance,Power Dissipation,Transconductance,Rise Time,Turn-On Delay Time,Fall Time,Turn-Off Delay Time,Junction Temperature,Case Temperature
+Vds,Vsd,Vgs,Vth,Ids,Isd,Ig,Idpulse,Ispulse,Igss,Idss,Rds,Rg,Qg,Qgs,Qgd,Qoss,Qrr,Trr,Irr,Coss,Ciss,Crss,Cgd,Cds,Cgs,Eon,Eoff,Eoss,Rthjc,Rthjb,Rthja,Pd,Gfs,Tr,Tdon,Tf,Tdoff,Tj,Tc
+V,V,V,V,A,A,A,A,A,A,A,Ohm,Ohm,C,C,C,C,C,s,A,F,F,F,F,F,F,J,J,J,[char(176)]C/W,[char(176)]C/W,[char(176)]C/W,W,A/V,s,s,s,s,[char(176)]C,[char(176)]C
+1,1,1,1,1,1,m,1,1,[char(181)],[char(181)],m,m,n,n,n,n,n,[char(181)],1,p,p,p,p,p,p,[char(181)],[char(181)],[char(181)],1,1,1,1,1,n,n,n,n,1,1
+Bv,Vd,,Vgsth,,,,Idspulse,Isdpulse,,Ileak,Ron,Rgint,Qgate,,Qm,Qds,,,Irrm,,,,,,,,,,,,,,,,,,,,
+Bvdss,Vf,,,,,,,,,Idsleak,Rdson,,,,,,,,Irrmax,,,,,,,,,,,,,,,,,,,,
+Vdsmax,,,,,,,,,,Idleak,,,,,,,,,Irrpk,,,,,,,,,,,,,,,,,,,,

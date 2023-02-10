@@ -489,7 +489,7 @@ scatter(VgSim, PoutSim(locs),[],PlossSim(locs),'filled');
 
 xlabel('V_{g} (V)','FontSize',20,'FontName','Times New Roman');
 ylabel('P_{out} (W)','FontSize',20,'FontName','Times New Roman');
-title('Power Loss Array','FontSize',24);
+title('Power Losss Array','FontSize',24);
 % ylim([0 80])
 
 axis1 = gca;

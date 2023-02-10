@@ -1,5 +1,5 @@
 clear
-sf = [1 1 1 1 1 1 1e-6 100 100];  
+sf = [1 1 1 1 1 1 1e-6 100 100];
 x = [3.0000    3.0000    3.0000    1.2315    0.9000    0.9000];
 Coss_adj = [0 0 0];
 Ron_adj = [0 0 0];
@@ -7,19 +7,94 @@ Ron_adj = [0 0 0];
 
 Number_of_FETs = 15;
 stick  = zeros(Number_of_FETs,Number_of_FETs,Number_of_FETs);
-tic
+Tstart=tic;
 for i = 1:Number_of_FETs
     for j = 1:Number_of_FETs
         for k = 1:Number_of_FETs
-    x(1:3) = [i j k];
-    [stick(i,j,k),graph1]=Texas_SC_Fib_8_Sweep(x,Coss_adj,Ron_adj);
+            x(1:3) = [14 14 14];
+            [stick(i,j,k),graph1]=Texas_SC_Fib_8_Sweep(x,Coss_adj,Ron_adj);
         end
     end
 end
-toc
+toc(Tstart)
 J = 45645465456465;
 
-surf([1:15], [1:15],[],stick(:,:,1))
+separate_stick_single = stick(:);
+
+Xs = [1:15];
+Xs = repmat(Xs,[1,15]);
+Xs = repmat(Xs,[1,15]);
+Ys = [];
+for i = 1:Number_of_FETs
+    Ys(end+1:end+15) = ones(1,15).*i; % Probably not a good way to do that
+end
+Ys = repmat(Ys,[1,15]);
+
+Zs = [];
+for i = 1:Number_of_FETs
+    Zs(end+1:end+225) = ones(1,225).*i; % Probably not a good way to do that
+end
+
+
+
+
+    figure
+    scatter3(Xs,Ys,Zs,separate_stick_single.*30,separate_stick_single,'filled')
+    xlim([0 16])
+    ylim([0 16])
+    zlim([0 16])
+    xticks([1 3 5 7 9 11 13 15])
+    yticks([1 3 5 7 9 11 13 15])
+    zticks([1 3 5 7 9 11 13 15])
+    colorz=colorbar;
+    colorz.Label.String = 'Weighted Average P_{loss}';
+    
+    
+    % Create zlabel
+    zlabel('M_3 & M_6','FontSize',20);
+
+    % Create ylabel
+    ylabel('M_2 & M_5','FontSize',20);
+    
+    % Create xlabel
+    xlabel('M_1 & M_4','FontSize',20);
+
+    title('Brute Force Power Loss Array 8V SC Fib','FontSize',21);
+    
+    axis1 = gca;
+    set(axis1,'FontName','Times New Roman','FontSize',14);
+    
+    hold on
+    
+
+    scatter3(3,3,3,100,'pentagram','filled','k')
+    
+    
+    figure
+    
+     scatter([1:length(separate_stick_single)],separate_stick_single,separate_stick_single.*30,separate_stick_single,'filled')
+     
+     
+         % Create xlabel
+    xlabel('Iteration Number','FontSize',20);
+    
+        % Create ylabel
+    ylabel('Weighted Average P_{loss}','FontSize',20);
+    
+    title('Brute Force Power Loss 8V SC Fib','FontSize',21);
+    
+    axis1 = gca;
+    set(axis1,'FontName','Times New Roman','FontSize',14);
+    
+    hold on
+    scatter(483,separate_stick_single(483),100,'pentagram','filled')
+
+
+%{
+
+
+
+
 
     FETs = zeros(Number_of_FETs,2);
     for i = 1:Number_of_FETs
@@ -106,5 +181,5 @@ hold(axes1,'off');
 set(axes1,'FontName','Arial','FontSize',24);
 
 %}
-
+%}
 

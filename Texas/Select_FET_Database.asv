@@ -1,0 +1,5 @@
+function  [ron,Coss,w,l]=Select_FET_Database(FET_selection)
+
+FETs = Transistor.listDevices;
+Chosen_FET = FETs(FET_selection);
+Transistor.getTableParam(Chosen_FET{},'Coss','Typ')

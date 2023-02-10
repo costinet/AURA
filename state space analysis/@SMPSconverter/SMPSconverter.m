@@ -129,9 +129,9 @@ classdef SMPSconverter < handle
                 
                 ratio = ceil(obj.ts(i)/dt - eps);
                 
-                for j = 1:1:ratio-1
-                    obj.addUncontrolledSwitching(i, 1, dt, [], [], 1);
-                end
+                %for j = 1:1:ratio-1
+                %    obj.addUncontrolledSwitching(i, 1, dt, [], [], 1);
+                %end
             end
         end
         

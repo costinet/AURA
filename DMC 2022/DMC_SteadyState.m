@@ -374,6 +374,7 @@ while(niter<=20)
         end
         
         if(~any(tsolve))
+            return
             error('timing not modified');
             break;
         end

@@ -2,22 +2,18 @@
 clear
 tic
 try
-    Number_of_FETs = 15;
+    Number_of_FETs = 100;
     FETs = zeros(Number_of_FETs,2);
     for i = 1:Number_of_FETs
-        [FETs(i,1),FETs(i,2),~,~]=Select_FET(i);
+        [FETs(i,1),FETs(i,2)]=Select_IC_FET(i);
     end
     
     for i = 1:length(FETs)
         for j = 1:length(FETs)
-            
             FETs_Ron(i,j) = FETs(i,1) - FETs(j,1);
             FETs_Coss(i,j) = FETs(i,2) - FETs(j,2);
         end
     end
-    
-    
-    
     
     %{
     [minronCoss] = min(FETs,[],1);
@@ -37,54 +33,107 @@ try
         end
     end
     %}
-    saved_fval = ones(5,1).*100;
+    saved_fval = 100;
     big_loop = 0;
     max_iteration = 50;
-    almost_steady_state = [0 0 0 0 0];
+    almost_steady_state = [0 0 0 0 0 0 0 0];
     
     sf = [1 1 1 1 1 1e-6 100 100];
     
+    %  0.1389    0.0793    0.2542    0.3055    0.0271    0.0763    0.0424    0.1863
     
-    x = [3.0000    3.0000   14.0000   15.0000    3.0000   1.2315    0.9000    0.9000]; % This is the optimized one with the new projection parameters
-    % x = [ 14.0000   12.0000   14.0000    1.0000    8.0000    3.0000    6.0000   12.0000    1.2315    0.9000    0.9000];
-    %x = [ 12.0000    6.0000   14.0000   15.0000    2.0000    6.0000    6.0000   12.0000  1.2315e6    0.009    0.009];
-    % x = x.*sf;
+    x = [ 34    19    62    76    05   19    11    47   1.2951   0.009 0.009];
     
-    %x = [    6.0000    6.0000   14.0000   15.0000    8.0000    6.0000    6.0000   12.0000    1.2315    0.9000    0.9000]
-    % 5 10 5 10 5 10
-    % 19 6 1 19 6 1
-    %2 3 4 2 3 4
+    %  x = [0.1389    0.0793    0.2542    0.3055    0.0271     1.2951   0.009 0.009];
+    
+    %  x = [500   500   900    900    100     1.2951   0.009 0.009];
+    
+    % x = [535+13 438-13 1000 1000 1 1.2951   0.009 0.009];
+    
     saved_x = x;
-    FETs_number = 5;
-    stick = zeros(FETs_number,3);
+    FETs_number = 8;
+    stick = zeros(FETs_number,FETs_number);
     deltaRon = -1e-3;
-    deltaCoss = -0.4e-9;
+    deltaCoss = -0.01e-9;
+    deltaW = 1;
     % coss_adjust_values = [0 deltaCoss/minCoss];
     %  ron_adjust_values = [deltaRon/minron 0];
-    
-    
+    Coss_adj = [0 0 0 0 0 0 0 0];
+    Ron_adj = [0 0 0 0 0 0 0 0];
     
     while(big_loop<max_iteration)
         for i = 1:FETs_number
+            if x(i) == 100
+                continue
+            end
+            for j = 1:FETs_number
+                if x(j) == 1
+                    continue
+                end
+                if i == j
+                    [stick(i,j),graph1]=Texas_SC_Fib_4_IC_Sweep(x,Coss_adj,Ron_adj);
+                    
+                else
+                    x_test = x;
+                    x_test(i) = x(i)+1;
+                    x_test(j) = x(j)-1;
+                    [stick(i,j),graph1]=Texas_SC_Fib_4_IC_Sweep(x_test,Coss_adj,Ron_adj);
+                end
+                
+            end
+            Invalid_index = 1;
+            while Invalid_index
+                [V,I]=min(stick(i,:));
+                if x(I) == 1
+                    stick(i,I) = 100;
+                else
+                    Invalid_index = 0;
+                end
+            end
+            if I == i
+                %  [V,I]=max(stick(i,:));
+                %  x_test = x;
+                %  x_test(i) = x(i)-1;
+                %  x_test(j) = x(I)+1;
+                %  [stick_test,graph1]=Texas_SC_Fib_4_IC_Sweep(x_test,Coss_adj,Ron_adj);
+                %  if stick_test < stick(i,i)
+                %     x = x_test;
+                %      saved_x(end+1,:) = x;
+                %     almost_steady_state(I) = 0;
+                %      saved_fval(end+1) = stick_test;
+                % else
+                almost_steady_state(i) = 1;
+                % end
+                
+            else
+                x(i) = x(i)+1;
+                x(I) = x(I)-1;
+                saved_x(end+1,:) = x;
+                almost_steady_state(I) = 0;
+                almost_steady_state(i) = 0;
+                saved_fval(end+1) = stick(i,I);
+            end
             
-            adjust_FET = [0 0 0 0 0 ];
+            
+            %{
             adjust_FET(i) = 1;
             
-            Coss_adj = [0 0 0 0 0 ];
-            Ron_adj = [0 0 0 0 0 ];
-            
-            [stick(i,1),graph1]=Texas_SC_Fib_4_Sweep(x,Coss_adj,Ron_adj);
-            
-            Coss_adj = [0 0 0 0 0 ].*adjust_FET;
-            Ron_adj = [-1e-3 -1e-3 -1e-3 -1e-3 -1e-3 ].*adjust_FET;
-            
-            [stick(i,2),graph2]=Texas_SC_Fib_4_Sweep(x,Coss_adj,Ron_adj);
             
             
-            Coss_adj = [-0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 ].*adjust_FET;
+            Coss_adj = [0 0 0 0 0 0 0 0];
+            Ron_adj = [0 0 0 0 0 0 0 0];
+            
+            [stick(i,1),graph1]=Texas_SC_Fib_4_IC_Sweep(x,Coss_adj,Ron_adj);
+            
+            
+            
+            [stick(i,2),graph2]=Texas_SC_Fib_4_IC_Sweep(x,Coss_adj,Ron_adj);
+            
+            
+            Coss_adj = [deltaCoss deltaCoss deltaCoss deltaCoss deltaCoss].*adjust_FET;
             Ron_adj = [0 0 0 0 0 ].*adjust_FET;
             
-            [stick(i,3),graph3]=Texas_SC_Fib_4_Sweep(x,Coss_adj,Ron_adj);
+            [stick(i,3),graph3]=Texas_SC_Fib_4_IC_Sweep(x,Coss_adj,Ron_adj);
             
             % Move in the steepest direction:
             stick_diff = [stick(i,1)-stick(i,2) stick(i,1)-stick(i,3)];
@@ -198,7 +247,7 @@ try
             Coss_adj_test = [0 0 0 0 0];
             Ron_adj_test = [0 0 0 0 0];
             
-            [stick_em,graph1]=Texas_SC_Fib_4_Sweep(x_test,Coss_adj_test,Ron_adj_test);
+            [stick_em,graph1]=Texas_SC_Fib_4_IC_Sweep(x_test,Coss_adj_test,Ron_adj_test);
             
             % If there is not an improvement to the fval of the converter.
             if stick_em >= stick(i,1)
@@ -214,7 +263,7 @@ try
             
             
             
-            
+            %}
             
             
         end

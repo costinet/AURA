@@ -1,26 +1,12 @@
 clear
-sf = [1 1 1 1 1 1e-6 100 100];  
-x = [3 3 3 3 3  1.2315e6    0.009    0.009];
-x = x.*sf;
-Coss_adj = [0 0 0 0 0 ];
-Ron_adj = [0 0 0 0 0 ];
+x = [6 9 12 19 7 5   2.0000    2.4372    0.2737    0.7965];
+Coss_adj = [0 0 0 0 0 0];
+Ron_adj = [0 0 0 0 0 0];
 
-Tstart=tic;
-Number_of_FETs = 15;
-stick  = zeros(Number_of_FETs,Number_of_FETs,Number_of_FETs,Number_of_FETs,Number_of_FETs);
-for i = 1:Number_of_FETs
-    for j = 1:Number_of_FETs
-        for k = 1:Number_of_FETs
-
-                    x(1:5) = [i j k 15 3];
-                    [stick(i,j,k,l,m),graph1]=Texas_SC_Fib_4_Sweep(x,Coss_adj,Ron_adj);
-        end
-            end
-        end
-    end
+for i = 1:19
+    x(1:6) = [i i i i i i];
+    [stick(i),graph1]=DMC_BuckBoost_D_Sweep(x,Coss_adj,Ron_adj);
 end
-
-toc(Tstart)
 
     Number_of_FETs = 19;
     FETs = zeros(Number_of_FETs,2);
@@ -108,5 +94,43 @@ hold(axes1,'off');
 set(axes1,'FontName','Arial','FontSize',24);
 
 %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
