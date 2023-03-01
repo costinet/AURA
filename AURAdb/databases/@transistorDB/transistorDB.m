@@ -27,7 +27,7 @@ classdef transistorDB < componentDB
     
     methods
         function obj = transistorDB()
-            loadDB(obj)
+            %loadDB(obj)
         end
         
         function transistors = get.transistors(obj)

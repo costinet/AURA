@@ -27,8 +27,8 @@ classdef component < handle
     end
     
     properties (Hidden, Transient, Constant)
-        signalTypes = {'Capacitance', 'Voltage', 'Current', 'Resistance', 'Energy', 'Charge', 'Temperature', 'Thermal Resistance', 'Time', 'Transconductance', 'Inductance', 'Flux Density'};
-        signalUnits = {'F','V','A','Ohm','J','C',[char(176) 'C'],[char(176) 'C/W'], 's', 'A/V', 'H', 'T'};
+        signalTypes = {'Capacitance', 'Voltage', 'Current', 'Resistance', 'Energy', 'Charge', 'Temperature', 'Thermal Resistance', 'Time', 'Transconductance', 'Inductance', 'Flux Density', 'Frequency', 'Length'};
+        signalUnits = {'F','V','A','Ohm','J','C',[char(176) 'C'],[char(176) 'C/W'], 's', 'A/V', 'H', 'T', 'Hz', 'm'};
         SIprefixes = containers.Map({'f','p','n',[char(181)],'m','','k','M','G','T'}, ...
                                     [1e-15 1e-12 1e-9 1e-6 1e-3 1e0 1e3 1e6 1e9 1e12]);    
     end
@@ -214,7 +214,7 @@ classdef component < handle
                 error([class(obj) '.addParameter() not defined for inputs of type ' class(param) ]);
             end
         end
-        
+     
         function addGraph(obj, graph)
 %             assert(length(graph)==1, 'addGraph() can only be used with a single graph at a time');
              if length(graph) > 1
@@ -247,6 +247,16 @@ classdef component < handle
             else
                 error([class(obj) '.addParameter() not defined for inputs of type ' class(graph) ]);
             end
+        end
+
+        function replaceGraph(obj, ind, graph)
+            assert(length(obj.graphs) >= ind, 'Cannot replace nonexistant graph')
+            obj.graphs(ind) = graph;
+        end
+
+        function deleteGraphTrace(obj,iGraph, iTrace)
+            newGraph = obj.graphs(iGraph).deleteTrace(iTrace);
+            obj.replaceGraph(iGraph, newGraph);
         end
         
         function merge(obj, newComponent)
@@ -348,13 +358,32 @@ classdef component < handle
                                end
                            end
                        else
-                           rethrow(e)
+                          [varargout{1:nargout}] = builtin('subsref',obj,s);
                        end
                            
                     end
                 end
+                
+%             elseif strcmp(s(1).type, '()')
+%                 try
+%                 if length(s) == 1
+%                     varargout = {obj.(s(1).subs{:})};
+%                 else
+%                     comps = obj.(s(1).subs{:});
+%                     varargout = {};
+%                     for i = 1:length(comps)
+%                         %                 [varargout{i}] = builtin('subsref',comps(i),s(2:end));
+%                         component = comps(i);
+%                         varargout = {varargout{:}, [subsref(component,s(2:end))]};
+%                     end
+%                 end
+%                 
+%                 catch e
+%                     [varargout{1:nargout}] = builtin('subsref',obj,s);
+%                 end
+                    
             else
-                 [varargout{1:nargout}] = builtin('subsref',obj,s);
+                [varargout{1:nargout}] = builtin('subsref',obj,s);
             end
                 
         end

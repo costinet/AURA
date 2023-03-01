@@ -2,7 +2,8 @@
 clear
 tic
 try
-    Number_of_FETs = 15;
+    
+    Number_of_FETs = 3;
     FETs = zeros(Number_of_FETs,2);
     for i = 1:Number_of_FETs
         [FETs(i,1),FETs(i,2),~,~]=Select_FET(i);
@@ -46,10 +47,8 @@ try
     
     % Latest: 9/21/22:
     x =[3.0000    3.0000    2.0000   15.0000    3.0000    2.0000    2.0000    2.4372    0.2737    0.7965];
-     %x = [6.0000    8.0000   12.0000    6.0000    3.0000   12.0000    2.0000    2.4372    0.2737    0.7965];
-    %x = [15 15 2 2 15 15   2.0000    2.4372    0.2737    0.7965];
-  saved_x = x;
-    FETs_number = 6;
+    
+    FETs_number = 2;
     stick = zeros(FETs_number,3);
     deltaRon = -1e-3;
     deltaCoss = -0.4e-9;
@@ -59,22 +58,22 @@ try
     while(big_loop<max_iteration)
         for i = 1:FETs_number
             
-            adjust_FET = [0 0 0 0 0 0];
+            adjust_FET = [0 0];
             adjust_FET(i) = 1;
             
-            Coss_adj = [0 0 0 0 0 0];
-            Ron_adj = [0 0 0 0 0 0];
+            Coss_adj = [0 0];
+            Ron_adj = [0 0];
             
             [stick(i,1),graph1]=Texas_Buck_SC_D_Sweep(x,Coss_adj,Ron_adj);
             
-            Coss_adj = [0 0 0 0 0 0].*adjust_FET;
-            Ron_adj = [-1e-3 -1e-3 -1e-3 -1e-3 -1e-3 -1e-3].*adjust_FET;
+            Coss_adj = [0 0 ].*adjust_FET;
+            Ron_adj = [-1e-3 -1e-3 ].*adjust_FET;
             
             [stick(i,2),graph2]=Texas_Buck_SC_D_Sweep(x,Coss_adj,Ron_adj);
             
             
-            Coss_adj = [-0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9 -0.4e-9].*adjust_FET;
-            Ron_adj = [0 0 0 0 0 0].*adjust_FET;
+            Coss_adj = [-0.4e-9 -0.4e-9 ].*adjust_FET;
+            Ron_adj = [0 0 ].*adjust_FET;
             
             [stick(i,3),graph3]=Texas_Buck_SC_D_Sweep(x,Coss_adj,Ron_adj);
             

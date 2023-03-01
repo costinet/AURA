@@ -63,12 +63,13 @@ classdef componentTableData
         function out = approx(obj)
             %approx Summary of this method goes here
             %   Detailed explanation goes here
+            unitScale = obj.componentType.SIprefixes(obj.unit{1});
             if ~isempty(obj.typ)
-                out = obj.typ;
+                out = obj.typ*unitScale;
             elseif ~isempty(obj.max)
-                out = obj.max;
+                out = obj.max*unitScale;
             elseif ~isempty(obj.min)
-                out = obj.min;
+                out = obj.min*unitScale;
             else
                 out = [];
             end 

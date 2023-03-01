@@ -1,4 +1,4 @@
-function [stick,graph_values] = DMC_Buck_SC_D_Sweep(X,Coss_adj,Ron_adj)
+function [stick,graph_values] = Texas_Buck_SC_D_Sweep(X,Coss_adj,Ron_adj)
 
 
 niter = 0;

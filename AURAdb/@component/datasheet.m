@@ -18,9 +18,11 @@ function UIFigure = datasheet(obj)
             NameplateParams.RowName = {};
             NameplateParams.Position = [40 445+ExtraHeight 547 121];
             
-            
+%            if isequal(class(obj),'transistor')
+%                NameplateParams.Data = {'Rds(on) - Drain-Source On Resistance', obj.Ratings.ron*1000, ['m', char(937)]};
+%            end
 %             for i = 1:length(obj.parameters)
-%                 
+%
 %             end
 %             NameplateParams.Data = {'Rds(on) - Drain-Source On Resistance', obj.Ratings.ron*1000, ['m', char(937)]};
 
@@ -36,6 +38,18 @@ function UIFigure = datasheet(obj)
             Characteristics.RowName = {};
             Characteristics.Position = [40 287+ExtraHeight 547 121];
             
+            Characteristics.Data = cell(length(obj.parameters),6);   
+            
+            for i = 1:length(obj.parameters)
+                Characteristics.Data{i,1} = obj.parameters(i).name;
+                Characteristics.Data{i,2} = char(obj.parameters(i).conditions(:));
+                Characteristics.Data{i,3} = obj.parameters(i).min;
+                Characteristics.Data{i,4} = obj.parameters(i).typ;
+                Characteristics.Data{i,5} = obj.parameters(i).max;
+                Characteristics.Data{i,6} = [obj.parameters(i).unit{1}, obj.parameters(i).unit{2}];
+            end
+
+           %{ 
             Characteristics.Data = {'Id', 'Continuous, T_A = 25C, Rtja = 220 C/W', '', 3.4, '', 'A'; ...
                 'Id', 'Pulsed, T_A = 25C, Tpulse = 300 \mus', '', 28, '', 'A'; ... 
                 'Rds(on)', 'Vgs = 5 V, Id = 1.5 A',24, 30, '', ['m', char(937)];
@@ -49,6 +63,7 @@ function UIFigure = datasheet(obj)
                 'Id', 'Pulsed, T_A = 25C, Tpulse = 300 \mus', '', 28, '', 'A'; ... 
                 'Rds(on)', 'Vgs = 5 V, Id = 1.5 A',24, 30, '', ['m', char(937)];};
 
+            %}
             % Create CharacteristicsLabel
             CharacteristicsLabel = uilabel(UIFigure);
             CharacteristicsLabel.Position = [78 407+ExtraHeight 85 22];

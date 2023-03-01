@@ -28,22 +28,22 @@ end
 
 
 %% Load for PLECS
-% find_system(modelfile,'SearchDepth',1, 'IncludeCommented', 'on')
-%open_system(modelfile,'loadonly');
-%circuitPath = [modelfile '/' PLECsModel];
-%set_param(circuitPath,'Commented','on');
-%simout = sim(modelfile,eps);
+find_system(modelfile,'SearchDepth',1, 'IncludeCommented', 'on')
+open_system(modelfile,'loadonly');
+circuitPath = [modelfile '/' PLECsModel];
+set_param(circuitPath,'Commented','on');
+simout = sim(modelfile,eps);
 
-%for i = 1:length(simout.properties)
-%    assignin('base',simout.properties{i},eval(['simout.' simout.properties{i}]));
-%end
+for i = 1:length(simout.properties)
+   assignin('base',simout.properties{i},eval(['simout.' simout.properties{i}]));
+end
 
-%set_param(circuitPath,'Commented','off');
+set_param(circuitPath,'Commented','off');
 
 
 %% Load for SC FIB:
 
-%%{
+%{
 swvec = [
         0     1     1     0     1     0     1     0     0     1     0     1     1     0     0     1
         0     1     1     0     0     0     1     0     0     1     0     1     1     0     0     0

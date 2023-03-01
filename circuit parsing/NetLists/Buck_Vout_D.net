@@ -1,0 +1,21 @@
+* G:\My Drive\Graduate Reserach\LTSpice\Buck\Buck_Vout_D.asc
+V1 N001 N007 12
+M1 N001 NC_01 N002 N002 NMOS
+M2 N002 NC_02 0 0 NMOS
+L1 N003 N004 200n
+V2 N004 N006 4
+R2 N006 0 5m
+C1 N005 0 2µ
+R4 N004 N005 2m
+R1 N003 N002 0.0024
+D1 N002 N001 D
+D2 0 N002 D
+R3 N007 0 2µ
+.model D D
+.lib C:\Users\jb\Documents\LTspiceXVII\lib\cmp\standard.dio
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\jb\Documents\LTspiceXVII\lib\cmp\standard.mos
+.tran 1
+.backanno
+.end

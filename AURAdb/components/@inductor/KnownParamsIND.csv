@@ -1,0 +1,6 @@
+Inductance,Frequency,Current,DC Resistance,Self Resonant Frequency,Saturation Current,RMS Current,SPICE Frequency Limit ,SPICE R1,SPICE R2,SPICE C ,SPICE k1,SPICE k2,SPICE k3,SPICE k4,SPICE k5,Length,Width,Height
+L,F,I,Rdc,Srf,Isat,Irms,Fspice,R1spice,R2spice,Cspice,K1spice,K2spice,K3spice,K4spice,K5spice,Length,Width,Height
+H,Hz,A,Ohm,Hz,A,A,Hz,Ohm,Ohm,F,One,One,One,One,One,m,m,m
+[char(181)],M,1,m,M,1,1,M,1,1,p,1,1,1,1,1,m,m,m
+Ls,fs,,DCR,SRF,,,FSPICE,R1SPICE,R2SPICE,CSPICE,K1SPICE,K2SPICE,K3SPICE,K4SPICE,K5SPICE,,w,h
+Lp,f,,,,,,SPICEF,SPICER1,SPICER2,SPICEC,SPICEK1,SPICEK2,SPICEK3,SPICEK4,SPICEK5,,,

@@ -416,6 +416,7 @@ classdef digitizedPlot < handle
                 locs = [obj.imgAxes.colLeft, obj.imgAxes.colRight, obj.imgAxes.rowBottom, obj.imgAxes.rowTop];
                 maskedImg = obj.img;
                 if length(locs) == 4
+                    locs = round(locs);
                     maskedImg(locs(4)-2:locs(4)+2,locs(1):locs(2),1) = 255;
                     maskedImg(locs(3)-2:locs(3)+2,locs(1):locs(2),1) = 255;
                     maskedImg(locs(4):locs(3),locs(1)-2:locs(1)+2,1) = 255;

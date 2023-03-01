@@ -15,7 +15,7 @@ classdef AURAdb < handle
             addpath(genpath(strrep(mfilename('fullpath'), '\AURAdb', '')));
 
             obj.transistors = transistorDB();
-            obj.inductors = 0;
+            obj.inductors = inductorDB();
             obj.capacitors = 0;
             obj.cores = 0;
             obj.wires = 0;

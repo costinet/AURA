@@ -9,19 +9,19 @@ classdef transistor < component
         type
     end
     
-%     properties (SetAccess=protected)
-%         parameters = componentTableData.empty;
-%         graphs = componentPlotData.empty;
-%     end
+    %     properties (SetAccess=protected)
+    %         parameters = componentTableData.empty;
+    %         graphs = componentPlotData.empty;
+    %     end
     
     properties (Hidden, Transient, Constant)
-        knownParams = {'Vds','Vsd','Vgs','Vth','Ids','Isd','Ig','Idpulse','Ispulse','Igss','Idss','Rds','Rg','Qg','Qgs','Qgd','Qoss','Qrr','Trr','Irr','Coss','Ciss','Crss','Cgd','Cds','Cgs','Eon','Eoff','Eoss','Rthjc','Rthjb','Rthja','Pd','Gfs','Tr','Tdon','Tf','Tdoff','Tj','Tc'}
-        defaultUnits = {'V','V','V','V','A','A','A','A','A','A','A','Ohm','Ohm','C','C','C','C','C','s','A','F','F','F','F','F','F','J','J','J','°C/W','°C/W','°C/W','W','A/V','s','s','s','s','°C','°C'}
-        defaultMultipliers = {'','','','','','','m','','','µ','µ','m','m','n','n','n','n','n','µ','','p','p','p','p','p','p','µ','µ','µ','','','','','','n','n','n','n','',''}
-        paramDict = containers.Map({'Bv','Bvdss','Vdsmax','Vd','Vf','Vgsth','Idspulse','Isdpulse','Ileak','Idsleak','Idleak','Ron','Rdson','Rgint','Qgate','Qm','Qds','Irrm','Irrmax','Irrpk'},{'Drain-Source Voltage','Drain-Source Voltage','Drain-Source Voltage','Source-Drain Voltage','Source-Drain Voltage','Gate Threshold Voltage','Pulsed Drain-Source Current','Pulsed Source-Drain Current','Drain-Source Leakage Current','Drain-Source Leakage Current','Drain-Source Leakage Current','Drain-Source On-State Resistance','Drain-Source On-State Resistance','Internal Gate Resistance','Total Gate Charge','Gate-Drain Charge','Output Charge','Peak Reverse Recovery Current','Peak Reverse Recovery Current','Peak Reverse Recovery Current'})
-        paramNames = {'Drain-Source Voltage','Source-Drain Voltage','Gate-Source Voltage','Gate Threshold Voltage','Drain-Source Current','Source-Drain Current','Gate Current','Pulsed Drain-Source Current','Pulsed Source-Drain Current','Gate-Source Leakage Current','Drain-Source Leakage Current','Drain-Source On-State Resistance','Internal Gate Resistance','Total Gate Charge','Gate-Source Charge','Gate-Drain Charge','Output Charge','Reverse Recovery Charge','Reverse Recovery Time','Peak Reverse Recovery Current','Output Capacitance','Input Capacitance','Reverse Transfer Capacitance','Gate-Drain Capacitance','Drain-Source Capacitance','Gate-Source Capacitance','Turn-on Energy','Turn-off Energy','Coss Stored Energy','Junction-Case Thermal Resistance','Junction-Board Thermal Resistance','Junction-Ambient Thermal Resistance','Power Dissipation','Transconductance','Rise Time','Turn-On Delay Time','Fall Time','Turn-Off Delay Time','Junction Temperature','Case Temperature'}'
-
-     
+        knownParams = {'Vds','Vsd','Vgs','Vth','Ids','Isd','Ig','Idpulse','Ispulse','Igss','Idss','Rds','Rg','Qg','Qgs','Qgd','Qoss','Qrr','Trr','Irr','Coss','Ciss','Crss','Cgd','Cds','Cgs','Eon','Eoff','Eoss','Rthjc','Rthjb','Rthja','Pd','Gfs','Tr','Tdon','Tf','Tdoff','Tj','Tc','Length','Width','Height'}
+        defaultUnits = {'V','V','V','V','A','A','A','A','A','A','A','Ohm','Ohm','C','C','C','C','C','s','A','F','F','F','F','F','F','J','J','J','°C/W','°C/W','°C/W','W','A/V','s','s','s','s','°C','°C','m','m','m'}
+        defaultMultipliers = {'','','','','','','m','','','µ','µ','m','m','n','n','n','n','n','µ','','p','p','p','p','p','p','µ','µ','µ','','','','','','n','n','n','n','','','m','m','m'}
+        paramDict = containers.Map({'Bv','Bvdss','Vdsmax','Vd','Vf','Vgsth','Idspulse','Isdpulse','Ileak','Idsleak','Idleak','Ron','Rdson','Rgint','Qgate','Qm','Qds','Irrm','Irrmax','Irrpk','w','h'},{'Drain-Source Voltage','Drain-Source Voltage','Drain-Source Voltage','Source-Drain Voltage','Source-Drain Voltage','Gate Threshold Voltage','Pulsed Drain-Source Current','Pulsed Source-Drain Current','Drain-Source Leakage Current','Drain-Source Leakage Current','Drain-Source Leakage Current','Drain-Source On-State Resistance','Drain-Source On-State Resistance','Internal Gate Resistance','Total Gate Charge','Gate-Drain Charge','Output Charge','Peak Reverse Recovery Current','Peak Reverse Recovery Current','Peak Reverse Recovery Current','Width','Height'})
+        paramNames = {'Drain-Source Voltage','Source-Drain Voltage','Gate-Source Voltage','Gate Threshold Voltage','Drain-Source Current','Source-Drain Current','Gate Current','Pulsed Drain-Source Current','Pulsed Source-Drain Current','Gate-Source Leakage Current','Drain-Source Leakage Current','Drain-Source On-State Resistance','Internal Gate Resistance','Total Gate Charge','Gate-Source Charge','Gate-Drain Charge','Output Charge','Reverse Recovery Charge','Reverse Recovery Time','Peak Reverse Recovery Current','Output Capacitance','Input Capacitance','Reverse Transfer Capacitance','Gate-Drain Capacitance','Drain-Source Capacitance','Gate-Source Capacitance','Turn-on Energy','Turn-off Energy','Coss Stored Energy','Junction-Case Thermal Resistance','Junction-Board Thermal Resistance','Junction-Ambient Thermal Resistance','Power Dissipation','Transconductance','Rise Time','Turn-On Delay Time','Fall Time','Turn-Off Delay Time','Junction Temperature','Case Temperature','Length','Width','Height'}
+        
+        
         knownTypes = {'en-nMOS', 'en-pMOS', 'dep-nMOS', 'dep-pMOS', 'en-npMOS', ...
             'HEMT', 'HFET', 'PT-IGBT', 'NPT-IGBT', 'nJFET', 'pJFET', 'NPN', 'PNP'}
         knownMaterials = {'Si', 'GaN', 'SiC', 'GaAs'}
@@ -49,13 +49,13 @@ classdef transistor < component
             end
             
             if ~isempty(varargin)
-                if mod(length(varargin),2) ~= 0 
+                if mod(length(varargin),2) ~= 0
                     error('parameter-value inputs must be specified in pairs');
                 end
                 
                 for i = 1:2:length(varargin)
                     if isprop(obj, varargin{i})
-%                         eval(['obj.' varargin{i} ' = ''' varargin{i+1} ''';']);
+                        %                         eval(['obj.' varargin{i} ' = ''' varargin{i+1} ''';']);
                         S = struct();
                         S.type = '.';
                         S.subs = varargin{i};
@@ -83,7 +83,7 @@ classdef transistor < component
             obj.upDated = 1;
         end
     end
-
+    
     methods (Hidden)
         function clearUpdated(obj)
             obj.upDated = 0;
