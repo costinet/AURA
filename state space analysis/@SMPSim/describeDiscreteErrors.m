@@ -18,9 +18,9 @@ function describeDiscreteErrors(obj)
     
                 disp(['at beginning of interval ' num2str(ti) ' switch ' switchName{:} ' is in violation']);
                 if violationType == 0
-                    disp([' --- it is off, but its voltage is ' num2str(targetValStart(si,ti) + obj.converter.topology.constraints.bndHys(si,2)) ' > ' num2str(obj.converter.topology.constraints.bndHys(si,1))]);
+                    disp([' --- it is off, but its voltage is ' num2str(targetValStart(si,ti) + obj.converter.topology.constraints.bndHys(si,1)) ' > ' num2str(obj.converter.topology.constraints.bndHys(si,1)) ' +/-' num2str(obj.converter.topology.constraints.bndHys(si,2))]);
                 else
-                    disp([' --- it is on, but its current is ' num2str(targetValStart(si,ti) + obj.converter.topology.constraints.bndHys(si,2)) ' > ' num2str(obj.converter.topology.constraints.bndHys(si,1))]);
+                    disp([' --- it is on, but its current is ' num2str(targetValStart(si,ti) + obj.converter.topology.constraints.bndHys(si,1)) ' > ' num2str(obj.converter.topology.constraints.bndHys(si,1)) ' +/-' num2str(obj.converter.topology.constraints.bndHys(si,2))]);
                 end
             end
         end
@@ -35,9 +35,9 @@ function describeDiscreteErrors(obj)
     
                 disp(['at end of interval ' num2str(ti) ' switch ' switchName{:} ' is in violation']);
                 if violationType == 0
-                    disp([' --- it is off, but its voltage is ' num2str(targetValEnd(si,ti) + obj.converter.topology.constraints.bndHys(si,2)) ' > ' num2str(obj.converter.topology.constraints.bndHys(si,1))]);
+                    disp([' --- it is off, but its voltage is ' num2str(targetValEnd(si,ti) + obj.converter.topology.constraints.bndHys(si,1)) ' > ' num2str(obj.converter.topology.constraints.bndHys(si,1)) ' +/-' num2str(obj.converter.topology.constraints.bndHys(si,2))]);
                 else
-                    disp([' --- it is on, but its current is ' num2str(targetValEnd(si,ti) + obj.converter.topology.constraints.bndHys(si,2)) ' > ' num2str(obj.converter.topology.constraints.bndHys(si,1))]);
+                    disp([' --- it is on, but its current is ' num2str(targetValEnd(si,ti) + obj.converter.topology.constraints.bndHys(si,1)) ' > ' num2str(obj.converter.topology.constraints.bndHys(si,1))  ' +/-' num2str(obj.converter.topology.constraints.bndHys(si,2))]);
                 end
             end
         end

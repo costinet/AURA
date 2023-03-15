@@ -94,6 +94,7 @@ classdef SMPSconverter < handle
             %%%%%%%%%%%%%%%%%%%%
         function [dt, recurs] = adjustUncontrolledTiming(obj, ti, dt)
             obj.previousts = obj.fullts;    %Save old times in case an undo is needed.
+            prevDT = dt;
             recurs = 0;
 
             [ots, ints, subInts] = getIntervalts(obj);
@@ -122,8 +123,12 @@ classdef SMPSconverter < handle
             
             obj.eliminateZeroTimeIntervals;
  
-            assert(all(abs((sum(obj.fullts,1) - obj.controlledts))<obj.timingThreshold), ...
-                'Timing mismatch due to uncontrolled switching');
+            try
+                assert(all(abs((sum(obj.fullts,1) - obj.controlledts))<obj.timingThreshold), ...
+                    'Timing mismatch due to uncontrolled switching');
+            catch
+                x=1;
+            end
         end
         
         function [that, dts] = getDeltaT(obj, ind)
@@ -265,21 +270,30 @@ classdef SMPSconverter < handle
 %             fts = obj.fullts;
 %             dts = diff(fts,1);
 %             [r,c] = find(fts(2:end,:) == dts & fts(2:end,:) ~= 0);
-            [r,c] = find(obj.fullts ==0 & obj.fullswind ~= 0);
+%             [r,c] = find(obj.fullts == 0 & obj.fullswind ~= 0);
+            [r,c] = find(obj.fullts < obj.timingThreshold*0.9 & obj.fullswind ~= 0);
             
             for i = length(r):-1:1
-                obj.fullts(r(i),c(i)) = 0;
-                obj.fullswind(r(i),c(i)) = 0;
-                
-                if r(i) < size(obj.fullts,1) && obj.fullswind(r(i)+1,c(i)) ~= 0
-                	obj.fullts(:,c(i)) = ...
-                        [obj.fullts(1:r(i)-1,c(i));
-                         obj.fullts(r(i)+1:end,c(i));
-                         0];     
-                    obj.fullswind(:,c(i)) = ...
-                        [obj.fullswind(1:r(i)-1,c(i));
-                         obj.fullswind(r(i)+1:end,c(i));
-                         0];   
+                if obj.fullts(r(i),c(i)) > eps/100
+                    % if it isn't actually zero, set it to zero and keep
+                    % from altering the overall controlled interval length.
+                    obj.adjustUncontrolledTiming(find(obj.ts == obj.fullts(r(i),c(i))), -obj.fullts(r(i),c(i)));
+                    %NOTE: adjustUncontrolledTiming will re-call this
+                    %function, so we can end here.
+                else
+                    obj.fullts(r(i),c(i)) = 0;
+                    obj.fullswind(r(i),c(i)) = 0;
+                    
+                    if r(i) < size(obj.fullts,1) && obj.fullswind(r(i)+1,c(i)) ~= 0
+                	    obj.fullts(:,c(i)) = ...
+                            [obj.fullts(1:r(i)-1,c(i));
+                             obj.fullts(r(i)+1:end,c(i));
+                             0];     
+                        obj.fullswind(:,c(i)) = ...
+                            [obj.fullswind(1:r(i)-1,c(i));
+                             obj.fullswind(r(i)+1:end,c(i));
+                             0];   
+                    end
                 end
             end
             

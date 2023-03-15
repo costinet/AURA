@@ -97,10 +97,13 @@ classdef SMPSim < handle
 
         [weightTotalErr] = getWeightedTotalError(obj, errBefore,errAfter)
 
+        varargout = findValidSteadyState(obj)
+
         %% Debugging (Verbose) helper functions
         describeDiscreteErrors(obj)
         describeInsertedIntervals(obj, allChanges)
         [T] = describeSwitchState(obj)
+        describeAlteredTimes(obj,oldts)
 
         
         %% Constructors

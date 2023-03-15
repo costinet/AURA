@@ -170,12 +170,39 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
                     k=1;
 %                     while ~all(abs(violateMarginCross(violateMarginEnd < 0)) < abs(obj.converter.topology.bndHyst((violateMarginEnd < 0),2)))
                     if(errAt == 1) 
-                        while ~any(abs(targetValCross(violateMarginEnd < 0)) < obj.converter.topology.bndHyst((violateMarginEnd < 0),2)) || ... 
-                            ~all(abs(violateMarginEnd(violateMarginEnd < 0)) > 0) 
+                        %We know we have an error, so fixing it should be
+                        %when at least one constraint is within the
+                        %hysteresis bands of violation and all others are
+                        %not in violation.
+%                         while ~any(abs(targetValCross(violateMarginEnd < 0)) < obj.converter.topology.bndHyst((violateMarginEnd < 0),2)) || ... 
+%                             ~all((violateMarginCross(violateMarginEnd < 0)) > 0) 
+
+                        if any(violateMarginCross < 0 & violateMarginEnd < 0)
+                            firstViolationCondition = violateMarginCross < 0 & violateMarginEnd < 0;
+                            firstViolationTime = tcross;
+                        else
+                            firstViolationCondition = violateMarginEnd < 0;
+                            firstViolationTime = deltaT;
+                        end
+
+                        while ~(...
+                                any(abs(targetValCross(violateMarginEnd < 0)) < obj.converter.topology.bndHyst((violateMarginEnd < 0),2)) ...
+                                && ...
+                                all((violateMarginCross(violateMarginEnd < 0)) > 0) ...
+                                )
                             tcrossOld = tcross;
                             tcross = tcross + 1./crossSlope.*(targetValCross);
-                            tcross = tcross(violateMarginEnd < 0);
-                            tcross = min(max(min(tcross, deltaT),0));
+                            
+                            tcross = tcross(firstViolationCondition);
+
+%                             if any(violateMarginCross < 0)
+%                                 tcross = tcross(violateMarginCross < 0 & violateMarginEnd < 0);
+%                             else
+%                                 tcross = tcross(violateMarginEnd < 0);
+%                             end
+                            tcross(tcross > deltaT) = deltaT;
+                            tcross(tcross<0) = 0;
+                            tcross = min(tcross(tcross <= deltaT & tcross >= 0));
 
                             if tcross == deltaT && tcrossOld == deltaT
                                 tcross = 0;
@@ -184,6 +211,11 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
                             crossXs = expm(M*tcross)*oldXs;
                             violateMarginCrossOld = violateMarginCross;
                             [violateMarginCross,targetValCross] = obj.checkStateValidity(crossXs(1:end-1), obj.u, subInts(i));
+
+                            if tcross < firstViolationTime && any(violateMarginCross < 0 & violateMarginEnd < 0)
+                                firstViolationCondition = violateMarginCross < 0 & violateMarginEnd < 0;
+                                firstViolationTime = tcross;
+                            end
                             if tcross ~= tcrossOld
                                 crossSlope = -(violateMarginCross-violateMarginCrossOld)./(tcross-tcrossOld).*(violateMarginEnd < 0);
                             end
@@ -197,7 +229,7 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
                                         crossXsx(:,kk) =  expm(M*tx(kk))*oldXs;
                                         [violateMarginCrossx(:,kk),~] = obj.checkStateValidity(crossXsx(1:end-1,kk), obj.u, subInts(i));
                                     end
-                                    plot(tx, violateMarginCrossx(2:3,:))
+                                    plot(tx, violateMarginCrossx((violateMarginEnd < 0),:))
                                 end
                                 break
                             end
