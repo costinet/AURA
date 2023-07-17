@@ -26,7 +26,7 @@ function [ Xs] = perturbedSteadyState(obj, dts)
 % intervals.  The first and last column of Xs should be identical,
 % corresponding to a valid steady-state solution.
 
-
+warning('DEPRICATED')
     As = obj.As;
     Bs = obj.Bs;
     ts = obj.ts + dts;

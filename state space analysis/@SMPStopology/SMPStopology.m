@@ -113,9 +113,17 @@ classdef SMPStopology < handle
         
         function set.As(obj,newAs)
             obj.As = newAs;
-            for i = 1:size(newAs,3)
-                obj.eigAs(:,:,i) = eigs(newAs(:,:,i));
-%                 obj.expAs(:,:,i) = expm(newAs(:,:,i));
+            if isempty(newAs)
+                obj.eigAs = [];
+            else
+                for i = 1:size(newAs,3)
+                    if isempty(obj.eigAs)
+                        obj.eigAs = eigs(newAs(:,:,i));
+                    else
+                        obj.eigAs(:,:,i) = eigs(newAs(:,:,i));
+                    end
+    %                 obj.expAs(:,:,i) = expm(newAs(:,:,i));
+                end
             end
 %             obj.refreshCache;
             % need to notify up the ladder???

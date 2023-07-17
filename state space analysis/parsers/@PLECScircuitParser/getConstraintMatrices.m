@@ -87,10 +87,15 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, 
        end
        
        if obj.isDiode(i)
+            DRon = evalin('base', plecs('get',[modelFile '/' switchNames{i}], 'Ron'));
+            if DRon == 0
+                DRon = obj.VfhystMinEquivResistance;
+            end
+
            %on-state current > 0
            Cbnd(devCurrent, :, swvec(:,i)==1) = obj.topology.Cs(devCurrent, :, swvec(:,i)==1);
            Dbnd(devCurrent, :, swvec(:,i)==1) = obj.topology.Ds(devCurrent, :, swvec(:,i)==1);
-           hyst(devCurrent,:)=[0, obj.diodeCurrentThreshold];
+           hyst(devCurrent,:)=[0, obj.diodeCurrentThreshold]*obj.VFhystScaleFactor;
            switchRef(devCurrent,:) = [i, 1];
           
            %off-state -(voltage) > 0
@@ -100,7 +105,7 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, 
            Dbnd(devVoltage, :, all(swvec(:,switchInds)==0,2)) = -obj.topology.Ds(devVoltage, :, all(swvec(:,switchInds)==0,2));
            
           
-           maxDiodehys = obj.diodeCurrentThreshold*max(10e-3,evalin('base', plecs('get',[modelFile '/' switchNames{i}], 'Ron')))*0.9;
+           maxDiodehys = obj.diodeMaxExpectedCurrent*DRon*obj.VFhystScaleFactor;
            hyst(devVoltage,:)=[-obj.Vf(i), maxDiodehys];
            switchRef(devVoltage,:) = [i, 0];
           

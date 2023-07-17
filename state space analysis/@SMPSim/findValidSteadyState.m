@@ -1,18 +1,17 @@
 function varargout = findValidSteadyState(obj)
-%UNTITLED Summary of this function goes here
+%FINDVALIDSTEADTSTATE(obj) find steady-state solution to topology,
+%accounting for state-dependent switching actions
 %   Detailed explanation goes here
 
-    debug = 0;
-    debug2 = 1;
+    obj.debug = 0;
+    obj.debug2 = 0;
 
-    timeSteppingInit = 0;
-    finalRunMethod = 0;
+    obj.timeSteppingInit = 0;
+    obj.finalRunMethod = 0;
     niter = 1;
-    allAssess = 1;
+%     allAssess = 1;
 
-    tmult = 0.5;
-
-    Xss = obj.SS_Soln();
+%     Xss = obj.steadyState;
     conv = obj.converter;
     top = conv.topology;
 
@@ -25,19 +24,26 @@ function varargout = findValidSteadyState(obj)
     %% Symmetry check
     % May be useful but not doing anything with it yet.  Can identify that DAB,
     % etc. exhibit half-cycle symmetry
-%     TF = obj.converter.checkForSymmetry;
+    [TF,lastInt,Ihc] = obj.converter.checkForSymmetry;
+    if(TF)
+        obj.IHC = Ihc;
+        swvec = conv.swvec;
+        ts = conv.ts;
+        top.loadCircuit(top.circuitParser.sourcefn,swvec(1:lastInt,:),1);
+        conv.setSwitchingPattern(swvec(1:lastInt,:), ts(1:lastInt))
+    end
     
     %%  TimeStepping Attempt
-    if timeSteppingInit > 0
+    if obj.timeSteppingInit > 0
         [Xf,ts,swinds] = timeSteppingPeriod(obj);
         
-        numPeriods = timeSteppingInit;
+        numPeriods = obj.timeSteppingInit;
         Xsims = zeros(size(Xf,1),numPeriods);
         for i = 1:numPeriods
             conv.setSwitchingPattern(swinds, ts);
             Xsims(:,i) = Xf;
             [Xf,ts,swinds] = obj.timeSteppingPeriod(Xf, ts, swinds );
-            if debug == 1
+            if obj.debug == 1
                 disp([Xsims(:,i) Xf]);
             end
         end
@@ -56,7 +62,7 @@ function varargout = findValidSteadyState(obj)
     
 
 while(1)
-    Xss = obj.SS_Soln();
+    Xss = obj.steadyState();
     
     %% Update constraints per the current switching vector
     Cbnd = top.Cbnd; Dbnd = top.Dbnd; 
@@ -70,7 +76,7 @@ while(1)
     errAfter = min(violateMarginEnd,0);
 
 
-    if debug2 == 1
+    if obj.debug2 == 1
         obj.describeDiscreteErrors;
     end
 
@@ -94,7 +100,7 @@ while(1)
         % addUncontrolledSwitching(obj, interval, beforeAfter, initialTime, switches, newStates)
 %         dt = min( min(conv.controlledts)/20 , conv.ts(i)/20);
         [~, dts] = conv.getDeltaT();
-        dt = min([min(dts),min(conv.controlledts)/20 , conv.ts(i)/20]);
+        dt = max(min([min(dts),min(conv.controlledts)/10 , conv.ts(i)/10]), 1*conv.timingThreshold);
         for j = 1:2
             if(any(adjType(:,i,j)))
                 [alt, newSwInd] = ...
@@ -102,32 +108,38 @@ while(1)
                     dt,switchRef(tLocs(:,i),1),~switchRef(tLocs(:,i),2));
                 altered = altered | alt;
 
-                if debug2 == 1
+                if obj.debug2 == 1
 %                     interval, beforeAfter, newSwInd, switches, newStates
-                    locRefVec = [find(tLocs(:,i))]';
-                    for locRef = locRefVec
-                        allChanges = [allChanges; i, (-1)^(j+1), newSwInd, switchRef(locRef,1), ~switchRef(locRef,2)];
+                    if altered ~= 0
+                        locRefVec = [find(tLocs(:,i))]';
+                        for locRef = locRefVec
+                            if ~isempty(newSwInd)
+                                allChanges = [allChanges; i, (-1)^(j+1), newSwInd, switchRef(locRef,1), ~switchRef(locRef,2)];
+                            end
+                        end
+    %                     if i == find(insertAt,1,'first')
+    %                         obj.describeInsertedIntervals(allChanges)
+    %                     end
                     end
-%                     if i == find(insertAt,1,'first')
-%                         obj.describeInsertedIntervals(allChanges)
-%                     end
                 end
             end
         end
     end
 
-    if debug2 == 1
+    if obj.debug2 == 1
         obj.describeInsertedIntervals(allChanges)
     end
 
 
-    Xss = obj.SS_Soln;
-    if(debug)
+
+    Xss = obj.steadyState;
+    if(obj.debug)
         if ~exist('H','var')
-            H = figure;
+            H = figure(obj.debugFigNo);
             H.Name = "Debug";
         end
         obj.plotAllStates(H);
+        hold(H.Children,'on')
     end
 
     %% If anything was altered
@@ -142,14 +154,20 @@ while(1)
             % time with higher time resolution to make sure no errors occur
             % in between discrete samples.
             finalRun = 1;
-            if finalRunMethod
+            if obj.finalRunMethod
                 Xss = obj.steadyState;
                 [Xf,ts,swinds] = obj.timeSteppingPeriod();
                 conv.setSwitchingPattern(swinds, ts);
                 Xss = obj.steadyState;
+                if obj.debug2 == 1
+                    display('**Attempting Final Run with timeSteppingPeriod');
+                end
             else
                 eigs2tis(conv);
                 Xss = obj.steadyState;
+                if obj.debug2 == 1
+                    display('**Attempting Final Run with eigs2tis');
+                end
             end
             continue;
         elseif ~any(any(errBefore) | any(errAfter)) && finalRun == 1
@@ -157,7 +175,17 @@ while(1)
             break;
         else
             % Otherwise keep looping
+            if finalRun ==1
+                % If we previously inserted intervals through one of the
+                % final run methods, delete out any unecessary ones now
+                % that we've passed with ~altered (we should have the ones
+                % we need)
+                obj.converter.eliminateRedundtantTimeIntervals;
+                finalRun = 0;
+                continue;  
+            end
             finalRun = 0;
+            
         end
         
         %% Correct based on discrete jacobian
@@ -170,22 +198,35 @@ while(1)
 
         A = zeros(length(j1)+length(j2),length(conv.ts));
         b = zeros(length(j1)+length(j2),1);
+        e = zeros(length(j1)+length(j2),1);
         tindex = 1:length(conv.ts);
 
         for i = 1:length(j1)
+            %deltas is a vector of how the error constraint is affected at
+            %the switching interface, by perturbations to every switching
+            %interval's duration
             deltas = squeeze(JoutStart(i1(i),j1(i),:));
             A(i,:) = deltas';
             b(i,1) = targetValStart(i1(i),j1(i));
+            e(i,1) = abs(targetValStart(i1(i),j1(i)) - violateMarginStart(i1(i),j1(i)));
         end
         if(isempty(i)), i=0; end
         for j = 1:length(j2)
             deltas = squeeze(JoutEnd(i2(j),j2(j),:));
             A(i+j,:) = deltas';
             b(i+j,1) = targetValEnd(i2(j),j2(j));
+            e(i+j,1) = abs(targetValEnd(i2(j),j2(j)) - violateMarginEnd(i2(j),j2(j)));
         end
         if(isempty(j)), j=0; end
 
+        % A is now (# of errors) x (number of time intervals) and 
+        % b is (# of errors) x 1 
+
         unChangeable = isnan(sum(A,1));
+
+        %ynChangeable are generally the columns correspondint to controlled
+        %timing intervals without any state-dependent switching actions in
+        %them.
 
         %% Check for slope change (Nonfunctional)
 %         interinterval = (errAfter~= 0 & errBefore == 0);
@@ -199,6 +240,7 @@ while(1)
         [~, timeInts, ~] = conv.getIntervalts;
         A = [A; zeros(max(timeInts), size(A,2))];
         b = [b; zeros(max(timeInts), 1)];
+        e = [e; conv.timingThreshold*ones(max(timeInts), 1)];
         for i = 1:max(timeInts)
             if ~any(timeInts'==i & unChangeable)
                 A(end-max(timeInts)+i,timeInts==i) = scaleF;
@@ -206,29 +248,119 @@ while(1)
         end
         
         A(:,unChangeable) = [];
+        emptyRows = all(A==0,2);
+        b(emptyRows) = [];
+        e(emptyRows) = [];
+        A(emptyRows,:) = [];
 
         tsolve = zeros(size(conv.ts));
         tsolve(~unChangeable) = -(A\b);
-        
+
+        %% Check for competing constraints
+        % Speeds up DAB_Rload, as an example, but nothing else?
+        try
+            numTimeRows = numel(unique(timeInts));
+            nontimeRows = ones(length(emptyRows)-numTimeRows,1);
+            nontimeRows(length(emptyRows),1) = 0;
+    
+            numTimeRows = sum(~nontimeRows&~emptyRows);
+    
+            constrDir = sign(A(1:end-numTimeRows,:));
+            errTimeLocs = timeInts([j1;j2]);
+            errTimeLocs = errTimeLocs(nontimeRows&~emptyRows);
+            timeLocs = timeInts(~unChangeable);
+    
+            targets = [constrDir errTimeLocs];
+            if any(targets(:,1:end-1) ==1,1) & any(targets(:,1:end-1) ==-1,1) 
+                % There are competing constraints
+                [X,Y] =  meshgrid(timeLocs,errTimeLocs);
+                localChanges = (X==Y);
+                localChanges(end+1:end+numTimeRows,:) = 1;
+    
+                localDir = sign(A.*localChanges);
+                localDir = localDir(1:end-numTimeRows,:);
+                [~,IA,IC] = unique(errTimeLocs);
+                limLocalDir = localDir(IA,:);
+                for i=2:numel(IC)
+                    if IC(i)==IC(i-1)
+                        limLocalDir(IC(i),:) = limLocalDir(IC(i),:)  .* (localDir(i,:) == localDir(i-1,:) );
+                    end
+                end
+                localDir = limLocalDir(limLocalDir~=0)';
+    
+                solvedDir = sign(tsolve(~unChangeable));
+                if numel(localDir) == numel(solvedDir)
+                    if all(localDir ~= solvedDir)
+                        A(~localChanges) = 0;
+                        tsolve(~unChangeable) = -(A\b);
+                    end
+                end
+            end
+        catch
+            1; %Do nothing.  set breakpoint for debug
+        end
+
+        %% Backup for unsuccessful solve
         if any(isnan(tsolve))
             tsolve(~unChangeable) = -pinv(A)*b;
-            warning('Sometimes this goes awry')
+            warning('Sometimes this goes awry')            
+        end
 
-%             tsolve = tsolve*min(conv.ts)/max(abs(tsolve))*.01;
+        %% Check whether solution is valid for local approximation
+        solveWorked = abs(b+A*tsolve(~unChangeable)') < abs(e);
+        solveErr = any(~solveWorked(e ~= conv.timingThreshold));
+        while solveErr
+            %Simultaneously satisfying all constraints is not possible
+            %(see twoPhaseBuck for an example)
+            err = abs(b+A*tsolve(~unChangeable)') - abs(e);
+            [~,I] = max(err);
+            I = find(err > .9*err(I));
+
+            A(I,:) = [];
+            b(I,:) = [];
+            e(I,:) = [];
+
+            tsolve = zeros(size(conv.ts));
+            tsolve(~unChangeable) = -(A\b);
+
+            if any(isnan(tsolve))
+                tsolve(~unChangeable) = -pinv(A)*b;
+                warning('Sometimes this goes awry')            
+            end
+
+            solveWorked = abs(b+A*tsolve(~unChangeable)') < abs(e);
+            solveErr = any(~solveWorked(e ~= conv.timingThreshold));
             
         end
+        
+        
+        
+
+%         totalErr = abs(sum(errBefore + errAfter, 'all'));
+%         convSpeed = 5*exp(-totalErr/20)+1;
 
         oldts = conv.ts;
-        tps = conv.validateTimePerturbations2(tsolve);
-        for i=length(tsolve):-1:1
-            if tsolve(i) ~= 0
-                conv.adjustUncontrolledTiming(i, tps(i));
-            end
-        end
+        tps = conv.validateTimePerturbations2(tsolve) ;%/ convSpeed;
 
-        if debug2 == 1
+        conv.adjustUncontrolledTiming(1:length(tps), tps);
+%         for i=length(tsolve):-1:1
+%             if tsolve(i) ~= 0
+%                 conv.adjustUncontrolledTiming(i, tsolve(i));
+%             end
+%         end
+        
+
+
+        if obj.debug2 == 1
             obj.describeAlteredTimes(oldts);
         end
+        
+        if numel(obj.converter.ts) ~= numel(oldts)
+            %If we lose an interval, check to see if the adjacent ones
+            %should now be combined
+            obj.converter.eliminateRedundtantTimeIntervals;
+        end
+
 %         
 %         [~,dtLims] = getDeltaT(obj.converter);
 %         
@@ -263,10 +395,25 @@ while(1)
                 if max(abs(newts - conv.ts)) < 10*conv.timingThreshold
                     % If the code gets in here, it looks like we're
                     % oscillating, so try to break out
-                    [Xf,ts,swinds] = timeSteppingPeriod(obj);
-                    [newts,newswinds] = obj.format1DtimingVector(ts,swinds);
-                    conv.setSwitchingPattern(newswinds, newts)
-                    warning('hack')
+%                     [Xf,ts,swinds] = timeSteppingPeriod(obj);
+%                     [newts,newswinds] = obj.format1DtimingVector(ts,swinds);
+%                     conv.setSwitchingPattern(newswinds', newts')
+%                     warning('hack')
+                        if obj.finalRunMethod
+                            Xss = obj.steadyState;
+                            [Xf,ts,swinds] = obj.timeSteppingPeriod();
+                            conv.setSwitchingPattern(swinds, ts);
+                            Xss = obj.steadyState;
+                            if obj.debug2 == 1
+                                display('Attempting to break oscilation with timeSteppingPeriod');
+                            end
+                        else
+                            eigs2tis(conv);
+                            Xss = obj.steadyState;
+                            if obj.debug2 == 1
+                                display('Attempting to break oscilationwith eigs2tis');
+                            end
+                        end
                 end
             end
         end
@@ -280,11 +427,19 @@ while(1)
 %         warning('Can get stuck trying to make intervals longer when it cannot');
 
         
-        if(debug)
+        if(obj.debug)
 %             disp(tsolve)
 %             disp(sum(errBefore + errAfter, 'all'))
             Xss = obj.steadyState;
             obj.plotAllStates(H);
+%             hold(H.Children,'on')
+%             for i = 1:length(H.Children)
+%                 c = parula;
+%                 lineCo = reshape([H.Children(i).Children.Color]',[3,length(H.Children(i).Children)])';
+%                 ind = all(lineCo == [0    0.4470    0.7410],2);
+% 
+%                 H.Children(i).Children(ind).Color = c((niter-1)*30+1,:);
+%             end
         end
         
         niter = niter+1;
@@ -297,7 +452,8 @@ while(1)
 % %             updateWaitBar(h, modelfile, selectedModel, niter, altered, finalRun);
 %         end
         
-        if(allAssess && niter > 250)
+        if(niter > obj.maxItns)
+            warning(['unable to solve valid Steady State within ' num2str(obj.maxItns) 'iterations'])
             break;
         end
         
@@ -311,7 +467,7 @@ while(1)
     end
 end
 
-if(debug)
+if(obj.debug)
     if ~exist('H','var')
         close(H)
     end

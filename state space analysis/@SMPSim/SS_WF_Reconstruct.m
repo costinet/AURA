@@ -31,6 +31,10 @@ function [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
 % 100 steps per switching subinterval
 
 Xss = obj.Xs;
+if isempty(Xss)
+    obj.steadyState;
+    Xss = obj.Xs;
+end
 As = obj.As;
 Bs = obj.Bs;
 ts = obj.ts;

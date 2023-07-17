@@ -19,10 +19,13 @@ classdef PLECScircuitParser < circuitParser
    end
     
    properties (Hidden)
-       diodeCurrentThreshold = 1e-2;
+       diodeCurrentThreshold = 1e-1;
        bodyDiodeVoltage = 0.5;
        bodyDiodeVoltageHysteresis = 0.25;
        removeConstraintMeters = 1;
+       VFhystScaleFactor = 0.9;
+       VfhystMinEquivResistance = 1;
+       diodeMaxExpectedCurrent = 10;
    end
     
     methods

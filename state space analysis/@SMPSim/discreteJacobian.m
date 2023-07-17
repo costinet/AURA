@@ -20,8 +20,8 @@ function [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
     oldts = obj.ts; %store timing
     X0 = obj.Xs;    %store original steady-state
     
-    [dts, ~] = getDeltaT(obj.converter);
-    dts = min([dts; circshift(dts,-1)],[],1);
+    [thats, ~] = getDeltaT(obj.converter);
+    thats = min([thats; circshift(thats,-1)],[],1);
     
     for i = 1:nt % each switching interval
 %         t0 = obj.ts(i);
@@ -37,7 +37,7 @@ function [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
 %             t2 = obj.ts(end);
 %         end    
 %         dt = min([sum(obj.ts)/1000, t0/2, t1/2, t2/2]);
-        dtApp = dts(i);
+        dtApp = thats(i);
         
         
 %         newts = obj.ts;
@@ -55,7 +55,7 @@ function [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
 % % %         obj.converter.undoLatestTimeChange
 
         tps = validateTimePerturbations(obj.converter, i, dtApp);
-        XssF = perturbedSteadyState(obj, tps);
+        XssF = obj.steadyState(tps);%perturbedSteadyState(obj, tps);
         dt1 = tps(i);
         dt = dt1;
 
@@ -79,7 +79,7 @@ function [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
 % % %             obj.converter.undoLatestTimeChange
 
             tps = validateTimePerturbations(obj.converter, i, -dtApp);
-            XssB = perturbedSteadyState(obj, tps);
+            XssB = obj.steadyState(tps);%perturbedSteadyState(obj, tps);
             dt2 = tps(i);
             
             dt = [dt1, dt2];

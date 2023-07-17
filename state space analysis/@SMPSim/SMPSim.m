@@ -1,28 +1,20 @@
 classdef SMPSim < handle
     %Simulator object for use with AURA
     % Methods include
-%         [ Xs] = SS_Soln(obj, Xi, Bi) 
-%         [ Xs] = SS_Soln2(obj, Xi, Bi) 
-%         [ output_args ] = regulate( obj )
-%         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
-%         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
-%         plotAllStates(obj, fn, subplots)
-%         plotAllOutputs(obj, fn, subplots)
-%         
-%         [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)
-%         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
 %     
     properties (Access = private)
 %         LSQoptions = optimoptions('lsqlin','algorithm','trust-region-reflective','Display','none');
         tryOpt = 0;
         condThreshold = 1e9;
-        gmin = 1/100e6;
+%         gmin = 1/100e6;
         
         % speedup varaibles -> solution memory
         % These are out-of-date (if used)
-        oldAs
-        oldts
-        oldIntEAt
+%         oldAs
+%         oldts
+%         oldIntEAt
+
+        
         
         % debugging variables
         debugFigNo = 47;
@@ -54,48 +46,59 @@ classdef SMPSim < handle
     
     properties (Hidden)
         caching = 0
+
+        debug = 0;
+        debug2 = 0;
+    
+        timeSteppingInit = 0;
+        finalRunMethod = 0;
+
+        maxItns = 100;
+
+        IHC = [];
     end
     
     methods (Access = private)
         %% Private Methods from external files
-        [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
-        [ valid, newt, dist ] = validByInterval(obj, si, Xs) % DEPRICATED
-        [ x, xdot ] = stateValue_at_t(obj, x0, t, si)% DEPRICATED
-        %AdjustDiodeConduction
+        
+%         [ valid, newt, dist ] = validByInterval(obj, si, Xs) % DEPRICATED
+%         [ x, xdot ] = stateValue_at_t(obj, x0, t, si)% DEPRICATED
+%         [ Xs] = perturbedSteadyState(obj, dts) %DEPRICATED
+%         [ Xs] = SS_Soln2(obj, Xi, Bi) % DEPRICATED
+%         [ output_args ] = regulate( obj )% DEPRICATED
+%         [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)% DEPRICATED
+        %[margins(before,after,with &w/o hysteresit)] = checkDiscreteErrors
+        % checkContinuousError
+        %[altered] = updateForUncontrolledSwitching
+        %[deltaTs] = switchingErrorGradientDescent
+
+        [ Xs] = SS_Soln(obj, Xi, Bi) 
+        [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult) 
+        [ Xs] = AugmentedSteadyState(obj, dts)
+
+        [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
+        [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
+        [JoutStart,JoutEnd] = discreteJacobianConstraint(obj)
+
+        [violateMargin,targetVal] = checkStateValidity(obj, X, u, swind)
+        [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = checkDiscreteErr(obj)
+        [tLocs,insertAt,adjType] = findRequiredUncontrolledSwitching(obj,violateMarginStart,violateMarginEnd)
+
+        [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
+        [newts,newswinds] = format1DtimingVector(obj,ts,swinds)
+        [weightTotalErr] = getWeightedTotalError(obj, errBefore,errAfter)
+        
         
     end
     
     methods
         %% Methods from external files
-        [ Xs] = SS_Soln(obj, Xi, Bi) 
+        
         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
+        plotWaveforms(obj, type, fn, oSelect, subplots)     
         
-        plotAllStates(obj, fn, oSelect, subplots)
-        plotAllOutputs(obj, fn, oSelect, subplots)
-        
-        [ Xs] = perturbedSteadyState(obj, dts) 
-        [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
-        [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
-        [JoutStart,JoutEnd] = discreteJacobianConstraint(obj)
-        
-        [ output_args ] = regulate( obj )% DEPRICATED
-        [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)% DEPRICATED
-        [ Xs] = SS_Soln2(obj, Xi, Bi) % DEPRICATED
-        
-        %% 
-        [violateMargin,targetVal] = checkStateValidity(obj, X, u, swind)
-        [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = checkDiscreteErr(obj)
-        [tLocs,insertAt,adjType] = findRequiredUncontrolledSwitching(obj,violateMarginStart,violateMarginEnd)
-        %[margins(before,after,with &w/o hysteresit)] = checkDiscreteErrors
-        % checkContinuousError
-        %[altered] = updateForUncontrolledSwitching
-        %[deltaTs] = switchingErrorGradientDescent
-        
-        [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
-        [newts,newswinds] = format1DtimingVector(obj,ts,swinds)
 
-        [weightTotalErr] = getWeightedTotalError(obj, errBefore,errAfter)
 
         varargout = findValidSteadyState(obj)
 
@@ -151,13 +154,13 @@ classdef SMPSim < handle
             res = obj.converter.topology;
         end
         
-        function res = get.oldAs(obj)
-            if isempty(obj.oldAs)
-                res = zeros(size(obj.As));
-            else
-                res = obj.oldAs;
-            end
-        end
+%         function res = get.oldAs(obj)
+%             if isempty(obj.oldAs)
+%                 res = zeros(size(obj.As));
+%             else
+%                 res = obj.oldAs;
+%             end
+%         end
         
         function res = get.stateNames(obj)
             res = obj.converter.topology.stateLabels;
@@ -180,7 +183,7 @@ classdef SMPSim < handle
         function set.converter(obj, conv)
             obj.converter = conv;
             obj.Xs = [];
-            obj.clearStoredResults();
+%             obj.clearStoredResults();
         end
         
         function set.u(obj,newU)
@@ -219,19 +222,48 @@ classdef SMPSim < handle
 %             obj.Xs = [];
 %         end
 
-        function Xss = steadyState(obj)
-            Xss = SS_Soln(obj);
+        function Xss = steadyState(obj, dts)
+%             try
+            if nargin > 1 
+                Xss = obj.AugmentedSteadyState(dts);
+            else
+                Xss = obj.AugmentedSteadyState();
+            end
+
+%             catch e 
+%                 Xss = SS_Soln(obj);
+%             end
+        end
+% 
+%         function clearStoredResults(obj)
+%             if obj.caching
+%                 obj.oldAs = zeros(size(obj.As));
+%                 obj.oldIntEAt = zeros(size(obj.As));
+%                 obj.oldts = zeros(size(obj.ts));
+%             end
+%             obj.Xs = [];     
+%         end    
+
+        function plotAllStates(obj, fn, oSelect, subplots)
+            if(nargin <= 2)
+                subplots = 1;
+                oSelect = 1:size(obj.Xs,1); 
+            elseif(nargin <=3)
+                subplots = 1;
+            end
+            plotWaveforms(obj, 1, fn, oSelect, subplots);
         end
 
-        function clearStoredResults(obj)
-            if obj.caching
-                obj.oldAs = zeros(size(obj.As));
-                obj.oldIntEAt = zeros(size(obj.As));
-                obj.oldts = zeros(size(obj.ts));
+        function plotAllOutputs(obj, fn, oSelect, subplots)
+            if(nargin <= 2)
+                subplots = 1;
+                oSelect = 1:size(obj.Cs,1); 
+            elseif(nargin <=3)
+                subplots = 1;
             end
-            obj.Xs = [];     
-        end    
-        
+            plotWaveforms(obj, 2, fn, oSelect, subplots);
+        end
+    
 
         
         function loc = sigLoc(obj, name, type)

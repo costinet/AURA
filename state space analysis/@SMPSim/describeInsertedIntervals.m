@@ -12,22 +12,37 @@ function describeInsertedIntervals(obj, allChanges)
         newSwInd = allChanges(:,3);
         switches = allChanges(:,4); 
         newStates = allChanges(:,5);
-        for i = 1:size(allChanges,1) 
-            if beforeAfter(i) == 1
+        for loc = [unique([interval beforeAfter], 'rows')]'
+            int = loc(1);
+            BA = loc(2);
+
+            rows = find(interval == int & beforeAfter == BA);
+        
+            if BA == 1
                 locString = 'at the end of';
             else
                 locString = 'at the beginning of';
             end
-    
-            switchName = obj.switchNames{switches(i)};
-    
-            if newStates(i) == 1
-                switchWord = 'on';
-            else
-                switchWord = 'off';
+
+            switchString = '';
+            for j = 1:length(rows)
+                switchName = obj.switchNames{switches(rows(j))};
+                if newStates(rows(j)) == 1
+                    switchWord = 'on';
+                else
+                    switchWord = 'off';
+                end
+                    
+                switchString = [switchString switchName ' turned ' switchWord];
+
+                if j < length(rows)
+                    switchString = [switchString ' and '];
+                end
             end
     
-            disp(['A new interval was inserted ' locString ' interval ' num2str(interval(i)) ' with ' switchName ' turned ' switchWord])
+
+    
+            disp(['A new interval was inserted ' locString ' interval ' num2str(int) ' with ' switchString])
         end
     end
 end

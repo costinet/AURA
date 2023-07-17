@@ -40,8 +40,9 @@ function loadModel(obj, fn, swseq, force)
                                     return
                                 else
                                     %% only new swseqs, just add those
-                                    newSwSeq = setdiff(swseq, obj.topology.swseq, 'rows');
+                                    newSwSeq = setdiff(unique(swseq,'rows'), obj.topology.swseq, 'rows');
                                     for i = 1:size(newSwSeq,1)
+                                        
                                         plecs('set', fn, 'SwitchVector', newSwSeq(i,:));
                                         names = plecs('get', fn, 'Topology');
                                         obj.topology.As(:,:,end+1) = names.A;
@@ -74,17 +75,45 @@ function loadModel(obj, fn, swseq, force)
             obj.topology.outputLabels = cellfun(@(x) x(strfind(x,'/')+1:end), ssOrder.Outputs, 'un', 0);
             obj.topology.inputLabels = cellfun(@(x) x(strfind(x,'/')+1:end), ssOrder.Inputs, 'un', 0);
             
+           
             if nargin > 2
-                obj.topology.swseq = swseq;
-                for i = 1:size(obj.topology.swseq,1)
-                    plecs('set', fn, 'SwitchVector', swseq(i,:));
-                    names = plecs('get', fn, 'Topology');
-                    obj.topology.As(:,:,i) = names.A;
-                    obj.topology.Bs(:,:,i) = names.B;
-                    obj.topology.Cs(:,:,i) = names.C;
-                    obj.topology.Ds(:,:,i) = names.D;
-                    obj.topology.Is(:,:,i) = names.I;
+                if(force)
+                    obj.topology.swseq = unique(swseq,'rows');
+                    obj.topology.As = [];
+                    obj.topology.Bs = [];
+                    obj.topology.Cs = [];
+                    obj.topology.Ds = [];
+                    obj.topology.Is = [];
+                    for i = 1:size(obj.topology.swseq,1)
+                        plecs('set', fn, 'SwitchVector', obj.topology.swseq(i,:));
+                        names = plecs('get', fn, 'Topology');
+                        obj.topology.As(:,:,i) = names.A;
+                        obj.topology.Bs(:,:,i) = names.B;
+                        obj.topology.Cs(:,:,i) = names.C;
+                        obj.topology.Ds(:,:,i) = names.D;
+                        obj.topology.Is(:,:,i) = names.I;
+                    end
+                else
+                    if isempty(obj.topology.swseq)
+                        obj.topology.swseq = unique(swseq,'rows');
+                        newSeq = obj.topology.swseq;
+                    else 
+                        newSeq = setdiff(swseq,obj.topology.swseq,'rows');
+                        obj.topology.swseq = [obj.topology.swseq; newSeq];
+                    end
+                    if ~isempty(newSeq)
+                        for i = 1:size(obj.topology.swseq,1)
+                            plecs('set', fn, 'SwitchVector', obj.topology.swseq(i,:));
+                            names = plecs('get', fn, 'Topology');
+                            obj.topology.As(:,:,i) = names.A;
+                            obj.topology.Bs(:,:,i) = names.B;
+                            obj.topology.Cs(:,:,i) = names.C;
+                            obj.topology.Ds(:,:,i) = names.D;
+                            obj.topology.Is(:,:,i) = names.I;
+                        end
+                    end
                 end
+
             end
             
             obj.topology.K = eye(length(obj.topology.stateLabels));

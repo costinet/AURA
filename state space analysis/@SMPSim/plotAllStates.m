@@ -2,7 +2,10 @@ function plotAllStates(obj, fn, oSelect, subplots)
 %UNTITLED6 Summary of this function goes here
 %   Detailed explanation goes here
     [ xs, t] = obj.SS_WF_Reconstruct;
-    figure(fn);
+    fig = figure(fn);
+
+    vars = 
+
     ns = size(xs,1);
     
     if(nargin <= 2)
@@ -90,5 +93,15 @@ function plotAllStates(obj, fn, oSelect, subplots)
             plot(sum(obj.ts(1:i))*ones(1,2), ylims, ':r');
         end
     end
+
+    %% Link all time axes
+    children = get(fig,'Children');
+    ax = [];
+    for i = 1:length(children)
+        if strcmp(class(children(i)),'matlab.graphics.axis.Axes')
+            ax = [ax, children(i)];
+        end
+    end
+    linkaxes(ax,'x');
 
 end

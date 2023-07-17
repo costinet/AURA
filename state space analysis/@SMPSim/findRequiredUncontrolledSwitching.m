@@ -18,6 +18,13 @@ function [tLocs,insertAt,adjType] = findRequiredUncontrolledSwitching(obj,violat
     % Errors persisting for an entire interval and into the next
     extendInterfaceErrors = fullIntErrors & circshift(errBefore,-1,2);
 
+    % When an interface *is* adjustable, but the error before and after it
+    % are different.  Here it won't matter if we insert before or after,
+    % because its an adjustable interface.
+    competingErrors = errBefore & repmat(any(circshift(errAfter,1,2),1),size(errBefore,1),1);
+    competingErrors = competingErrors &~interfaceErrors & (ints == circshift(ints,1));
+
+
     endOfextendedError = extendInterfaceErrors & ~circshift(errAfter,-1,2);
 
     errLocs = (fullIntErrors & ~extendInterfaceErrors) | endOfextendedError ;
@@ -45,13 +52,15 @@ function [tLocs,insertAt,adjType] = findRequiredUncontrolledSwitching(obj,violat
         %         it is a controlled switching action
         %   (2b) but the before and after subinterval are the same (w.r.t.
         %   the error)
-    tLocs = errLocs | unadjustableLocs | adjustableButSameInterval;
+        % (3) There is *an* error before and *and* error after, but not on
+        % the same constraint/device
+    tLocs = errLocs | unadjustableLocs | adjustableButSameInterval | competingErrors;
     
 
     %% Handle case where there are multiple connected intervals with violation 
     % because the violating switch doesn't change (i.e. others are switching)
 %     tLocs(tLocs & circshift(tLocs,-1,2)) = 0; %If the following interval has the same error, don't also insert here
-%             %start from the end and work your way back, instead
+            %start from the end and work your way back, instead
     
 
     insertAt = any(tLocs,1);

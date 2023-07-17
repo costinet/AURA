@@ -1,5 +1,10 @@
 function [altered, newSwInd] = addUncontrolledSwitching(obj, interval, beforeAfter, initialTime, switches, newStates, force)
-    assert(initialTime < obj.ts(interval), 'specified initialTime is larger than the interval it subdivides');
+    
+    try 
+        assert(initialTime < obj.ts(interval), 'specified initialTime is larger than the interval it subdivides');
+    catch
+        initialTime = obj.ts(interval)/2;
+    end
     
     if nargin < 7
         force = 0;
@@ -10,7 +15,9 @@ function [altered, newSwInd] = addUncontrolledSwitching(obj, interval, beforeAft
 
 
 
-    if initialTime < obj.timingThreshold
+    if initialTime < .9*obj.timingThreshold
+        warning('should this be here?')
+        obj.eliminateZeroTimeIntervals
         return
     end
 
@@ -84,7 +91,7 @@ function [altered, newSwInd] = addUncontrolledSwitching(obj, interval, beforeAft
 %     
     
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Find interval and subinterval of taget location
+    %% Find interval and subinterval of target location
     [ts, ints, subInts] = getIntervalts(obj);
     oint = ints(interval);                  
     subInt = subInts(interval);
