@@ -1,10 +1,18 @@
 function [ Xs] = AugmentedSteadyState(obj, dts)
-% Steady-state solution of switched system using state-space matrices
+%Steady-state solution of switched system using state-space matrices
 %
-% [ Xs] = SS_Soln( As, Bs, ts, u, Xi, Bi) finds the state values Xs in
-% steady-state for the switched system described by As, Bs, and ts
-% according to
+%   [ Xs] = AugmentedSteadyState(obj) finds the state values Xs in
+%   steady-state for the switched system described by the SMPSim object
 %
+%   [ Xs] = AugmentedSteadyState(obj,dts) finds the steady-state solution
+%   with perturbations dts to the timing of each interval.
+%
+%   The result, Xs is a 2D matrix with ns rows and n+1 columns, where ns is the
+%   number of states in the system and n is the number of switching
+%   intervals.  The first and last column of Xs should be identical,
+%   corresponding to a valid steady-state solution.
+
+
 % dx/dt = Ai*x(t) + Bi*u ,
 %
 % for the ith interval.
@@ -20,14 +28,13 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
 % Bi is a vector of boundary coefficiencts used when iteration is required
 % due to non-convergence of a solution.  A valid solution is required to be
 % bounded within Bi.*Xi <= Xs <= (2-Bi).*Xi
-%
-% The result, Xs is a 2D matrix with ns rows and n+1 columns, where ns is the
-% number of states in the system and n is the number of switching
-% intervals.  The first and last column of Xs should be identical,
-% corresponding to a valid steady-state solution.
+    
+    assert(isa(obj,'SMPSim'),'AugmentedSteadyState requires an object of type SMPSim as its first argument');
 
     if nargin <2
         dts = obj.ts*0;
+    else
+        assert(length(dts) == length(obj.ts), 'perturbations dts must be the same length as obj.ts');
     end
 
     As = obj.As;

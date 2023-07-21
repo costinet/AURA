@@ -1,3 +1,5 @@
+
+
 clear all;
 
 summaryStrings = {};
@@ -5,9 +7,8 @@ summaryStrings = {};
 debug = 0;
 allAssess = 1;      % run all models sequentially
 
-models = 5
+models = 4;
 
-% tmult = 0.5;
 
 if ~debug
     w = warning ('off','all');
@@ -88,6 +89,9 @@ for selectedModel = models
     sim = SMPSim();
     conv = sim.converter;
     top = sim.topology;
+
+%     sim.debug = 1;
+%     sim.debug2 = 1;
     
     top.loadCircuit(circuitPath,swvec,1);
     sim.u = us';
@@ -98,14 +102,6 @@ for selectedModel = models
         sim.plotAllStates(4)
     end
 
-%     %% Test half-cycle symmetric DAB
-%     hold(figure(4).Children,'on')
-%     top.loadCircuit(circuitPath,swvec(1:end/2,:),1);
-%     sim.u = us';
-%     conv.setSwitchingPattern(swvec(1:end/2,:), ts(1:end/2))
-%     sim.IHC = -eye(4);
-%     sim.steadyState;
-%     sim.plotAllStates(4)
     
     niter = sim.findValidSteadyState;
 
@@ -116,11 +112,6 @@ for selectedModel = models
     if allAssess
         updateWaitBar(h, modelfile, selectedModel, niter, 0, 0);
     end
-
-% ssOrder = plecs('get', circuitPath, 'StateSpaceOrder');
-% outputs = ssOrder.Outputs;
-
-% % outputs = top.outputLabels;
 
 
 

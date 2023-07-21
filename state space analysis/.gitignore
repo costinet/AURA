@@ -1,0 +1,9 @@
+Ideas\
+AURAdb\digitizers\plotDigitizer\appDesignerTempData_.*
+depricated\
+*.bak
+testConverters\PreviousApplications\
+testConverters\SPICECompare\
+slprj\
+*.autosave
+*.asv

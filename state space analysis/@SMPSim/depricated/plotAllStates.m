@@ -4,7 +4,7 @@ function plotAllStates(obj, fn, oSelect, subplots)
     [ xs, t] = obj.SS_WF_Reconstruct;
     fig = figure(fn);
 
-    vars = 
+    
 
     ns = size(xs,1);
     

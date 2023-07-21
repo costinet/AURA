@@ -6,6 +6,9 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
     debug = 0;
 
     if nargin == 1
+        if isempty(obj.Xs)
+            obj.steadyState;
+        end
         Xs = [obj.Xs(:,1); 1];
         origSwind = obj.converter.swind;
         ts = obj.ts;

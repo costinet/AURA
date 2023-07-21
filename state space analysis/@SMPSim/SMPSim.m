@@ -2,53 +2,35 @@ classdef SMPSim < handle
     %Simulator object for use with AURA
     % Methods include
 %     
-    properties (Access = private)
-%         LSQoptions = optimoptions('lsqlin','algorithm','trust-region-reflective','Display','none');
-        tryOpt = 0;
-        condThreshold = 1e9;
-%         gmin = 1/100e6;
-        
-        % speedup varaibles -> solution memory
-        % These are out-of-date (if used)
-%         oldAs
-%         oldts
-%         oldIntEAt
-
-        
-        
-        % debugging variables
-        debugFigNo = 47;
+    properties
+        Xs
+        converter
     end
-    
+
     properties (Dependent = true)
         As
         Bs
         Cs
         Ds
         Is
+      
         topology
-        
         stateNames
         outputNames
         switchNames
         inputNames
-    end
-    
-    properties (Dependent = true)
+
         ts
         u
     end
     
-    properties
-        Xs
-        converter
-    end
+
     
     properties (Hidden)
-        caching = 0
-
+        % debugging variables
         debug = 0;
         debug2 = 0;
+        debugFigNo = 47;
     
         timeSteppingInit = 0;
         finalRunMethod = 0;
@@ -56,22 +38,13 @@ classdef SMPSim < handle
         maxItns = 100;
 
         IHC = [];
+
+        tryOpt = 0;
+        condThreshold = 1e9;        
     end
     
     methods (Access = private)
         %% Private Methods from external files
-        
-%         [ valid, newt, dist ] = validByInterval(obj, si, Xs) % DEPRICATED
-%         [ x, xdot ] = stateValue_at_t(obj, x0, t, si)% DEPRICATED
-%         [ Xs] = perturbedSteadyState(obj, dts) %DEPRICATED
-%         [ Xs] = SS_Soln2(obj, Xi, Bi) % DEPRICATED
-%         [ output_args ] = regulate( obj )% DEPRICATED
-%         [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)% DEPRICATED
-        %[margins(before,after,with &w/o hysteresit)] = checkDiscreteErrors
-        % checkContinuousError
-        %[altered] = updateForUncontrolledSwitching
-        %[deltaTs] = switchingErrorGradientDescent
-
         [ Xs] = SS_Soln(obj, Xi, Bi) 
         [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult) 
         [ Xs] = AugmentedSteadyState(obj, dts)
@@ -87,6 +60,17 @@ classdef SMPSim < handle
         [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
         [newts,newswinds] = format1DtimingVector(obj,ts,swinds)
         [weightTotalErr] = getWeightedTotalError(obj, errBefore,errAfter)
+
+%         [ valid, newt, dist ] = validByInterval(obj, si, Xs) % DEPRICATED
+%         [ x, xdot ] = stateValue_at_t(obj, x0, t, si)% DEPRICATED
+%         [ Xs] = perturbedSteadyState(obj, dts) %DEPRICATED
+%         [ Xs] = SS_Soln2(obj, Xi, Bi) % DEPRICATED
+%         [ output_args ] = regulate( obj )% DEPRICATED
+%         [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)% DEPRICATED
+        %[margins(before,after,with &w/o hysteresit)] = checkDiscreteErrors
+        % checkContinuousError
+        %[altered] = updateForUncontrolledSwitching
+        %[deltaTs] = switchingErrorGradientDescent
         
         
     end
@@ -97,10 +81,7 @@ classdef SMPSim < handle
         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
         plotWaveforms(obj, type, fn, oSelect, subplots)     
-        
-
-
-        varargout = findValidSteadyState(obj)
+        niter = findValidSteadyState(obj)
 
         %% Debugging (Verbose) helper functions
         describeDiscreteErrors(obj)
@@ -154,13 +135,6 @@ classdef SMPSim < handle
             res = obj.converter.topology;
         end
         
-%         function res = get.oldAs(obj)
-%             if isempty(obj.oldAs)
-%                 res = zeros(size(obj.As));
-%             else
-%                 res = obj.oldAs;
-%             end
-%         end
         
         function res = get.stateNames(obj)
             res = obj.converter.topology.stateLabels;
@@ -183,45 +157,18 @@ classdef SMPSim < handle
         function set.converter(obj, conv)
             obj.converter = conv;
             obj.Xs = [];
-%             obj.clearStoredResults();
         end
         
         function set.u(obj,newU)
             obj.converter.u = newU;
         end
         
-        function set.ts(obj,newT)
+        function set.ts(varargin)
              error('Setting ts is not recommended for class SMPSsim.  Use methods in SMPSconverter');
-%             obj.converter.ts = newT;
         end
         
         
         %% Locally-defined methods
-%         function settopology(obj, As, Bs, Cs, Ds)
-%            obj.As = As;
-%            obj.Bs = Bs;
-%            obj.Cs = Cs;
-%            obj.Ds = Ds;
-%            
-%            obj.oldAs = zeros(size(As));
-%            obj.oldIntEAt = zeros(size(As));
-%            
-%            obj.Xs = [];
-%         end
-%         
-%         function setmodulation(obj, ts)
-%             obj.ts = ts;
-%             obj.oldts = zeros(size(ts));
-% 
-%             obj.Xs = [];
-%         end
-%         
-%         function setinputs(obj, u)
-%             obj.u = u;
-%             
-%             obj.Xs = [];
-%         end
-
         function Xss = steadyState(obj, dts)
 %             try
             if nargin > 1 
@@ -234,15 +181,7 @@ classdef SMPSim < handle
 %                 Xss = SS_Soln(obj);
 %             end
         end
-% 
-%         function clearStoredResults(obj)
-%             if obj.caching
-%                 obj.oldAs = zeros(size(obj.As));
-%                 obj.oldIntEAt = zeros(size(obj.As));
-%                 obj.oldts = zeros(size(obj.ts));
-%             end
-%             obj.Xs = [];     
-%         end    
+  
 
         function plotAllStates(obj, fn, oSelect, subplots)
             if(nargin <= 2)
@@ -299,28 +238,7 @@ classdef SMPSim < handle
                 error('cannot find specified signal in topology');
             end
         end
-        
-        
-        %% Test functions        
-        function loadTestConverter(obj,dotmatfile)
-            try
-                load(dotmatfile, 'conv');
-                obj.converter = conv;
-%                 params = load(matfile);
-            catch err
-                ME = MException('AURA:IncompleteConverter', ...
-                       'Error: test converter file does not contain all requred variables. Required variables are As, Bs, Cs, Ds, ts, and u');
-                throw(ME);
-            end
-            
-%             obj.converter = conv;
-%             obj.settopology(conv.topology.As, conv.topology.Bs, conv.topology.Cs, conv.topology.Ds);
-%             obj.setmodulation(conv.ts);
-%             obj.setinputs(conv.u);
-            
-            obj.Xs = [];
-        end
-       
+              
     end
     
 end
