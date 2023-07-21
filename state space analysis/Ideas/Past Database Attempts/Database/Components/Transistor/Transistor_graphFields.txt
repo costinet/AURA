@@ -1,3 +1,0 @@
-Ptot,Etotal,Eon,Eoff,Rg_ext,Ig,tp
-W   ,J     ,J  ,J   ,Ω     ,A ,s
-1   ,m     ,m  ,m   ,1     ,m ,1
