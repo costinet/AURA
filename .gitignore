@@ -2,8 +2,12 @@ state space analysis\Ideas\
 state space analysis\AURAdb\digitizers\plotDigitizer\appDesignerTempData_.*
 depricated\
 *.bak
+*.bak2
 state space analysis\testConverters\PreviousApplications\
 state space analysis\testConverters\SPICECompare\
 slprj\
 *.autosave
 *.asv
+webserver\
+*slx.r2021a
+*.slx.original
