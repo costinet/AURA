@@ -1,0 +1,9 @@
+state space analysis\Ideas\
+state space analysis\AURAdb\digitizers\plotDigitizer\appDesignerTempData_.*
+depricated\
+*.bak
+state space analysis\testConverters\PreviousApplications\
+state space analysis\testConverters\SPICECompare\
+slprj\
+*.autosave
+*.asv
