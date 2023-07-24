@@ -1,6 +1,15 @@
 function [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
-%UNTITLED9 Summary of this function goes here
-%   Detailed explanation goes here
+% Forced response of  state space system
+%
+%   [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
+%   calculates the forced response of the system system defined by state 
+%   space matrices A and B, operating with input u and time intervals t.
+%   inputs referencing the SMPSim object and storeResult are for cached
+%   speedup.  expA is the pre-calculated expm(A*t) for each interval.  The
+%   outputs fresp is the full forced response, and intEAt is the
+%   coefficient of (B*u) in the forced response
+%
+%   see Also SMPSim, SMPSim.SS_Soln
 
     ns = size(B,1);
     

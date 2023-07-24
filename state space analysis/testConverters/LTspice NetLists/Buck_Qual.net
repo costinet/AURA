@@ -1,0 +1,16 @@
+* G:\My Drive\Graduate Reserach\Qual\LTSpice\Buck_sync.asc
+V1 N001 N010 10
+R3 N010 0 5
+L1 N002 N003 20m
+M1 N001 NC_01 N002 N002 BSC032NE2LS
+C1 out 0 10µ
+R1 out 0 4
+M2 N002 NC_02 0 0 BSC032NE2LS
+R2 N003 out 15
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\jared\Documents\LTspiceXVII\lib\cmp\standard.mos
+.tran 1
+.ic V(out)=20 I(L1)=-10
+.backanno
+.end

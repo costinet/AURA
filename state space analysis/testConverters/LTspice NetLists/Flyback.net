@@ -1,0 +1,18 @@
+* C:\Users\jared\Documents\Graduate Reserach\LTSpice\Flyback\Flyback.asc
+V1 N001 0 20
+M1 N004 0 0 0 NMOS
+L1 N001 N004 1m
+L2 0 N002 1m
+D1 N002 N003 D
+C1 N003 0 2
+R1 N003 0 1
+L3 N001 N004 0.5m
+.model D D
+.lib C:\Users\jared\Documents\LTspiceXVII\lib\cmp\standard.dio
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\jared\Documents\LTspiceXVII\lib\cmp\standard.mos
+K1 L1 L2 1
+.tran 1
+.backanno
+.end

@@ -1,6 +1,22 @@
 function [ Xs] = SS_Soln(obj)
-% Steady-state solution of switched system using state-space matrices
+%% Steady-state solution of switched system using state-space matrices
 %
+%   [ Xs] = SS_Soln(obj) finds the state values Xs in steady-state for the 
+%   switched system described by the SMPSim object obj
+%
+%   Compared to AugmentedSteadyState, SS_Soln tries to solve the converter
+%   without using augmented state matrices first, and only augments if
+%   A(:,:,i) is ill-conditioned.  This is all taken care of in the calls to
+%   obj.forcedResponse
+%
+%   SS_Soln is not in active use, as it is generally slower and less robust
+%   than AugmentedSteadyState
+%
+%   see also SMPSim, SMPSim.AugmentedSteadyState, SMPSim.forcedResponse
+
+
+
+
 % [ Xs] = SS_Soln( As, Bs, ts, u, Xi, Bi) finds the state values Xs in
 % steady-state for the switched system described by As, Bs, and ts
 % according to

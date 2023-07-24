@@ -1,0 +1,16 @@
+* H:\Graduate Research\Boost.asc
+V1 N002 0 25
+L1 N002 N001 16µ
+M1 N001 NC_01 0 0 BSC032NE2LS
+C1 out 0 40µ
+R1 out 0 10
+D1 N001 out RB060MM-40
+.model D D
+.lib C:\Users\jbaxte24\Documents\LTspiceXVII\lib\cmp\standard.dio
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\jbaxte24\Documents\LTspiceXVII\lib\cmp\standard.mos
+.tran 1
+.ic V(out)=50 I(L1)=5
+.backanno
+.end

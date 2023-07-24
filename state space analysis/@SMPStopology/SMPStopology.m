@@ -61,7 +61,7 @@ classdef SMPStopology < handle
             end
             
             if isempty(obj.circuitParser)
-                try %Test if the file is a valid plecs circuit
+                try %Test if the file is a valid PLECS circuit
                     plecs('get', fn, 'StateSpaceOrder');
                     obj.circuitParser = PLECScircuitParser(obj);
                 catch e
@@ -70,10 +70,12 @@ classdef SMPStopology < handle
                 if isempty(obj.circuitParser)
                     try
                         %Other Circuit Parsers
-                    catch
+						obj.circuitParser = LTspiceCircuitParser(obj);
+                    catch e
+						warning('Circuit cannot be parsed as either a PLECS or LTSpice file');
+						rethrow(e);
                     end
-                    warning('Circuit is not a PLECS file and alternatives arent implemented yet');
-                    rethrow(e);
+                    
                 end
             end
             loadModel(obj.circuitParser, fn, swvec, force); 

@@ -2,7 +2,7 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
 %Steady-state solution of switched system using state-space matrices
 %
 %   [ Xs] = AugmentedSteadyState(obj) finds the state values Xs in
-%   steady-state for the switched system described by the SMPSim object
+%   steady-state for the switched system described by the SMPSim object obj
 %
 %   [ Xs] = AugmentedSteadyState(obj,dts) finds the steady-state solution
 %   with perturbations dts to the timing of each interval.
@@ -12,23 +12,7 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
 %   intervals.  The first and last column of Xs should be identical,
 %   corresponding to a valid steady-state solution.
 
-
-% dx/dt = Ai*x(t) + Bi*u ,
-%
-% for the ith interval.
-%
-% As is a 3-dimensional matrix of values for Ai, where As(:,:,i) is the 2D
-% square matrix Ai during the ith interval.  
-% Bs is a 3-dimensional matrix of values for Bi, where Bs(:,:,i) is the 2D
-% matrix/vector Bi during the ith interval.
-% ts is a vector of the time durations of each inverval
-% u is the (assumed constant) independent input vector
-% Xi is a vector "guess" of the results, which is used to determine
-% solution validity in the case of singular matrices
-% Bi is a vector of boundary coefficiencts used when iteration is required
-% due to non-convergence of a solution.  A valid solution is required to be
-% bounded within Bi.*Xi <= Xs <= (2-Bi).*Xi
-    
+   
     assert(isa(obj,'SMPSim'),'AugmentedSteadyState requires an object of type SMPSim as its first argument');
 
     if nargin <2
@@ -45,14 +29,7 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
         obj.IHC = eye(size(As,1));
     end
     
-    if size(obj.u,3) == 1
-        %% HEY THIS SHOULD BE MOVED ELSEWHERE
-        u = repmat(obj.u,1,1,(length(ts)));
-    elseif size(obj.u,3) == length(ts)
-        u = obj.u;
-    else
-        error('invalid input vector u specificed');
-    end
+    u = obj.fullu;
 
     n = size(As,3);
     ns = size(Bs,1);

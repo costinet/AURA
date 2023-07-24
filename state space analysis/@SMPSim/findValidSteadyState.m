@@ -1,6 +1,5 @@
 function niter = findValidSteadyState(obj)
-%FINDVALIDSTEADYSTATE find steady-state solution to converter,
-%accounting for state-dependent switching actions.
+%FINDVALIDSTEADYSTATE find steady-state solution to converter accounting for state-dependent switching actions.
 %
 %   FINDVALIDSTEADYSTATE(obj) takes an SMPSim object describing a switched
 %   mode power converter and solves its steady-state operating waveforms
@@ -390,8 +389,9 @@ while(1)
         
         niter = niter+1;
         
-
-        disp([niter sum(errBefore + errAfter, 'all')]);
+        if ~obj.suppressIterationOutput
+            disp([niter sum(errBefore + errAfter, 'all')]);
+        end
 
         
         if(niter > obj.maxItns)

@@ -1,0 +1,23 @@
+* G:\My Drive\Graduate Reserach\LTSpice\Flyback\EVAL-CN0342-EB1Z_AURA.asc
+V1 N010 0 20
+R9 N001 N010 20
+M1 N006 0 0 0 NMOS
+L1 N004 N006 1m
+L2 0 N003 1m
+C1 N005 0 10µ
+R1 N005 0 10
+L3 N004 N006 0.5m
+M2 N005 N003 N003 N003 NMOS
+L4 N001 N002 0.5m
+M3 N007 N006 N006 N006 NMOS
+C2 N001 N007 10µ
+R2 N001 N007 10
+R3 N002 N004 0.1
+R10 N001 N002 0.5m
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\jb\Documents\LTspiceXVII\lib\cmp\standard.mos
+K1 L2 L1 1
+.tran 1
+.backanno
+.end

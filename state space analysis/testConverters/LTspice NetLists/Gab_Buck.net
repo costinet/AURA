@@ -1,0 +1,13 @@
+* G:\My Drive\Graduate Reserach\LTSpice\Gabriel Paper\Gab_Buck.asc
+M1 IN NC_01 SW SW NMOS
+M2 SW NC_02 0 0 NMOS
+V1 IN 0 4
+L1 SW OUT 1µ
+C1 OUT 0 100µ
+R1 OUT 0 0.025
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\jared\Documents\LTspiceXVII\lib\cmp\standard.mos
+.tran 1
+.backanno
+.end

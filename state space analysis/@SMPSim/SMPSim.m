@@ -1,27 +1,34 @@
 classdef SMPSim < handle
     %Simulator object for use with AURA
-    % Methods include
-%     
+    %   SMPSim works in conjunction with SMPSTopology and SMPSConverter to
+    %   simulate steady-state performance of Switched Mode Power Supplies.
+    %
+    %   See also SMPSconverter, SMPStopology, AURAdb
+   
     properties
-        Xs
-        converter
+        Xs % Current steady-state solution e.g. as solved by SteadyState
+        converter % link to a SMPSconverter class object specifying the converter
     end
 
     properties (Dependent = true)
-        As
-        Bs
-        Cs
-        Ds
-        Is
+        As % 3-dimensional matrix of values for Ai, where As(:,:,i) is the 2D square matrix Ai during the ith interval.
+        Bs % 3-dimensional matrix of values for Bi, where Bs(:,:,i) is the 2D matrix/vector Bi during the ith interval.
+        Cs % 3-dimensional matrix of values for Ci, where Cs(:,:,i) is the 2D square matrix Ci during the ith interval.  
+        Ds % 3-dimensional matrix of values for Di, where Ds(:,:,i) is the 2D vector Di during the ith interval.
+        Is % 3-dimensional matrix of values for Ii, where Is(:,:,i) is the 2D vector Ii during the ith interval.
       
-        topology
-        stateNames
-        outputNames
-        switchNames
-        inputNames
+        topology % link to a SMPStopology class object specifying the converter topology
+        stateNames % Cell array with names of states ordered to correspond to their order in Xs
+        outputNames % Cell array with names of outputs ordered to correspond to their order in Y
+        switchNames % Cell array with names of switches ordered to correspond to their order in the SMPSconverter swvec
+        inputNames  % % Cell array with names of inputs ordered to correspond to their order in u
 
-        ts
-        u
+        ts % ts is a vector of the time durations of each inverval
+        u % u is the (assumed constant within each interval) independent input vector
+    end
+
+    properties (Hidden, Dependent)
+        fullu
     end
     
 
@@ -32,6 +39,8 @@ classdef SMPSim < handle
         debug2 = 0;
         debugFigNo = 47;
     
+        suppressIterationOutput = 0;
+
         timeSteppingInit = 0;
         finalRunMethod = 0;
 
@@ -77,7 +86,6 @@ classdef SMPSim < handle
     
     methods
         %% Methods from external files
-        
         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
         plotWaveforms(obj, type, fn, oSelect, subplots)     
@@ -89,7 +97,153 @@ classdef SMPSim < handle
         [T] = describeSwitchState(obj)
         describeAlteredTimes(obj,oldts)
 
+        %% Locally-defined methods
+        function Xss = steadyState(obj, dts)
+        %solve steady-state solution of converter at current switching pattern and timing
+        %
+        %   [ Xss] = steadyState(obj) finds the state values Xss in
+        %   steady-state for the switched system described by the SMPSim object obj
+        %
+        %   [ Xss] = steadyState(obj,dts) finds the steady-state solution
+        %   with perturbations dts to the timing of each interval.
+        %   
+        %   Note that steadyState does not consider state-dependent
+        %   swithing.  For that use FindValidSteadyState
+        %
+        %   See Also SMPSim, SMPSim.FindValidSteadyState,
+        %   SMPSim.AugmentedSteadyState, SMPSim.SS_Soln
+            if nargin > 1 
+                Xss = obj.AugmentedSteadyState(dts);
+            else
+                Xss = obj.AugmentedSteadyState();
+            end
+        end
+  
+
+        function plotAllStates(obj, fn, oSelect, subplots)
+        %plot all states over one period from the current steady-state solution
+        %
+        %   plotAllStates(obj) will plot all states as seperate subplots of
+        %   a single, new figure
+        %
+        %   plotAllStates(obj,fn) will use the figure number fn
+        %
+        %   plotAllStates(obj, fn, oSelect) will only plot state numbers
+        %   specified by the vector oSelect
+        %
+        %   plotAllStates(obj, fn, oSelect, subplots) uses the boolean
+        %   variable subplots to determine whether to plot each state on
+        %   its own subplot or plot them all on a single plot.
+        %
+        %   See Also SMPSim, SMPSim.SS_WF_Reconstruct
+            if(nargin <= 1)
+                f = figure;
+                fn = f.Number;
+                subplots = 1;
+                oSelect = 1:size(obj.Xs,1); 
+            elseif(nargin <= 2)
+                subplots = 1;
+                oSelect = 1:size(obj.Xs,1); 
+            elseif(nargin <=3)
+                subplots = 1;
+            end
+            plotWaveforms(obj, 1, fn, oSelect, subplots);
+        end
+
+        function plotAllOutputs(obj, fn, oSelect, subplots)
+        %plot all outputs over one period from the current steady-state solution
+        %
+        %   plotAllOutputs(obj) will plot all outputs as seperate subplots of
+        %   a single, new figure
+        %
+        %   plotAllOutputs(obj,fn) will use the figure number fn
+        %
+        %   plotAllOutputs(obj, fn, oSelect) will only plot outputs numbers
+        %   specified by the vector oSelect
+        %
+        %   plotAllOutputs(obj, fn, oSelect, subplots) uses the boolean
+        %   variable subplots to determine whether to plot each outputs on
+        %   its own subplot or plot them all on a single plot.
+        %
+        %   See Also SMPSim, SMPSim.SS_WF_Reconstruct            
+            if(nargin <= 1)
+                f = figure;
+                fn = f.Number;
+                subplots = 1;
+                oSelect = 1:size(obj.Xs,1); 
+            elseif(nargin <= 2)
+                subplots = 1;
+                oSelect = 1:size(obj.Cs,1); 
+            elseif(nargin <=3)
+                subplots = 1;
+            end
+            plotWaveforms(obj, 2, fn, oSelect, subplots);
+        end
+    
+
         
+        function [loc, type] = sigLoc(obj, name, type)
+        %Locate specific signal in state, input, output, or switch vectors
+        %
+        %   loc = sigLoc(obj, name) returns the numerical index loc
+        %   into the appropriate vector for the state, input, output, or
+        %   switch named name
+        %
+        %   [loc, type] = sigLoc(obj, name, type) uses additional variable type to
+        %   select which vector to search where 
+        %       type == 'x' searches the states
+        %       type == 'u' searches the inputs
+        %       type == 'y' searches the outputs
+        %       tpye == 'sw' searches the switches
+        %
+        %   See Also SMPSim
+            if nargin == 3
+                if strcmp(type, 'x') %state
+                    loc = find(strcmp(obj.topology.stateLabels, name));
+                elseif strcmp(type, 'u') %input
+                    loc = find(strcmp(obj.topology.inputLabels, name));
+                elseif strcmp(type, 'y') %output 
+                    loc = find(strcmp(obj.topology.outputLabels, name));
+                elseif strcmp(type, 'sw') %switch
+                    loc = find(strcmp(obj.topology.switchLabels, name));
+                else
+                   error('Incompatable type.  Variable type must be x, u, y, or s'); 
+                end
+            elseif nargin == 2
+                allLabels = [obj.topology.stateLabels; 
+                    obj.topology.inputLabels; 
+                    obj.topology.outputLabels; 
+                    obj.topology.switchLabels];
+                lengths = [0; cumsum([length(obj.topology.stateLabels); 
+                    length(obj.topology.inputLabels); 
+                    length(obj.topology.outputLabels)])];
+               
+                loc = find(strcmp(allLabels, name));
+                if ~isempty(loc)
+                    vec = find(lengths<loc,1,'last');
+                    loc = loc - max(lengths(lengths<loc));
+                    switch vec
+                        case 1 
+                            type = 'x';
+                        case 2
+                            type = 'u';
+                        case 3
+                            type = 'y';
+                        case 4
+                            type = 'sw';
+                        otherwise
+                            type = [];
+                    end
+                end
+            else
+                loc = [];
+            end
+            if isempty(loc)
+                warning('cannot find specified signal in topology');
+                type = [];
+            end
+        end
+
         %% Constructors
         function obj = SMPSim(conv)
             if nargin == 1
@@ -130,6 +284,16 @@ classdef SMPSim < handle
         function res = get.u(obj)
             res = obj.converter.u;
         end
+
+        function res = get.fullu(obj)
+            if size(obj.converter.u,3) == 1
+                res = repmat(obj.u,1,1,(length(obj.converter.ts)));
+            elseif size(obj.converter.u,3) == length(obj.converter.ts)
+                res = obj.converter.u;
+            else
+                error('invalid input vector u specificed');
+            end
+        end
         
         function res = get.topology(obj)
             res = obj.converter.topology;
@@ -166,79 +330,49 @@ classdef SMPSim < handle
         function set.ts(varargin)
              error('Setting ts is not recommended for class SMPSsim.  Use methods in SMPSconverter');
         end
-        
-        
-        %% Locally-defined methods
-        function Xss = steadyState(obj, dts)
-%             try
-            if nargin > 1 
-                Xss = obj.AugmentedSteadyState(dts);
-            else
-                Xss = obj.AugmentedSteadyState();
-            end
-
-%             catch e 
-%                 Xss = SS_Soln(obj);
-%             end
-        end
-  
-
-        function plotAllStates(obj, fn, oSelect, subplots)
-            if(nargin <= 2)
-                subplots = 1;
-                oSelect = 1:size(obj.Xs,1); 
-            elseif(nargin <=3)
-                subplots = 1;
-            end
-            plotWaveforms(obj, 1, fn, oSelect, subplots);
-        end
-
-        function plotAllOutputs(obj, fn, oSelect, subplots)
-            if(nargin <= 2)
-                subplots = 1;
-                oSelect = 1:size(obj.Cs,1); 
-            elseif(nargin <=3)
-                subplots = 1;
-            end
-            plotWaveforms(obj, 2, fn, oSelect, subplots);
-        end
-    
-
-        
-        function loc = sigLoc(obj, name, type)
-            if nargin == 3
-                if strcmp(type, 'x') %state
-                    loc = find(strcmp(obj.topology.stateLabels, name));
-                elseif strcmp(type, 'u') %input
-                    loc = find(strcmp(obj.topology.inputLabels, name));
-                elseif strcmp(type, 'y') %output 
-                    loc = find(strcmp(obj.topology.outputLabels, name));
-                elseif strcmp(type, 'sw') %switch
-                    loc = find(strcmp(obj.topology.switchLabels, name));
-                else
-                   error('Incompatable type.  Variable type must be x, u, y, or s'); 
-                end
-            elseif nargin == 2
-                allLabels = [obj.topology.stateLabels; 
-                    obj.topology.inputLabels; 
-                    obj.topology.outputLabels; 
-                    obj.topology.switchLabels'];
-                lengths = [0; cumsum([length(obj.topology.stateLabels); 
-                    length(obj.topology.inputLabels); 
-                    length(obj.topology.outputLabels)])];
-               
-                loc = find(strcmp(allLabels, name));
-                if ~isempty(loc)
-                    loc = loc - max(lengths(lengths<loc));
-                end
-            else
-                loc = [];
-            end
-            if isempty(loc)
-                error('cannot find specified signal in topology');
-            end
-        end
               
+    end
+
+    methods (Hidden)
+        %Extending superclass methods and adding Hidden atribute
+        % Done so they won't appear and muddy the auto-generated documentation
+        function h = findobj(varargin)
+            h = findobj@handle(varargin);
+        end
+        function el = addlistener(varargin)
+            el = addlistener@handle(varargin);
+        end
+        function delete(H)
+            delete@handle(H);
+        end
+        function TF = eq(H1, H2)
+            TF = eq@handle(H1,H2);
+        end
+        function TF = ge(H1, H2)
+            TF = ge@handle(H1, H2);
+        end
+        function TF = gt(H1, H2)
+            TF = gt@handle(H1, H2);
+        end
+        function TF = le(H1, H2)
+            TF = le@handle(H1, H2);
+        end
+        function TF = lt(H1, H2)
+            TF = lt@handle(H1, H2);
+        end
+        function TF = ne(H1, H2)
+            TF = ne@handle(H1, H2);
+        end
+        function p = findprop(varargin)
+            p = findprop@handle(varargin);
+        end
+        function el = listener(varargin)
+            el = listener@handle(varargin);
+        end
+        function notify(varargin)
+            notify@handle(varargin);
+        end
+
     end
     
 end

@@ -1,0 +1,26 @@
+* H:\Graduate Research\LTspice\HDSC Compel\HDSC_AURA.asc
+C3 N001 vc3m 10.27µ
+V1 Vin1 0 24 AC 1V
+R5 Vin Vin1 1
+C2 vc2p N005 12.49µ
+C1 N002 vc1m 13.38µ
+L1 N003 Vout 144n Rser=5m
+C4 Vout 0 100µ Rser=5m
+R2 vc2p S7 5.3m
+R3 N004 vc1m 4.1m
+R4 vc3m N004 5.3m
+R1 Vout 0 .5
+M1 N003 NC_01 N004 N004 NMOS
+M2 N004 NC_02 0 0 NMOS
+M3 N003 NC_03 N005 N005 NMOS
+M4 N005 NC_04 0 0 NMOS
+M5 N002 NC_05 N003 N003 NMOS
+M6 S7 NC_06 N002 N002 NMOS
+M7 N001 NC_07 S7 S7 NMOS
+M8 Vin NC_08 N001 N001 NMOS
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\jb\Documents\LTspiceXVII\lib\cmp\standard.mos
+.tran 1
+.backanno
+.end

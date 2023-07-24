@@ -1,3 +1,12 @@
+%% TestExampleTopologies loads and simulates steady-state for a variety of example converters
+%   The script requires propoerly-formatted simulink files for the example
+%   topologies that include all initial parameters and inputs.  These are
+%   loaded into the base workspace so that PLECS will see them when the
+%   state space matrices are parsed.
+%
+%   if the allAssess variable is set, all of the topologies listed will be
+%   simulated sequentially.  Otherwise, only those indices in the models 
+%   varible will be simulated
 
 
 clear all;
@@ -19,6 +28,7 @@ end
 sdir = mfilename('fullpath');
 sdir = sdir(1:find(sdir=='\',1,'last')-1);
 addpath(sdir);
+addpath([sdir '\ExampleTopologies'])
 
 %% Load test circuit
 modelfile{1} = 'AsyncBoost'; PLECsModel{1} = 'Boost_Async';
