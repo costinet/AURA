@@ -1,13 +1,14 @@
-state space analysis\Ideas\
-state space analysis\AURAdb\digitizers\plotDigitizer\appDesignerTempData_.*
-depricated\
+state space analysis/Ideas/
+state space analysis/AURAdb/digitizers/plotDigitizer/appDesignerTempData_.*
+depricated/
+Depricated/
 *.bak
 *.bak2
-state space analysis\testConverters\PreviousApplications\
-state space analysis\testConverters\SPICECompare\
-slprj\
+state space analysis/testConverters/PreviousApplications/
+state space analysis/testConverters/SPICECompare/
+slprj/
 *.autosave
 *.asv
-webserver\
+webserver/
 *slx.r2021a
 *.slx.original

@@ -1,1 +1,0 @@
-en-nMOS, en-pMOS, dep-nMOS, dep-pMOS, en-npMOS, HEMT, PT-IGBT, NPT-IGBT, nJFET, pJFET, NPN, PNP
