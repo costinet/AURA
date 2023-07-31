@@ -1,7 +1,11 @@
 function describeDiscreteErrors(obj)
 %describeDiscreteErrors prints to command window a text description of the
 %discrete time errors found at the current steady-state candidate solution
+%   
 %   For debugging purposes only.
+%   
+%   See Also SMPSim.describeAlteredTimes,
+%   SMPSim.describeInsertedIntervals, SMPSim.describeSwitchState
 
     [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = obj.checkDiscreteErr();
     errBefore = min(violateMarginStart,0);

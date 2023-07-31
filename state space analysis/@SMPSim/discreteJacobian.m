@@ -1,7 +1,26 @@
 function [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
-%UNTITLED4 Summary of this function goes here
-%   Detailed explanation goes here
-%   J(x, y, z) = x-> which state, y-> at which time interval , z->which time interval perturbed
+%discreteJacobian calculate discrete Jacobian numerically
+%   
+%   [J] = discreteJacobian(obj)
+%   for the SMPSim object obj, calculates discrete Jacobian J.  The
+%   Jacobian is a 3-dimensional matrix with structure J(i, j, k): partial
+%   derivative of X(i,j) due to perturbations in t(k). By default, the
+%   function uses first-order forward difference approximation.  The time
+%   perturnation dT is dictated by SMPSconverter.getDeltaT
+%
+%   [J, J2] = discreteJacobian(obj, order)
+%   optional variable order can be either 1 or 2.  If set to two, a
+%   second-order central differences approximation is used to generate J2.
+%   J is unaffected.
+%
+%   [J, J2, XssF, XssB, X0, dt] = discreteJacobian(...)
+%   optional outputs XssF, XssB, and X0 are the forward, backward and 
+%   nominal state vectors at each time interval.  The calculated timestep
+%   for the differences is dt.
+%   
+%
+%   See Also SMPSconverter.getDeltaT, SMPSim.FindValidSteadyState
+
    
     assert(~isempty(obj.Xs), 'steady-state solution must be found before computing jacobian');
     
@@ -24,35 +43,7 @@ function [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
     thats = min([thats; circshift(thats,-1)],[],1);
     
     for i = 1:nt % each switching interval
-%         t0 = obj.ts(i);
-%         if i<nt
-%             t1 = obj.ts(i+1);
-%         else
-%             t1 = obj.ts(1);
-%         end
-%         
-%         if i>1
-%             t2 = obj.ts(i-1);
-%         else
-%             t2 = obj.ts(end);
-%         end    
-%         dt = min([sum(obj.ts)/1000, t0/2, t1/2, t2/2]);
         dtApp = thats(i);
-        
-        
-%         newts = obj.ts;
-%         newts(i) = newts(i) + dt;
-%         if i<nt
-%             newts(i+1) = newts(i+1) - dt;
-%         else
-%             newts(1) = newts(1) - dt;
-%         end
-%         obj.ts = newts;
-
-% % %         dt = adjustUncontrolledTiming(obj.converter, i, dt);
-% % %         XssF = obj.steadyState;
-% % % %         adjustUncontrolledTiming(obj.converter, i, -dt);
-% % %         obj.converter.undoLatestTimeChange
 
         tps = validateTimePerturbations(obj.converter, i, dtApp);
         XssF = obj.steadyState(tps);%perturbedSteadyState(obj, tps);
@@ -65,18 +56,6 @@ function [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
             J2 = [];
             XssB = [];
         elseif order == 2
-%             newts = oldts;
-%             newts(i) = newts(i) - dt;
-%             if i<nt
-%                 newts(i+1) = newts(i+1) + dt;
-%             else
-%                 newts(1) = newts(1) + dt;
-%             end
-%             obj.ts = newts;
-% % %             dt = adjustUncontrolledTiming(obj.converter, i, -dt);
-% % %             XssB = obj.steadyState;
-% % % %             adjustUncontrolledTiming(obj.converter, i, dt);
-% % %             obj.converter.undoLatestTimeChange
 
             tps = validateTimePerturbations(obj.converter, i, -dtApp);
             XssB = obj.steadyState(tps);%perturbedSteadyState(obj, tps);
@@ -88,7 +67,6 @@ function [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
             J2(:,:,i) = (XssF(:,1:end-1) - 2*X0(:,1:end-1) + XssB(:,1:end-1))/((dt1-dt2)/2)^2;
         end
         
-%         obj.ts = oldts; %restore original timing
     end
     
     assert(all(abs(obj.ts - oldts) < obj.converter.timingThreshold), 'Unintended modification to timing during jacobian');

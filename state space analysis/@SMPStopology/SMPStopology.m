@@ -35,11 +35,7 @@ classdef SMPStopology < handle
         switchLabels 
     end
     
-%     properties (SetAccess = private)
-%         plecsfn
-%         plecsfdate
-%     end
-    
+   
     properties (Hidden, SetAccess = private)
         expAs
         eigAs
@@ -115,18 +111,18 @@ classdef SMPStopology < handle
         
         function set.As(obj,newAs)
             obj.As = newAs;
-            if isempty(newAs)
-                obj.eigAs = [];
-            else
-                for i = 1:size(newAs,3)
-                    if isempty(obj.eigAs)
-                        obj.eigAs = eigs(newAs(:,:,i));
-                    else
-                        obj.eigAs(:,:,i) = eigs(newAs(:,:,i));
-                    end
-    %                 obj.expAs(:,:,i) = expm(newAs(:,:,i));
-                end
-            end
+%             if isempty(newAs)
+            obj.eigAs = [];
+%             else
+%                 for i = 1:size(newAs,3)
+%                     if isempty(obj.eigAs)
+%                         obj.eigAs = eigs(newAs(:,:,i));
+%                     else
+%                         obj.eigAs(:,:,i) = eigs(newAs(:,:,i));
+%                     end
+%     %                 obj.expAs(:,:,i) = expm(newAs(:,:,i));
+%                 end
+%             end
 %             obj.refreshCache;
             % need to notify up the ladder???
             % obj.converter.refreshcache
@@ -154,6 +150,19 @@ classdef SMPStopology < handle
         
         function res = get.sourcefn(obj)
             res = obj.circuitParser.sourcefn;
+        end
+
+        function res = get.eigAs(obj)
+            if ~isempty(obj.eigAs)
+                res = obj.eigAs;
+            else
+                res = zeros(size(obj.As,1),1,size(obj.As,3));
+                 for i = 1:size(obj.As,3)
+                    evs = eigs(obj.As(:,:,i));
+                    res(1:length(evs),:,i) = eigs(obj.As(:,:,i));
+                 end
+                obj.eigAs = res;
+            end
         end
 
               

@@ -1,4 +1,4 @@
-function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrix(obj,circuitPath,foreced_Refresh)
+function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath,foreced_Refresh)
 %get ConstraintMatrics get Cbnd and Dbnd from LTSpice model
 %   Note that the PLECs model must have probes added to all switching
 %   device currents and voltages (double-click -> assertions -> (+))
@@ -12,15 +12,15 @@ if nargin < 3
 end
 
 
-switchNames = obj.switchLabels;
-outputs = obj.outputLabels;
+switchNames = obj.topology.switchLabels;
+outputs = obj.topology.outputLabels;
 
-swvec = obj.swseq;
+swvec = obj.topology.swseq;
 
-Cbnd = zeros(size(obj.Cs));
-Dbnd = zeros(size(obj.Ds));
-hyst = zeros(size(obj.Ds,1), 2);
-switchRef = zeros(size(obj.Ds,1), 2);
+Cbnd = zeros(size(obj.topology.Cs));
+Dbnd = zeros(size(obj.topology.Ds));
+hyst = zeros(size(obj.topology.Ds,1), 2);
+switchRef = zeros(size(obj.topology.Ds,1), 2);
 
 if isempty(obj.devType) || forceRefresh
     % Only re-run this once per file
@@ -38,9 +38,17 @@ if isempty(obj.devType) || forceRefresh
     end
 end
 
+% switchInputNames = [obj.Switch_Names repmat({'_C_VF'},length(obj.Switch_Names),1)];
+% for i = 1:length(obj.Switch_Names)
+%     switchInputNames(i,1) = {[switchInputNames{i,:}]};
+% end
+% switchInputNames(:,2) = [];
+% [~,IA,~] = intersect(obj.topology.inputLabels,switchInputNames);
+% obj.parsedU(IA) = obj.Vf;
+
 % For finding parallel devices
-combCD3 = reshape(cat(2, obj.Cs, obj.Ds), size(obj.Cs,1),...
-    (size(obj.Cs,2) + size(obj.Ds,2))*size(obj.Cs,3) );
+combCD3 = reshape(cat(2, obj.topology.Cs, obj.topology.Ds), size(obj.topology.Cs,1),...
+    (size(obj.topology.Cs,2) + size(obj.topology.Ds,2))*size(obj.topology.Cs,3) );
 
 
 
@@ -75,8 +83,8 @@ for i = 1:length(switchNames)
     
     if obj.isDiode(i)
         %on-state current > 0
-        Cbnd(devCurrent, :, swvec(:,i)==1) = obj.Cs(devCurrent, :, swvec(:,i)==1);
-        Dbnd(devCurrent, :, swvec(:,i)==1) = obj.Ds(devCurrent, :, swvec(:,i)==1);
+        Cbnd(devCurrent, :, swvec(:,i)==1) = obj.topology.Cs(devCurrent, :, swvec(:,i)==1);
+        Dbnd(devCurrent, :, swvec(:,i)==1) = obj.topology.Ds(devCurrent, :, swvec(:,i)==1);
         hyst(devCurrent,:)=[0, 10e-6];
         switchRef(devCurrent,:) = [i, 1];
         
@@ -84,8 +92,8 @@ for i = 1:length(switchNames)
         %off-state -(voltage) > 0
         %            Cbnd(devVoltage, :, swvec(:,i)==0) = -obj.topology.Cs(devVoltage, :, swvec(:,i)==0);
         %            Dbnd(devVoltage, :, swvec(:,i)==0) = -obj.topology.Ds(devVoltage, :, swvec(:,i)==0);
-        Cbnd(devVoltage, :, all(swvec(:,switchInds)==0,2)) = -obj.Cs(devVoltage, :, all(swvec(:,switchInds)==0,2));
-        Dbnd(devVoltage, :, all(swvec(:,switchInds)==0,2)) = -obj.Ds(devVoltage, :, all(swvec(:,switchInds)==0,2));
+        Cbnd(devVoltage, :, all(swvec(:,switchInds)==0,2)) = -obj.topology.Cs(devVoltage, :, all(swvec(:,switchInds)==0,2));
+        Dbnd(devVoltage, :, all(swvec(:,switchInds)==0,2)) = -obj.topology.Ds(devVoltage, :, all(swvec(:,switchInds)==0,2));
         
         
         % Vf = evalin('base', plecs('get', [modelFile '/' devStr], 'Vf'));
@@ -95,8 +103,8 @@ for i = 1:length(switchNames)
         
     elseif obj.isFET(i) && ~(any(obj.isFET(switchInds)) && any(obj.isDiode(switchInds)))
         %off-state voltage > 0
-        Cbnd(devVoltage, :, swvec(:,i)==0) = obj.Cs(devVoltage, :, swvec(:,i)==0);
-        Dbnd(devVoltage, :, swvec(:,i)==0) = obj.Ds(devVoltage, :, swvec(:,i)==0);
+        Cbnd(devVoltage, :, swvec(:,i)==0) = obj.topology.Cs(devVoltage, :, swvec(:,i)==0);
+        Dbnd(devVoltage, :, swvec(:,i)==0) = obj.topology.Ds(devVoltage, :, swvec(:,i)==0);
         hyst(devVoltage,:)=[-1, 0.1];
         switchRef(devVoltage,:) = [i, 0];
         
@@ -126,10 +134,12 @@ Dbnd = Dbnd(ia,:,:);
 hyst = hyst(ia,:);
 switchRef = switchRef(ia,:);
 
-obj.Cbnd = Cbnd;
-obj.Dbnd = Dbnd;
-obj.bndHyst = hyst;
-obj.switchRef = switchRef;
+obj.topology.Cbnd = Cbnd;
+obj.topology.Dbnd = Dbnd;
+obj.topology.bndHyst = hyst;
+obj.topology.switchRef = switchRef;
+
+assignin('base','us', obj.parsedU)
 
 end
 

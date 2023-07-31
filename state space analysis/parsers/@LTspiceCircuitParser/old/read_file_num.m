@@ -1,9 +1,5 @@
 function [] = read_file_num(obj)
-% READ_FILE_NUM is a function of the NetListParse class that read in the
-% .net file and stores within class. Filename must already be present in
-% class to run.
-
-
+%
 % The code reads the NETlist file from LTSpice to be used in finding ABCD
 %
 % [NLraw,ALL,NL,NL3,incidence] = read_file(filename) returns:
@@ -48,7 +44,7 @@ function [] = read_file_num(obj)
 
 %% Open File
 
-filename = obj.sourcefn;
+filename = obj.filename;
 
 if exist(filename,'file') == 2 % if the file exists
 
@@ -74,9 +70,8 @@ if exist(filename,'file') == 2 % if the file exists
 
 elseif exist(filename,'file') == 4
     % If file is a simulink file
-%     obj.PLECS_extract();
-%     fprintf('Simulink file uploaded');
-    error('Simulink file cannot be used with LTspiceCircuitParser')
+    obj.PLECS_extract();
+    fprintf('Simulink file uploaded');
     return
 else
     % If the file was not initially recognized then return what it is:

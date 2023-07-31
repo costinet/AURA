@@ -1,6 +1,15 @@
 function describeAlteredTimes(obj,oldts)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%describeAlteredTimes Print to console a description of how timing
+%intervals were altered
+%   
+%   describeAlteredTimes(obj,oldts) 
+%   prints out a description of how an SMPSim objects current timing intervals 
+%   differ from oldts.  Results are only calculated if the same number of 
+%   subintervals are present in both the current and old time vector.
+%   Used for debugging only.
+%
+%   See Also SMPSim.describeDiscreteErrors,
+%   SMPSim.describeInsertedIntervals, SMPSim.describeSwitchState
 
 if all(size(obj.ts) == size(oldts))
 

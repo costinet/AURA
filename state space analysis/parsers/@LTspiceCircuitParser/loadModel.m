@@ -23,20 +23,36 @@ function loadModel(obj, fn, swseq, force)
 % Diode_Forward_Voltage = obj.Fwd_Voltage;
 % Binary_for_DAB = Switch_Sequence;
 % obj.Component_Values = Numerical_Components;
+%%  The above all replaced by LTSpice parsing
 
-%%  The above all needs to be determined by parsing or eval in base workspace
+% obj.initialize(fn,{},{});
 
-obj.initialize(fn,{},{});
+if isempty(obj.Anum) || force
+    obj.sourcefn = fn;
+    obj.readSpiceNetlist(fn)
+end
+
 obj.cutset_loop_num();
 
+obj.Component_Values = obj.Element_Properties;
 
-Didoes_POS = contains(Switch_Resistors,'D')';
-Switch_L = length(Didoes_POS);
+if isempty(swseq)
+    swseq = evalin('base', 'swvec');
+end
+
+if size(swseq,2) < length(obj.Switch_Resistors)
+    swseq = [swseq, zeros(size(swseq,1), length(obj.Switch_Resistors)-size(swseq,2))];
+end
+
+% What is this?  It seems errant -- length(Diodes_POS) is alwasys
+% length(Switch_Resistors)
+Diodes_POS = contains(obj.Switch_Resistors,'D')';
+Switch_L = length(Diodes_POS);
 
 if ~force
     
     if nargin > 2
-        if all(ismember(swseq, obj.swseq, 'rows'))
+        if all(ismember(swseq, obj.topology.swseq, 'rows'))
             return
         else
             %% only new swseqs, just add those
@@ -44,21 +60,22 @@ if ~force
             
             for k = 1:1:size(newSwSeq,1)
                 
-                [A,B,C,D] = obj.ABCD_num(Switch_Resistors,SW,newSwSeq(k,:));
+                
+                [A,B,C,D] = obj.ABCD_num(obj.Switch_Resistors,obj.Switch_Resistor_Values,newSwSeq(k,:));
                 
                 % Only allows diodes that are on to have non zeros in Bs and
                 % Ds
                 B_R = size(B,1);
                 B_C = size(B,2);
                 Diode_adjust_B = ones(B_R,B_C);
-                D_Key = newSwSeq(k,:).* Didoes_POS;
+                D_Key = newSwSeq(k,:).* Diodes_POS;
                 Diode_adjust_B(:,B_C-Switch_L+1:end) = repmat(D_Key,[B_R,1]);
                 B = B.*Diode_adjust_B;
                 
                 D_R = size(D,1);
                 D_C = size(D,2);
                 Diode_adjust_D = ones(D_R,D_C);
-                D_Key = swseq(k,:).* Didoes_POS;
+                D_Key = swseq(k,:).* Diodes_POS;
                 Diode_adjust_D(:,D_C-Switch_L+1:end) = repmat(D_Key,[D_R,1]);
                 D = D.*Diode_adjust_D;
                 
@@ -69,7 +86,7 @@ if ~force
                 obj.Cnum(:,:,end+1) = C;
                 obj.Dnum(:,:,end+1) = D;
                 [obj.eigA(:,end+1)] = eig(A);
-                obj.swseq  = [obj.swseq; newSwSeq(k,:)];
+                obj.topology.swseq  = [obj.topology.swseq; newSwSeq(k,:)];
                 
                 
             end
@@ -84,21 +101,21 @@ if force
         
         
         
-        [A,B,C,D] = obj.ABCD_num(Switch_Resistors,SW,swseq(k,:));
+        [A,B,C,D] = obj.ABCD_num(obj.Switch_Resistors,obj.Switch_Resistor_Values,swseq(k,:));
         
         % Only allows diodes that are on to have non zeros in Bs and
         % Ds
         B_R = size(B,1);
         B_C = size(B,2);
         Diode_adjust_B = ones(B_R,B_C);
-        D_Key = swseq(k,:).* Didoes_POS;
+        D_Key = swseq(k,:).* Diodes_POS;
         Diode_adjust_B(:,B_C-Switch_L+1:end) = repmat(D_Key,[B_R,1]);
         B = B.*Diode_adjust_B;
         
         D_R = size(D,1);
         D_C = size(D,2);
         Diode_adjust_D = ones(D_R,D_C);
-        D_Key = swseq(k,:).* Didoes_POS;
+        D_Key = swseq(k,:).* Diodes_POS;
         Diode_adjust_D(:,D_C-Switch_L+1:end) = repmat(D_Key,[D_R,1]);
         D = D.*Diode_adjust_D;
         
@@ -128,10 +145,12 @@ obj.Dnum = D;
 
 
 
+
 obj.topology.As = obj.Anum;
 obj.topology.Bs = obj.Bnum;
 obj.topology.Cs = obj.Cnum;
 obj.topology.Ds = obj.Dnum;
+obj.topology.Is = repmat(eye(size(obj.Anum,1)),[1 1 size(obj.Anum,3)]);
 
 
 obj.topology.switchLabels = obj.Switch_Names;
@@ -139,7 +158,10 @@ obj.topology.stateLabels = obj.StateNames;
 obj.topology.outputLabels = obj.OutputNamesCD;
 obj.topology.inputLabels = obj.ConstantNames;
 
-
+obj.parsedU = zeros(length(obj.topology.inputLabels),1);
+[~,IA, IB] = intersect(obj.topology.inputLabels,{obj.components.Name});
+obj.parsedU(IA) = [obj.components(IB).paramVals];
+%Note, this won't find Vfs, only the sources
 
 end
 

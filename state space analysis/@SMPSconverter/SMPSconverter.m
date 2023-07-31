@@ -508,7 +508,7 @@ classdef SMPSconverter < handle
         end
         
         function res = get.Is(obj)
-            res = obj.topology.Is(:,:,obj.swseq);
+            res = obj.topology.Is(:,:,obj.swseq);      
         end
         
         function res = get.ts(obj)

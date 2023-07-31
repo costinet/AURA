@@ -1,5 +1,5 @@
 %% TestExampleTopologies loads and simulates steady-state for a variety of example converters
-%   The script requires propoerly-formatted simulink files for the example
+%   The script requires properly-formatted simulink files for the example
 %   topologies that include all initial parameters and inputs.  These are
 %   loaded into the base workspace so that PLECS will see them when the
 %   state space matrices are parsed.
@@ -13,24 +13,18 @@ clear all;
 
 summaryStrings = {};
 
-debug = 0;
+
 allAssess = 1;      % run all models sequentially
 
-models = 4;
+models = 4;         % if allAssess == 0, this model will be run
 
-
-if ~debug
-    w = warning ('off','all');
-else
-    w = warning ('on','all');
-end
-
+%% Add test circuits folder to the path
 sdir = mfilename('fullpath');
 sdir = sdir(1:find(sdir=='\',1,'last')-1);
 addpath(sdir);
 addpath([sdir '\ExampleTopologies'])
 
-%% Load test circuit
+%% Test Circuits
 modelfile{1} = 'AsyncBoost'; PLECsModel{1} = 'Boost_Async';
 modelfile{2} = 'MRBuckDiodes'; PLECsModel{2} = 'MRBuck';
 modelfile{3} = 'DSC4to1'; PLECsModel{3} = 'HDSC';
@@ -49,20 +43,18 @@ modelfile{12} = 'DAB_R'; PLECsModel{12} = 'DAB_Rload';
 % modelfile{length(modelfile)+1} = 'Flyback'; PLECsModel{length(PLECsModel)+1} = 'PC_Flyback';
 
 %% Most recent full run results:
-% Model Boost_Async converged after 43 iterations
-% Model MRBuck converged after 11 iterations
-% Model HDSC converged after 6 iterations
-% Model DAB_oneCap converged after 23 iterations
-% Model DAB_8Cap DID NOT converge within 102 iterations
-% Model HDSC_withDiodes converged after 2 iterations
-% Model BuckBuck converged after 9 iterations
-% Model Q-FibonacciESRCossDiodes converged after 8 iterations
-% Model Q-FibonacciESRCossDiodes converged after 2 iterations
-% Model TwoAsymmBuck converged after 24 iterations
-% Model BuckBuck converged after 15 iterations
-% Model DAB_Rload converged after 16 iterations
-%
-%
+% Model Boost_Async converged after 43 iterations in 0.80257 seconds
+% Model MRBuck converged after 11 iterations in 0.15147 seconds
+% Model HDSC converged after 6 iterations in 0.22897 seconds
+% Model DAB_oneCap converged after 23 iterations in 0.57024 seconds
+% Model DAB_8Cap DID NOT converge within 102 in 2.8029 seconds
+% Model HDSC_withDiodes converged after 2 iterations in 0.0070346 seconds
+% Model BuckBuck converged after 9 iterations in 1.1233 seconds
+% Model Q-FibonacciESRCossDiodes converged after 8 iterations in 0.79489 seconds
+% Model Q-FibonacciESRCossDiodes converged after 2 iterations in 0.0038019 seconds
+% Model TwoAsymmBuck converged after 24 iterations in 0.40205 seconds
+% Model BuckBuck converged after 15 iterations in 7.3213 seconds
+% Model DAB_Rload converged after 16 iterations in 0.4769 seconds
 %
 % Model DAB_8Cap DID NOT converge within 102 iterations
 % Model Q-FibonacciESRCoss converged after 8 iterations
@@ -99,7 +91,8 @@ for selectedModel = models
     sim = SMPSim();
     conv = sim.converter;
     top = sim.topology;
-
+    
+% If Debugging
 %     sim.debug = 1;
 %     sim.debug2 = 1;
     
@@ -112,8 +105,9 @@ for selectedModel = models
         sim.plotAllStates(4)
     end
 
-    
-    niter = sim.findValidSteadyState;
+    tic;
+    niter = sim.findValidSteadyState;   
+    solveTime = toc;
 
     if(debug)
         sim.plotAllStates(1);
@@ -123,12 +117,10 @@ for selectedModel = models
         updateWaitBar(h, modelfile, selectedModel, niter, 0, 0);
     end
 
-
-
-    if(allAssess && niter <= 50)
-        summaryStrings{selectedModel} = ['Model ' PLECsModel{selectedModel} ' converged after ' num2str(niter+1) ' iterations'];
+    if(allAssess && niter <= sim.maxItns)
+        summaryStrings{selectedModel} = ['Model ' PLECsModel{selectedModel} ' converged after ' num2str(niter+1) ' iterations in ' num2str(solveTime) ' seconds'];
     elseif allAssess
-        summaryStrings{selectedModel} = ['Model ' PLECsModel{selectedModel} ' DID NOT converge within ' num2str(niter+1) ' iterations'];
+        summaryStrings{selectedModel} = ['Model ' PLECsModel{selectedModel} ' DID NOT converge within ' num2str(niter+1) ' in ' num2str(solveTime) ' seconds'];
     end
 end
 

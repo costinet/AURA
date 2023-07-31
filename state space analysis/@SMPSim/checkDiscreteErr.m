@@ -1,6 +1,22 @@
 function [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = checkDiscreteErr(obj)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%checkDiscreteErr find violations of constraint matrices at each discrete
+%switching interface
+%   
+%   [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = checkDiscreteErr(obj)
+%   using input SMPSim and its current steady-state solution, find the
+%   errors according to constraint matrices at each switching interface.
+%   Outputs *.Start refer to values at the beginning of any switching
+%   interval and *.End refer to values at the end.  Output violateMargin is the
+%   distance between current value of the signal and the (value +
+%   tolerance) specified by the constraint.  Output targetVal is the same
+%   without tolerance included.
+%
+%   checkDiscreteErr calls checkStateValidity recursively, and makes a few
+%   corrections for common false positives.
+%
+%   See Also SMPSim.checkStateValidity, SMPStopology.constraints,
+%   circuitParser
+
     Xss = obj.Xs;
     us = obj.u;
     Cbnd = obj.topology.Cbnd(:,:,obj.converter.swind);

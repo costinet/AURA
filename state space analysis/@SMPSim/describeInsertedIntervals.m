@@ -1,6 +1,14 @@
 function describeInsertedIntervals(obj, allChanges)
-%UNTITLED4 Summary of this function goes here
-%   Detailed explanation goes here
+%describeInsertedIntervals Print to console a description of how switching
+%state order has changed
+%   
+%   describeInsertedIntervals(obj, allChanges)
+%   prints out a description of how an SMPSim objects current switching
+%   interval sequence was changed through the variable allChanges.  See
+%   debug blocks in SMPSim.findValidSteadyState for correct usage
+%
+%   See Also SMPSim.describeDiscreteErrors,
+%   SMPSim.describeAlteredTimes, SMPSim.describeSwitchState
 
     
 

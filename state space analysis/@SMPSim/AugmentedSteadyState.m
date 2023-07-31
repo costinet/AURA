@@ -38,7 +38,7 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
     EA = In;
     Atil = zeros(size(EA,1), size(EA,2), n);
     for i = n:-1:1
-        Atil(:,:,i) = [As(:,:,i), Bs(:,:,i)*u(:,:,i); zeros(1, size(EA,1))];
+       Atil(:,:,i) = [As(:,:,i), Bs(:,:,i)*u(:,:,i); zeros(1, size(EA,1))];
         expAtil(:,:,i) = expm(Atil(:,:,i)*ts(i));
         EA = EA*expAtil(:,:,i);
     end

@@ -1,6 +1,7 @@
 function [switches] = findDM(obj)
-% findDM find the diodes and switches in a circuit 
-% findDM should be run after read_file.m 
+% findDM find the diodes and switches in a circuit as a part of ABCD.m
+
+% findDM should be run after read_file.m and before nodeloop
 
 % Diodes contains the position for all of the diodes in the circuit.
 % These are sorted by:

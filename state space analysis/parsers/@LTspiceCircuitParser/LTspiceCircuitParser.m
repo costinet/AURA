@@ -9,7 +9,7 @@ classdef LTspiceCircuitParser < handle
         sourcefdate
         
         topology 
-		
+		components
 		
 		 % Symbolic Matrix of ABCD
         Asym
@@ -87,7 +87,7 @@ classdef LTspiceCircuitParser < handle
         
         % The Codex
         Codex
-        Component_Values
+        Component_Values = {}
         
         index
         
@@ -122,26 +122,47 @@ classdef LTspiceCircuitParser < handle
 
 
         % Measurement Voltage and Current Nodes
-        Meas_Voltage
-        Meas_Current
+        Meas_Voltage = {}
+        Meas_Current = {}
         filename
         
-    end
+
+        %% Netlist things
+        netlistLibraries
+        netlistModels
+     end
+
+     properties (Hidden)
+        defaultRoff = 10e6;
+     end
 
    properties (Access = private)
        % From Jared' Topology Class
         order % Need right now becuase it breaks code if not here
-        Element_Properties % 1st column is char of all element names 2nd column is the value of that element ** Resistor values for switches must be at the end
+        Element_Properties = {}% 1st column is char of all element names 2nd column is the value of that element ** Resistor values for switches must be at the end
         Switch_Resistors  % List of chars that represent the switch names plus '_R'
         Switch_Resistor_Values % [SW_OFF; SW_ON; SW_ON] third one will eventually be diode resistance
         Switch_Sequence % Set of binary on or off values that has the number of colums of swithces and the numer of rows of time intervals
         Switch_Names % The names of the switch resistors
-        
+
+        devType
+        isFET
+        isDiode
+        Vf
+
+        parsedU
     end
     
     methods
         [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath)
         loadModel(obj, fn, swseq, force)
+
+        readSpiceNetlist(obj,filename)
+        evalSpiceParams(obj,param)
+        str = spiceNumFormat(obj,str)
+        component = parseSpiceComponent(obj, str, type)
+        [paramVal] = parseTwoNetSpiceComponent(obj,str)
+        [params] = parseSpiceParamList(obj, str, params)
     
 	
 		function set.ONorOFF(obj,value)
@@ -209,6 +230,9 @@ classdef LTspiceCircuitParser < handle
                 error('Current must be of type cell \nCurrent class of Current: %s',class(Current))
 
             end
+
+            obj.sourcefn = Filename;
+            readSpiceNetlist(obj,Filename)
         end
 
         function [StateNames]=getStateNames(obj)
@@ -216,9 +240,13 @@ classdef LTspiceCircuitParser < handle
         end
         
          function obj = LTspiceCircuitParser(topology)
-            assert(isa(topology, 'SMPStopology'), ...
-                'input argument topology must be a handle to an object of class SMPStopology');
-            obj.topology = topology;
+             if nargin ==1 
+                assert(isa(topology, 'SMPStopology'), ...
+                    'input argument topology must be a handle to an object of class SMPStopology');
+                obj.topology = topology;
+             else
+                 warning('Incorrect number of inputs supplied')
+             end
          end
 
     end

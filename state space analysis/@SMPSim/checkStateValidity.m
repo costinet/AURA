@@ -1,7 +1,14 @@
 function [violateMargin,targetVal] = checkStateValidity(obj, X, u, swind)
-%checkStateValidity Summary of this function goes here
-%   violateMargin is how far from closes hystersis edge
-%   targetVal is how far from nominal bound
+%checkStateValidity use constraints to calculate validity of state vector
+%   
+%   [violateMargin,targetVal] = checkStateValidity(obj, X, u, swind)
+%   obj is a SMPSim object, X and u are the state and input vectors, and
+%   swind is an index into the SMPStopology class to get the desired
+%   switching interval constraint matrices.
+%       violateMargin is how far from closest hystersis edge
+%       targetVal is how far from nominal value
+%
+%   See Also SMPSim, SMPStopology, circuitParser
    
 %     swind = obj.converter.swind(swindi);
     Cbnd = obj.topology.Cbnd(:,:,swind);

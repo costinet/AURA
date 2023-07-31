@@ -83,19 +83,25 @@ classdef SMPSim < handle
         
         
     end
-    
-    methods
-        %% Methods from external files
-        [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
-        [ avgXs, avgYs ] = ssAvgs(obj, Xss)
+
+    methods (Hidden)
         plotWaveforms(obj, type, fn, oSelect, subplots)     
-        niter = findValidSteadyState(obj)
 
         %% Debugging (Verbose) helper functions
         describeDiscreteErrors(obj)
         describeInsertedIntervals(obj, allChanges)
         [T] = describeSwitchState(obj)
         describeAlteredTimes(obj,oldts)
+
+        [ avgXs, avgYs ] = ssAvgsInvert(obj, Xss)
+    end
+    
+    methods
+        %% Methods from external files
+        [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
+        [ avgXs, avgYs ] = ssAvgs(obj, Xss)
+        
+        niter = findValidSteadyState(obj)
 
         %% Locally-defined methods
         function Xss = steadyState(obj, dts)
@@ -135,7 +141,7 @@ classdef SMPSim < handle
         %   variable subplots to determine whether to plot each state on
         %   its own subplot or plot them all on a single plot.
         %
-        %   See Also SMPSim, SMPSim.SS_WF_Reconstruct
+        %   See Also SMPSim, SMPSim.SS_WF_Reconstruct, SMPSim.plotWaveforms
             if(nargin <= 1)
                 f = figure;
                 fn = f.Number;
@@ -165,7 +171,7 @@ classdef SMPSim < handle
         %   variable subplots to determine whether to plot each outputs on
         %   its own subplot or plot them all on a single plot.
         %
-        %   See Also SMPSim, SMPSim.SS_WF_Reconstruct            
+        %   See Also SMPSim, SMPSim.SS_WF_Reconstruct,  SMPSim.plotWaveforms           
             if(nargin <= 1)
                 f = figure;
                 fn = f.Number;

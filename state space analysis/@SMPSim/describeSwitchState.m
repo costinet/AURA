@@ -1,6 +1,10 @@
 function [T] = describeSwitchState(obj)
-%UNTITLED5 Summary of this function goes here
-%   Detailed explanation goes here
+%describeSwitchState Print to console a description of switch states
+%   
+%   Used for debugging only.
+%
+%   See Also SMPSim.describeDiscreteErrors,
+%   SMPSim.describeInsertedIntervals, SMPSim.describeAlteredTimes
 
     T = table;
 

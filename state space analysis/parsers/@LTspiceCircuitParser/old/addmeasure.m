@@ -1,5 +1,5 @@
 function [] = addmeasure(obj)
-%addmeasure adds measurement nodes to NL and NLnets
+%addmeasure(NL,NLnets) adds measurement nodes to NL and NLnets
 %   addmeasure takes the numerical net list (NL) and the cell netlist
 %   (NLnets) and produces a new NL and NLnets based on the desired voltage
 %   and current measurements for the circuit. Currently the desired voltage

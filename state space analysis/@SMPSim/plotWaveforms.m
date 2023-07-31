@@ -1,6 +1,19 @@
 function plotWaveforms(obj, type, fn, oSelect, subplots)
-%UNTITLED6 Summary of this function goes here
-%   Detailed explanation goes here
+%plot all states/outputs over one period from the current steady-state solution
+%
+%   plotWaveforms(obj, type, fn, oSelect, subplots)
+%   for SMPSim object, plots all states (type==1) or outputs (type==2) to
+%   figure number fn.  oSelect selects only certain signals from the
+%   state/output vector.  subplots is a boolean variable to determine 
+%   whether to plot each signal on its own subplot or plot them all on a 
+%   single plot.
+%
+%   In most cases, plotAllStates or plotAllOutputs should be used instead
+%   of directly using plotWaveforms due to the lack of input validation
+%   here.
+%
+%   See Also SMPSim.SS_WF_Reconstruct,  SMPSim.plotAllStates, SMPSim.plotAllOutputs  
+
     if type == 1
         [ sigs, t] = obj.SS_WF_Reconstruct;
         names = obj.stateNames;

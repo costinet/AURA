@@ -1,8 +1,6 @@
 %% TestExampleTopologies loads and simulates steady-state for a variety of example converters
-%   The script requires propoerly-formatted simulink files for the example
-%   topologies that include all initial parameters and inputs.  These are
-%   loaded into the base workspace so that PLECS will see them when the
-%   state space matrices are parsed.
+%   The script requires properly-formatted netlist files for the example
+%   topologies that include all initial parameters and inputs.  
 %
 %   if the allAssess variable is set, all of the topologies listed will be
 %   simulated sequentially.  Otherwise, only those indices in the models 
@@ -13,29 +11,25 @@ clear all;
 
 summaryStrings = {};
 
-debug = 0;
 allAssess = 1;      % run all models sequentially
 
-models = 4;
+models = 1;         % if allAssess == 0, this model will be run
 
 
-if ~debug
-    w = warning ('off','all');
-else
-    w = warning ('on','all');
-end
-
+%% Add test netlist folder to the path
 sdir = mfilename('fullpath');
 sdir = sdir(1:find(sdir=='\',1,'last')-1);
 addpath(sdir);
 addpath([sdir '\LTspice NetLists'])
 
-%% Load test circuit
-modelfile{1} = '3levelbuck.net'; 
+%% Test Circuits
+modelfile{1} = 'BuckTest1.net'; 
+modelfile{2} = 'Buck_Vout_D.net'; 
 
 
 %% Most recent full run results:
-
+% Model BuckTest1.net converged after 18 iterations in 0.53823 seconds
+% Model Buck_Vout_D.net converged after 11 iterations in 0.15198 seconds
 
 
 if allAssess
@@ -49,19 +43,9 @@ end
 
 for selectedModel = models
         
-% %     % find_system(modelfile,'SearchDepth',1, 'IncludeCommented', 'on')
-% %     open_system(modelfile{selectedModel},'loadonly');
+
     circuitPath = [modelfile{selectedModel}];
-% %     set_param(circuitPath,'Commented','on');
-% %     clear sim;
-% %     simout = sim(modelfile{selectedModel},eps);
-% %     
-% %     for i = 1:length(simout.properties)
-% %         assignin('base',simout.properties{i},eval(['simout.' simout.properties{i}]));
-% %     end
-% %     
-% %     set_param(circuitPath,'Commented','off');
-    
+
     
     %% Analyze circuit
     
@@ -72,10 +56,10 @@ for selectedModel = models
 %     sim.debug = 1;
 %     sim.debug2 = 1;
 
-swvec = [1 0 1 0; 0 1 0 1];
+
     
-    top.loadCircuit(circuitPath,swvec,1);
-    sim.u = us';
+    top.loadCircuit(circuitPath,[],1);
+    sim.u = us;
     conv.setSwitchingPattern(swvec, ts)
 
     if(debug)
@@ -84,7 +68,9 @@ swvec = [1 0 1 0; 0 1 0 1];
     end
 
     
-    niter = sim.findValidSteadyState;
+    tic;
+    niter = sim.findValidSteadyState;   
+    solveTime = toc;
 
     if(debug)
         sim.plotAllStates(1);
@@ -96,10 +82,10 @@ swvec = [1 0 1 0; 0 1 0 1];
 
 
 
-    if(allAssess && niter <= 50)
-        summaryStrings{selectedModel} = ['Model ' PLECsModel{selectedModel} ' converged after ' num2str(niter+1) ' iterations'];
+    if(allAssess && niter <= sim.maxItns)
+        summaryStrings{selectedModel} = ['Model ' modelfile{selectedModel} ' converged after ' num2str(niter+1) ' iterations in ' num2str(solveTime) ' seconds'];
     elseif allAssess
-        summaryStrings{selectedModel} = ['Model ' PLECsModel{selectedModel} ' DID NOT converge within ' num2str(niter+1) ' iterations'];
+        summaryStrings{selectedModel} = ['Model ' modelfile{selectedModel} ' DID NOT converge within ' num2str(niter+1) ' in ' num2str(solveTime) ' seconds'];
     end
 end
 
