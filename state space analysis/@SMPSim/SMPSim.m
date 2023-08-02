@@ -1,21 +1,21 @@
 classdef SMPSim < handle
-    %UNTITLED3 Summary of this class goes here
-    %   Detailed explanation goes here
-    
+    %SMPSIM Switch Mode Power Supply Simulation Class
+    %   The 
+
     properties (Access = private)
         LSQoptions = optimoptions('lsqlin','algorithm','trust-region-reflective','Display','none');
         tryOpt = 1;
         condThreshold = 1e9;
         gmin = 1/100e6;
-        
-        
+
+
         % speedup varaibles -> solution memory
         oldAs;
         oldts;
         oldIntEAt;
     end
-    
-    
+
+
     properties (Dependent = true)
         As
         Bs
@@ -23,32 +23,32 @@ classdef SMPSim < handle
         Ds
         Is
         topology
-        
+
         stateNames
         outputNames
         switchNames
         inputNames
-        
+
         ts
         u
     end
-    
-    
+
+
     properties
-        
+
         % As
-       % Bs
-       % Cs
-       % Ds
-       % ts
-       % u
+        % Bs
+        % Cs
+        % Ds
+        % ts
+        % u
         converter % Converter
         Converter
-        
+
         order
-        
+
         eigA
-        
+
         % All of the OG Stuff will be pushed to the converter class
         As_OG
         Bs_OG
@@ -58,14 +58,14 @@ classdef SMPSim < handle
         eigA_OG
         ONorOFF_OG
         ts_OG
-        
+
         ts_history
         Xs_history
         %         Aw
         %         Bw
         %         Cw
         %         Dw
-        
+
         % This set is for using the multi time step solve
         As_saved
         Bs_saved
@@ -76,7 +76,7 @@ classdef SMPSim < handle
         ONorOFF_saved
         ts_saved
         Xs_saved
-        
+
         % This set is used to not have to eval every time we add a new
         % set
         saved_A
@@ -85,11 +85,11 @@ classdef SMPSim < handle
         saved_D
         saved_eigA
         saved_new_state
-        
-        
+
+
         Xs
         Xs_circuit % In current implementation this should be Xs if correctXs function is run to ensure the values do not violate KVL and KCL
-        
+
         dead_time_intervals
         dead_time_states
         dead_time_goals
@@ -102,25 +102,25 @@ classdef SMPSim < handle
         Perturb2_index
         binary % This is the ON and OFF Position of switches for the converter to be simulated
     end
-    
+
     properties (Hidden)
         caching = 0
     end
-    
-    
+
+
     methods (Access = private)
         %% Private Methods from external files
         [fresp, intEAt] = forcedResponse(obj, A, expA, B, u, t, storeResult)
         %AdjustDiodeConduction
     end
-    
+
     methods
-        
+
         %% Methods from external files
         [Xs] = SS_Soln(obj,keep_SS, As,Bs,ts,u)
         [ xs, t, ys, interval_end ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs ] = ssAvgs(obj, Xss)
-        plotAllStates(obj, fn)
+        plotAllStates(obj, fn, subplots)
         [check] = VfwdIrev(obj)
         [ ts, dxsdt, hardSwNecessary, multcross, overresonant] = adjustDiodeConduction(obj, Xs, Xi, Si, Vmax, Vmin, progBar)
         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
@@ -129,8 +129,11 @@ classdef SMPSim < handle
         []=Y_Power(obj)
         [X] = SS_Soln_Aug(obj,keep_SS,As,Bs,ts,u)
         [J, J2, XssF, XssB, X0, dt] = Baxter_Jacobianfunction(obj, order)
+        [JoutStart,JoutEnd] = discreteJacobianConstraint(obj)
+        [] = plotSomeStates(obj, fn, states ,subplots)
+        [] = plotSomeOutputs(obj, fn, states ,subplots)
         %% Locally-defined methods
-        
+
         %% Constructors for the new DC stuff
         function obj = SMPSim(conv)
             if nargin == 1
@@ -142,40 +145,40 @@ classdef SMPSim < handle
                 obj.converter = conv;
             end
         end
-        
-         %% Getters
+
+        %% Getters
         function res = get.As(obj)
             res = obj.converter.As;
         end
-        
+
         function res = get.Bs(obj)
             res = obj.converter.Bs;
         end
-        
+
         function res = get.Cs(obj)
             res = obj.converter.Cs;
         end
-        
+
         function res = get.Ds(obj)
             res = obj.converter.Ds;
         end
-        
+
         function res = get.Is(obj)
             res = obj.converter.Is;
         end
-        
+
         function res = get.ts(obj)
             res = obj.converter.ts;
         end
-        
+
         function res = get.u(obj)
             res = obj.converter.u;
         end
-        
+
         function res = get.topology(obj)
             res = obj.converter.topology;
         end
-        
+
         function res = get.oldAs(obj)
             if isempty(obj.oldAs)
                 res = zeros(size(obj.As));
@@ -183,36 +186,36 @@ classdef SMPSim < handle
                 res = obj.oldAs;
             end
         end
-        
+
         function res = get.stateNames(obj)
             res = obj.converter.topology.stateLabels;
         end
-        
+
         function res = get.outputNames(obj)
             res = obj.converter.topology.outputLabels;
         end
-        
+
         function res = get.inputNames(obj)
             res = obj.converter.topology.inputLabels;
         end
-        
+
         function res = get.switchNames(obj)
             res = obj.converter.topology.switchLabels;
         end
-        
-        
+
+
         function settopology(obj, As, Bs, Cs, Ds)
             obj.As = As;
             obj.Bs = Bs;
             obj.Cs = Cs;
             obj.Ds = Ds;
-            
+
             obj.oldAs = zeros(size(As));
             obj.oldIntEAt = zeros(size(As));
-            
+
             obj.Xs = [];
         end
-        
+
         %{
         function set.ts(obj,ts)
             if sum(ts>0)==length(ts)
@@ -222,101 +225,102 @@ classdef SMPSim < handle
             end
         
         end
-          %}  
-            
-        
+        %}
+
+
         %% Setters
         function set.converter(obj, conv)
             obj.converter = conv;
             obj.Xs = [];
             obj.clearStoredResults();
         end
-        
+
         function set.u(obj,newU)
             obj.converter.u = newU;
         end
-        
+
         function set.ts(obj,newT)
-             error('Setting ts is not recommended for class SMPSsim.  Use methods in SMPSconverter');
-%             obj.converter.ts = newT;
+            error('Setting ts is not recommended for class SMPSsim.  Use methods in SMPSconverter');
+            %             obj.converter.ts = newT;
         end
-        
-        
-        
-        
-        
+
+
+
+
+
         function setts(obj,ts)
             if sum(ts>0)==length(ts)
                 obj.ts = ts;
             else
-                
+
                 error('There is a non-postitive time interval length trying to be assigned to the simulation class variable ts. Instead using abs(ts)')
             end
         end
-        
-        
+
+
         function setmodulation(obj, ts)
             obj.ts = ts;
             obj.oldts = zeros(size(ts));
-            
+
             obj.Xs = [];
         end
-        
+
         function setinputs(obj, u)
             obj.u = u;
-            
+
             obj.Xs = [];
         end
-        
+
         function sn = getstatenames(obj)
             sn = obj.Converter.Topology.stateLabels;
         end
-        
+
         function sn = getstatenames_Opp(obj)
             sn = obj.Converter.Topology.stateLabels_Opp;
         end
-        
+
         function sn = getstatenames2(obj)
             sn = obj.Converter.Topology.stateLabels;
         end
-        
+
         % History Functions
-        
+
         function ts_hist(obj,ts)
-        
-           if isempty(obj.ts_history)
-               obj.ts_history = ts;
-           
-           elseif size(obj.ts_history,2) ~= size(ts,2)
+
+            if isempty(obj.ts_history)
+                obj.ts_history = ts;
+
+            elseif size(obj.ts_history,2) ~= size(ts,2)
                 obj.ts_history = [];
-               obj.ts_history = ts;
-           
-           else
-               obj.ts_history(end+1,:) = ts;
-           end
-            
-        end    
-        
-        function Xs_hist(obj,Xs)
-        
-            if isempty(obj.Xs_history)
-               obj.Xs_history = Xs;
-           
-           elseif size(obj.Xs_history,2) ~= size(Xs,2)
-                obj.Xs_history = [];
-               obj.Xs_history = Xs;
-           
-           else
-               obj.Xs_history(:,:,end+1) = Xs;
-           end
-           
+                obj.ts_history = ts;
+
+            else
+                obj.ts_history(end+1,:) = ts;
+            end
+
         end
-        
-        
+
+        function Xs_hist(obj,Xs)
+
+            if isempty(obj.Xs_history)
+                obj.Xs_history = Xs;
+
+            elseif size(obj.Xs_history,2) ~= size(Xs,2)
+                obj.Xs_history = [];
+                obj.Xs_history = Xs;
+
+            else
+                obj.Xs_history(:,:,end+1) = Xs;
+            end
+
+        end
+
+
         function Xss = steadyState(obj)
+            % Find the steady-state solution 
             Xss = SS_Soln(obj);
         end
-        
+
         function clearStoredResults(obj)
             if obj.caching
                 obj.oldAs = zeros(size(obj.As));
@@ -325,9 +329,9 @@ classdef SMPSim < handle
             end
             obj.Xs = [];
         end
-        
-        
-        
+
+
+
         %% Test functions
         function loadTestConverter(obj,dotmatfile)
             try
@@ -339,21 +343,21 @@ classdef SMPSim < handle
                     'Error: test converter file does not contain all requred variables. Required variables are As, Bs, Cs, Ds, ts, and u');
                 throw(ME);
             end
-            
+
             obj.settopology(conv.Topology.As, conv.Topology.Bs, conv.Topology.Cs, conv.Topology.Ds);
             obj.setmodulation(conv.ts);
             obj.setinputs(conv.u);
-            
+
             obj.Xs = [];
         end
-        
+
         %% Test functions
         % for TEST_PARSE_SOLN_DIODE
         function loadTestConverter2(obj,conv)
 
             obj.order = conv.order;
             switchorder = obj.order;
-            
+
             if max(conv.order)>size(conv.Topology.Parser.Anum,3)
                 error('Value of states order given is invalid (exceeds size of A matrix)\n')
             end
@@ -361,12 +365,12 @@ classdef SMPSim < handle
             obj.Bs = [];
             obj.Cs = [];
             obj.Ds = [];
-            
+
             obj.As = conv.Topology.Parser.Anum(:,:,switchorder);
             obj.Bs = conv.Topology.Parser.Bnum(:,:,switchorder);
             obj.Cs = conv.Topology.Parser.Cnum(:,:,switchorder);
             obj.Ds = conv.Topology.Parser.Dnum(:,:,switchorder);
-            
+
             if length(conv.ts)~=length(switchorder)
                 error('The length of the states and time intervals do not match\n')
             end
@@ -377,11 +381,11 @@ classdef SMPSim < handle
             obj.oldIntEAt = zeros(size(obj.As));
             obj.Xs = [];
             obj.Converter = conv;
-            
+
             if size(obj.u,1)~=size(obj.Bs,2)
                 error('The size of B and u do not allow matrix multiplication\n')
             end
-            
+
             %             Ax = conv.topology.Parse.Anum;
             %             Bx = conv.topology.Parse.Bnum;
             %             Cx = conv.topology.Parse.Cnum;
@@ -391,35 +395,35 @@ classdef SMPSim < handle
             %             obj.Bw = cat(3,Bx(:,:,2),Bx(:,:,1),Bx(:,:,3),Bx(:,:,1));
             %             obj.Cw = cat(3,Cx(:,:,2),Cx(:,:,1),Cx(:,:,3),Cx(:,:,1));
             %             obj.Dw = cat(3,Dx(:,:,2),Dx(:,:,1),Dx(:,:,3),Dx(:,:,1));
-            
+
         end
-        
-        
+
+
         function updateTestConverter(obj)
 
             switchorder = obj.order;
-            
+
             obj.As = [];
             obj.Bs = [];
             obj.Cs = [];
             obj.Ds = [];
-            
+
             obj.As = obj.Converter.Topology.Parser.Anum(:,:,switchorder);
             obj.Bs = obj.Converter.Topology.Parser.Bnum(:,:,switchorder);
             obj.Cs = obj.Converter.Topology.Parser.Cnum(:,:,switchorder);
             obj.Ds = obj.Converter.Topology.Parser.Dnum(:,:,switchorder);
-            
+
             obj.oldAs = zeros(size(obj.As));
             obj.oldIntEAt = zeros(size(obj.As));
-            
-            
+
+
             if size(obj.u,1)~=size(obj.Bs,2)
                 error('The size of B and u do not allow matrix multiplication\n')
             end
-            
-            
+
+
         end
     end
-    
+
 end
 

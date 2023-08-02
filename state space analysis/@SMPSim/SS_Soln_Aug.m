@@ -1,6 +1,8 @@
 function [Xi] = SS_Soln_Aug(obj,~,As,Bs,ts,u)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%SS_SOLN_AUG is a SMPSim function that finds the augmented steady state solution 
+%   [Xi] = SS_Soln_Aug(~,As,Bs,ts,u) 
+%   finds the steady state solution to the equation x_dot = As*Xi+Bs*u
+%   where As and Bs are the 
 
 
 

@@ -1,5 +1,6 @@
 classdef component < handle
-    %UNTITLED Summary of this class goes here
+    % COMPONENT Component contains the calls for components within the
+    %database. The 
     %   Detailed explanation goes here
     
     properties (SetAccess=protected)
@@ -101,7 +102,7 @@ classdef component < handle
                     end
                 end
                     
-                if length(varargin{2}) == 1
+                if length(varargin{2}) == 1 && ~isa(varargin{2},'char')
                     if isempty(typeStr)
                         typVal = varargin{2};
                     else
@@ -115,27 +116,49 @@ classdef component < handle
                             error('Invalid type specified');
                         end
                     end
-                elseif length(varargin{2}) == 3
+                elseif length(varargin{2}) == 3 && ~isa(varargin{2},'char')
                     typVal = varargin{2}(1);
                     maxVal = varargin{2}(2);
                     minVal = varargin{2}(3);
                     assert(maxVal > typVal && minVal < typVal, 'values must be specified such that min < typ < max');
+
+
+
+
+                elseif isa(varargin{2},'char') % Added by Baxter to allow char tabular data
+                    if isempty(typeStr)
+                        typVal = varargin{2};
+                    else
+                        if strcmpi(typeStr, 'min')
+                            minVal = varargin{2};
+                        elseif strcmpi(typeStr, 'max')
+                            maxVal = varargin{2};
+                        elseif strcmpi(typeStr, 'typ')
+                            typVal = varargin{2};
+                        else
+                            error('Invalid type specified');
+                        end
+                    end
+
+
+
+
                 else
                     error('parameter value must be singleton or a vector of three values');
                 end
-                
+
                 param = componentTableData(obj, paramName,typVal,maxVal,minVal,testConditions);
-                
+
             end
-                
-% %                 else
-% %                     error('addParameter not defined for this input configuration');
-% %                 end
-% %                     
-% %                 
-% %                 
-% %                 
-% %                 
+
+            % %                 else
+            % %                     error('addParameter not defined for this input configuration');
+            % %                 end
+            % %
+            % %
+            % %
+            % %
+            % %
 % %             elseif nargin == 3
 % %                 if length(varargin{2}) == 1
 % %                     param = componentTableData(obj, varargin{1}, varargin{2}, [], [], []);
@@ -216,6 +239,8 @@ classdef component < handle
         end
      
         function addGraph(obj, graph)
+            % addgraph takes a componentPlotData class and adds it to the
+            % component
 %             assert(length(graph)==1, 'addGraph() can only be used with a single graph at a time');
              if length(graph) > 1
                 for i = 1:length(graph)
@@ -287,9 +312,10 @@ classdef component < handle
            end
            
         end
-        
+
         function convValues = convertUnitsToDefault(obj, param, values, units)
-            if isempty(units) 
+
+            if isempty(units)
                 mult = 1;
             elseif any(strcmp(units(1), obj.SIprefixes.keys))
                 mult = obj.SIprefixes(units(1));
@@ -299,15 +325,19 @@ classdef component < handle
                 error('Invalid unit specified');
             end
             defaultMult = obj.SIprefixes(obj.defaultMultipliers{strcmp(isParamOf(obj,param), obj.knownParams)});
-            convValues = values*mult/defaultMult;
+            if isa(values,'char')
+                convValues = values;
+            else
+                convValues = values*mult/defaultMult;
+            end
         end
     end
-    
+
     methods (Hidden)
         function varargout = subsref(obj, s)
-        %subsref overloads dot-indexing to give back parameters when
-        %they are available.  Returns two paramters:
-        %   res is a single value best-guess for the response
+            %subsref overloads dot-indexing to give back parameters when
+            %they are available.  Returns two paramters:
+            %   res is a single value best-guess for the response
         %   full is a struct or array of the full relevant data
         % The value in res is determined based on the request and the
         % available data.

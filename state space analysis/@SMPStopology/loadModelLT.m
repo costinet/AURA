@@ -1,11 +1,11 @@
 function loadModelLT(obj, fn, swseq, force)
-% loadModel(obj, fn, swseq, force) (LTSpice Implementation)
-% fn = path to ltspice model
+% LOADMODELlt (obj, fn, swseq, force) (LTSpice Implementation)
+% fn = path to ltspice model (not required here resolved earlier)
 % swseq = binary vector of switching states to be parsed
 % force = binary scalar.  If force == 0, the action won't
 % repeat on subsequent calls unless the file has been updated
 % or a new swseq is included.
-% REquired behavior:
+% Required behavior:
 % populates fields As, Bs, Cs, Ds, Is, K
 %     switchLabels, stateLabels, outputLabels, inputLabels
 
@@ -13,6 +13,8 @@ function loadModelLT(obj, fn, swseq, force)
 top = obj;
 %ts = conv.ts;
 %u = conv.u ;
+
+% Call class variables needed
 Order = top.order ;
 Numerical_Components = top.Element_Properties;
 Switch_Resistors = top.Switch_Resistors;
@@ -25,13 +27,13 @@ obj.circuitParser.Component_Values = Numerical_Components;
 Didoes_POS = contains(Switch_Resistors,'D')';
 Switch_L = length(Didoes_POS);
 
-if ~force
+if ~force % only add new switching sequences
     
     if nargin > 2
         if all(ismember(swseq, obj.swseq, 'rows'))
             return
         else
-            %% only new swseqs, just add those
+            % only new swseqs, just add those
             newSwSeq = setdiff(swseq, obj.swseq, 'rows');
             
             for k = 1:1:size(newSwSeq,1)
@@ -43,19 +45,25 @@ if ~force
                 B_R = size(B,1);
                 B_C = size(B,2);
                 Diode_adjust_B = ones(B_R,B_C);
-                D_Key = newSwSeq(k,:).* Didoes_POS;
-                Diode_adjust_B(:,B_C-Switch_L+1:end) = repmat(D_Key,[B_R,1]);
-                B = B.*Diode_adjust_B;
-                
+                Diode_adjust_B2 = ones(B_R,B_C);
+                B_Key = newSwSeq(k,:).* Didoes_POS;
+                B_Key = B_Key(Didoes_POS);
+                Diode_adjust_B(:,contains(obj.circuitParser.ConstantNames,{'D'})) = repmat(B_Key,[B_R,1]);
+                Diode_adjust_B2(:,contains(obj.circuitParser.ConstantNames,{'M'})) = zeros(size(Diode_adjust_B2(:,contains(obj.circuitParser.ConstantNames,{'M'}))));
+                B = B.*Diode_adjust_B.*Diode_adjust_B2;
+
                 D_R = size(D,1);
                 D_C = size(D,2);
                 Diode_adjust_D = ones(D_R,D_C);
-                D_Key = swseq(k,:).* Didoes_POS;
-                Diode_adjust_D(:,D_C-Switch_L+1:end) = repmat(D_Key,[D_R,1]);
-                D = D.*Diode_adjust_D;
-                
-                
-                
+                Diode_adjust_D2 = ones(D_R,D_C);
+                D_Key = newSwSeq(k,:).* Didoes_POS;
+                D_Key = D_Key(Didoes_POS);
+                Diode_adjust_D(:,contains(obj.circuitParser.ConstantNames,{'D'})) = repmat(D_Key,[D_R,1]);
+                Diode_adjust_D2(:,contains(obj.circuitParser.ConstantNames,{'M'})) = zeros(size(Diode_adjust_D2(:,contains(obj.circuitParser.ConstantNames,{'M'}))));
+                D = D.*Diode_adjust_D.*Diode_adjust_D2;
+
+
+
                 obj.circuitParser.Anum(:,:,end+1) = A;
                 obj.circuitParser.Bnum(:,:,end+1) = B;
                 obj.circuitParser.Cnum(:,:,end+1) = C;
@@ -69,29 +77,48 @@ if ~force
     end
 end
 
-if force
+if force % add everything even old swseq
     
     obj.swseq = swseq;
+
+    % This is sort of a patch there was an issue where forece was casuing
+    % the switching vector number to reset in the Anum database. The isse
+    % was in the SC Fib in buck/boost mode it would find M7 and M10 on as
+    % the 9 and 10 new parsed matrices but would then insert those matrices
+    % into at 9 and 10 when moving on to SC mode when it should have been
+    % M1 and M5 turning on. 
+%     obj.circuitParser.Anum = [];
+%     obj.circuitParser.Bnum = [];
+%     obj.circuitParser.Cnum = [];
+%     obj.circuitParser.Dnum = [];
+%     [obj.circuitParser.eigA] = [];
+
+
     for k = 1:1:size(swseq,1)
         
         
-        
+        % Find state-space 
         [A,B,C,D] = obj.circuitParser.ABCD_num(Switch_Resistors,SW,swseq(k,:));
         
         % Only allows diodes that are on to have non zeros in Bs and
         % Ds
+
+        % Adjusted April 2023: There was a bug where a constant current
+        % source would cause wrong columns of B to be zeroed out to account
+        % for diode forward voltage
+
         B_R = size(B,1);
         B_C = size(B,2);
         Diode_adjust_B = ones(B_R,B_C);
         D_Key = swseq(k,:).* Didoes_POS;
-        Diode_adjust_B(:,B_C-Switch_L+1:end) = repmat(D_Key,[B_R,1]);
+        Diode_adjust_B(:,contains(obj.circuitParser.ConstantNames,{'M','D'})) = repmat(D_Key,[B_R,1]);
         B = B.*Diode_adjust_B;
         
         D_R = size(D,1);
         D_C = size(D,2);
         Diode_adjust_D = ones(D_R,D_C);
         D_Key = swseq(k,:).* Didoes_POS;
-        Diode_adjust_D(:,D_C-Switch_L+1:end) = repmat(D_Key,[D_R,1]);
+        Diode_adjust_D(:,contains(obj.circuitParser.ConstantNames,{'M','D'}))  = repmat(D_Key,[D_R,1]);
         D = D.*Diode_adjust_D;
         
         
@@ -106,10 +133,10 @@ end
 
 %%%%%%
 
-
+% It should no longer be needed to delete 
 
 %%% This to account for there being to diodes on at the beginning of
-%%% the run
+%%% the run 
 B = obj.circuitParser.Bnum;
 B(:,contains(obj.circuitParser.ConstantNames,'C'),:)=0;
 obj.circuitParser.Bnum = B;
@@ -119,13 +146,13 @@ obj.circuitParser.Dnum = D;
 
 
 
-
+% Assign state-space variables
 obj.As = obj.circuitParser.Anum;
 obj.Bs = obj.circuitParser.Bnum;
 obj.Cs = obj.circuitParser.Cnum;
 obj.Ds = obj.circuitParser.Dnum;
 
-
+% Assign Label Names
 obj.switchLabels = obj.Switch_Names;
 obj.stateLabels = obj.circuitParser.StateNames;
 obj.outputLabels = obj.circuitParser.OutputNamesCD;
@@ -139,7 +166,7 @@ end
 
 %{
     
-    
+    % Old code for plecs solver
     try
                 plecs('set',fn,'EnableStateSpaceSplitting', 'off');
             catch

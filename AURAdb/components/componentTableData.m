@@ -61,24 +61,47 @@ classdef componentTableData
         end
         
         function out = approx(obj)
-            %approx Summary of this method goes here
-            %   Detailed explanation goes here
+            %APPROX Finds the approximate value of the table parameter
+            %specified by .dot notation
+
             unitScale = obj.componentType.SIprefixes(obj.unit{1});
             if ~isempty(obj.typ)
                 out = obj.typ*unitScale;
+                if isa(obj.typ,'char')
+                    out = obj.typ;
+                end
             elseif ~isempty(obj.max)
                 out = obj.max*unitScale;
+                if isa(obj.max,'char')
+                    out = obj.max;
+                end
             elseif ~isempty(obj.min)
                 out = obj.min*unitScale;
+                if isa(obj.min,'char')
+                    out = obj.min;
+                end
             else
                 out = [];
-            end 
+            end
         end
-        
+
+        function typ = get.typ(obj)
+            typ  = obj.typ;
+        end
+
+        function min = get.min(obj)
+            min  = obj.min;
+        end
+
+        function max = get.max(obj)
+            max  = obj.max;
+        end
+
+
         function unit = get.unit(obj)
-           unit = [obj.multiplier, obj.baseUnit];
+            unit = [obj.multiplier, obj.baseUnit];
         end
-        
+
         function cT = get.type(obj)
             cT = class(obj.componentType);
         end

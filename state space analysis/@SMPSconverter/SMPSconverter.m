@@ -1,6 +1,7 @@
 classdef SMPSconverter < handle
-    %UNTITLED2 Summary of this class goes here
-    %   Detailed explanation goes here
+    %SMPSCONVERTER is the class of converter properties for AURA modeling
+    %   SMPSCONVERTER should be called as a subclass of the SMPSsim class
+    %   when setting up a steady state simulation
     
     properties
         Topology
@@ -10,7 +11,7 @@ classdef SMPSconverter < handle
         Switch_Resistors  % List of chars that represent the switch names plus '_R'
         Switch_Resistor_Values % [SW_OFF; SW_ON; SW_ON] third one will eventually be diode resistance
         Switch_Sequence % Set of binary on or off values that has the number of colums of swithces and the numer of rows of time intervals
-        Fwd_Voltage
+        Fwd_Voltage % Set
         
         
         
@@ -71,6 +72,10 @@ classdef SMPSconverter < handle
     
     
     methods
+        %% Externally Defined
+        [altered, newSwInd] = addUncontrolledSwitching(obj, interval, beforeAfter, initialTime, switches, newStates, force)
+        [tps] = validateTimePerturbations2(obj, tis, dts, lim)
+
         
         function Parse_circuit(obj,filename)
             
@@ -169,6 +174,10 @@ classdef SMPSconverter < handle
         end
         
         function [tps] = validateTimePerturbations(obj, tis, dts)
+            % VALIDATETIMEPERTURBATIONS is a function of the SMPSconverter 
+            % class that has since been replaced by
+            % VALIDATETIMEPERTURBATIONS2
+            
             assert(length(tis) == length(dts), 'vectors tis and dts must have the same number of elements');
             scaleFull = 1;          %scales the time perturbations to keep equal change vector
             individualLimit = 0;    %tries to only reduce the perturbations that violate (needs work)
@@ -261,6 +270,19 @@ classdef SMPSconverter < handle
         
         
         function [that, dts] = getDeltaT(obj, ind)
+            % GETDELTAT is a function of the SMPSconverter class that finds
+            % appropriate time pertubation for Jacobian calculations or
+            % small signal time purtuobations and projections
+            %
+            % [that, dts] = GETDELTAT(ind)
+            % ind is the time interval that will be examined
+            % that is the good approximate for small-signal perturbations which
+            % accounts all exponential and resonate frequencies in the time
+            % interval
+            % dts is the good approximate for large-signal perturbations which
+            % accounts only resonate frequencies in the time
+            % interval
+
             if nargin <2
                 ind = 1:length(obj.swind);
             end
@@ -296,6 +318,11 @@ classdef SMPSconverter < handle
         end
         
         function eliminateZeroTimeIntervals(obj)
+            % ELIMINATEZEROTIMEINTERVALS is a function of the SMPSconverter 
+            % class that finds and eliminates time intervals that have been
+            % zeroed out due to diode error correction adjustments
+
+            % Old code:
             %             fts = obj.fullts;
             %             dts = diff(fts,1);
             %             [r,c] = find(fts(2:end,:) == dts & fts(2:end,:) ~= 0);
@@ -336,6 +363,7 @@ classdef SMPSconverter < handle
         end
         
         function [ts, ints, subInts] = getIntervalts(obj)
+            % 
             ts = obj.ts;
             [r,c] = find(obj.fullts ~= 0);
             ints = c;
@@ -346,6 +374,25 @@ classdef SMPSconverter < handle
             subInts = reshape(subInts,length(subInts),1);
         end
         
+        function TF = checkForSymmetry(obj) 
+            if mod(length(obj.ts),2) == 0
+                halfPoint = length(obj.ts)/2;
+                Mat1 = reshape(cat(2, obj.As(:,:,1:halfPoint), obj.Bs(:,:,1:halfPoint)), size(obj.As(:,:,1:halfPoint),1),...
+                    (size(obj.As(:,:,1:halfPoint),2) + size(obj.Bs(:,:,1:halfPoint),2))*size(obj.As(:,:,1:halfPoint),3) );
+                Mat2 = reshape(cat(2, obj.As(:,:,halfPoint+1:end), obj.Bs(:,:,halfPoint+1:end)), size(obj.As(:,:,halfPoint+1:end),1),...
+                    (size(obj.As(:,:,halfPoint+1:end),2) + size(obj.Bs(:,:,halfPoint+1:end),2))*size(obj.As(:,:,halfPoint+1:end),3) );
+                if abs(Mat1) == abs(Mat2)
+                    TF = 1;
+                else
+                    TF = 0;
+                end
+            else
+                TF = 0;
+            end
+        end
+
+
+
         %% Getters
         function res = get.As(obj)
             res = obj.topology.As(:,:,obj.swseq);

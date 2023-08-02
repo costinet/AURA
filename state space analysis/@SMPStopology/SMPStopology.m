@@ -1,5 +1,5 @@
 classdef SMPStopology < handle
-    %UNTITLED3 Summary of this class goes here
+    %SMPSTOPOLOGY contains topology information on the simulated converter
     %   Detailed explanation goes here
     
     properties
@@ -47,12 +47,13 @@ classdef SMPStopology < handle
     end
     
     properties (Hidden)
-        % Constraints
+        % Constraints for validateSteadyState
         Cbnd
         Dbnd
         bndHyst     %[mean, std]
         switchRef   %[SwitchNo, State its in]
         
+        % Labels for 
         stateLabels
         outputLabels
         inputLabels
@@ -70,8 +71,7 @@ classdef SMPStopology < handle
         eigAs
     end
     
-    
-    
+
     % %%From DC Code
     % properties
     %     As
@@ -116,9 +116,7 @@ classdef SMPStopology < handle
     %         eigAs
     %     end
     
-    
-    
-    
+
     methods
         loadModelLT(obj, fn, swseq, force)
         % From external files
@@ -172,6 +170,7 @@ classdef SMPStopology < handle
         
         
         function setSS(obj, As, Bs, Cs, Ds)
+            % Sets the 
             obj.As = As;
             obj.Bs = Bs;
             

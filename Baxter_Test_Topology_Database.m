@@ -29,8 +29,12 @@ topDB.add(COMPEL2023_3LevelBuck)
 %% 4LevelBuck
 COMPEL2023_4LevelBuck = topology('4LevelBuck Feb28',1,0,'COMPEL2023_4LevelBuck.net');
 
-
 topDB.add(COMPEL2023_4LevelBuck)
+
+%% Buck
+COMPEL2023_Buck = topology('Buck',1,0,'Buck_Vout_D.net');
+
+topDB.add(COMPEL2023_Buck)
 
 
 topDB.saveDB

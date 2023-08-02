@@ -1,5 +1,5 @@
 classdef AURAdb < handle
-    %AURAdb is a collection of databases used in Power Electronics Design
+    %AURAdb is the collection of databases used in Power Electronics Design
     
     properties (SetAccess = immutable, GetAccess = public)
         transistors

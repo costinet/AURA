@@ -120,7 +120,7 @@ classdef NetListParse < handle
 
 
 
-    properties (Access = private)
+    properties %(Access = private)
 
         % Measurement Voltage and Current Nodes
         Meas_Voltage
@@ -209,7 +209,11 @@ classdef NetListParse < handle
 
         
          %% Getters
-         
+        
+
+         function [net]=get.NewNLnets(obj)
+             net = obj.NewNLnets;
+         end
         % function res = get.Component_Values(obj)
         %     res = obj.topology.Element_Properties;
         % end

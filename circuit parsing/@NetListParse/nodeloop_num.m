@@ -212,7 +212,7 @@ end
 almost_H = [H_EE,H_EJ;H_JE,H_JJ];
 [H,s]=obj.hybridparse(almost_H,SortedTree,SortedCoTree);
 
-% Eventual Function to find outputs
+% Functions to find outputs
 [A,B,C,D,HtempAB,dependsAB,StateNamesAB,OutputNames,DependentNames,ConstantNames,OrderedNamesnum]=obj.loopfixAB_num(H,s,NLnets,SortedTree,SortedCoTree);
 
 [C,D,HtempCD,savedCD,StateNamesCD]=obj.loopfixCD_num(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree);

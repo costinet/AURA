@@ -1,0 +1,159 @@
+function [tLocs,insertAt,adjType] = findRequiredUncontrolledSwitching(obj,violateMarginStart,violateMarginEnd)
+%FINDREQUIREDUNCONTROLLEDSWITCHING is a fuctnion of the SMPSsim class where
+%error type and location is determined
+
+% adjType (:,:,1) is for when there is an after error
+% adjType (:,:,2) is for when there is a before error
+% tLocs shows which time intervals contain an error
+
+%% Old uncommented code
+%{
+    [~,ints,~] = getIntervalts(obj.converter);
+    ints = ints';
+
+    errBefore = min(violateMarginStart,0);
+    errAfter = min(violateMarginEnd,0);
+
+    errLocs = (errAfter<0 & (errBefore<0));
+
+    unadjustableLocs = (errAfter<0  & (ints ~= circshift(ints,-1))) | ...
+        (errBefore<0 & (ints ~= circshift(ints,1)));
+
+
+
+    adjustableButSameInterval = (errAfter<0  & ...
+        ((ints == circshift(ints,-1)) & (obj.converter.swind == circshift(obj.converter.swind,-1)))) | ...
+        (errBefore<0 & ...
+        ((ints == circshift(ints,1)) & (obj.converter.swind == circshift(obj.converter.swind,1))));
+
+
+    tLocs = errLocs | unadjustableLocs | adjustableButSameInterval;
+
+
+    insertAt = any(tLocs,1);
+    
+    adjType = zeros(size(obj.topology.Cbnd,1), length(obj.converter.ts), 2);
+    adjType(:,:,1) = (errAfter<0)+0;
+    adjType(:,:,2) = (-1)*(errBefore<0);
+
+%}
+
+
+    switchRef = obj.converter.topology.switchRef;
+
+    [~,ints,~] = getIntervalts(obj.converter);
+    ints = ints';
+
+    %% "before" and "after" refer to time intervals
+    errBefore = min(violateMarginStart,0)<0;  %There is an error at the start of the interval
+    errAfter = min(violateMarginEnd,0)<0;     %There is an error at the end of the interval
+
+    % Errors which start in one interval, but continue into the next
+    interfaceErrors =  errBefore & circshift(errAfter,1,2);
+
+    % Errors persisting for an entire interval
+    fullIntErrors = errBefore & errAfter;
+
+    % Errors persisting for an entire interval and into the next
+    extendInterfaceErrors = fullIntErrors & circshift(errBefore,-1,2);
+
+    endOfextendedError = extendInterfaceErrors & ~circshift(errAfter,-1,2);
+
+    errLocs = (fullIntErrors & ~extendInterfaceErrors) | endOfextendedError ;
+%     unadjustableLocs = (errAfter  & (ints ~= circshift(ints,-1))) | ...
+%              (errBefore & (ints ~= circshift(ints,1)) & ~(circshift(errAfter,1,2)<0)) ;
+    unadjustableLocs = (errAfter  & (ints ~= circshift(ints,-1))) | ...
+            (errBefore & (ints ~= circshift(ints,1))) ;
+
+    unadjustableLocs = unadjustableLocs & ~interfaceErrors;
+    %These times cannot be adjusted because they are controlled switching
+    %intervals.  The outer loop will need to insert a new uncontrolled
+    %switching action before they can be altered.
+
+
+    adjustableButSameInterval = (errAfter  & ...
+        ((ints == circshift(ints,-1)) & (obj.converter.swind == circshift(obj.converter.swind,-1)))) | ...
+        (errBefore & ...
+        ((ints == circshift(ints,1)) & (obj.converter.swind == circshift(obj.converter.swind,1))));
+
+
+    prev_state = circshift(obj.converter.swvec,1);
+    current_prev_comp = obj.converter.swvec == prev_state;
+    next_state = circshift(obj.converter.swvec,-1);
+   current_next_comp = obj.converter.swvec == next_state;
+
+
+    % This finds where there is a error before and after that crosses over
+    % the same switching action. It then determines if the 
+    
+
+    
+    [i1,j1] =  find(errBefore) ;
+     
+    [i2,j2] = find(circshift(errAfter,[0 1]));
+    
+    LIA = ismember(j1,j2);
+
+    if any(LIA)
+        for i = 1:length(j1)
+            if LIA(i)==1
+                after_index = switchRef(i2(j2==j1(i)),1);
+                before_index = switchRef(i1(j1==j1(i)),1);
+                one_to_compare_to = current_next_comp(j1(i),:);
+                compare_to=ones(size(one_to_compare_to));
+                compare_to(before_index) = 0;
+                if ~all(compare_to==one_to_compare_to);
+                    
+                end
+        end
+    end
+
+
+
+
+
+    % If there is a case where in one deadtime there are multiple diodes
+    % that need to have different periods of time. Need to identify the
+    % times that will occur 
+    %{
+       [i1,j1] = find(errBefore);
+       [i2,j2] = find(errAfter);
+         
+
+
+        for j = 1:length(j2)
+                next_state = circshift(obj.converter.swvec,-1);
+               current_next_comp = obj.converter.swvec == next_state;
+                if 
+
+    adjustableButSameInterval = errAfter  & ...
+        ints == circshift(ints,-1) &  errAfter.*switchRef(:,1) | 
+        (errBefore & ...
+        ((ints == circshift(ints,1)) & (obj.converter.swind == circshift(obj.converter.swind,1))));
+    %}
+
+    %% Three reasons to add a new interval
+        % (1) there is error both before and after a single interface
+        % (2) there is error either before or after, 
+        %   (2a) but the time of the  interface isn't adjustable because 
+        %         it is a controlled switching action
+        %   (2b) but the before and after subinterval are the same (w.r.t.
+        %   the error)
+    tLocs = errLocs | unadjustableLocs | adjustableButSameInterval |;
+    
+
+    %% Handle case where there are multiple connected intervals with violation 
+    % because the violating switch doesn't change (i.e. others are switching)
+%     tLocs(tLocs & circshift(tLocs,-1,2)) = 0; %If the following interval has the same error, don't also insert here
+%             %start from the end and work your way back, instead
+    
+
+    insertAt = any(tLocs,1);
+    
+    adjType = zeros(size(obj.topology.Cbnd,1), length(obj.converter.ts), 2);
+    adjType(:,:,1) = repmat(insertAt,size(errAfter,1),1) & (errAfter)+0;
+    adjType(:,:,2) = ((-1)*(errBefore) & ~errAfter) & repmat(insertAt,size(errAfter,1),1);
+
+
+end
+

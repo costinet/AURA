@@ -1,6 +1,7 @@
 function [C,D,Htemp,saved,OutNames] = loopfixCD_num(obj,A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree)
-%loopfixCD Calculates C and D
-%   Detailed explanation goes here
+%loopfixCD_num corrects potential errors in the C and D matrix from the
+%state-space equation. This function should be run after loopfixAB_num.m
+
 
 %     _   _   _  ____    _    
 %    / \ | | | |/ _  |  / \   

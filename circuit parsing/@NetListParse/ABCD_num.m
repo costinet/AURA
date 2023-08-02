@@ -1,5 +1,5 @@
 function [A,B,C,D] = ABCD_num(obj,Switch_Resistors,SW,Switch_Sequence)
-% ABCD creates takes a NETlist file from LTSpice and creates the associated
+% ABCD_num creates takes a NETlist file from LTSpice and creates the associated
 % ABCD matrices or the associated matrices need to get ABCD if a symbolic
 % formulation cannot be solved in a descent amount of time.
 %
@@ -22,12 +22,8 @@ end
 obj.Component_Values(end-length(Switch_Resistors)+1:end,:) = [Switch_Resistors Switch_Value'];
 
 
-
-
-%% Cycle through all possible states
-
 i = 1;
-    % numeric
+    % numeric solution
     [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),HtempAB(:,:,i),dependsAB(:,:,i),HtempCD(:,:,i),savedCD(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i),OutputNames(:,i),DependentNames(:,i),SortedTree(:,:,i),SortedCoTree(:,:,i),ConstantNames(:,i),OrderedNamesnum(:,i)] = obj.nodeloop_num(obj.NewNL,obj.NewNLnets);
    
 

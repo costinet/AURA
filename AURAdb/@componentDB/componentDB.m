@@ -1,5 +1,6 @@
 classdef componentDB < handle
-    %componentDB is a template for individual component databases
+    %COMPONENTDB is a template for individual component databases used for
+    %saving and loading databases
     
     properties (SetAccess = protected , GetAccess = protected)
         tableProps
@@ -35,12 +36,12 @@ classdef componentDB < handle
     
     methods
         function obj = componentDB()
-            %UNTITLED Construct an instance of this class
-            %   Detailed explanation goes here
+            % Construct an instance of this class
             obj.components = eval([class(obj.componentType) '.empty']);
         end
         
         function add(obj, item)
+            % add a component class to the database
             assert(isa(item, class(obj.componentType)), ...
                 ['class ' class(obj) ' can only be used to store objects of type ' class(obj.componentType)] );
            
@@ -80,7 +81,7 @@ classdef componentDB < handle
         
         function n = numArgumentsFromSubscript(obj,s,indexingContext)
             %% redefined to aid in subsref
-            if strcmp(s(1).type, '()') 
+            if strcmp(s(1).type, '()')
                 if strcmp(s(1).subs{:}, ':')
                     n = length(obj.components(s(1).subs{:}));
                 else
@@ -94,11 +95,24 @@ classdef componentDB < handle
                         end
                     end
                 end
+            % This is used to find if there is a call to the database of
+            % type Database.parameter.approx/min/typ/max
+            elseif  strcmp(s(1).type, '.') 
+                try
+                    if strcmp(s(2).subs, 'approx')||strcmp(s(2).subs, 'typ')||strcmp(s(2).subs, 'min')||strcmp(s(2).subs, 'max')
+                        n = 1;
+                    else
+                        n = builtin('numArgumentsFromSubscript',obj,s,indexingContext);
+                    end
+                catch ME
+                    n = builtin('numArgumentsFromSubscript',obj,s,indexingContext);
+                end
+
             else
                 n = builtin('numArgumentsFromSubscript',obj,s,indexingContext);
             end
         end
-        
+
 %         varargout = subsref(obj, index)
     end
         

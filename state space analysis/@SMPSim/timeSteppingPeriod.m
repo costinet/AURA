@@ -1,6 +1,9 @@
 function [Xf,ts,swinds] = timeSteppingPeriod(obj)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+%TIMESTEPPINGPERIOD is a function of the SMPSim class that time steps
+%through the period. 
+%   Xf is the value of state variables at the end of each time period
+%   ts is the length of the time intervals
+%   swinds = 1
 % 
     [~, deltaTs] = getDeltaT(obj.converter, 1:length(obj.ts));
     tVecLength = sum(ceil(obj.converter.ts./deltaTs),'all');

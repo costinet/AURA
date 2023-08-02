@@ -1,5 +1,5 @@
 function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrixLT(obj,circuitPath,foreced_Refresh)
-%get ConstraintMatrics get Cbnd and Dbnd from LTSpice model
+%   GETCONSTRAINTMATRIXLT get Cbnd and Dbnd from LTSpice model
 %   Note that the PLECs model must have probes added to all switching
 %   device currents and voltages (double-click -> assertions -> (+))
 
@@ -74,13 +74,28 @@ for i = 1:length(switchNames)
     end
     
     if obj.isDiode(i)
-        %on-state current > 0
+        
+        % Taken out the on state current to try and converge better -
+        % Baxter COMPEL 2023
+        
+       % on-state current > 0
+        %%{
         Cbnd(devCurrent, :, swvec(:,i)==1) = obj.Cs(devCurrent, :, swvec(:,i)==1);
         Dbnd(devCurrent, :, swvec(:,i)==1) = obj.Ds(devCurrent, :, swvec(:,i)==1);
-        hyst(devCurrent,:)=[0, 10e-6];
+        hyst(devCurrent,:)=[0, 100e-3];
         switchRef(devCurrent,:) = [i, 1];
+        %}
         
-        
+        % voltage check for on voltage
+        %{
+        %if ~isempty(obj.Cs(devVoltage, :, swvec(:,i)==1)) || ~isempty(obj.Ds(devVoltage, :, swvec(:,i)==1))
+            Cbnd(devCurrent, :, swvec(:,i)==1) = obj.Cs(devVoltage, :, swvec(:,i)==1);
+            Dbnd(devCurrent, :, swvec(:,i)==1) = obj.Ds(devVoltage, :, swvec(:,i)==1);
+            hyst(devCurrent,:)=[obj.Fwd_Voltage(i), max([obj.Fwd_Voltage(i)/5, 0.1])];
+            switchRef(devCurrent,:) = [i, 1];
+       % end
+        %}
+
         %off-state -(voltage) > 0
         %            Cbnd(devVoltage, :, swvec(:,i)==0) = -obj.topology.Cs(devVoltage, :, swvec(:,i)==0);
         %            Dbnd(devVoltage, :, swvec(:,i)==0) = -obj.topology.Ds(devVoltage, :, swvec(:,i)==0);
@@ -89,7 +104,7 @@ for i = 1:length(switchNames)
         
         
         % Vf = evalin('base', plecs('get', [modelFile '/' devStr], 'Vf'));
-        hyst(devVoltage,:)=[-1.5, 0.25];
+        hyst(devVoltage,:)=[-obj.Fwd_Voltage(i), max([obj.Fwd_Voltage(i)/5, 0.1])];
         switchRef(devVoltage,:) = [i, 0];
         
         
@@ -97,7 +112,7 @@ for i = 1:length(switchNames)
         %off-state voltage > 0
         Cbnd(devVoltage, :, swvec(:,i)==0) = obj.Cs(devVoltage, :, swvec(:,i)==0);
         Dbnd(devVoltage, :, swvec(:,i)==0) = obj.Ds(devVoltage, :, swvec(:,i)==0);
-        hyst(devVoltage,:)=[-1, 0.1];
+        hyst(devVoltage,:)=[-obj.Fwd_Voltage(i), 0.1];
         switchRef(devVoltage,:) = [i, 0];
         
         %off-state -(current) > 0
@@ -117,7 +132,8 @@ Dbnd(zeroRows,:,:) = [];
 hyst(zeroRows,:) = [];
 switchRef(zeroRows,:) = [];
 
-% eliminate redundant constraints
+%{
+%eliminate redundant constraints
 combBnd = reshape(cat(2, Cbnd, Dbnd), size(Cbnd,1), (size(Cbnd,2) + size(Dbnd,2))*size(Cbnd,3) );
 [~, ia, ~] = unique(combBnd,'rows');
 
@@ -125,6 +141,8 @@ Cbnd = Cbnd(ia,:,:);
 Dbnd = Dbnd(ia,:,:);
 hyst = hyst(ia,:);
 switchRef = switchRef(ia,:);
+%}
+
 
 obj.Cbnd = Cbnd;
 obj.Dbnd = Dbnd;

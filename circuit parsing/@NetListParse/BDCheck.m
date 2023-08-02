@@ -1,6 +1,5 @@
 function [Combinations] = BDCheck(obj,Combinations,state,switches)
-%UNTITLED3 Summary of this function goes here
-%   Detailed explanation goes here
+%BDCheck Obsolete code that check to see if there were combination of body diode that could interfere with solving for the steady-state
 
 %     _   _   _  ____    _
 %    / \ | | | |/ _  |  / \

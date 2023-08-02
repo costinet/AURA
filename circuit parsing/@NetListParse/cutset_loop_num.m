@@ -1,5 +1,5 @@
 function [] = cutset_loop_num(obj)
-%cutset_loop_num Runs after 
+%CUTSET_LOOP_NUM Runs after 
 %   Detailed explanation goes here
 
 

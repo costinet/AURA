@@ -1,5 +1,9 @@
 function [] = read_file_num(obj)
-%
+% READ_FILE_NUM is a function of the NetListParse class that read in the
+% .net file and stores within class. Filename must already be present in
+% class to run.
+
+
 % The code reads the NETlist file from LTSpice to be used in finding ABCD
 %
 % [NLraw,ALL,NL,NL3,incidence] = read_file(filename) returns:

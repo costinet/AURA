@@ -1,6 +1,10 @@
 function [ avgXs, avgYs ] = ssAvgs(obj, Xss)
-%UNTITLED11 Summary of this function goes here
-%   Detailed explanation goes here
+%SSAVGS is a function of the SMPSsim class that finds the average state
+%values 
+%   [ avgXs, avgYs ] = ssAvgs(Xss) where 
+%   avgXs gives the average state values in the order of stateNames
+%   avgYs gives the average output values in the order of outputNames
+%   Xss is the steady-state of the converter as calculated by SS_Soln
 
     As = obj.As;
     Bs = obj.Bs;

@@ -1,6 +1,10 @@
 function [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = checkDiscreteErr(obj)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%CHECKDISCRETEERR is a function in the SMPSim class that checks for
+%potential diode conduction violations in the solved steady state
+%   violateMarginStart and violateMarginEnd show the solution difference to the
+%   violation
+%   targetValStart and targetValEnd show the solution differnce to the
+%   target value
     Xss = obj.Xs;
     us = obj.u;
     Cbnd = obj.topology.Cbnd(:,:,obj.converter.swind);
@@ -12,11 +16,50 @@ function [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = che
     targetValEnd = violateMarginEnd;
 
     for i = 1:length(obj.converter.swind)
-        violateMarginStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1) + obj.topology.bndHyst(:,2);
-        targetValStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1);
-        violateMarginEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1) + obj.topology.bndHyst(:,2);
-        targetValEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1);
+        [violateMarginStart(:,i), targetValStart(:,i)] = obj.checkStateValidity( Xss(:,i), us, obj.converter.swind(i));
+        [violateMarginEnd(:,i), targetValEnd(:,i)] = obj.checkStateValidity( Xss(:,i+1), us, obj.converter.swind(i));
+%         violateMarginStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1) + obj.topology.bndHyst(:,2);
+%         targetValStart(:,i) = Cbnd(:,:,i)*Xss(:,i) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1);
+%         violateMarginEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1) + obj.topology.bndHyst(:,2);
+%         targetValEnd(:,i) = Cbnd(:,:,i)*Xss(:,i+1) + Dbnd(:,:,i)*us - obj.topology.bndHyst(:,1);
+
+
+%% This looks at 
+%%{
+
+
+
+%% Check for and correct hard switching issue:
+%{
+        if any(violateMarginStart(:,i) < 0 & obj.topology.constraints.switchRef(:,2) == 0 )
+            % error at start             &         its a device that is off
+            prevInt = subsref(circshift(obj.converter.swind,1),struct('type','()','subs',{{i}}));
+            prevSwStates = obj.topology.swseq(prevInt, obj.topology.constraints.switchRef(:,1));
+            if any(violateMarginStart(:,i) < 0 & obj.topology.constraints.switchRef(:,2) == 0 & prevSwStates')
+                % error at start             &         its a device that is off       &       It was on
+                falsePos = violateMarginStart(:,i) < 0 & obj.topology.constraints.switchRef(:,2) == 0 & prevSwStates';
+                swind = obj.converter.swind(i);
+                xdot = obj.As(:,:,i)*Xss(:,i) + obj.Bs(:,:,i)*us;
+                deltaViolate = Cbnd(:,:,i)*xdot + Dbnd(:,:,i)*us;
+                trueFalsePos = deltaViolate > 0 & falsePos;
+                if(any(trueFalsePos))
+                    violateMarginStart(trueFalsePos,i) = 0;
+                    warning('This is under test -- just deltaViolate > 0 is maybe too generous')
+                end
+                %the point of this whole thing is a diode can be on during
+                %DT, turn off because the opposite FET came on, then try to
+                %turn back on because INSTATNTANEOUSLY at the start of the
+                %inverval, the I*R from when it was on makes it look like
+                %if has a positive voltage.
+                % One could conceivably address this with the hystersis on
+                % the constraints, but it requires alteration based on what
+                % the actual I*R is.
+                % It cannot be neglected because maybe the FET
+                % turning on or whatever made the switching transition
+                % won't be taking over this current.
+            end
+        end
+
+%}
     end
-
 end
-

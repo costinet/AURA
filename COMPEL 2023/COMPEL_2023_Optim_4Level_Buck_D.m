@@ -72,6 +72,22 @@ indDB.add(indDBig(logical(indDBindex)));
         FETs(i,2) = transDB(i).Coss.typ*1e-12;
     end
     
+    for i = 1:Number_of_FETs
+        FETs(end+1,1) = 0.5*transDB(i).ron.typ*1e-3;
+        FETs(end,2) = 2*transDB(i).Coss.typ*1e-12;
+    end
+    
+    for i = 1:Number_of_FETs
+        FETs(end+1,1) = (1/3)*transDB(i).ron.typ*1e-3;
+        FETs(end,2) = 3*transDB(i).Coss.typ*1e-12;
+    end
+    
+        for i = 1:Number_of_FETs
+        FETs(end+1,1) = (1/4)*transDB(i).ron.typ*1e-3;
+        FETs(end,2) = 4*transDB(i).Coss.typ*1e-12;
+    end
+    
+    
     for i = 1:length(FETs)
         for j = 1:length(FETs)
             FETs_Ron(i,j) = FETs(i,1) - FETs(j,1);
@@ -89,6 +105,12 @@ indDB.add(indDBig(logical(indDBindex)));
         INDs(i,2) = indDB(i).rdc.typ*1e-3;
     end
     
+        for i = 1:Number_of_INDs
+        INDs(end+1,1) = (1/2)*indDB(i).L.typ*1e-6;
+        INDs(end,2) = (1/2)*indDB(i).rdc.typ*1e-3;
+    end
+    
+    
     for i = 1:length(INDs)
         for j = 1:length(INDs)
             
@@ -96,6 +118,9 @@ indDB.add(indDBig(logical(indDBindex)));
             INDs_RL(i,j) = INDs(i,2) - INDs(j,2);
         end
     end
+    
+    
+    
     
     
     
@@ -118,7 +143,7 @@ indDB.add(indDBig(logical(indDBindex)));
         end
     end
     %}
-    saved_fval = ones(2,1).*100;
+    saved_fval = 100;
     big_loop = 0;
     max_iteration = 50;
     almost_steady_state = [ 0 0];
@@ -129,7 +154,7 @@ indDB.add(indDBig(logical(indDBindex)));
     % x =[4  4   1  ];
       x =[3 3   0.5  ];
     
-    
+    saved_x = x;
     FETs_number = 1;
     stick = zeros(FETs_number+1,3);
     deltaRon = -0.1e-3;
@@ -227,7 +252,7 @@ indDB.add(indDBig(logical(indDBindex)));
                 x(i) = new_x;
                 saved_x(end+1,:) = x;
                 almost_steady_state(i) = 0;
-                saved_fval(:,end+1) = stick(:,1);
+                saved_fval(:,end+1) = stick(i,1);
                 i
                 toc
             end
@@ -286,12 +311,24 @@ indDB.add(indDBig(logical(indDBindex)));
                 x(i) = new_x;
                 saved_x(end+1,:) = x;
                 almost_steady_state(i) = 0;
-                saved_fval(:,end+1) = stick(:,1);
+                saved_fval(:,end+1) = stick(i,1);
                 i
                 toc
             end
 
-                fs_sweep = linspace(2e6,500e3,10);
+          fs_pos = 3;
+            
+            fs_sweep = linspace(5e6,1e6,10);
+            
+            if big_loop>0
+                fs_sweep = linspace(500e3+x(fs_pos)*1e6,-500e3+x(fs_pos)*1e6,9);
+            end
+            
+            if big_loop>0 && x(fs_pos) < 0.550
+                
+                fs_sweep = linspace((x(fs_pos)*1e6-100e3)+x(fs_pos)*1e6,100e3,9);
+            end
+            
             for n=1:length(fs_sweep)
                 
                 Coss_adj_test = [0 ];
@@ -299,14 +336,21 @@ indDB.add(indDBig(logical(indDBindex)));
                 L_adj_test = [0];
                 RL_adj_test = [0];
                 
-                x(3) = fs_sweep(n)*1e-6;
+                x(fs_pos) = fs_sweep(n)*1e-6;
                 [stick_fs(n),graph1]=COMPEL_2023_4Level_Buck_D_Sweep(x,Coss_adj_test,Ron_adj_test,L_adj_test,RL_adj_test);
                 
                 
             end
             [~,pos] = min(stick_fs);
-            x(3) = fs_sweep(pos)*1e-6;
-            
+            if fs_sweep(pos)*1e-6 ~= saved_x(end,fs_pos)
+                x(fs_pos) = fs_sweep(pos)*1e-6;
+                saved_x(end+1,:) = x;
+                almost_steady_state(fs_pos) = 0;
+                saved_fval(end+1) = stick_fs(pos);
+            else
+                x(fs_pos) = fs_sweep(pos)*1e-6;
+                almost_steady_state(fs_pos) = 1;
+            end
             
         big_loop = big_loop + 1;
         
@@ -343,7 +387,49 @@ ylabel('Coss (F)','FontSize',20);
 xlabel('Ron (\Omega)','FontSize',20);
 
 % Create title
-title('Buck SC Converter Optimization','FontSize',24);
+title('3 Phase 4 Level Buck','FontSize',24);
+
+axis1 = gca;
+set(axis1,'FontName','Times New Roman','FontSize',14);
+legend
+
+figure
+plot_L = INDs(:,1);
+plot_RL = INDs(:,2);
+scatter(plot_L,plot_RL,'DisplayName','Inductors');
+hold on
+plot(plot_L(saved_x(:,2)),plot_RL(saved_x(:,2)),'DisplayName','L1,2,3','LineWidth',3,'LineStyle','--');
+hold on
+scatter(plot_L(x(:,2)),plot_RL(x(:,2)),50,'r','DisplayName','Ending Point');
+
+% Create ylabel
+ylabel('RL (\Omega)','FontSize',20);
+
+% Create xlabel
+xlabel('L (H)','FontSize',20);
+
+% Create title
+title('3 Phase 4 Level Buck','FontSize',24);
+
+axis1 = gca;
+set(axis1,'FontName','Times New Roman','FontSize',14);
+legend
+
+
+figure
+scatter(saved_x(2:end,3),saved_fval(2:end),'DisplayName','Test Points');
+hold on
+plot(saved_x(2:end,3),saved_fval(2:end),'DisplayName','fs','LineWidth',3,'LineStyle','--');
+hold on
+scatter(saved_x(end,3),saved_fval(end),50,'r','DisplayName','Ending Point');
+% Create ylabel
+ylabel('Pout (W)','FontSize',20);
+
+% Create xlabel
+xlabel('fs (MHz)','FontSize',20);
+
+% Create title
+title('3 Phase 4 Level Buck','FontSize',24);
 
 axis1 = gca;
 set(axis1,'FontName','Times New Roman','FontSize',14);

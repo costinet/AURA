@@ -111,14 +111,38 @@ Inductor_Chosen = X(end-1);
 fs = X(end);
 
 
+
 % FET Selection
 ron = [];
 Coss = [];
 FET_w = [];
 FET_l = [];
 
-ron(1)= transDB(FETs(1)).ron.typ*1e-3;
-Coss(1) = transDB(FETs(1)).Coss.typ*1e-12;
+parallel_fix = (FETs>6);
+FETs(FETs>6) = FETs(FETs>6)-6;
+parallel_fix = parallel_fix + (FETs>6);
+FETs(FETs>6) = FETs(FETs>6)-6;
+parallel_fix = parallel_fix + (FETs>6);
+FETs(FETs>6) = FETs(FETs>6)-6;
+
+parallel_fix = parallel_fix + ones(size(parallel_fix));
+
+
+
+for i = 1:length(FETs)
+    ron(i)= (1/parallel_fix(i))*transDB(FETs(i)).ron.typ*1e-3;
+    Coss(i) = (parallel_fix(i))*transDB(FETs(i)).Coss.typ*1e-12;
+end
+
+
+parallel_fixL = (Inductor_Chosen>5);
+Inductor_Chosen(Inductor_Chosen>5) = Inductor_Chosen(Inductor_Chosen>5)-5;
+
+
+parallel_fixL = parallel_fixL + ones(size(parallel_fixL));
+
+RL = (1/parallel_fixL)*indDB(Inductor_Chosen).Rdc.typ*1e-3;
+L = (1/parallel_fixL)*indDB(Inductor_Chosen).L.typ*1e-6;
 
 
 % Set switching interval
@@ -147,8 +171,6 @@ Rg = 1e-3;
 Rbatt = 5e-3;
 Rcap = 4e-3;
 Cout = 9.4e-6;
-RL = indDB(Inductor_Chosen).Rdc.typ*1e-3;
-L = indDB(Inductor_Chosen).L.typ*1e-6;
 Cfly = 9.4e-6;
 CflyESR = 4e-3;
 
@@ -514,16 +536,12 @@ top.Switch_Names = Switch_Names;
 top.loadCircuit(modelfile,swvec,1);
 
 Pout = 0;
-d =0.07-0.0005;
+d =0.068;
 
 %% Analyze circuit
 try
     while Pout < 100
-        if Pout<90
-            d = d+0.0005;
-        else
-            d = d+0.00005;
-        end
+
         % dt = 0.0025;
         ds = [d 1-d d 1-d d 1-d];
         ts = ds/sum(ds)*Ts;
@@ -580,14 +598,14 @@ try
             Ploss = -(Ib1*Vb1) + -(Vin*I1);
             Pout = (Ib1*Vb1);
             
-            
-            if eta>1||eta<.3
-                continue
-            end
-            
-            if Pout<0 || Ploss<0
-                continue
-            end
+%             
+%             if eta>1||eta<.3
+%                 continue
+%             end
+%             
+%             if Pout<0 || Ploss<0
+%                 continue
+%             end
             
             % for specific power
             %{
@@ -602,10 +620,15 @@ try
             %             PossSim = [PossSim; Poss];
             conditions = [conditions; d, i, Vin];
             
-            if Pout > 100 && d == 0.07
-                d = 0.06;
+            if Pout > 100 && d == 0.068
+                d = 0.065;
+                Pout = 0;
             end
-            
+            if Pout<90
+                d = d+0.0005;
+            else
+                d = d+0.00005;
+            end
         end
     end
     

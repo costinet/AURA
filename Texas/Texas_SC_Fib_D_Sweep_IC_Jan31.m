@@ -21,7 +21,7 @@ end
 % modelfile = 'DSC4to1'; PLECsModel = 'HDSC';
 % modelfile = 'DAB'; PLECsModel = 'DAB_oneCap';
 % modelfile = 'DABfull'; PLECsModel = 'DAB_8Cap';
-% modelfile = 'DSC4to1Diodes'; PLECsModel = 'HDSC_withDiodes';
+% modelfile = 'DSC4to1Diodes'; PLECsModel = 'HDSC_withDiodes';/l
 % modelfile = 'SC_FIB_AURA_L.net';
 % modelfile = 'Buck_Boost_Vout.net';
 modelfile = 'SC_FIB_AURA_D.net';
@@ -187,7 +187,13 @@ Lc = 1.3e-6/2;
 fs = 1256200;
 Ts = 1/fs;
 
-ron  = [0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1];
+% This is from expierimental testing that occured on in early 2023 that
+% tried to determine what the acutal values are of the circuit. So far the
+% Ron values really hurt the performance of the converter
+
+
+Coss = [4.5e-10 6e-10 6e-10 5e-10 5e-10 4e-10 5e-10 5e-10];
+ron  = [0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1]; 
 
 %u = [Vg Vb1 Vb2 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5]';
 
@@ -462,13 +468,15 @@ Numerical_Components(11,2) = {RL};
 %% Analyze circuit
 try
     for i = 2:5
-        
+        if i==3
+            J = 456456465;
+        end
         swvec =modSchemes(:,:,i);
         top_Rb.Switch_Sequence = swvec;
         top_Rb.loadCircuit(modelfile,swvec,1);
         top.Switch_Sequence = swvec;
         top.loadCircuit(modelfile,swvec,1);
-        
+
         for d = drange
             % dt = 0.0025;
             ds = [d-dt1, dt1, 1-d-dt2, dt2, d-dt1, dt1, 1-d-dt2, dt2];
@@ -528,6 +536,7 @@ try
                 %[Xf,ts,swinds] = timeSteppingPeriod(sim);
                 
                 [valid]=DMC_SteadyState(sim,conv,top);
+
                 if (~valid)
                     continue
                 end
@@ -535,7 +544,11 @@ try
                 
                 [ avgXs, avgYs ] = sim.ssAvgs(Xss);
                 
+                [ xs, t, ys] = sim.SS_WF_Reconstruct;
                 
+
+
+
                 Ib1 = (avgYs(79)+avgYs(39)*ESRo-Vb1)/Rb;
                 Ib2 = (avgYs(80)+avgYs(40)*ESRo-Vb2)/Rb;
                 I1 = -avgYs(33);
@@ -571,6 +584,11 @@ try
                 %             PossSim = [PossSim; Poss];
                 conditions = [conditions; d, i, Vin];
                 
+                    if i == 3 && d < 0.45 && d>0.4 
+                        J = 32423423;
+                    end
+
+
                 if Pout > 45
                     break;
                 end

@@ -27,6 +27,10 @@ IndTable = table(L,Rdc,Isat30,Length,Width,Height,...
 
 UsableInd = NameI(IndTable.Isat30 >= 16);
 
+IndTable(IndTable.Isat30 >= 16,:)
+
+
+
 for i=1:length(transDB)
     NameT{i,1} = transDB(i).partNumber;
     Vds(i,1) = transDB(i).Vds.approx;
@@ -44,9 +48,9 @@ TransTable = table(Vds,Ids,Rds,Coss,Length,Width,Height,...
 
 
 
-UsableTrans = NameT(TransTable.Vds >= 100 & TransTable.Ids >= 48);
+UsableTrans = NameT(TransTable.Vds >= 40 & TransTable.Ids >= 33);
 
-
+TransTable(TransTable.Vds >= 40 & TransTable.Ids >= 33,:)
 
 
 

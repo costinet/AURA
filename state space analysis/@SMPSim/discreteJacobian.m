@@ -1,5 +1,6 @@
 function [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
-%UNTITLED4 Summary of this function goes here
+%   DISCRETEJACOBIAN is a function of the SMPSim class and calculates the
+%   discrete Jacobain to reduce 
 %   Detailed explanation goes here
 %   J(x, y, z) = x-> which state, y-> at which time interval , z->which time interval perturbed
    

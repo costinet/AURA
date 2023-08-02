@@ -1,17 +1,16 @@
-function [altered] = addUncontrolledSwitching(obj, interval, beforeAfter, initialTime, switches, newStates, force)
+function [altered, newSwInd] = addUncontrolledSwitching(obj, interval, beforeAfter, initialTime, switches, newStates, force)
     assert(initialTime < obj.ts(interval), 'specified initialTime is larger than the interval it subdivides');
     
     if nargin < 7
         force = 0;
     end
-    
-    if beforeAfter == 0
-        altered = 0;
-        return
-    end
-    
+
+    altered = 0;
+    newSwInd  = [];
+
+
+
     if initialTime < obj.timingThreshold
-        altered = 0;
         return
     end
 
@@ -130,7 +129,6 @@ function [altered] = addUncontrolledSwitching(obj, interval, beforeAfter, initia
     
     %% Otherwise, do the replacement
     if beforeAfter == -1 %before
-        
         obj.fullts(replace,oint) = ...
            [obj.fullts(1:subInt-1,oint); 
            initialTime;
@@ -141,7 +139,6 @@ function [altered] = addUncontrolledSwitching(obj, interval, beforeAfter, initia
            [obj.fullswind(1:subInt-1,oint); 
            newSwInd;
            obj.fullswind(subInt:replace(end)-1,oint)];
-        
     elseif beforeAfter == 1%after
         obj.fullts(replace,oint) = ...
            [obj.fullts(1:subInt-1,oint); 
@@ -154,7 +151,7 @@ function [altered] = addUncontrolledSwitching(obj, interval, beforeAfter, initia
            newSwInd;
            obj.fullswind(subInt+1:replace(end)-1,oint)];
     else
-       % error('input variable beforeAfter must be +1 or -1');
+        error('input variable beforeAfter must be +1 or -1');
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,7 +1,7 @@
 function [A,B,C,D,Htemp,depends,StateNames,OutputNames,DependentNames,ConstantNames,OrderedNamesnum] = loopfixAB_num(obj,H,s,NLnets,SortedTree,SortedCoTree)
 %loopfixAB computes the ABCD matrix
-%   This function either computes symbolic Htemp matrix or the ABCD matrix
-%   The
+%   This function either computes symbolic Htemp matrix (obsolete) or the
+%   ABCD matrix from the hybrid matrix
 
 % if the number of state variables is greater than sym_comput, sym AB
 % matrix will not be computed
@@ -154,10 +154,24 @@ try
     count = 0;
     if H_row2 < sym_comput
         
-        Htemp_torref = Htemp;
-        [Htemp,jb]= rref(Htemp);
-        if length(jb)~= size(Htemp,1)
-            %{
+        % Due to numerical errors there was an issue here. If there are no
+        % dependent variables ideally there should be no need to perform
+        % rref however in most cases there was a numerical error that
+        % caused one of the value to be 0.999999999999999999999999999 to
+        % the numerical precision of MATLAB. This then caused there to be
+        % a need to perform rref and it would perform correctly. However,
+        % if there was no such issue and all dx/dt values in the H matrix
+        % were represented as exactly 1, then rref would delete all of the
+        % columns and mess up the extraction of A,B,C,D this is observed in
+        % the output when A is the identity matrix. To fix this, if the
+        % starting columns of Htemp should be exactly 1 then the rref is skipped.
+    
+        if j>0 % If there are dependent states then fix them
+
+            Htemp_torref = Htemp;
+            [Htemp,jb]= rref(Htemp);
+            if length(jb)~= size(Htemp,1)
+                %{
         rref_tol = max(size(Htemp_torref))*eps(class(Htemp_torref))*norm(Htemp_torref,inf);
         while length(jb)~= size(Htemp,1)
             
@@ -168,12 +182,13 @@ try
         end
         
         rref_tol = rref_tol/100;
-            %}
-            [Htemp,jb] = rref(Htemp_torref,0.9);
-            
+                %}
+                [Htemp,jb] = rref(Htemp_torref,0.9);
+
+            end
         end
         OutputHtemp = Htemp;
-        
+
         if j~=0
             for i = 1:1:j
                 dependstate = depends(i,:)'.*Htemp(:,H_row2:2*(H_row2-1));

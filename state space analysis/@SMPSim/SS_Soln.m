@@ -1,7 +1,7 @@
 function [Xs] = SS_Soln(obj,keep_SS,As,Bs,ts,u)
-% Steady-state solution of switched system using state-space matrices
+% SS_SOLN find the steady-state solution of switched system using state-space matrices
 %
-% [ Xs] = SS_Soln( As, Bs, ts, u, Xi, Bi) finds the state values Xs in
+% [ Xs] = SS_Soln(keep_SS,As,Bs,ts,u) finds the state values Xs in
 % steady-state for the switched system described by As, Bs, and ts
 % according to
 %
@@ -19,12 +19,15 @@ function [Xs] = SS_Soln(obj,keep_SS,As,Bs,ts,u)
 % solution validity in the case of singular matrices
 % Bi is a vector of boundary coefficiencts used when iteration is required
 % due to non-convergence of a solution.  A valid solution is required to be
-% bounded within Bi.*Xi <= Xs <= (2-Bi).*Xi
+% bounded within Bi.*Xi <= Xs <= (2-Bi).*Xi (removed)
 %
 % The result, Xs is a 2D matrix with ns rows and n+1 columns, where ns is the
 % number of states in the system and n is the number of switching
 % intervals.  The first and last column of Xs should be identical,
 % corresponding to a valid steady-state solution.
+%
+% keep_SS is used to not update SS anymore (obsolete now)
+
 
 % Baxter update: fixed so it can use values given in class or values
 % provided to function
@@ -161,6 +164,8 @@ for i=1:n
     Xs(:,i+1) = expAs(:,:,i)*Xs(:,i) + fresp(:,:,i);
 end
 %}
+
+% Old code above has now been condensed into Augmented SS function
 
 [Xs] = obj.SS_Soln_Aug(keep_SS,As,Bs,ts,u);
 

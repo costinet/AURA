@@ -1,7 +1,7 @@
 function getknownParams()
-        % getknownParams() is used to convert the csv file into text strings that 
+        % GETKNOWNPARAMS() is used to convert the csv file into text strings that 
         % can be copied into the constant variables
-        [~,~,raw] = xlsread('KnownParams.csv');
+        [~,~,raw] = xlsread('KnownParamsCAP.csv');
         paramNames = '{';
         knownParams = '{';
         defaultUnits = '{';
@@ -48,7 +48,7 @@ function getknownParams()
             'defaultUnits = ' defaultUnits newline ...
             'defaultMultipliers = ' defaultMultipliers newline...
             'paramDict = ' paramDict newline ...
-            'paramNames = ' paramNames];
+            'paramNames = ' paramNames]
         
 %         SQLtable = 
 

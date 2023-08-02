@@ -1,7 +1,6 @@
 function [] = transformers_num(obj,mutual,value,position)
 %TRANSFORMERS creates dependent sources in place of inductors given in K
 %statements
-%   Transfomers takes an input of the mutual
 
 % Currently there is no support for a coupling coefficient of a
 % non-one value. Leakage and magnetizing inductance must be added as

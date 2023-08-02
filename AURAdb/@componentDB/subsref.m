@@ -1,24 +1,35 @@
 function varargout = subsref(obj,s)
 %     [varargout{1:nargout}] = builtin('subsref',obj,s);
-    
+
+try
     %numerical indexing is passed on to components list
     if strcmp(s(1).type, '()')
         if length(s) == 1
             varargout = {obj.components(s(1).subs{:})};
-        else 
+        else
             comps = obj.components(s(1).subs{:});
             varargout = {};
             for i = 1:length(comps)
-%                 [varargout{i}] = builtin('subsref',comps(i),s(2:end));
+                %                 [varargout{i}] = builtin('subsref',comps(i),s(2:end));
                 component = comps(i);
                 varargout = {varargout{:}, [subsref(component,s(2:end))]};
             end
         end
+    elseif strcmp(s(1).type, '.') && (strcmp(s(2).subs, 'approx')||strcmp(s(2).subs, 'typ')||strcmp(s(2).subs, 'min')||strcmp(s(2).subs, 'max'))  % Added by Baxter to be able to utlize DB.tableParameter.approx to get a double list of all transistors for that paramter
+        comps = obj.components;
+        varargout = {};
+        for i = 1:length(obj)
+            component = comps(i);
+            varargout  = {varargout{:}, [subsref(component,s(1:end))]};
+        end
+        varargout = {[cell2mat(varargout)]};
     else
         [varargout{1:nargout}] = builtin('subsref',obj,s);
     end
-    
-    %% MATLAB TEMPLATE
+catch ME
+    [varargout{1:nargout}] = builtin('subsref',obj,s);
+end
+%% MATLAB TEMPLATE
 %    switch s(1).type
 %       case '.'
 %          if length(s) == 1
@@ -65,15 +76,15 @@ function varargout = subsref(obj,s)
 % % %     try
 % % %         [varargout{1:nargout}] = builtin('subsref',obj,param);
 % % %     catch bultInError
-% % %         try 
+% % %         try
 % % %            nargout = length(obj.components);
 % % %            [varargout{1:nargout}] = builtin('subsref',obj.components,param);
 % % %         catch
 % % %             throw(bultInError)
 % % %         end
 % % %     end
-% 
-% 
+%
+%
 %     % Overload dot-indexing
 %     if length(param) == 1
 %         if strcmp(param.type, '()')
@@ -90,7 +101,7 @@ function varargout = subsref(obj,s)
 %             end
 %         end
 %     else
-%        [varargout{1:nargout}] = builtin('subsref',obj,param); 
+%        [varargout{1:nargout}] = builtin('subsref',obj,param);
 %     end
 end
 

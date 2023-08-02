@@ -1,0 +1,6 @@
+Capacitance,DC Rated Voltage,AC Rated Voltage,Frequency,Size Code,Equivalent Series Resistance,Impedance,Temperature ,Capacitance Tolerance +/-,Length,Width,Height
+C,Vdc,Vac,F,Size,Esr,Z,Temp ,Tol,Length,Width,Height
+F,V,V,Hz,One,Ohm,Ohm,[char(176)]C,One,m,m,m
+[char(181)],1,1,M,1,m,1,1,1,m,m,m
+Cap,V,,fs,,Cr,Imp,Tr,,l,w,h
+,,,f,,,,,,,,

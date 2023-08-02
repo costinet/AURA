@@ -1,6 +1,7 @@
 classdef inductor < component
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+    %INDUCTOR is the class of inductors for AURA database
+    %   INDUCTOR class contains the part number, manufacturer, material
+    %   and type information as well as the known parameters for inductors
     
     properties
         partNumber
@@ -28,8 +29,22 @@ classdef inductor < component
     
     methods
         function obj = inductor(partNumber, type, material, varargin)
-            %inductor() Construct an instance of the inductor class
-            %   Detailed explanation goes here
+            %INDUCTOR constructs an instance of the transistor class
+            %
+            %   inductor(partNumber, type, material, varargin)
+            %
+            %   partNumber is a string that contains the part number
+            %
+            %   type is the type of the transistor
+            %   Currently known types 
+            %   {'Power', 'Signal'}
+            %
+            %   material is the material of the transistor
+            %   Currently known materials 
+            %   {'Composite', 'Ferrite', 'Powdered Iron', 'Air'}
+            % 
+            %   varargin currently under work
+
             
             if nargin == 0
                 return

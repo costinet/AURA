@@ -1,6 +1,7 @@
 classdef transistor < component
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+    %TRANSISTOR is the class of transistors for AURA database
+    %   TRANSISTOR class contains the part number, manufacturer, material
+    %   and type information as well as the known
     
     properties
         partNumber
@@ -29,8 +30,23 @@ classdef transistor < component
     
     methods
         function obj = transistor(partNumber, type, material, varargin)
-            %transistor() Construct an instance of the transistor class
-            %   Detailed explanation goes here
+            %TRANSISTOR constructs an instance of the transistor class
+            %
+            %   transistor(partNumber, type, material, varargin)
+            %
+            %   partNumber is a string that contains the part number
+            %
+            %   type is the type of the transistor
+            %   Currently known types 
+            %   {'en-nMOS', 'en-pMOS', 'dep-nMOS', 'dep-pMOS', 'en-npMOS', ...
+            %    'HEMT', 'HFET', 'PT-IGBT', 'NPT-IGBT', 'nJFET', 'pJFET', 'NPN', 'PNP'}
+            %
+            %   material is the material of the transistor
+            %   Currently known materials 
+            %   {'Si', 'GaN', 'SiC', 'GaAs'}
+            % 
+            %   varargin currently under work
+   
             
             if nargin == 0
                 return
