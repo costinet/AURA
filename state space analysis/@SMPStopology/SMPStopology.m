@@ -42,14 +42,28 @@ classdef SMPStopology < handle
     end
     
     methods
-        % From external files
-        function loadCircuit(obj, fn, swvec, force)
-            
-%             if nargin > 2
-%                 obj.swseq = [obj.swseq; setdiff(swvec, obj.swseq, 'rows')];
-%             end
+        function result = loadCircuit(obj, fn, swvec, force)
+        %LOADCIRCUIT loads plecs or LTspice circuit 
+        %
+        %   loadCircuit(obj, fn)
+        %   
+        %   loadCircuit(obj, fn, swvec)
+        %
+        %   loadCircuit(obj, [], swvec)
+        %   if a topology has previously been loaded, the filename may be
+        %   omitted and the function will use the SMPStopology's stored
+        %   file as reference for a new swvec
+        %
+        %   loadCircuit(___, force)
+        %   setting force=1 will drop all previously parsed switching
+        %   states and repopulate from the supplied swvec
+
             if nargin < 4
                 force = 0;
+            end
+
+            if nargin == 2
+                swvec = [];
             end
             
             if isempty(fn) && ~isempty(obj.circuitParser) && ~isempty(obj.sourcefn)
@@ -58,24 +72,43 @@ classdef SMPStopology < handle
             
             if isempty(obj.circuitParser)
                 try %Test if the file is a valid PLECS circuit
-                    plecs('get', fn, 'StateSpaceOrder');
-                    obj.circuitParser = PLECScircuitParser(obj);
-                catch e
+                    % If it is a simulink-embedded plecs circuit
+                    parts = split(fn, '/');
+                    modelFile = join(parts{1:end-1}, '/');
+                    if exist(modelFile,'file') == 4
+                        plecs('get', fn, 'StateSpaceOrder');
+                        obj.circuitParser = PLECScircuitParser(obj);
+                    end
+                catch e 
+                    % allow to continue trying other parsers
+                    if startsWith(e.message, 'Error evaluating parameter')
+                        obj.circuitParser = PLECScircuitParser(obj);
+                        obj.circuitParser.readOnLoadError(e.message, fn);
+                        obj.circuitParser.inspect();
+                        result = 0;
+                        return
+                    end
                 end
 
                 if isempty(obj.circuitParser)
                     try
-                        %Other Circuit Parsers
-						obj.circuitParser = LTspiceCircuitParser(obj);
+                        [~,~,EXT] = fileparts(fn);
+                        if strcmp(EXT,'.net') && exist(fn,'file')
+						    obj.circuitParser = LTspiceCircuitParser(obj);
+                        else
+                            error('Circuit cannot be parsed as either a PLECS or LTSpice file')
+                        end
                     catch e
-						warning('Circuit cannot be parsed as either a PLECS or LTSpice file');
-						rethrow(e);
+                        addlInfo = MException('LOADCIRCUIT:BadInputFile','Circuit cannot be parsed as either a PLECS or LTSpice file');
+                        e2 = addCause(e,addlInfo);
+						throw(e2)
                     end
                     
                 end
             end
             loadModel(obj.circuitParser, fn, swvec, force); 
             obj.circuitParser.getConstraintMatrices;
+            result = 1;
         end
         
         function setSS(obj, As, Bs, Cs, Ds, K)

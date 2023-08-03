@@ -27,14 +27,29 @@ function loadModel(obj, fn, swseq, force)
 
 % obj.initialize(fn,{},{});
 
+old = 1;
+new = ~old;
+
 if isempty(obj.Anum) || force
     obj.sourcefn = fn;
     obj.readSpiceNetlist(fn)
+
+    if(new)
+        obj.linearizeCircuitModel2()
+    end
+
+    if(old)
+        obj.linearizeCircuitModel()
+    
+        obj.read_file_num();
+        [switches]=obj.findDM;
+        obj.ON_States = cell(length(switches),1);
+        obj.OFF_States = cell(length(switches),1);
+        [obj.NewNL,obj.NewNLnets,~]=obj.Single_states_D(1,1,switches);
+        obj.cutset_loop_num();
+        obj.Component_Values = obj.Element_Properties;
+    end
 end
-
-obj.cutset_loop_num();
-
-obj.Component_Values = obj.Element_Properties;
 
 if isempty(swseq)
     swseq = evalin('base', 'swvec');
@@ -46,8 +61,11 @@ end
 
 % What is this?  It seems errant -- length(Diodes_POS) is alwasys
 % length(Switch_Resistors)
-Diodes_POS = contains(obj.Switch_Resistors,'D')';
-Switch_L = length(Diodes_POS);
+
+if(old)
+    Diodes_POS = contains(obj.Switch_Resistors,'D')';
+    Switch_L = length(Diodes_POS);
+end
 
 if ~force
     
@@ -59,9 +77,13 @@ if ~force
             newSwSeq = setdiff(swseq, obj.topology.swseq, 'rows');
             
             for k = 1:1:size(newSwSeq,1)
+                if(new)
+                    obj.setSwitchingState(newSwSeq(k,:));
+                    [A,B,C,D,I] = solveStateSpaceRepresentation(obj);
+                elseif(old)
+                    [A,B,C,D,I] = obj.ABCD_num(obj.Switch_Resistors,obj.Switch_Resistor_Values,newSwSeq(k,:));
+                end
                 
-                
-                [A,B,C,D] = obj.ABCD_num(obj.Switch_Resistors,obj.Switch_Resistor_Values,newSwSeq(k,:));
                 
                 % Only allows diodes that are on to have non zeros in Bs and
                 % Ds
@@ -85,6 +107,7 @@ if ~force
                 obj.Bnum(:,:,end+1) = B;
                 obj.Cnum(:,:,end+1) = C;
                 obj.Dnum(:,:,end+1) = D;
+                obj.Inum(:,:,end+1) = I;
                 [obj.eigA(:,end+1)] = eig(A);
                 obj.topology.swseq  = [obj.topology.swseq; newSwSeq(k,:)];
                 
@@ -99,9 +122,12 @@ if force
     obj.topology.swseq = swseq;
     for k = 1:1:size(swseq,1)
         
-        
-        
-        [A,B,C,D] = obj.ABCD_num(obj.Switch_Resistors,obj.Switch_Resistor_Values,swseq(k,:));
+        if(new)
+            obj.setSwitchingState(swseq(k,:));
+            [A,B,C,D,I] = solveStateSpaceRepresentation(obj);
+        elseif(old)
+            [A,B,C,D,I] = obj.ABCD_num(obj.Switch_Resistors,obj.Switch_Resistor_Values,swseq(k,:));
+        end
         
         % Only allows diodes that are on to have non zeros in Bs and
         % Ds
@@ -124,6 +150,7 @@ if force
         obj.Bnum(:,:,k) = B;
         obj.Cnum(:,:,k) = C;
         obj.Dnum(:,:,k) = D;
+        obj.Inum(:,:,k) = I;
         [obj.eigA(:,k)] = eig(A);
         
     end
@@ -150,7 +177,7 @@ obj.topology.As = obj.Anum;
 obj.topology.Bs = obj.Bnum;
 obj.topology.Cs = obj.Cnum;
 obj.topology.Ds = obj.Dnum;
-obj.topology.Is = repmat(eye(size(obj.Anum,1)),[1 1 size(obj.Anum,3)]);
+obj.topology.Is = obj.Inum; %repmat(eye(size(obj.Anum,1)),[1 1 size(obj.Anum,3)]);
 
 
 obj.topology.switchLabels = obj.Switch_Names;

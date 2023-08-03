@@ -29,6 +29,11 @@ function loadModel(obj, fn, swseq, force)
                     file = [];
                 end
             end
+
+            if isempty(swseq)
+                ssOrder = plecs('get', fn, 'StateSpaceOrder');
+                swseq = zeros(1,length(ssOrder.Switches));
+            end
             
             
             if ~force

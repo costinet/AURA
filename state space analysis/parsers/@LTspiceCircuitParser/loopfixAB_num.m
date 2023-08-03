@@ -1,4 +1,4 @@
-function [A,B,C,D,Htemp,depends,StateNames,OutputNames,DependentNames,ConstantNames,OrderedNamesnum] = loopfixAB_num(obj,H,s,NLnets,SortedTree,SortedCoTree)
+function [A,B,C,D,I,Htemp,depends,StateNames,OutputNames,DependentNames,ConstantNames,OrderedNamesnum] = loopfixAB_num(obj,H,s,NLnets,SortedTree,SortedCoTree)
 %loopfixAB computes the ABCD matrix
 %   This function either computes symbolic Htemp matrix (obsolete) or the
 %   ABCD matrix from the hybrid matrix
@@ -186,6 +186,12 @@ try
             A = [Htemp(:,H_row2:2*(H_row2-1)),zeros(H_row2-1,j);statedepends(:,:),zeros(j,j)];
             
             B = [Htemp(:,(2*(H_row2-1))+1:end);statedependsconst];
+
+            I = eye(size(A));
+            if ~isempty(depends)
+                I(end-size(depends,1)+1:end,:) = 0;
+                I(end-size(depends,1)+1:end, 1:size(depends,2)) = depends;
+            end
             
             
             
@@ -210,7 +216,11 @@ try
             B = [Htemp(:,(2*(H_row2-1))+1:end)];
             C = [Htemp(:,H_row2:2*(H_row2-1)).*OutputNames];
             D = [Htemp(:,(2*(H_row2-1))+1:end).*OutputNames];
-            
+            I = eye(size(A));
+            if ~isempty(depends)
+                I(end-size(depends,1)+1:end,:) = 0;
+                I(end-size(depends,1)+1:end, 1:size(depends,2)) = depends;
+            end
         end
         
     end

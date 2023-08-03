@@ -2,51 +2,47 @@ function [] = cutset_loop_num(obj)
 %CUTSET_LOOP_NUM Runs after 
 %   Detailed explanation goes here
 
+% % % % If this is a simulink file then return without parsing circuit
+% % % if isempty(obj.NL)
+% % %   return
+% % % end
+% % % 
+% % % %% Find Diodes and Switches
+% % % [switches]=obj.findDM;
+% % % 
+% % % %% Get binary representation of number of states to change R and C for D and M
+% % % number_of_states = 2^length(switches);
+% % % 
+% % % 
+% % % state  = 1;
+% % % % to find body diodes for DAB
+% % % %[state] = obj.bodydiode_correction(switches,state);
+% % % 
+% % % number_of_states = size(state,1);
+% % % 
+% % % % Pre-set number of possible Tree and Cotree matrices
+% % % %  This is needed to efficiently pass these variables through for each time
+% % % %  interval
+% % % SortedTree=zeros(2*size(obj.NL,1),5,1);
+% % % SortedCoTree=zeros(2*size(obj.NL,1),5,1);
+% % % 
+% % % % Pre-set number of possible ON and OFF states
+% % % %  This is needed to efficiently pass these variables through for each time
+% % % %  interval
+% % % % These are no longer used in this implementation if there are
+% % % % alterations or revision back to a previous version there should be a
+% % % % column length of "number_of_states" insead of 1 
+% % % obj.ON_States = cell(length(switches),1);
+% % % obj.OFF_States = cell(length(switches),1);
+% % % 
+% % % 
+% % % number_of_states = 1;
+% % % 
+% % % i = 1;
+% % % 
+% % % [NL,NLnets,forward_pass]=obj.Single_states_D(state,i,switches);
 
-obj.read_file_num();
-
-% If this is a simulink file then return without parsing circuit
-if isempty(obj.NL)
-  return
-end
-
-%% Find Diodes and Switches
-[switches]=obj.findDM;
-
-%% Get binary representation of number of states to change R and C for D and M
-number_of_states = 2^length(switches);
-
-
-state  = 1;
-% to find body diodes for DAB
-%[state] = obj.bodydiode_correction(switches,state);
-
-number_of_states = size(state,1);
-
-% Pre-set number of possible Tree and Cotree matrices
-%  This is needed to efficiently pass these variables through for each time
-%  interval
-SortedTree=zeros(2*size(obj.NL,1),5,1);
-SortedCoTree=zeros(2*size(obj.NL,1),5,1);
-
-% Pre-set number of possible ON and OFF states
-%  This is needed to efficiently pass these variables through for each time
-%  interval
-% These are no longer used in this implementation if there are
-% alterations or revision back to a previous version there should be a
-% column length of "number_of_states" insead of 1 
-obj.ON_States = cell(length(switches),1);
-obj.OFF_States = cell(length(switches),1);
-
-
-number_of_states = 1;
-
-i = 1;
-
-[NL,NLnets,forward_pass]=obj.Single_states_D(state,i,switches);
-
-
-
+NL = obj.NewNL;
 
 %% Find incidence matricies
 SortedRows = sortrows(NL,1); % sorts rows in prefered tree order
@@ -266,7 +262,7 @@ obj.SortedCoTree_cutloop = SortedCoTree;
 
 
 obj.NewNL = NL;
-obj.NewNLnets = NLnets; 
+
 
 
 end

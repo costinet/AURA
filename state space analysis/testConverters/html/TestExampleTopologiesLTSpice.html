@@ -1,0 +1,324 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>TestExampleTopologiesLTSpice</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-07-31"><meta name="DC.source" content="TestExampleTopologiesLTSpice.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">TestExampleTopologies loads and simulates steady-state for a variety of example converters</a></li><li><a href="#2">Add test netlist folder to the path</a></li><li><a href="#3">Test Circuits</a></li><li><a href="#4">Most recent full run results:</a></li><li><a href="#6">Analyze circuit</a></li></ul></div><h2 id="1">TestExampleTopologies loads and simulates steady-state for a variety of example converters</h2><pre class="language-matlab">The <span class="string">script</span> <span class="string">requires</span> <span class="string">properly-formatted</span> <span class="string">netlist</span> <span class="string">files</span> <span class="string">for</span> <span class="string">the</span> <span class="string">example</span>
+topologies <span class="string">that</span> <span class="string">include</span> <span class="string">all</span> <span class="string">initial</span> <span class="string">parameters</span> <span class="string">and</span> <span class="string">inputs.</span>
+</pre><pre class="language-matlab"><span class="keyword">if</span> the allAssess <span class="string">variable</span> <span class="string">is</span> <span class="string">set</span>, all <span class="string">of</span> <span class="string">the</span> <span class="string">topologies</span> <span class="string">listed</span> <span class="string">will</span> <span class="string">be</span>
+simulated <span class="string">sequentially.</span>  <span class="string">Otherwise</span>, only <span class="string">those</span> <span class="string">indices</span> <span class="string">in</span> <span class="string">the</span> <span class="string">models</span>
+varible <span class="string">will</span> <span class="string">be</span> <span class="string">simulated</span>
+</pre><pre class="codeinput">clear <span class="string">all</span>;
+
+summaryStrings = {};
+
+allAssess = 1;      <span class="comment">% run all models sequentially</span>
+
+models = 1;         <span class="comment">% if allAssess == 0, this model will be run</span>
+</pre><h2 id="2">Add test netlist folder to the path</h2><pre class="codeinput">sdir = mfilename(<span class="string">'fullpath'</span>);
+sdir = sdir(1:find(sdir==<span class="string">'\'</span>,1,<span class="string">'last'</span>)-1);
+addpath(sdir);
+addpath([sdir <span class="string">'\LTspice NetLists'</span>])
+</pre><h2 id="3">Test Circuits</h2><pre class="codeinput">modelfile{1} = <span class="string">'BuckTest1.net'</span>;
+modelfile{2} = <span class="string">'Buck_Vout_D.net'</span>;
+</pre><h2 id="4">Most recent full run results:</h2><p>Model BuckTest1.net converged after 18 iterations in 0.53823 seconds Model Buck_Vout_D.net converged after 11 iterations in 0.15198 seconds</p><pre class="codeinput"><span class="keyword">if</span> allAssess
+    warning(<span class="string">'off'</span>,<span class="string">'all'</span>);
+    h = waitbar(0,<span class="string">'Initializing'</span>);
+    updateWaitBar(h, modelfile, 0, 0, 0, 0);
+    models = 1:length(modelfile);
+<span class="keyword">else</span>
+    warning(<span class="string">'on'</span>,<span class="string">'all'</span>);
+<span class="keyword">end</span>
+
+<span class="keyword">for</span> selectedModel = models
+</pre><pre class="codeinput">    circuitPath = [modelfile{selectedModel}];
+</pre><h2 id="6">Analyze circuit</h2><pre class="codeinput">    sim = SMPSim();
+    conv = sim.converter;
+    top = sim.topology;
+
+<span class="comment">%     sim.debug = 1;</span>
+<span class="comment">%     sim.debug2 = 1;</span>
+
+
+
+    top.loadCircuit(circuitPath,[],1);
+    sim.u = us;
+    conv.setSwitchingPattern(swvec, ts)
+
+    <span class="keyword">if</span>(debug)
+        sim.steadyState;
+        sim.plotAllStates(4)
+    <span class="keyword">end</span>
+
+
+    tic;
+    niter = sim.findValidSteadyState;
+    solveTime = toc;
+
+    <span class="keyword">if</span>(debug)
+        sim.plotAllStates(1);
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span> allAssess
+        updateWaitBar(h, modelfile, selectedModel, niter, 0, 0);
+    <span class="keyword">end</span>
+
+
+
+    <span class="keyword">if</span>(allAssess &amp;&amp; niter &lt;= sim.maxItns)
+        summaryStrings{selectedModel} = [<span class="string">'Model '</span> modelfile{selectedModel} <span class="string">' converged after '</span> num2str(niter+1) <span class="string">' iterations in '</span> num2str(solveTime) <span class="string">' seconds'</span>];
+    <span class="keyword">elseif</span> allAssess
+        summaryStrings{selectedModel} = [<span class="string">'Model '</span> modelfile{selectedModel} <span class="string">' DID NOT converge within '</span> num2str(niter+1) <span class="string">' in '</span> num2str(solveTime) <span class="string">' seconds'</span>];
+    <span class="keyword">end</span>
+</pre><pre class="codeoutput">
+Lf =
+
+   1.0000e-06
+
+
+Coss =
+
+   1.0000e-09
+
+
+Cout =
+
+   1.0000e-03
+
+
+Rout =
+
+   100
+
+
+Vf =
+
+     1
+
+
+ts =
+
+   1.0e-06 *
+
+    1.0000    0.0500    1.0000    0.1000
+
+
+swvec =
+
+     1     0     0     0
+     0     0     0     0
+     0     1     0     0
+     0     0     0     0
+
+</pre><pre class="codeoutput error">Execution of script debug as a function is not supported:
+C:\Program Files\MATLAB\R2022b\toolbox\matlab\codetools\debug.m
+
+Error in TestExampleTopologiesLTSpice (line 65)
+    if(debug)
+</pre><pre class="codeinput"><span class="keyword">end</span>
+
+<span class="keyword">for</span> i = 1:length(summaryStrings)
+    disp(summaryStrings{i})
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> allAssess
+    close(h);
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> updateWaitBar(h, modelfile, selectedModel, niter, altered, finalRun)
+    message = modelfile;
+    <span class="keyword">for</span> i = 1:length(modelfile)
+        <span class="keyword">if</span> i &lt; selectedModel
+            message{i} = [modelfile{i} <span class="string">'... completed'</span>];
+        <span class="keyword">elseif</span> i &gt; selectedModel
+            message{i} = [modelfile{i} <span class="string">'... waiting'</span>];
+        <span class="keyword">else</span>
+            message{i} = [modelfile{i} <span class="string">'... running.  Iteration '</span> num2str(niter) <span class="string">'/250, altered = '</span> num2str(altered) <span class="string">' finalRun = '</span> num2str(finalRun)];
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    waitbar(selectedModel/length(modelfile),h,message)
+    h.Position(4) = length(modelfile)*18;
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% TestExampleTopologies loads and simulates steady-state for a variety of example converters
+%   The script requires properly-formatted netlist files for the example
+%   topologies that include all initial parameters and inputs.  
+%
+%   if the allAssess variable is set, all of the topologies listed will be
+%   simulated sequentially.  Otherwise, only those indices in the models 
+%   varible will be simulated
+
+
+clear all;
+
+summaryStrings = {};
+
+allAssess = 1;      % run all models sequentially
+
+models = 1;         % if allAssess == 0, this model will be run
+
+
+%% Add test netlist folder to the path
+sdir = mfilename('fullpath');
+sdir = sdir(1:find(sdir=='\',1,'last')-1);
+addpath(sdir);
+addpath([sdir '\LTspice NetLists'])
+
+%% Test Circuits
+modelfile{1} = 'BuckTest1.net'; 
+modelfile{2} = 'Buck_Vout_D.net'; 
+
+
+%% Most recent full run results:
+% Model BuckTest1.net converged after 18 iterations in 0.53823 seconds
+% Model Buck_Vout_D.net converged after 11 iterations in 0.15198 seconds
+
+
+if allAssess
+    warning('off','all');
+    h = waitbar(0,'Initializing');
+    updateWaitBar(h, modelfile, 0, 0, 0, 0);
+    models = 1:length(modelfile);
+else 
+    warning('on','all');
+end
+
+for selectedModel = models
+        
+
+    circuitPath = [modelfile{selectedModel}];
+
+    
+    %% Analyze circuit
+    
+    sim = SMPSim();
+    conv = sim.converter;
+    top = sim.topology;
+
+%     sim.debug = 1;
+%     sim.debug2 = 1;
+
+
+    
+    top.loadCircuit(circuitPath,[],1);
+    sim.u = us;
+    conv.setSwitchingPattern(swvec, ts)
+
+    if(debug)
+        sim.steadyState;
+        sim.plotAllStates(4)
+    end
+
+    
+    tic;
+    niter = sim.findValidSteadyState;   
+    solveTime = toc;
+
+    if(debug)
+        sim.plotAllStates(1);
+    end
+
+    if allAssess
+        updateWaitBar(h, modelfile, selectedModel, niter, 0, 0);
+    end
+
+
+
+    if(allAssess && niter <= sim.maxItns)
+        summaryStrings{selectedModel} = ['Model ' modelfile{selectedModel} ' converged after ' num2str(niter+1) ' iterations in ' num2str(solveTime) ' seconds'];
+    elseif allAssess
+        summaryStrings{selectedModel} = ['Model ' modelfile{selectedModel} ' DID NOT converge within ' num2str(niter+1) ' in ' num2str(solveTime) ' seconds'];
+    end
+end
+
+for i = 1:length(summaryStrings)
+    disp(summaryStrings{i})
+end
+
+if allAssess
+    close(h);
+end
+
+function updateWaitBar(h, modelfile, selectedModel, niter, altered, finalRun)
+    message = modelfile;
+    for i = 1:length(modelfile)
+        if i < selectedModel
+            message{i} = [modelfile{i} '... completed'];
+        elseif i > selectedModel
+            message{i} = [modelfile{i} '... waiting'];
+        else
+            message{i} = [modelfile{i} '... running.  Iteration ' num2str(niter) '/250, altered = ' num2str(altered) ' finalRun = ' num2str(finalRun)];
+        end
+    end
+    waitbar(selectedModel/length(modelfile),h,message)
+    h.Position(4) = length(modelfile)*18;
+end
+    
+
+##### SOURCE END #####
+--></body></html>

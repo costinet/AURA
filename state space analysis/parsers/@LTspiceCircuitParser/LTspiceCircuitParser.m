@@ -9,7 +9,10 @@ classdef LTspiceCircuitParser < handle
         sourcefdate
         
         topology 
-		components
+		origComponents
+        netListDirectives
+
+        components
 		
 		 % Symbolic Matrix of ABCD
         Asym
@@ -161,9 +164,17 @@ classdef LTspiceCircuitParser < handle
         evalSpiceParams(obj,param)
         str = spiceNumFormat(obj,str)
         component = parseSpiceComponent(obj, str, type)
-        [paramVal] = parseTwoNetSpiceComponent(obj,str)
+        [paramVal, embeddedParams] = parseTwoNetSpiceComponent(obj,str)
         [params] = parseSpiceParamList(obj, str, params)
-    
+        [components] = deEmbedSpiceParams(obj,component,embeddedParams)
+        
+        linearizeCircuitModel(obj)
+        linearizeCircuitModel2(obj)
+        components = switchLinearSubcircuit(obj, component)
+        components = XFdependentSourceSubcircuit(obj, directive, components)
+
+        setSwitchingState(obj, swvec)
+        [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
 	
 		function set.ONorOFF(obj,value)
             obj.ONorOFF = value;

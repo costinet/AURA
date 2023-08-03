@@ -13,7 +13,7 @@ clear all;
 
 summaryStrings = {};
 
-
+debug = 0;
 allAssess = 1;      % run all models sequentially
 
 models = 4;         % if allAssess == 0, this model will be run
@@ -72,33 +72,18 @@ end
 
 for selectedModel = models
         
-    % find_system(modelfile,'SearchDepth',1, 'IncludeCommented', 'on')
-    open_system(modelfile{selectedModel},'loadonly');
+    % If Debugging
+    %     sim.debug = 1;
+    %     sim.debug2 = 1;
+
+    %% Load model file
     circuitPath = [modelfile{selectedModel} '/' PLECsModel{selectedModel}];
-    set_param(circuitPath,'Commented','on');
-    clear sim;
-    simout = sim(modelfile{selectedModel},eps);
-    
-    for i = 1:length(simout.properties)
-        assignin('base',simout.properties{i},eval(['simout.' simout.properties{i}]));
-    end
-    
-    set_param(circuitPath,'Commented','off');
+    loadSimulinkOutputsToBase(modelfile{selectedModel},PLECsModel{selectedModel});
     
     
     %% Analyze circuit
-    
     sim = SMPSim();
-    conv = sim.converter;
-    top = sim.topology;
-    
-% If Debugging
-%     sim.debug = 1;
-%     sim.debug2 = 1;
-    
-    top.loadCircuit(circuitPath,swvec,1);
-    sim.u = us';
-    conv.setSwitchingPattern(swvec, ts)
+    sim.initialize(circuitPath, swvec, us, ts);
 
     if(debug)
         sim.steadyState;
@@ -112,6 +97,8 @@ for selectedModel = models
     if(debug)
         sim.plotAllStates(1);
     end
+
+    %% Update progress bar and store result
 
     if allAssess
         updateWaitBar(h, modelfile, selectedModel, niter, 0, 0);

@@ -1,4 +1,4 @@
-function [A,B,C,D,HtempAB,dependsAB,HtempCD,savedCD,StateNamesAB,StateNamesCD,OutputNames,DependentNames,SortedTree1,SortedCoTree1,ConstantNames,OrderedNamesnum] = nodeloop_num(obj,NL,NLnets)
+function [A,B,C,D,I,HtempAB,dependsAB,HtempCD,savedCD,StateNamesAB,StateNamesCD,OutputNames,DependentNames,SortedTree1,SortedCoTree1,ConstantNames,OrderedNamesnum] = nodeloop_num(obj,NL,NLnets)
 % nodeloop creates the state matrices A,B,C,D from a specific node input
 % matrix
 %
@@ -9,28 +9,11 @@ function [A,B,C,D,HtempAB,dependsAB,HtempCD,savedCD,StateNamesAB,StateNamesCD,Ou
 %% Sort numeric index values 
 % This section matches the user given values to all variables from the
 % topology level to allow numerical solving through a lookup table
-
-shortcellarray = obj.Component_Values(:,1);
-longcellarray  = NLnets(:,1);
-index  = zeros(length(longcellarray),1);
-for ind =1:length(shortcellarray)
-    for ind2 = 1:length(longcellarray)
-        truth = strcmp(longcellarray{ind2}, shortcellarray{ind});
-        if truth
-            index(ind2) = ind;
-            break
-        end
-    end
-end
-% % obj.index = index;
-
+% 
 [~,IA,IB] = intersect(NLnets(:,1),obj.Component_Values(:,1));
 obj.index = zeros(size(NLnets,1),1);
 obj.index(IA) = IB;
 
-if any(index ~= obj.index)
-    error('There is a Difference, Here')
-end
 
 
 
@@ -213,7 +196,7 @@ almost_H = [H_EE,H_EJ;H_JE,H_JJ];
 [H,s]=obj.hybridparse(almost_H,SortedTree,SortedCoTree);
 
 % Functions to find outputs
-[A,B,C,D,HtempAB,dependsAB,StateNamesAB,OutputNames,DependentNames,ConstantNames,OrderedNamesnum]=obj.loopfixAB_num(H,s,NLnets,SortedTree,SortedCoTree);
+[A,B,C,D,I,HtempAB,dependsAB,StateNamesAB,OutputNames,DependentNames,ConstantNames,OrderedNamesnum]=obj.loopfixAB_num(H,s,NLnets,SortedTree,SortedCoTree);
 
 [C,D,HtempCD,savedCD,StateNamesCD]=obj.loopfixCD_num(A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree);
 

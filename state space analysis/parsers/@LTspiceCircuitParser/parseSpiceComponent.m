@@ -30,7 +30,7 @@ function component = parseSpiceComponent(obj, str)
                 %Can't be anything -- Ignore
             elseif ~contains(data, '=')
                 % probably a part number
-                if any(contains(obj.netlistModels,data))
+                if ~isempty(obj.netlistModels) && any(contains(obj.netlistModels,data))
                     sI = regexp(obj.netlistModels,['.model[\s]+',data,'[\s]+']);
                     modelLoc = ~cellfun(@isempty, sI);
                     params = obj.parseSpiceParamList(obj.netlistModels{modelLoc},params);
@@ -75,31 +75,36 @@ function component = parseSpiceComponent(obj, str)
             component.Nodes = nodes([1 2]);
 
             component.paramNames = {type};
-            component.paramVals = parseTwoNetSpiceComponent(obj,str);
+            [component.paramVals, embeddedParams] = parseTwoNetSpiceComponent(obj,str);
+            component = deEmbedSpiceParams(obj,component,embeddedParams);
         case 'I'
             [nodes,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
             component.Nodes = nodes([1 2]);
 
             component.paramNames = {type};
-            component.paramVals = parseTwoNetSpiceComponent(obj,str);
+            [component.paramVals, embeddedParams] = parseTwoNetSpiceComponent(obj,str);
+            component = deEmbedSpiceParams(obj,component,embeddedParams);
         case 'L'
             [nodes,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
             component.Nodes = nodes([1 2]);
 
             component.paramNames = {type};
-            component.paramVals = parseTwoNetSpiceComponent(obj,str);
+            [component.paramVals, embeddedParams] = parseTwoNetSpiceComponent(obj,str);
+            component = deEmbedSpiceParams(obj,component,embeddedParams);
         case 'C'
             [nodes,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
             component.Nodes = nodes([1 2]);
 
             component.paramNames = {type};
-            component.paramVals = parseTwoNetSpiceComponent(obj,str);
+            [component.paramVals, embeddedParams] = parseTwoNetSpiceComponent(obj,str);
+            component = deEmbedSpiceParams(obj,component,embeddedParams);
         case 'R'
             [nodes,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
             component.Nodes = nodes([1 2]);
 
             component.paramNames = {type};
-            component.paramVals = parseTwoNetSpiceComponent(obj,str);
+            [component.paramVals, embeddedParams] = parseTwoNetSpiceComponent(obj,str);
+            component = deEmbedSpiceParams(obj,component,embeddedParams);
         case 'D'
              %Need ron, roff, Cd, Vf
             vals = [0 obj.defaultRoff 0 0];
@@ -157,6 +162,12 @@ function component = parseSpiceComponent(obj, str)
             component.paramVals = vals;
         case 'K'
             warning('Not sure how Jared wants this (K)')
+
+            [inductors,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
+
+            component.paramNames = inductors(1:end-1);
+            component.paramVals = inductors{end}; %actuall K value
+            component.Nodes = {};
         otherwise
             error(['Unrecognized netlist line ' str] );
     end

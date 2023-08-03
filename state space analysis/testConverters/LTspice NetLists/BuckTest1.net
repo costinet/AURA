@@ -7,7 +7,7 @@ L1 N002 N003 {Lf}
 C1 N003 0 Cout
 R1 N003 0 Rout
 D1 0 N002 D Vf={Vf} Ron={1m} Cd=100p
-D2 N002 N002 D Vf={Vf}  Ron={1m} Cd=100p
+D2 N002 N001 D Vf={Vf}  Ron={1m} Cd=100p
 .model D D
 .lib C:\Users\dcostine\Documents\LTspiceXVII\lib\cmp\standard.dio
 .model NMOS NMOS
@@ -18,7 +18,7 @@ D2 N002 N002 D Vf={Vf}  Ron={1m} Cd=100p
 .param Cout = 1e-3
 .param Rout = 100
 .param Vf = 1
-.param ts = [1u 50n 1u 100n]
+.param ts = [1u 50n 1u 50n]
 .param swvec = [1 0 0 0; 0 0 0 0; 0 1 0 0; 0 0 0 0]
 .backanno
 .end

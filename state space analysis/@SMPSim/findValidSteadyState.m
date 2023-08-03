@@ -26,18 +26,25 @@ function niter = findValidSteadyState(obj)
     finalRun = 0;
     
     %% Symmetry check
-    % May be useful but not doing anything with it yet.  Can identify that DAB,
-    % etc. exhibit half-cycle symmetry
-    [TF,lastInt,Ihc] = obj.converter.checkForSymmetry;
-    if(TF)
-        obj.IHC = Ihc;
-        swvec = conv.swvec;
-        ts = conv.ts;
-        top.loadCircuit(top.circuitParser.sourcefn,swvec(1:lastInt,:),1);
-        conv.setSwitchingPattern(swvec(1:lastInt,:), ts(1:lastInt))
+    % Checks for converters with half-cycle symmetry.  If one is found,
+    % steady-state will only need to examine the first half-cycle
+    if obj.allowHalfCycleReduction
+        [TF,lastInt,Ihc] = obj.converter.checkForSymmetry;
+        if(TF)
+            obj.IHC = Ihc;
+            swvec = conv.swvec;
+            ts = conv.ts;
+            top.loadCircuit(top.circuitParser.sourcefn,swvec(1:lastInt,:),1);
+            conv.setSwitchingPattern(swvec(1:lastInt,:), ts(1:lastInt))
+        end
     end
     
     %%  TimeStepping Attempt
+    % If set, the algorithm will first time-step through one period looking
+    % for diode switching before entering the steady-state solution.
+    % Generally should not be used, as it is slow and requires the initial
+    % times to be close such that one time-stepping period is 'close' to
+    % steady-state
     if obj.timeSteppingInit > 0
         [Xf,ts,swinds] = timeSteppingPeriod(obj);
         
@@ -52,18 +59,13 @@ function niter = findValidSteadyState(obj)
             end
         end
     
-        [newts,newswinds] = obj.format1DtimingVector(ts,swinds);
-        
-    
-    
+        [newts,newswinds] = obj.format1DtimingVector(ts,swinds);        
         conv.setSwitchingPattern(newswinds, newts)
         clear newts;
 %         X0 = obj.Xs(:,1);
     end
 
-    
 
-    
 
 while(1)
     obj.steadyState;
@@ -72,7 +74,6 @@ while(1)
     [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = obj.checkDiscreteErr;
     errBefore = min(violateMarginStart,0);
     errAfter = min(violateMarginEnd,0);
-
 
     if obj.debug2 == 1
         obj.describeDiscreteErrors;
@@ -85,9 +86,7 @@ while(1)
     %   -- OR it has one of the above, and the before and after switching
     %   positions aren't part of the modifiable uncontrolled times.
     
-%     [~,ints,~] = getIntervalts(conv);
-%     ints = ints';
-%     
+    
     [tLocs,insertAt,adjType] = obj.findRequiredUncontrolledSwitching(violateMarginStart,violateMarginEnd);
 
     altered = 0;
@@ -187,8 +186,6 @@ while(1)
         
         [i1,j1] = find(errBefore);
         [i2,j2] = find(errAfter);
-%         intV = [j1; j2]; 
-%         stateV = [i1; i2];
 
         A = zeros(length(j1)+length(j2),length(conv.ts));
         b = zeros(length(j1)+length(j2),1);
@@ -211,7 +208,7 @@ while(1)
             b(i+j,1) = targetValEnd(i2(j),j2(j));
             e(i+j,1) = abs(targetValEnd(i2(j),j2(j)) - violateMarginEnd(i2(j),j2(j)));
         end
-%         if(isempty(j)), j=0; end
+
 
         % A is now (# of errors) x (number of time intervals) and 
         % b is (# of errors) x 1 
@@ -224,8 +221,7 @@ while(1)
 
        
 
-        %% Attempt: add zero net perturbation to time as a part of the
-        %% equations -- MAY NOT  because some times are dropped.
+        %% Add zero net perturbation to controlled time intervals
         scaleF = norm(A(:,~unChangeable))/numel(A);
         [~, timeInts, ~] = conv.getIntervalts;
         A = [A; zeros(max(timeInts), size(A,2))];
@@ -247,7 +243,8 @@ while(1)
         tsolve(~unChangeable) = -(A\b);
 
         %% Check for competing constraints
-        % Speeds up DAB_Rload, as an example, but nothing else?
+        % Speeds up DAB_Rload, as an example, but may be unnecessary
+        % overall
         try
             numTimeRows = numel(unique(timeInts));
             nontimeRows = ones(length(emptyRows)-numTimeRows,1);
@@ -328,13 +325,7 @@ while(1)
         oldts = conv.ts;
         tps = conv.validateTimePerturbations2(tsolve) ;%/ convSpeed;
 
-        conv.adjustUncontrolledTiming(1:length(tps), tps);
-%         for i=length(tsolve):-1:1
-%             if tsolve(i) ~= 0
-%                 conv.adjustUncontrolledTiming(i, tsolve(i));
-%             end
-%         end
-        
+        conv.adjustUncontrolledTiming(1:length(tps), tps);        
 
 
         if obj.debug2 == 1
@@ -395,7 +386,7 @@ while(1)
 
         
         if(niter > obj.maxItns)
-            warning(['unable to solve valid Steady State within ' num2str(obj.maxItns) 'iterations'])
+            warning(['unable to solve valid Steady State within ' num2str(obj.maxItns) ' iterations'])
             break;
         end
         
@@ -407,12 +398,4 @@ while(1)
 
     end
 end
-
-% if(obj.debug)
-%     if exist('H','var')
-%         close(H)
-%     end
-% end
-
-% varargout{1} = niter;
 end

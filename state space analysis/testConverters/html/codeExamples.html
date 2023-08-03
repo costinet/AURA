@@ -1,0 +1,259 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>codeExamples</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-08-01"><meta name="DC.source" content="codeExamples.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Add test circuits folder to the path</a></li><li><a href="#2">Example Underdefined PLECS File</a></li><li><a href="#3">Example Steady-State Solve from PLECS circuit</a></li><li><a href="#4">Example Steady-State Solve from PLECS circuit with dependent States</a></li></ul></div><h2 id="1">Add test circuits folder to the path</h2><pre class="codeinput">sdir = mfilename(<span class="string">'fullpath'</span>);
+sdir = sdir(1:find(sdir==<span class="string">'\'</span>,1,<span class="string">'last'</span>)-1);
+addpath(sdir);
+addpath([sdir <span class="string">'\ExampleTopologies'</span>])
+</pre><h2 id="2">Example Underdefined PLECS File</h2><pre class="codeinput">modelfile = <span class="string">'DAB_Incomplete'</span>; PLECsModel = <span class="string">'DAB_oneCap'</span>;
+
+open_system(modelfile,<span class="string">'loadonly'</span>);
+circuitPath = [modelfile <span class="string">'/'</span> PLECsModel];
+
+sim = SMPSim();
+conv = sim.converter;
+top = sim.topology;
+
+<span class="keyword">try</span>
+    top.loadCircuit(circuitPath); <span class="comment">%This fails with explanation of missing variables</span>
+<span class="keyword">catch</span> e
+    disp(getReport( e, <span class="string">'extended'</span>, <span class="string">'hyperlinks'</span>, <span class="string">'on'</span> ) )
+<span class="keyword">end</span>
+</pre><h2 id="3">Example Steady-State Solve from PLECS circuit</h2><pre class="codeinput">modelfile = <span class="string">'AsyncBoost'</span>; PLECsModel = <span class="string">'Boost_Async'</span>;
+
+loadSimulinkOutputsToBase(modelfile,PLECsModel);
+circuitPath = [modelfile <span class="string">'/'</span> PLECsModel];
+
+sim = SMPSim();
+sim.initialize(circuitPath, swvec, us, ts);
+
+sim.steadyState();
+sim.plotAllStates(1)
+sim.plotAllOutputs(2)
+</pre><img vspace="5" hspace="5" src="codeExamples_01.png" alt=""> <img vspace="5" hspace="5" src="codeExamples_02.png" alt=""> <h2 id="4">Example Steady-State Solve from PLECS circuit with dependent States</h2><pre class="codeinput">modelfile = <span class="string">'AsyncBoost'</span>; PLECsModel = <span class="string">'Boost_Async'</span>;
+
+loadSimulinkOutputsToBase(modelfile,PLECsModel);
+circuitPath = [modelfile <span class="string">'/'</span> PLECsModel];
+
+sim = SMPSim();
+sim.initialize(circuitPath, swvec, us, ts);
+
+sim.findValidSteadyState();
+sim.plotAllStates(1)
+sim.plotAllOutputs(2)
+</pre><pre class="codeoutput">   1.0e+03 *
+
+    0.0020   -7.3805
+
+   1.0e+03 *
+
+    0.0030   -7.2836
+
+   1.0e+03 *
+
+    0.0040   -7.0887
+
+   1.0e+03 *
+
+    0.0050   -6.6946
+
+   1.0e+03 *
+
+    0.0060   -5.8909
+
+   1.0e+03 *
+
+    0.0070   -4.2291
+
+   1.0e+03 *
+
+    0.0080   -2.0739
+
+   1.0e+03 *
+
+    0.0090   -1.0337
+
+   10.0000 -517.3242
+
+   11.0000 -258.9707
+
+   12.0000 -129.5615
+
+   13.0000  -64.7705
+
+   14.0000  -32.3495
+
+   15.0000  -16.1321
+
+   16.0000   -8.0217
+
+   17.0000   -3.9660
+
+   18.0000   -1.9380
+
+   19.0000   -0.9240
+
+   20.0000   -0.4170
+
+   21.0000   -0.1635
+
+   22.0000   -0.0368
+
+   23.0000 -612.4529
+
+   24.0000 -543.4898
+
+   25.0000 -203.6276
+
+   26.0000 -176.1561
+
+   27.0000 -119.7575
+
+   28.0000  -94.0915
+
+   29.0000  -44.3160
+
+   30.0000   -3.7390
+
+   31.0000   -1.0845
+
+   32.0000   -0.4968
+
+   33.0000   -0.2033
+
+   34.0000   -0.0566
+
+   35.0000  -20.8449
+
+   36.0000  -10.3258
+
+   37.0000   -5.0713
+
+   38.0000   -2.4888
+
+   39.0000   -1.1994
+
+   40.0000   -0.5547
+
+   41.0000   -0.2324
+
+   42.0000   -0.0712
+
+</pre><img vspace="5" hspace="5" src="codeExamples_03.png" alt=""> <img vspace="5" hspace="5" src="codeExamples_04.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Add test circuits folder to the path
+sdir = mfilename('fullpath');
+sdir = sdir(1:find(sdir=='\',1,'last')-1);
+addpath(sdir);
+addpath([sdir '\ExampleTopologies'])
+
+%% Example Underdefined PLECS File
+modelfile = 'DAB_Incomplete'; PLECsModel = 'DAB_oneCap';
+
+open_system(modelfile,'loadonly');
+circuitPath = [modelfile '/' PLECsModel];
+    
+sim = SMPSim();
+conv = sim.converter;
+top = sim.topology;
+    
+try
+    top.loadCircuit(circuitPath); %This fails with explanation of missing variables
+catch e
+    disp(getReport( e, 'extended', 'hyperlinks', 'on' ) )
+end
+
+%% Example Steady-State Solve from PLECS circuit
+modelfile = 'AsyncBoost'; PLECsModel = 'Boost_Async';
+
+loadSimulinkOutputsToBase(modelfile,PLECsModel);
+circuitPath = [modelfile '/' PLECsModel];
+
+sim = SMPSim();
+sim.initialize(circuitPath, swvec, us, ts);
+
+sim.steadyState();
+sim.plotAllStates(1)
+sim.plotAllOutputs(2)
+
+%% Example Steady-State Solve from PLECS circuit with dependent States
+modelfile = 'AsyncBoost'; PLECsModel = 'Boost_Async';
+
+loadSimulinkOutputsToBase(modelfile,PLECsModel);
+circuitPath = [modelfile '/' PLECsModel];
+
+sim = SMPSim();
+sim.initialize(circuitPath, swvec, us, ts);
+
+sim.findValidSteadyState();
+sim.plotAllStates(1)
+sim.plotAllOutputs(2)
+
+##### SOURCE END #####
+--></body></html>

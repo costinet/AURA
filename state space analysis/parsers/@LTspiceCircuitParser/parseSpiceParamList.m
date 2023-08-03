@@ -5,8 +5,12 @@ function [params] = parseSpiceParamList(obj, str, params)
     if nargin == 2 
         params = {};
     end
+
+    if isempty(str)
+        return
+    end
     
-    [sI, eI] = regexp(str,'\s[a-zA-Z_]+[\s]*[=][\s]*[\w.{}]+');
+    [sI, eI] = regexp(str,'\s[a-zA-Z_]+[\s]*[=][\s]*[\w.{}-*+/]+');
     if ~isempty(sI)
         for j=length(sI):-1:1
             params = [params; strtrim(str(sI(j):eI(j)))];

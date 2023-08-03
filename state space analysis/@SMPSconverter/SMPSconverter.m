@@ -462,6 +462,13 @@ classdef SMPSconverter < handle
 %         end
         
         function setSwitchingPattern(obj, swind, ts)  
+        % SETSWITCHINGPATTERN set switching pattern and controlled timing
+        %
+        %   setSwitchingPattern(obj, swind, ts)  
+        %
+        %   setSwitchingPattern(obj, swvec, ts)  
+        %
+        %
             if size(ts,2) == 1
                 ts = ts';
             end
@@ -474,7 +481,15 @@ classdef SMPSconverter < handle
                 swind = zeros(1,size(swseqIn,1));
                 for i = 1:size(swseqIn,1)
                     [~, idx] = intersect(obj.topology.swseq, swseqIn(i,:), 'rows');
-                    swind(i) = idx;
+                    if ~isempty(idx)
+                        swind(i) = idx;
+                    else
+                        %If the switching state doesn't already exist,
+                        %parse it
+                        obj.topology.loadCircuit(obj.topology.sourcefn,swseqIn(i,:));
+                        [~, idx] = intersect(obj.topology.swseq, swseqIn(i,:), 'rows');
+                        swind(i) = idx;
+                    end
                 end
             end
             

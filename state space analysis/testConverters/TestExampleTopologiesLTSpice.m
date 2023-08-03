@@ -11,6 +11,7 @@ clear all;
 
 summaryStrings = {};
 
+debug = 0;
 allAssess = 1;      % run all models sequentially
 
 models = 1;         % if allAssess == 0, this model will be run
@@ -25,11 +26,16 @@ addpath([sdir '\LTspice NetLists'])
 %% Test Circuits
 modelfile{1} = 'BuckTest1.net'; 
 modelfile{2} = 'Buck_Vout_D.net'; 
+modelfile{3} = '3levelbuck.net'; 
+modelfile{4} = '3levelbuckDep.net'; 
+modelfile{5} = 'DAB.net'; 
 
 
 %% Most recent full run results:
-% Model BuckTest1.net converged after 18 iterations in 0.53823 seconds
-% Model Buck_Vout_D.net converged after 11 iterations in 0.15198 seconds
+% Model BuckTest1.net converged after 14 iterations in 0.61548 seconds
+% Model Buck_Vout_D.net converged after 11 iterations in 0.14665 seconds
+% Model 3levelbuck.net converged after 8 iterations in 0.10981 seconds
+% Model 3levelbuckDep.net converged after 8 iterations in 0.091216 seconds
 
 
 if allAssess
@@ -43,30 +49,22 @@ end
 
 for selectedModel = models
         
+    % If Debugging
+    %     sim.debug = 1;
+    %     sim.debug2 = 1;
 
+    %% Load model file
     circuitPath = [modelfile{selectedModel}];
 
     
     %% Analyze circuit
-    
     sim = SMPSim();
-    conv = sim.converter;
-    top = sim.topology;
-
-%     sim.debug = 1;
-%     sim.debug2 = 1;
-
-
-    
-    top.loadCircuit(circuitPath,[],1);
-    sim.u = us;
-    conv.setSwitchingPattern(swvec, ts)
+    [top, conv] = sim.initialize(circuitPath);   
 
     if(debug)
         sim.steadyState;
         sim.plotAllStates(4)
     end
-
     
     tic;
     niter = sim.findValidSteadyState;   
@@ -76,11 +74,11 @@ for selectedModel = models
         sim.plotAllStates(1);
     end
 
+    %% Update progress bar and store result
+
     if allAssess
         updateWaitBar(h, modelfile, selectedModel, niter, 0, 0);
     end
-
-
 
     if(allAssess && niter <= sim.maxItns)
         summaryStrings{selectedModel} = ['Model ' modelfile{selectedModel} ' converged after ' num2str(niter+1) ' iterations in ' num2str(solveTime) ' seconds'];

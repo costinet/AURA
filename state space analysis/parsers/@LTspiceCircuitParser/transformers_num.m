@@ -41,12 +41,12 @@ for i = 1:1:D(1)
         if j==1
             NL(p,1) = numBI;
             NLnets(p,:) = [strcat(NLnets(p,1),'_T'), NLnets(p,2:end)];
-            Values(end+1) = obj.sip2num(NLnets{p,4});
+            Values(end+1) = evalin('base', obj.spiceNumFormat(NLnets{p,4}));
 
         else
             NL(p,1) = numBV;
             NLnets(p,:) = [strcat(NLnets(p,1),'_T'), NLnets(p,2:end)];
-            Values(end+1) = obj.sip2num(NLnets{p,4});
+            Values(end+1) = evalin('base', obj.spiceNumFormat(NLnets{p,4}));
         end
     end
 end
@@ -94,14 +94,14 @@ end
 %  nI+nI+nI=0
 
 % First Inductor Listed is Primary Coil
+% 
+% for i = 2:1:length(Values)
+%     %Turns(i,i-1) = sqrt(Values(1)/Values(i));
+%     Turns_syms(i-1,length(Values)) = sqrt(mutual2(i)/mutual2(1));
+%     Turns_syms(length(Values),i-1) = -sqrt(mutual2(i)/mutual2(1));
+% end
 
-for i = 2:1:length(Values)
-    %Turns(i,i-1) = sqrt(Values(1)/Values(i));
-    Turns_syms(i-1,length(Values)) = sqrt(mutual2(i)/mutual2(1));
-    Turns_syms(length(Values),i-1) = -sqrt(mutual2(i)/mutual2(1));
-end
-
-K = Turns_syms;
+K = 1;%Turns_syms;
 
 
 

@@ -46,6 +46,7 @@ classdef SMPSim < handle
 
         maxItns = 100;
 
+        allowHalfCycleReduction = 1;
         IHC = [];
 
         tryOpt = 0;
@@ -104,6 +105,63 @@ classdef SMPSim < handle
         niter = findValidSteadyState(obj)
 
         %% Locally-defined methods
+        
+        function [top, conv] = initialize(obj, circuitPath, swvec, us, ts)
+        % load circuit file and necessary parameters for simulation
+        %
+        %   initialize combines calls to the topology;s loadCircuit and the
+        %   converter's setSwitchingPattern functions, along with some
+        %   format checks.
+        %
+        %   [top, conv] = initialize(obj, circuitPath, swvec, us, ts)
+        %   circuitPath is the path to a parseable circuit definition file
+        %   swvec is a 2D binary vector describing the switching states
+        %   us is the input vector
+        %   ts is the time vector
+        %   top and conv are the object's reference topology and converter
+        %  
+        %   See also SMPSconverter.setSwitchingPattern, SMPStopology.loadCircuit
+            if nargin == 2
+                swvec = [];
+                us = [];
+                ts = [];
+            elseif nargin == 3
+                us = [];
+                ts = [];
+            elseif nargin == 4
+                ts = [];
+            end
+
+            top = obj.topology;
+            conv = obj.converter;
+
+            if ~isempty(swvec)
+                top.loadCircuit(circuitPath,swvec,1);
+            else
+                top.loadCircuit(circuitPath,[],1);
+                swvec = evalin('base','swvec');
+            end
+
+            if ~isempty(us)
+                obj.u = us;
+            else
+                obj.u = evalin('base', 'us');
+            end
+
+            if size(obj.u,2) == 1
+                obj.u = obj.u';
+            end
+            
+             if ~isempty(ts)
+                conv.setSwitchingPattern(swvec, ts);
+             else
+                ts = evalin('base','ts');
+                conv.setSwitchingPattern(swvec, ts);
+            end
+            
+        end
+
+
         function Xss = steadyState(obj, dts)
         %solve steady-state solution of converter at current switching pattern and timing
         %

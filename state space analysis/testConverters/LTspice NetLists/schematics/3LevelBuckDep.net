@@ -1,0 +1,29 @@
+* C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters\LTspice NetLists\schematics\3LevelBuckDep.asc
+M1 N001 NC_01 N002 N002 BSC900N20NS3
+M2 N002 NC_02 N003 N003 NMOS ron = 1m Coss = {Coss}
+V1 N001 0 48
+L1 N003 N004 {Lf}
+C1 N004 0 Cout
+R1 N004 0 Rout
+M3 N003 NC_03 N005 N005 BSC900N20NS3
+M4 N005 NC_04 0 0 NMOS ron = 1m Coss = {Coss}
+D1 N002 N001 D Vf={Vf} Ron={1m} Cd=100p
+D2 N003 N002 D Vf={Vf} Ron={1m} Cd=100p
+D3 N005 N003 D Vf={Vf} Ron={1m} Cd=100p
+D4 0 N005 D Vf={Vf} Ron={1m} Cd=100p
+Cfly N002 N005 10µ
+.model D D
+.lib C:\Users\dcostine\Documents\LTspiceXVII\lib\cmp\standard.dio
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\dcostine\Documents\LTspiceXVII\lib\cmp\standard.mos
+.param Lf = 1u
+.param Coss = 1n
+.param Cout = 1e-3
+.param Rout = 100
+.param Vf = 1
+.param ts = [1u 50n 1u 50n]
+.param swvec = [1 0 1 0 0 0 0 0; 0 0 0 0 0 0 0 0; 0 1 0 1 0 0 0 0; 0 0 0 0 0 0 0 0]
+* Note: The parser will look for Cout \nand Rout in the base workspace
+.backanno
+.end

@@ -4,6 +4,6 @@ function evalSpiceParams(obj,param)
 
     param = strrep(param,'{','');
     param = strrep(param,'}','');
-    evalin('base', obj.spiceNumFormat(param));
+    evalin('base', [obj.spiceNumFormat(param) ';']);
 
 end
