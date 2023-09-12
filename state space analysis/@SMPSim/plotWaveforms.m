@@ -17,10 +17,20 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
     if type == 1
         [ sigs, t] = obj.SS_WF_Reconstruct;
         names = obj.stateNames;
+
+        if ~all(obj.IHC == eye(size(obj.IHC)),'all')
+            sigs = [sigs, sigs.*repmat(diag(obj.IHC),[1,size(sigs,2)])];
+            t = [t, t+t(end)];
+        end
     elseif type == 2
         [ ~, t, sigs] = obj.SS_WF_Reconstruct;
         names = obj.outputNames;
-    end
+
+%         if ~all(obj.IHC == eye(size(obj.IHC)),'all')
+%             sigs = [sigs, sigs.*repmat(diag(obj.IHC),[1,size(sigs,2)])];
+%             t = [t, t+t(end)];
+%         end
+    end 
     fig = figure(fn);
 
     ns = size(sigs,1);

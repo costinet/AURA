@@ -12,7 +12,7 @@ clear all;
 summaryStrings = {};
 
 debug = 0;
-allAssess = 1;      % run all models sequentially
+allAssess = 0;      % run all models sequentially
 
 models = 1;         % if allAssess == 0, this model will be run
 

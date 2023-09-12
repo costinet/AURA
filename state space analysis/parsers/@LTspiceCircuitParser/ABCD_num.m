@@ -35,25 +35,28 @@ obj.Component_Values(IA,:) = [];
 
 i = 1;
     % numeric solution
-    [A(:,:,i),B(:,:,i),C(:,:,i),D(:,:,i),I(:,:,i),HtempAB(:,:,i),dependsAB(:,:,i),HtempCD(:,:,i),savedCD(:,:,i),StateNamesAB(:,i),StateNamesCD(:,i),OutputNames(:,i),DependentNames(:,i),SortedTree(:,:,i),SortedCoTree(:,:,i),ConstantNames(:,i),OrderedNamesnum(:,i)] = obj.nodeloop_num(obj.NewNL,obj.NewNLnets);
-   
+    [almost_H] = obj.nodeloop_num(obj.NL,obj.NLnets);
+    [H,s]=obj.hybridparse(almost_H,obj.SortedTree_cutloop,obj.SortedCoTree_cutloop);
 
+    % Functions to find outputs
+    [A,B,C,D,I,~,~,~,OutputNames,~,ConstantNames,OrderedNamesnum]=obj.loopfixAB_num(H,s,obj.NLnets,obj.SortedTree_cutloop,obj.SortedCoTree_cutloop);
+    [C,D,~,~,StateNamesCD]=obj.loopfixCD_num(A,B,C,D,H,s,obj.NLnets,obj.SortedTree_cutloop,obj.SortedCoTree_cutloop);
 
 % openvar('variable_name')
 
 % Update class
-obj.HtempAB = HtempAB;
-obj.HtempCD = HtempCD;
-obj.dependsAB = dependsAB;
-obj.savedCD = savedCD;
-obj.StateNames = obj.NewNLnets(OrderedNamesnum,1);
+% obj.HtempAB = HtempAB;
+% obj.HtempCD = HtempCD;
+% obj.dependsAB = dependsAB;
+% obj.savedCD = savedCD;
+obj.StateNames = obj.NLnets(OrderedNamesnum,1);
 obj.OutputNamesCD = StateNamesCD;
-obj.DependentNames = DependentNames;
+% obj.DependentNames = DependentNames;
 obj.OutputNames = OutputNames;
-obj.SortedTree = SortedTree;
-obj.SortedCoTree = SortedCoTree;
+% obj.SortedTree = SortedTree;
+% obj.SortedCoTree = SortedCoTree;
 obj.ConstantNames = ConstantNames;
-obj.OrderedNamesnum = OrderedNamesnum;
+% obj.OrderedNamesnum = OrderedNamesnum;
 %obj.Codex = The_Codex;
 
 end % That's all Folks

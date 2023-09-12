@@ -26,7 +26,7 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
     numNodes = reshape(nodeMap([obj.components.Nodes]), [2,length(obj.components),])';
 
     %% for later? Numerical nodes corresponding to components
-    typeMap = dictionary({'V','BV', 'MV','C','R','L','MI','BI','I', 'E', 'F'}, [1:9, 2, 8]);
+    typeMap = dictionary({'V','BV', 'MV','C','R','L','MI','BI','I',       'E', 'F', 'Vm', 'Im'}, [1:9, 2, 8, 3, 7]);
     typeOrder = typeMap({obj.components.Type})';  
 
     obj.NL = [typeOrder, numNodes , transpose(1:length(typeOrder))];
@@ -42,5 +42,19 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
 
 
     obj.cutset_loop_num();
-    [A,B,C,D,I] = obj.nodeloop_num(obj.NL,obj.NLnets);
+%     [A,B,C,D,I] = obj.nodeloop_num(obj.NL,obj.NLnets);
+
+    %% Below equivalent to old call to ABCD_num
+    [almost_H] = obj.nodeloop_num(obj.NL,obj.NLnets);
+    [H,s]=obj.hybridparse(almost_H,obj.SortedTree_cutloop,obj.SortedCoTree_cutloop);
+
+    % Functions to find outputs
+    [A,B,C,D,I,~,~,~,OutputNames,~,ConstantNames,OrderedNamesnum]=obj.loopfixAB_num(H,s,obj.NLnets,obj.SortedTree_cutloop,obj.SortedCoTree_cutloop);
+    [C,D,~,~,StateNamesCD]=obj.loopfixCD_num(A,B,C,D,H,s,obj.NLnets,obj.SortedTree_cutloop,obj.SortedCoTree_cutloop);
+
+    obj.StateNames = obj.NLnets(OrderedNamesnum,1);
+    obj.OutputNamesCD = StateNamesCD;
+    obj.OutputNames = OutputNames;
+    obj.ConstantNames = ConstantNames;
+
 end

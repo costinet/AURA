@@ -7,13 +7,13 @@ function components = switchLinearSubcircuit(obj, component)
     Req = {};
     Cpar = {};
 
-    Vmeas.Name = ['Im_' component.Name];
-    Ameas.Name = ['Vm_' component.Name];
+    Vmeas.Name = ['Im_' component.Name]; % 0A source to measure voltage
+    Ameas.Name = ['Vm_' component.Name]; % 0V source to measure current
     Req.Name = ['R_' component.Name];
     Cpar.Name = ['C_' component.Name];
 
-    Vmeas.Type = 'V';
-    Ameas.Type = 'I';
+    Vmeas.Type = 'Im';
+    Ameas.Type = 'Vm';
     Req.Type  = 'R';
     Cpar.Type  = 'C';
 

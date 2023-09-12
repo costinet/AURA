@@ -54,6 +54,11 @@ classdef transistorDB < componentDB
                 obj.components(i).clearUpdated();
             end
         end
+
+        function digitizeDatasheet(obj,datasheet)
+            %% 
+            plotDigitizer(datasheet);
+        end
         
         function sync(obj)
             % Upload all transistors

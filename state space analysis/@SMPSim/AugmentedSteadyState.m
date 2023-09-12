@@ -51,6 +51,9 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
     depStates(end+1) = 0;
     nd = sum(depStates);
 
+
+%     PHI = In(~depStates,~depStates)-IHC(~depStates,~depStates)*EA(~depStates,~depStates);
+%     Zn = null(PHI(1:end-1,1:end-1));
     Zn = null(In(~depStates,~depStates)-IHC(~depStates,~depStates)*EA(~depStates,~depStates));
 
     k = Zn(end,:)\1;

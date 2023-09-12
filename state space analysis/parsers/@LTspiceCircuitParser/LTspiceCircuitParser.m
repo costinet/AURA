@@ -15,10 +15,10 @@ classdef LTspiceCircuitParser < handle
         components
 		
 		 % Symbolic Matrix of ABCD
-        Asym
-        Bsym
-        Csym
-        Dsym
+% % %         Asym
+% % %         Bsym
+% % %         Csym
+% % %         Dsym
 
         % Numerical Matrix of ABCD
         Anum
@@ -104,8 +104,8 @@ classdef LTspiceCircuitParser < handle
         Cutset
         SortedTree_cutloop
         SortedCoTree_cutloop
-        NewNL
-        NewNLnets
+%         NewNL
+%         NewNLnets
         
         % Htemp for AB and CD matrix for large converters
 

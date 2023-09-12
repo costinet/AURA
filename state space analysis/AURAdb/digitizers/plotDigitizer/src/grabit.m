@@ -596,10 +596,13 @@ if nargin >= 2
         handles.callingApp.MaxXValueEditField.Value, ...
         handles.callingApp.MinYValueEditField.Value, ...
         handles.callingApp.MaxYValueEditField.Value];
-    handles.CalibPtsIm = [handles.callingApp.imgAxes(1), handles.callingApp.imgAxes(3);
-        handles.callingApp.imgAxes(2), handles.callingApp.imgAxes(3);
-        handles.callingApp.imgAxes(1), handles.callingApp.imgAxes(3);
-        handles.callingApp.imgAxes(1), handles.callingApp.imgAxes(4)];
+    
+    imgAxes = handles.callingApp.curPlotData.imgAxes;
+    imgAxes = [imgAxes.colLeft imgAxes.colRight imgAxes.rowBottom imgAxes.rowTop];
+    handles.CalibPtsIm = [imgAxes(1), imgAxes(3);
+        imgAxes(2), imgAxes(3);
+        imgAxes(1), imgAxes(3);
+        imgAxes(1), imgAxes(4)];
 %     handles.CalibVals.Xo = handles.callingApp.MinXValueEditField.Value;
 %     handles.CalibVals.Xm = handles.callingApp.MaxXValueEditField.Value;
 %     handles.CalibVals.Yo = handles.callingApp.MinYValueEditField.Value;
@@ -612,10 +615,10 @@ if nargin >= 2
     end
 
     %hs = {'hXoValue', 'hXmValue', 'hYoValue', 'hYmValue'}; set(handles.(hs{id(1)}), 'string', sprintf(' %g', val));
-    set(handles.CalibPtsH(1,:), 'xdata', handles.callingApp.imgAxes(1), 'ydata', handles.callingApp.imgAxes(3));
-    set(handles.CalibPtsH(2,:), 'xdata', handles.callingApp.imgAxes(2), 'ydata', handles.callingApp.imgAxes(3));
-    set(handles.CalibPtsH(3,:), 'xdata', handles.callingApp.imgAxes(1), 'ydata', handles.callingApp.imgAxes(3));
-    set(handles.CalibPtsH(4,:), 'xdata', handles.callingApp.imgAxes(1), 'ydata', handles.callingApp.imgAxes(4));
+    set(handles.CalibPtsH(1,:), 'xdata', imgAxes(1), 'ydata', imgAxes(3));
+    set(handles.CalibPtsH(2,:), 'xdata', imgAxes(2), 'ydata', imgAxes(3));
+    set(handles.CalibPtsH(3,:), 'xdata', imgAxes(1), 'ydata', imgAxes(3));
+    set(handles.CalibPtsH(4,:), 'xdata', imgAxes(1), 'ydata', imgAxes(4));
     guidata(im, handles);
     calculateCalibrationFcn(handles)
 end

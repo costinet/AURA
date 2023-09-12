@@ -248,7 +248,6 @@ obj.NL = NL3;
 obj.NLnets = NL;
 obj.NLwhole = ALL;
 
-obj.addmeasure; % Adds measurement nodes for 
 % Find and set transformers
 if ~isempty(IndtoTrans) || ~isempty(MutInd)
 obj.transformers_num(IndtoTrans,MutInd,position);

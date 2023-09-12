@@ -27,7 +27,7 @@ function loadModel(obj, fn, swseq, force)
 
 % obj.initialize(fn,{},{});
 
-old = 1;
+old = 0;
 new = ~old;
 
 if isempty(obj.Anum) || force
@@ -36,16 +36,15 @@ if isempty(obj.Anum) || force
 
     if(new)
         obj.linearizeCircuitModel2()
-    end
-
-    if(old)
+    elseif(old)
         obj.linearizeCircuitModel()
     
         obj.read_file_num();
+        obj.addmeasure;
         [switches]=obj.findDM;
         obj.ON_States = cell(length(switches),1);
         obj.OFF_States = cell(length(switches),1);
-        [obj.NewNL,obj.NewNLnets,~]=obj.Single_states_D(1,1,switches);
+        [obj.NL,obj.NLnets,~]=obj.Single_states_D(1,1,switches);
         obj.cutset_loop_num();
         obj.Component_Values = obj.Element_Properties;
     end

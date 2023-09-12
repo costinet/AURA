@@ -42,7 +42,7 @@ function [] = cutset_loop_num(obj)
 % % % 
 % % % [NL,NLnets,forward_pass]=obj.Single_states_D(state,i,switches);
 
-NL = obj.NewNL;
+NL = obj.NL;
 
 %% Find incidence matricies
 SortedRows = sortrows(NL,1); % sorts rows in prefered tree order
@@ -261,7 +261,7 @@ obj.SortedTree_cutloop = SortedTree;
 obj.SortedCoTree_cutloop = SortedCoTree;
 
 
-obj.NewNL = NL;
+obj.NL = NL;
 
 
 

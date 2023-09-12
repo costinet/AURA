@@ -46,7 +46,7 @@ classdef SMPSim < handle
 
         maxItns = 100;
 
-        allowHalfCycleReduction = 1;
+        allowHalfCycleReduction = 0;
         IHC = [];
 
         tryOpt = 0;
@@ -109,7 +109,7 @@ classdef SMPSim < handle
         function [top, conv] = initialize(obj, circuitPath, swvec, us, ts)
         % load circuit file and necessary parameters for simulation
         %
-        %   initialize combines calls to the topology;s loadCircuit and the
+        %   initialize combines calls to the topology's loadCircuit and the
         %   converter's setSwitchingPattern functions, along with some
         %   format checks.
         %
@@ -131,6 +131,11 @@ classdef SMPSim < handle
             elseif nargin == 4
                 ts = [];
             end
+
+            obj.IHC = [];           %Need to drop any half-cycle identification 
+            %Specific issue if you findValidSteadyState, get IHC, then re-run 
+            %initialize, then plot a steadyState -without- another
+            %findValidSteadyState, you get multiple inverted periods
 
             top = obj.topology;
             conv = obj.converter;

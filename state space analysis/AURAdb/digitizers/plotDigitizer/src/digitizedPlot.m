@@ -30,6 +30,8 @@ classdef digitizedPlot < handle
         img         % RGB data of full plot image
         
         componentType = transistor();
+
+        debug = 0;
     end
     
 
@@ -40,6 +42,7 @@ classdef digitizedPlot < handle
             %   Detailed explanation goes here
            
             obj.callingApp = app;
+            obj.debug = app.debug;
             if nargin >= 2
                 obj.img = imgData;
             end
@@ -145,11 +148,18 @@ classdef digitizedPlot < handle
             traces = fieldnames(handle.savedVars);
             for i = 1:length(traces)
                 data = eval(['handle.savedVars.' traces{i}]);
-                obj.plotData{i} = data;              
+                obj.plotData{i} = data;      
+
+%                 obj.imgData{i} = handle.ImDat;
             end
             obj.dataLabels = traces;
             obj.loadAppData();
             obj.convert();
+
+            cOrder = [ 0    0.4470    0.7410;    0.8500    0.3250    0.0980;    0.9290    0.6940    0.1250;    0.4940    0.1840    0.5560;    0.4660    0.6740    0.1880;    0.3010    0.7450    0.9330;    0.6350    0.0780    0.1840];
+            obj.traceColors = 255*cOrder(1:size(traces,2), :);
+
+            obj.callingApp.plotImage.Visible = 0;
         end
         
         function loadAppData(obj)
@@ -635,7 +645,9 @@ classdef digitizedPlot < handle
                 xlims = polyval(P,[obj.imgAxes.colLeft, obj.imgAxes.colRight],S, mu);
                 xlims = round(xlims,3);
             catch
-                warning('x-axis label regression failed');
+                if(debug)
+                    warning('x-axis label regression failed');
+                end
             end
             try
                 yaxislocs = [ocrResults(6).WordBoundingBoxes(:,1) + ocrResults(6).WordBoundingBoxes(:,3)/2, ...
@@ -653,7 +665,9 @@ classdef digitizedPlot < handle
                 end
                 warning(ws);
             catch
-                warning('y-axis label regression failed');
+                if(debug)
+                    warning('y-axis label regression failed');
+                end
             end
 
             %% check if we found axis labels at the ends of the axis
