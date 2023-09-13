@@ -34,7 +34,7 @@ end
 
 %% Load test circuit
 
-modelfile = 'SCBuckHybridBuckIout.net';
+modelfile = 'SCBuckHybridBuckIoutLR.net';
 
 
 %% Load for PLECS
@@ -191,12 +191,17 @@ dt = 5e-9;
 
 Numerical_Components = {
     'C6' Cout
+    'C7' Cout
     'L1' L+L_adj
     'L2' L+L_adj
     'L3' L+L_adj
+    'L4' 7.5e-9
+    'L5' 6e-9
     'R4' RL + RL_adj
     'R6' RL + RL_adj
     'R8' RL + RL_adj
+    'R11' 6.2e-3
+    'R12' 3.9e-3
     'C1' Cbuck
     'C2' Cbuck
     'R2' CbuckESR
@@ -209,6 +214,7 @@ Numerical_Components = {
     'R7' CflyESR
     'R1' Rg
     'R10' Rcap
+    'R13' Rcap
     'M1_C' Coss(1) + Coss_adj(1)
     'M2_C' Coss(1) + Coss_adj(1)
     'M3_C' Coss(1) + Coss_adj(1)
@@ -554,14 +560,14 @@ starting_d = d;
             %[Xf,ts,swinds] = timeSteppingPeriod(sim);
 
             
-           % sim.findValidSteadyState;
+            sim.findValidSteadyState;
             %COMPEL_2023_SteadyState(sim,conv,top)
             Xss = sim.steadyState;
             
             [ avgXs, avgYs ] = sim.ssAvgs(Xss);
             
             
-            Vb1 = avgYs(78)+avgYs(39)*Rbatt;
+            Vb1 = avgYs(81)+avgYs(39)*Rbatt;
             Ib1 = Iout;
             I1 = -avgYs(1);
             
@@ -574,7 +580,7 @@ starting_d = d;
             le = 0.7854; % in cm 2.5mm x pi
             Ae = 0.2275; % in cm3 7mm x 5 mm x 6.5 mm
             Ae_in_m = Ae/100/100/100;
-            DeltaH = number_of_turns*(max(Xss(20,:))-min(Xss(20,:)))/le;
+            DeltaH = number_of_turns*(max(Xss(22,:))-min(Xss(22,:)))/le;
                 
             PL=Kfe*(fs)^alpha*(DeltaH)^beta; % in kW/m3
 

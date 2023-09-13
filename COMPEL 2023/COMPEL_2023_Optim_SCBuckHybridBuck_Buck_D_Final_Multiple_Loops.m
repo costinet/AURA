@@ -155,7 +155,7 @@ try
             for j = 1:length(h)
                 h(j).LineWidth = 2;
             end
-            labelpoints(FETs(:,1,i).*scaleFETs(1),FETs(:,2,i).*scaleFETs(2),[1:Number_of_FETs],'E',0.1)
+           % labelpoints(FETs(:,1,i).*scaleFETs(1),FETs(:,2,i).*scaleFETs(2),[1:Number_of_FETs],'E',0.1)
             xlabel('Ron (scaled)')
             ylabel('Coss (scaled)')
             findfigs

@@ -5,7 +5,7 @@ function varargout = findValidSteadyState(obj)
 %   By setting debug2 = 1 the describe steady-state
 try
     debug = 0;
-    debug2 = 1;
+    debug2 = 0;
 
     timeSteppingInit = 0;
     finalRunMethod = 0;
@@ -19,6 +19,8 @@ try
     top = conv.topology;
     trLimit = 1;
     trTracker = 0;
+
+    limit = 50;
 
     %% finalRun
     % once everything seems to be error-free based on discrete time points,
@@ -57,7 +59,7 @@ try
 
 
 
-    while(1)
+    while(niter<limit)
         Xss = obj.SS_Soln();
 
         if debug2

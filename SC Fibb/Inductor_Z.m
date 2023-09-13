@@ -1,3 +1,4 @@
+%% This code compiles the inductor data from the USB cables that are tested for the SC Fib IC
 
 %% OG USB Cable
 
