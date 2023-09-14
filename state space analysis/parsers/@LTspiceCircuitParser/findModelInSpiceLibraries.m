@@ -5,6 +5,20 @@ function model = findModelInSpiceLibraries(obj,data)
     model = [];
     for i = 1:length(obj.netlistLibraries)
         fid=fopen(obj.netlistLibraries{i});
+        if fid == -1
+            % check if this is a problem with host default LTspice location
+            fnRem =  strfind(obj.netlistLibraries{i},'LTspiceXVII');
+            if fnRem
+                subDir = obj.netlistLibraries{i}(fnRem+12:end);
+                fid=fopen([obj.LTSpiceFolder '\' subDir]);
+            end
+
+            if fid == -1
+                warning(['Unable to locate Spice library ' obj.netlistLibraries{i} ...
+                    '.  Edit the provided netlist or try setting LTSpiceFolder in @LTSpiceCircuitParser']);
+                continue
+            end
+        end
         text = char(fread(fid)');
         fclose(fid);
         lines = splitlines(text);
@@ -28,6 +42,9 @@ function model = findModelInSpiceLibraries(obj,data)
         else
             continue
         end
+    end
+    if isempty(model)
+        warning(['Unable to find definition for model ' data '.  Will attempt to continue with default parameters for the component'])
     end
 
 end

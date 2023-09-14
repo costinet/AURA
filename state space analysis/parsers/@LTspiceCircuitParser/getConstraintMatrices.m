@@ -1,4 +1,4 @@
-function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath,foreced_Refresh)
+function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath,forced_Refresh)
 %get ConstraintMatrics get Cbnd and Dbnd from LTSpice model
 %   Note that the PLECs model must have probes added to all switching
 %   device currents and voltages (double-click -> assertions -> (+))
@@ -54,11 +54,19 @@ combCD3 = reshape(cat(2, obj.topology.Cs, obj.topology.Ds), size(obj.topology.Cs
 
 for i = 1:length(switchNames)
     
-    switchSignals = strncmp(pad(switchNames{i},length(switchNames{i})+1),outputs,length(switchNames{i})+1);
+    if strcmp(obj.method, 'old')
+        switchSignals = strncmp(pad(switchNames{i},length(switchNames{i})+1),outputs,length(switchNames{i})+1);
+        currents = endsWith(outputs,'A');
+        voltages = endsWith(outputs,'V');
+    elseif strcmp(obj.method, 'new')
+        switchSignals = strncmp(reverse(switchNames{i}), reverse(outputs), length(switchNames{i}));
+        currents = startsWith(outputs,'Im');
+        voltages = startsWith(outputs,'Vm');
+    end
+
     assert(sum(switchSignals) >= 2, ['Switching device ' switchNames{i} ' does not have probes attached to both device current and device voltage']);
     
-    currents = endsWith(outputs,'A');
-    voltages = endsWith(outputs,'V');
+    
     
     devCurrent = find(switchSignals & currents);
     devVoltage = find(switchSignals & voltages);
@@ -77,7 +85,12 @@ for i = 1:length(switchNames)
     findInds = union(index_A1, index_A2);
     switchInds = zeros(size(findInds));
     for j = 1:length(findInds)
-        sameVolts = strcmp(switchNames, outputs{findInds(j)}(1:end-2));
+         if strcmp(obj.method, 'old')
+            sameVolts = strcmp(switchNames, outputs{findInds(j)}(1:end-2));
+         elseif strcmp(obj.method, 'new')
+            loc_ = strfind(outputs{findInds(j)}, '_');
+            sameVolts = strcmp(switchNames, outputs{findInds(j)}(loc_(end)+1:end));
+         end
         switchInds(j) = find(sameVolts)';
     end
     

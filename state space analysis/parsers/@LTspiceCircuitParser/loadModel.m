@@ -27,16 +27,14 @@ function loadModel(obj, fn, swseq, force)
 
 % obj.initialize(fn,{},{});
 
-old = 0;
-new = ~old;
 
 if isempty(obj.Anum) || force
     obj.sourcefn = fn;
     obj.readSpiceNetlist(fn)
 
-    if(new)
+    if(strcmp(obj.method, 'new'))
         obj.linearizeCircuitModel2()
-    elseif(old)
+    elseif(strcmp(obj.method, 'old'))
         obj.linearizeCircuitModel()
     
         obj.read_file_num();
@@ -54,86 +52,57 @@ if isempty(swseq)
     swseq = evalin('base', 'swvec');
 end
 
-if size(swseq,2) < length(obj.Switch_Resistors)
-    swseq = [swseq, zeros(size(swseq,1), length(obj.Switch_Resistors)-size(swseq,2))];
+if(strcmp(obj.method, 'old'))
+    if size(swseq,2) < length(obj.Switch_Resistors)
+        swseq = [swseq, zeros(size(swseq,1), length(obj.Switch_Resistors)-size(swseq,2))];
+    end
+elseif(strcmp(obj.method, 'new'))
+    numSw = sum(strcmp({obj.origComponents.Type}, 'M') + strcmp({obj.origComponents.Type}, 'D'));
+     if size(swseq,2) < numSw
+         swseq = [swseq, zeros(size(swseq,1), numSw-size(swseq,2))];
+     end
 end
 
 % What is this?  It seems errant -- length(Diodes_POS) is alwasys
 % length(Switch_Resistors)
-
-if(old)
+if(strcmp(obj.method, 'old'))
     Diodes_POS = contains(obj.Switch_Resistors,'D')';
     Switch_L = length(Diodes_POS);
 end
 
+
 if ~force
-    
     if nargin > 2
         if all(ismember(swseq, obj.topology.swseq, 'rows'))
             return
         else
             %% only new swseqs, just add those
             newSwSeq = setdiff(swseq, obj.topology.swseq, 'rows');
-            
-            for k = 1:1:size(newSwSeq,1)
-                if(new)
-                    obj.setSwitchingState(newSwSeq(k,:));
-                    [A,B,C,D,I] = solveStateSpaceRepresentation(obj);
-                elseif(old)
-                    [A,B,C,D,I] = obj.ABCD_num(obj.Switch_Resistors,obj.Switch_Resistor_Values,newSwSeq(k,:));
-                end
-                
-                
-                % Only allows diodes that are on to have non zeros in Bs and
-                % Ds
-                B_R = size(B,1);
-                B_C = size(B,2);
-                Diode_adjust_B = ones(B_R,B_C);
-                D_Key = newSwSeq(k,:).* Diodes_POS;
-                Diode_adjust_B(:,B_C-Switch_L+1:end) = repmat(D_Key,[B_R,1]);
-                B = B.*Diode_adjust_B;
-                
-                D_R = size(D,1);
-                D_C = size(D,2);
-                Diode_adjust_D = ones(D_R,D_C);
-                D_Key = swseq(k,:).* Diodes_POS;
-                Diode_adjust_D(:,D_C-Switch_L+1:end) = repmat(D_Key,[D_R,1]);
-                D = D.*Diode_adjust_D;
-                
-                
-                
-                obj.Anum(:,:,end+1) = A;
-                obj.Bnum(:,:,end+1) = B;
-                obj.Cnum(:,:,end+1) = C;
-                obj.Dnum(:,:,end+1) = D;
-                obj.Inum(:,:,end+1) = I;
-                [obj.eigA(:,end+1)] = eig(A);
-                obj.topology.swseq  = [obj.topology.swseq; newSwSeq(k,:)];
-                
-                
-            end
+            startLoc = size(obj.Anum,3);
+            obj.topology.swseq  = [obj.topology.swseq; newSwSeq];
         end
     end
+else
+    obj.topology.swseq = swseq;
+    newSwSeq = swseq;
+    startLoc = 0;
 end
 
-if force
+for k = 1:1:size(newSwSeq,1)
+    if(strcmp(obj.method, 'new'))
+        obj.setSwitchingState(newSwSeq(k,:));
+        [A,B,C,D,I] = solveStateSpaceRepresentation(obj);
+    elseif(strcmp(obj.method, 'old'))
+        [A,B,C,D,I] = obj.ABCD_num(obj.Switch_Resistors,obj.Switch_Resistor_Values,newSwSeq(k,:));
+    end
     
-    obj.topology.swseq = swseq;
-    for k = 1:1:size(swseq,1)
-        
-        if(new)
-            obj.setSwitchingState(swseq(k,:));
-            [A,B,C,D,I] = solveStateSpaceRepresentation(obj);
-        elseif(old)
-            [A,B,C,D,I] = obj.ABCD_num(obj.Switch_Resistors,obj.Switch_Resistor_Values,swseq(k,:));
-        end
-        
+    if(strcmp(obj.method, 'old'))
         % Only allows diodes that are on to have non zeros in Bs and
         % Ds
         B_R = size(B,1);
         B_C = size(B,2);
         Diode_adjust_B = ones(B_R,B_C);
-        D_Key = swseq(k,:).* Diodes_POS;
+        D_Key = newSwSeq(k,:).* Diodes_POS;
         Diode_adjust_B(:,B_C-Switch_L+1:end) = repmat(D_Key,[B_R,1]);
         B = B.*Diode_adjust_B;
         
@@ -143,20 +112,21 @@ if force
         D_Key = swseq(k,:).* Diodes_POS;
         Diode_adjust_D(:,D_C-Switch_L+1:end) = repmat(D_Key,[D_R,1]);
         D = D.*Diode_adjust_D;
-        
-        
-        obj.Anum(:,:,k) = A;
-        obj.Bnum(:,:,k) = B;
-        obj.Cnum(:,:,k) = C;
-        obj.Dnum(:,:,k) = D;
-        obj.Inum(:,:,k) = I;
-        [obj.eigA(:,k)] = eig(A);
-        
     end
+    
+    
+    
+    obj.Anum(:,:,k+startLoc) = A;
+    obj.Bnum(:,:,k+startLoc) = B;
+    obj.Cnum(:,:,k+startLoc) = C;
+    obj.Dnum(:,:,k+startLoc) = D;
+    obj.Inum(:,:,k+startLoc) = I;
+    [obj.eigA(:,k+startLoc)] = eig(A);
+
+    
+    
 end
-
-%%%%%%
-
+    
 
 
 %%% This to account for there being to diodes on at the beginning of
@@ -167,9 +137,6 @@ obj.Bnum = B;
 D = obj.Dnum;
 D(:,contains(obj.ConstantNames,'C'),:)=0;
 obj.Dnum = D;
-
-
-
 
 
 obj.topology.As = obj.Anum;

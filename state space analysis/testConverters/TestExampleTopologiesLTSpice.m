@@ -11,10 +11,10 @@ clear all;
 
 summaryStrings = {};
 
-debug = 0;
+debug = 1;
 allAssess = 0;      % run all models sequentially
 
-models = 1;         % if allAssess == 0, this model will be run
+models = 3;         % if allAssess == 0, this model will be run
 
 
 %% Add test netlist folder to the path
@@ -24,18 +24,20 @@ addpath(sdir);
 addpath([sdir '\LTspice NetLists'])
 
 %% Test Circuits
-modelfile{1} = 'BuckTest1.net'; 
-modelfile{2} = 'Buck_Vout_D.net'; 
-modelfile{3} = '3levelbuck.net'; 
-modelfile{4} = '3levelbuckDep.net'; 
-modelfile{5} = 'DAB.net'; 
+modelfile{1} = 'BuckNoDiodes.net'; 
+modelfile{2} = 'BuckTest1.net'; 
+modelfile{3} = 'Buck_Vout_D.net'; 
+modelfile{4} = '3levelbuck.net'; 
+modelfile{5} = '3levelbuckDep.net'; 
+% modelfile{6} = 'DAB.net'; 
 
 
 %% Most recent full run results:
-% Model BuckTest1.net converged after 14 iterations in 0.61548 seconds
-% Model Buck_Vout_D.net converged after 11 iterations in 0.14665 seconds
-% Model 3levelbuck.net converged after 8 iterations in 0.10981 seconds
-% Model 3levelbuckDep.net converged after 8 iterations in 0.091216 seconds
+% Model BuckNoDiodes.net converged after 15 iterations in 0.38291 seconds
+% Model BuckTest1.net converged after 14 iterations in 0.15682 seconds
+% Model Buck_Vout_D.net converged after 11 iterations in 0.10299 seconds
+% Model 3levelbuck.net converged after 8 iterations in 0.10461 seconds
+% Model 3levelbuckDep.net converged after 8 iterations in 0.086128 seconds
 
 
 if allAssess

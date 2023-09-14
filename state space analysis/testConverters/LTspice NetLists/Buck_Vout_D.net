@@ -8,8 +8,8 @@ R2 N006 0 5m
 C1 N005 0 4.7µ
 R4 N004 N005 2m
 R1 N003 N002 0.0064
-D1 N002 N001 D Vf={Vf} Ron={1m} Cd=1.67n
-D2 0 N002 D Vf={Vf} Ron={1m} Cd=1.67n
+D1 N002 N001 D Vf={Vf} Ron={1m} Cd=0.67n
+D2 0 N002 D Vf={Vf} Ron={1m} Cd=0.67n
 R3 N007 0 1m
 .model D D
 .lib C:\Users\jb\Documents\LTspiceXVII\lib\cmp\standard.dio
@@ -17,7 +17,7 @@ R3 N007 0 1m
 .model PMOS PMOS
 .lib C:\Users\jb\Documents\LTspiceXVII\lib\cmp\standard.mos
 .param Lf = 1u
-.param Coss = 1.67n
+.param Coss = 0.67n
 .param Vf = 1
 .param ts = [1u 1n 1u 1n]
 .param swvec = [1 0 0 0; 0 0 0 0; 0 1 0 0; 0 0 0 0]

@@ -39,11 +39,14 @@ function component = parseSpiceComponent(obj, str)
                     model = findModelInSpiceLibraries(obj,data);
                     params = obj.parseSpiceParamList(model,params);
                 end
+                % default values if none other specified
                 vals = [.1 obj.defaultRoff 1e-9];
             end
 
             %params
             for i = 1:length(params)
+                %If any of the above generated lists of parameters, parse
+                %them here to update values.
                 eqLoc = strfind( params{i}, '=');
                 paramName = strtrim(params{i}(1:eqLoc-1));
                 t = transistor();
@@ -169,7 +172,7 @@ function component = parseSpiceComponent(obj, str)
             component.paramVals = inductors{end}; %actuall K value
             component.Nodes = {};
         otherwise
-            error(['Unrecognized netlist line ' str] );
+            warning(['Unrecognized netlist line ' str '.  This line will be ignored.'] );
     end
 
 end

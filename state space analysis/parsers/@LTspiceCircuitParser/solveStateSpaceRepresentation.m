@@ -33,15 +33,14 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
     obj.NLnets = [{obj.components.Name}' {obj.components.Nodes}' ];
 
     %% Graph backend?
-%     G = graph(numNodes(:,1)', numNodes(:,2)', 1:size(numNodes,1));
-%     G.Edges.Name = {components(G.Edges.Weight).Name}';
+%     G = graph(obj.NL(:,2)', obj.NL(:,3)', 1:size(obj.NL,1));
+%     G.Edges.Name = {obj.components(G.Edges.Weight).Name}';
 % 
 %     P = plot(G);
 %     P.EdgeLabel = G.Edges.Name;
 
 
-
-    obj.cutset_loop_num();
+    obj.getSortedTree();
 %     [A,B,C,D,I] = obj.nodeloop_num(obj.NL,obj.NLnets);
 
     %% Below equivalent to old call to ABCD_num
@@ -56,5 +55,11 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
     obj.OutputNamesCD = StateNamesCD;
     obj.OutputNames = OutputNames;
     obj.ConstantNames = ConstantNames;
+
+    FETs = [obj.origComponents.Type] == 'M';
+    diodes = [obj.origComponents.Type] == 'D';
+    switches = FETs | diodes;
+
+    obj.Switch_Names = {obj.origComponents(switches).Name};
 
 end

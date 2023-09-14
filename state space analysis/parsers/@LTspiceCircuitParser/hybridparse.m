@@ -52,8 +52,8 @@ numJ = 12;
 
 K = obj.K; % Set K
 
-SortedTreeR = SortedTree; % Set Sorted Tree Reference
-SortedCoTreeG = SortedCoTree; % Set Sorted CoTree Reference
+% SortedTreeR = SortedTree; % Set Sorted Tree Reference
+% SortedCoTreeG = SortedCoTree; % Set Sorted CoTree Reference
 
 SortedCoTree(SortedCoTree(:,1)==numG,:)=[]; % Manipulate Sorted CoTree to exclude resistors
 SortedTree(SortedTree(:,1)==numR,:)=[]; % Manipulate Sorted Tree to exclude resistors
@@ -62,7 +62,7 @@ SortedTree(SortedTree(:,1)==numR,:)=[]; % Manipulate Sorted Tree to exclude resi
 DT = size(SortedTree);
 DCT = size(SortedCoTree);
 
-% Find the last voltage component of independnet sources and dependent
+% Find the last voltage component of independent sources and dependent
 % sources
 lastE = find(SortedTree(:,1)==numE,1,'last');
 lastEB = find(SortedTree(:,1)==numEB,1,'last');

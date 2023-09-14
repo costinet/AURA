@@ -3,6 +3,12 @@ classdef LTspiceCircuitParser < handle
     %   Currently unit checks on initialize function
     %
     %   Contributed by J. Baxter
+
+    properties 
+        %Installation directory of LTspice.  Replace this with your own.
+        LTSpiceFolder = 'C:\Users\dcostine\Documents\LTspiceXVII'  
+        method = 'new'
+    end
     
     properties (SetAccess = private)
         sourcefn

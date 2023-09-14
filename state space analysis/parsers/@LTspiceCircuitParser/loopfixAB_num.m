@@ -123,7 +123,6 @@ sym_comput = 99;  %% 99 or 1
             
             i = i-1;
             loop = loop - 1;
-            J = 5829758239;
             [H_row2,~] = size(Htemp);
             
         end

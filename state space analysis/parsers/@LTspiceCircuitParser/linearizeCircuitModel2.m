@@ -11,16 +11,19 @@ function linearizeCircuitModel2(obj)
     numSwitches = sum(switches);
     numDiodes = sum(diodes);
 
-
-
     %% Replace Switches with linear subsystem
     locs = fliplr(find(switches));
     for i = 1:numSwitches 
         loc = locs(i);
-        subCircuit = obj.switchLinearSubcircuit(components(loc));
+        if FETs(loc)
+            subCircuit = obj.switchLinearSubcircuit(components(loc));
+        else
+            assert(diodes(loc),'error');
+            subCircuit = obj.diodeLinearSubcircuit(components(loc));
+        end
         components = [components(1:loc-1), subCircuit, components(loc+1:end)];
-
     end
+
 
     %% Replace coupled inductors with dependent sources
     if ~isempty(obj.netListDirectives)
@@ -30,6 +33,19 @@ function linearizeCircuitModel2(obj)
             end
         end
     end
+
+%     %% Add measurement sources to everything else 
+%     % This can eventually be deleted, but is currently used to match old
+%     % implementation for comparison
+%     otherPassives = [components.Type] == 'L' || [components.Type] == 'C';
+%     locs = fliplr(find(otherPassives));
+%     for i = 1:sum(otherPassives) 
+%         loc = locs(i);
+%         
+%         components = [components(1:loc-1), subCircuit, components(loc+1:end)];
+%     end
+
+
 
     obj.components = components;
    
