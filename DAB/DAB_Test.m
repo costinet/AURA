@@ -1,0 +1,458 @@
+function [] = DAB_Test()
+%{ 
+This file is used to debugg the current system with transformers
+                                                           
+%}
+niter = 0;
+debug = 0;
+debug2 = 0;
+
+if ~debug
+    w = warning ('off','all');
+else
+    w = warning ('on','all');
+end
+
+% sdir = mfilename('fullpath');
+% sdir = sdir(1:find(sdir=='\',1,'last')-1);
+% addpath(sdir);
+
+%% Load test circuit
+
+modelfile = 'DAB_D.net';
+
+
+fs = 0.2e6;
+Ts = 1/fs;
+% FET Selection
+ron = [0.05 0.05 0.05 0.05 0.0015 0.0015 0.0015 0.0015];
+Coss = [110e-12 110e-12 110e-12 110e-12 1620e-12 1620e-12 1620e-12 1620e-12];
+
+% Set switching interval
+ON = 1;
+OFF = 0;
+
+
+
+modSchemes = [
+        OFF OFF OFF OFF ON OFF OFF ON OFF OFF OFF OFF OFF OFF OFF OFF %primary sw
+        OFF ON ON OFF ON OFF OFF ON   OFF OFF OFF OFF OFF OFF OFF OFF % phase shift
+        OFF ON ON OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF % secondary sw
+        OFF ON ON OFF OFF ON ON OFF   OFF OFF OFF OFF OFF OFF OFF OFF % Reverse power
+        OFF OFF OFF OFF OFF ON ON OFF OFF OFF OFF OFF OFF OFF OFF OFF % primary sw
+        ON OFF OFF ON OFF ON ON OFF   OFF OFF OFF OFF OFF OFF OFF OFF % phase shift
+        ON OFF OFF ON OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF % secondary sw
+        ON OFF OFF ON ON OFF OFF ON   OFF OFF OFF OFF OFF OFF OFF OFF]; % POWER
+
+
+
+swvec = [
+        OFF OFF OFF OFF ON OFF OFF ON OFF OFF OFF OFF OFF OFF OFF OFF %primary sw
+        OFF ON ON OFF ON OFF OFF ON   OFF OFF OFF OFF OFF OFF OFF OFF % phase shift
+        OFF ON ON OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF % secondary sw
+        OFF ON ON OFF OFF ON ON OFF   OFF OFF OFF OFF OFF OFF OFF OFF % Reverse power
+        OFF OFF OFF OFF OFF ON ON OFF OFF OFF OFF OFF OFF OFF OFF OFF % primary sw
+        ON OFF OFF ON OFF ON ON OFF   OFF OFF OFF OFF OFF OFF OFF OFF % phase shift
+        ON OFF OFF ON OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF % secondary sw
+        ON OFF OFF ON ON OFF OFF ON   OFF OFF OFF OFF OFF OFF OFF OFF]; % POWER
+   
+
+
+       chooses  = 9;
+       switch chooses
+
+           case 1
+               PS = 400e-9;
+               primary_dead = 50e-9;
+               secondary_dead = 13.33e-9;
+               Power = (Ts/2)-PS-primary_dead-secondary_dead;
+               R1 = 0.141;
+
+           case 6
+               PS = 250e-9;
+               primary_dead = 110e-9;
+               secondary_dead = 13.33e-9;
+               Power = (Ts/2)-PS-primary_dead-secondary_dead;
+               R1 = 0.212955;
+
+           case 9
+               PS = 410e-9;
+               primary_dead = 86.66e-9;
+               secondary_dead = 13.33e-9;
+               Power = (Ts/2)-PS-primary_dead-secondary_dead;
+               R1 = 0.16;
+
+           case 12
+               PS = 620e-9;
+               primary_dead = 86.66e-9;
+               secondary_dead = 13.33e-9;
+               Power = (Ts/2)-PS-primary_dead-secondary_dead;
+               R1 = 0.1277;
+       end
+        
+
+    
+        L3 = 1e-6;
+        L2 = 1296e-6;
+        L1 = 76e-6;
+
+Numerical_Components = {
+    'C1' 100e-6
+    'L1' L1
+    'L2' L2
+    'L3' L3
+    'R1' R1
+    'R2' 4
+    'M1_C' Coss(1) 
+    'M2_C' Coss(2)
+    'M3_C' Coss(3)
+    'M4_C' Coss(4) 
+    'M5_C' Coss(5) 
+    'M6_C' Coss(6) 
+    'M7_C' Coss(7) 
+    'M8_C' Coss(8) 
+    'D1_C' Coss(1) 
+    'D2_C' Coss(2) 
+    'D3_C' Coss(3) 
+    'D4_C' Coss(4) 
+    'D5_C' Coss(5) 
+    'D6_C' Coss(6) 
+    'D7_C' Coss(7) 
+    'D8_C' Coss(8) 
+    'M1_R' ron(1) 
+    'M2_R' ron(2)
+    'M3_R' ron(3) 
+    'M4_R' ron(4)
+    'M5_R' ron(5) 
+    'M6_R' ron(6) 
+    'M7_R' ron(7) 
+    'M8_R' ron(8) 
+    'D1_R' ron(1) 
+    'D2_R' ron(2) 
+    'D3_R' ron(3) 
+    'D4_R' ron(4)
+    'D5_R' ron(5) 
+    'D6_R' ron(6) 
+    'D7_R' ron(7) 
+    'D8_R' ron(8) 
+    
+    };
+
+
+% The inital guess of time intervals % The inital guess of time intervals
+% Assigned later dynamically
+
+    ts = [primary_dead PS secondary_dead Power primary_dead PS secondary_dead Power ];
+
+
+% List all of the numerical components in the netlist file for all
+% FETs you must use the syntax used below:
+
+
+% List out all char variables in the
+Switch_Resistors = {
+    'M1_R'
+    'M2_R'
+    'M3_R'
+    'M4_R'
+    'M5_R'
+    'M6_R'
+    'M7_R'
+    'M8_R'
+    'D1_R'
+    'D2_R'
+    'D3_R'
+    'D4_R'
+    'D5_R'
+    'D6_R'
+    'D7_R'
+    'D8_R'
+
+    };
+% List of the switch sequency. Organized by: the FETs (column) vs time
+% interval (rows) matching Switch_Resistors and ts respectivly
+
+Switch_Names = {
+    'M1'
+    'M2'
+    'M3'
+    'M4'
+    'M5'
+    'M6'
+    'M7'
+    'M8'
+    'D1'
+    'D2'
+    'D3'
+    'D4'
+    'D5'
+    'D6'
+    'D7'
+    'D8'
+    };
+
+
+
+ON = 1;
+OFF = 0;
+
+
+% List all the resistances of the diodes or FETS when they are on or
+% off
+SW_OFF = ones(1,16).*10000000;
+
+%SW_ON = [M1_R,M2_R,etc...]
+SW_ON = [
+    ron(1) 
+    ron(2)
+    ron(3)
+    ron(4)
+    ron(5)
+    ron(6)
+    ron(7)
+    ron(8)
+    ron(1)
+    ron(2)
+    ron(3)
+    ron(4)
+    ron(5)
+    ron(6)
+    ron(7)
+    ron(8)
+    ];
+SW = [SW_OFF;SW_ON';SW_ON'];
+
+
+Diode_Forward_Voltage = [ 0 0 0 0 0 0 0 0   1 1 1 1 1 1 1 1]'.*0.61;
+% u = [14.3 4 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5 1.5]';
+u = [48 0 0 0 0 0 0 0 0  0.61 0.61 0.61 0.61 0.61 0.61 0.61 0.61 ]';
+Order = [1 2 3 4 5 6 7 8 ];
+
+
+
+etaSim = [];
+PlossSim = [];
+PoutSim = [];
+conditions = [];
+PossSim = [];
+drange = linspace(0.15, .85, 6);
+Vscloc1 = 41;
+Vscloc2 = 42;
+Vscloc3 = 45;
+
+%Vscloc1 = 50;
+%Vscloc2 = 51;
+%Vscloc1 = 56;
+%0Vscloc2 = 57;
+Illoc = 1;
+Ib1loc = 2;
+Ib2loc = 3;
+VgPOS = 1;
+i = 1;
+
+u = u';
+
+sim = SMPSim();
+conv = sim.converter;
+top = sim.topology;
+
+% Set to run numerical parsesr
+
+%conv.ts = ts;
+conv.u = u;
+top.order = Order;
+top.Element_Properties = Numerical_Components;
+top.Switch_Resistors = Switch_Resistors;
+top.Switch_Resistor_Values = SW;
+top.Switch_Sequence = swvec;
+top.Fwd_Voltage = Diode_Forward_Voltage;
+top.Switch_Names = Switch_Names;
+%
+
+
+
+top.loadCircuit(modelfile,swvec,1);
+
+
+
+%% Analyze circuit
+try
+                   
+                conv.setSwitchingPattern(1:size(swvec,1), ts)
+                
+                
+               
+                sim.u = u;
+                
+                
+                
+                Xss = sim.steadyState;
+                if(debug)
+                    sim.plotAllStates(1);
+                end
+                
+                % ssOrder = plecs('get', circuitPath, 'StateSpaceOrder');
+                % outputs = ssOrder.Outputs;
+                
+                outputs = top.outputLabels;
+                
+                %% finalRun
+                % once everything seems to be error-free based on discrete time points,
+                % goes through once more with eigenvalue-based spacing to make sure no
+                % inter-sample violations are occuring.
+                finalRun = 0;
+                
+                %% Symmetry check
+                % May be useful but not doing anything with it yet.  Can identify that DAB,
+                % etc. exhibit half-cycle symmetry
+                % TF = conv.checkForSymmetry;
+                
+                %%
+                %[Xf,ts,swinds] = timeSteppingPeriod(sim);
+                
+                %[valid]=DMC_SteadyState(sim,conv,top);
+
+%                 if (~valid)
+%                     continue
+%                 end
+
+                valid=sim.findValidSteadyState;
+
+                %if valid==50
+                %    stick = 100;
+                %    return 
+                %end
+                Xss = sim.steadyState;
+                
+                [ avgXs, avgYs ] = sim.ssAvgs(Xss);
+                
+                [ xs, t, ys] = sim.SS_WF_Reconstruct;
+                
+
+
+
+                Ib1 = (avgYs(62)+avgYs(30)*ESRo-Vb1)/Rb;
+               
+                I1 = -avgYs(27);
+                
+                eta = (Ib1*Vb1) / (Vin*(-I1) - (Ib1^2)*Rb - (I1^2)*2*RL);
+                Ploss = -(Ib1*Vb1) + (Vin*(-I1) - (I1^2)*2*RL - (Ib1^2)*Rb);
+                Pout = (Ib1*Vb1);
+                
+              
+                
+                
+                %for specific power
+                %{
+                if Pout<40 || Pout>60
+                    continue
+                end
+                %}
+                
+                etaSim = [etaSim; eta];
+                PlossSim = [PlossSim; Ploss];
+                PoutSim = [PoutSim; Pout];
+                %             PossSim = [PossSim; Poss];
+                conditions = [conditions; d, i, Vin];
+                
+                    if i == 3 && d < 0.45 && d>0.4 
+                        J = 32423423;
+                    end
+
+
+          
+            
+
+catch ME
+    J = 155465456;
+end
+
+%{
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+mineff = .3;
+etaSim(etaSim<mineff) = mineff;
+etaSim(etaSim>1) = mineff;
+
+locs = etaSim > mineff;
+
+VgSim = conditions(locs,end);
+F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
+
+figure(104)
+
+Vgrange = 5:.25:24;
+PoutRange = 0:1:50;
+[VgMesh, PoutMesh] = meshgrid(Vgrange, PoutRange);
+[f,c] = contourf(Vgrange,PoutRange,F(VgMesh,PoutMesh),'ShowText','on');
+xlabel('V_{g} (V)','FontSize',20,'FontName','Times New Roman');
+ylabel('P_{out} (W)','FontSize',20,'FontName','Times New Roman');
+title('SC Fib Power Loss','FontSize',24);
+% ylim([0 80])
+
+axis1 = gca;
+set(axis1,'FontName','Times New Roman','FontSize',16)
+colorbar
+c.LevelList = [0 1 2 3 4 5 6 7 8 9];
+%c.LevelList = [0.5 0.8 0.82 0.84 0.86 0.88   0.9  .92  .94  .96 .98 1];
+hold on;
+scatter(VgSim, PoutSim(locs),[],conditions(locs,2));
+
+figure(105)
+scatter(VgSim, PoutSim(locs),[],conditions(locs,2));
+xlabel('V_{g} (V)','FontSize',20,'FontName','Times New Roman');
+ylabel('P_{out} (W)','FontSize',20,'FontName','Times New Roman');
+title('SC Fib Power Loss','FontSize',24);
+figure(106)
+scatter(VgSim, PoutSim(locs),[],PlossSim(locs));
+Vq = interp2(Vgrange,PoutRange,F(VgMesh,PoutMesh),Xq6,Yq6)
+Vq = interp2(Vgrange,PoutRange,F(VgMesh,PoutMesh),Xq,Yq)
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%}
+mineff = .3;
+etaSim(etaSim<mineff) = mineff;
+etaSim(etaSim>1) = mineff;
+
+locs = etaSim > mineff;
+
+VgSim = conditions(locs,end);
+F = scatteredInterpolant(VgSim, PoutSim(locs), PlossSim(locs), 'linear','none');
+
+
+Vgrange = 19.5:0.25:20.5;
+PoutRange = 25:1:30;
+
+sigma1 = 30;
+sigma2 = 750;
+
+mu = [16 50];
+Sigma = [sigma1, sqrt(sigma1*sigma2-1); sqrt(sigma1*sigma2-1), sigma2];
+
+[X1,X2] = meshgrid(Vgrange',PoutRange');
+X = [X1(:) X2(:)];
+
+p = mvncdf(X,mu,Sigma);
+
+Z = reshape(p,length(PoutRange),length(Vgrange));
+
+%weighted_vals=F(X1,X2).*(Z+Z([length(PoutRange):-1:1],[length(Vgrange):-1:1]));
+weighted_vals=F(X1,X2);
+
+Added_ploss = [];
+stick = [];
+stick = mean(mean(weighted_vals,'omitnan'),'omitnan');
+stick = stick;
+
+graph_values = F(X1,X2);
+if isnan(stick)||isinf(stick)||stick<0
+    stick = 100;
+end
+
+
+end
+

@@ -34,7 +34,7 @@ depends = obj.converter.topology.circuitParser.dependsAB;
     % and be incorrect but they will be fixed by CorrectXs at the end
     % of this function
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Is = [eye(size(As,1)-size(depends,1)) zeros(size(As,1)-size(depends,1),size(depends,1)) ; depends zeros(size(depends,1))  ];
+Is = [eye(size(As,1)-size(depends,1)) zeros(size(As,1)-size(depends,1),size(depends,1)) ; ones(size(depends)) zeros(size(depends,1))  ];
 
 
 
@@ -43,7 +43,7 @@ Is = [eye(size(As,1)-size(depends,1)) zeros(size(As,1)-size(depends,1),size(depe
     for i = 1:nsub
         Aas(:,:,i) = [As(:,:,i), Bs(:,:,i)*u; 
                         zeros(1,ns+1)];
-        Phi = expm(Aas(:,:,i)*ti(i))*Phi;
+        Phi = expm((Aas(:,:,i)*ti(i))/1e4)*Phi
     end
     
     %% Get rid of Dependent States
