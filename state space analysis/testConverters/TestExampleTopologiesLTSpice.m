@@ -12,9 +12,9 @@ clear all;
 summaryStrings = {};
 
 debug = 1;
-allAssess = 0;      % run all models sequentially
+allAssess = 1;      % run all models sequentially
 
-models = 3;         % if allAssess == 0, this model will be run
+models = 6;         % if allAssess == 0, this model will be run
 
 
 %% Add test netlist folder to the path
@@ -29,15 +29,16 @@ modelfile{2} = 'BuckTest1.net';
 modelfile{3} = 'Buck_Vout_D.net'; 
 modelfile{4} = '3levelbuck.net'; 
 modelfile{5} = '3levelbuckDep.net'; 
-% modelfile{6} = 'DAB.net'; 
+modelfile{6} = 'DAB.net'; 
 
 
 %% Most recent full run results:
-% Model BuckNoDiodes.net converged after 15 iterations in 0.38291 seconds
-% Model BuckTest1.net converged after 14 iterations in 0.15682 seconds
-% Model Buck_Vout_D.net converged after 11 iterations in 0.10299 seconds
-% Model 3levelbuck.net converged after 8 iterations in 0.10461 seconds
-% Model 3levelbuckDep.net converged after 8 iterations in 0.086128 seconds
+% Model BuckNoDiodes.net converged after 15 iterations in 0.34148 seconds
+% Model BuckTest1.net converged after 14 iterations in 0.23347 seconds
+% Model Buck_Vout_D.net converged after 11 iterations in 0.10838 seconds
+% Model 3levelbuck.net converged after 8 iterations in 0.10606 seconds
+% Model 3levelbuckDep.net converged after 8 iterations in 0.087727 seconds
+% Model DAB.net converged after 24 iterations in 0.56207 seconds
 
 
 if allAssess

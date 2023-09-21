@@ -1,6 +1,8 @@
 function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
 %UNTITLED8 Summary of this function goes here
 %   Detailed explanation goes here
+%   Method adapted from L. O. Chua and P-M Lin, Compter Aided Analysis of
+%   Electronic Circuits: Algorithms & Computational Techniques", Chapter 8.
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     read_file_num(obj) % needed to set obj.NL
@@ -25,8 +27,8 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
     nodeMap = dictionary(nodes, 1:length(nodes));
     numNodes = reshape(nodeMap([obj.components.Nodes]), [2,length(obj.components),])';
 
-    %% for later? Numerical nodes corresponding to components
-    typeMap = dictionary({'V','BV', 'MV','C','R','L','MI','BI','I',       'E', 'F', 'Vm', 'Im'}, [1:9, 2, 8, 3, 7]);
+    %% Numerical nodes corresponding to components
+    typeMap = dictionary({'V','BV', 'MV','C','R','L','MI','BI','I',       'E', 'F', 'Vm', 'Im'}, [1:9,      2, 8, 3, 7]);
     typeOrder = typeMap({obj.components.Type})';  
 
     obj.NL = [typeOrder, numNodes , transpose(1:length(typeOrder))];
@@ -40,8 +42,8 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
 %     P.EdgeLabel = G.Edges.Name;
 
 
-    obj.getSortedTree();
-%     [A,B,C,D,I] = obj.nodeloop_num(obj.NL,obj.NLnets);
+    obj.findNormalTree();
+
 
     %% Below equivalent to old call to ABCD_num
     [almost_H] = obj.nodeloop_num(obj.NL,obj.NLnets);

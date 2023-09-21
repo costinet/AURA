@@ -247,7 +247,15 @@ classdef digitizedPlot < handle
             hold(axes, 'on');
             
             for i = 1:length(obj.imgData)
-                lines(i) = plot(axes, obj.imgData{i}(:,1), obj.imgData{i}(:,2), ':', 'LineWidth', 3, 'Color', obj.traceColors(i,:)/255); 
+                if size(obj.traceColors,1) >= i
+                    traceColor = obj.traceColors(i,:)/255;
+                else 
+                    colorWheel = jet;
+                    rowInd = round(i/length(obj.imgData)*size(colorWheel,1));
+                    traceColor = colorWheel(rowInd,:);
+                end
+
+                lines(i) = plot(axes, obj.imgData{i}(:,1), obj.imgData{i}(:,2), ':', 'LineWidth', 3, 'Color', traceColor); 
             end
             
             plot(axes, [obj.imgAxes.colLeft obj.imgAxes.colLeft], [obj.imgAxes.rowBottom obj.imgAxes.rowTop],'-r', 'LineWidth', 3);

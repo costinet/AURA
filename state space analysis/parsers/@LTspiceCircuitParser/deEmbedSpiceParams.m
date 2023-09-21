@@ -16,16 +16,17 @@ function [components] = deEmbedSpiceParams(obj,component,embeddedParams)
             case 'Rser'
                 nodeToReplace = find(~strcmp(component.Nodes, '0'),1,'first');
                 oldNode = component.Nodes{nodeToReplace};
-                component.Nodes(nodeToReplace) = {[component.Nodes{nodeToReplace} '_rs']};
+                newNode = newIntNodeName(obj,component,nodeToReplace, 1);
+                component.Nodes(nodeToReplace) = {newNode};
 
                 newComponent = {};
                 newComponent.Name = ['R_' component.Name '_Ser'];
                 newComponent.Type = 'R';
-                newComponent.Nodes = {oldNode, component.Nodes{nodeToReplace}};
+                newComponent.Nodes = {oldNode, newNode};
                 newComponent.paramNames = paramName;
                 newComponent.paramVals = paramVal;
 
-                components = [components, newComponent];
+                components = [component, newComponent];
             case 'Rpar'
                 warning(['Embedded parameter Rpar in component ' component.Name ' currently not supported in netlist embedded params; use a discrete component instead'])
             case 'Cpar'

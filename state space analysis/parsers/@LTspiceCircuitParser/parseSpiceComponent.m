@@ -164,12 +164,12 @@ function component = parseSpiceComponent(obj, str)
             component.paramNames = {'Ron', 'Roff', 'Cd', 'Vf'};
             component.paramVals = vals;
         case 'K'
-            warning('Not sure how Jared wants this (K)')
+%             warning('Not sure how Jared wants this (K)')
 
             [inductors,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
 
             component.paramNames = inductors(1:end-1);
-            component.paramVals = inductors{end}; %actuall K value
+            component.paramVals = inductors{end}; %actual K value
             component.Nodes = {};
         otherwise
             warning(['Unrecognized netlist line ' str '.  This line will be ignored.'] );

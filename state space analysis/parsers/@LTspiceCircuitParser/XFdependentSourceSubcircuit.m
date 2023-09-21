@@ -12,7 +12,7 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
 
     if k==1
         %%Use ideal transformer model
-        Vi = 1; % for the moment, assume the first inductor is the voltage reference.  
+        Vi = 2; % for the moment, assume the first inductor is the voltage reference.  
                 % later, should look at impedance seen by each coil
         N(Vi) = 1;
         LV = coupledInductors(Vi).paramVals(strcmp(coupledInductors(Vi).paramNames,'L'));

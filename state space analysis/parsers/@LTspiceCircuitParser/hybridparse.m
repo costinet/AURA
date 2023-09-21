@@ -50,7 +50,7 @@ numJM = 10;
 numJB = 11;
 numJ = 12;
 
-K = obj.K; % Set K
+% K = obj.K; % Set K
 
 % SortedTreeR = SortedTree; % Set Sorted Tree Reference
 % SortedCoTreeG = SortedCoTree; % Set Sorted CoTree Reference
@@ -196,6 +196,17 @@ H_31 = state(size_state(2)+1:size_state(1)-size_const(2),:); % will need to alte
 H_34 = const(size_state(2)+1:size_const(1)-size_const(2),:); % will need to alter after measure fix
 H_32 = depent(size_state(2)+1:size_const(1)-size_const(2),:); % will need to alter after measure fix
 
+
+%% Find coefficients of dependent souces
+depSources = find(strcmp({obj.components.Type}, 'E') | strcmp({obj.components.Type}, 'F') | ...
+    strcmp({obj.components.Type}, 'G') | strcmp({obj.components.Type}, 'H'));
+K = zeros(length(depSources));
+for i = 1:length(depSources)
+    refSource = find(strcmp({obj.components.Name}, obj.components(depSources(i)).paramVals{1}));
+    assert(~isempty(intersect(depSources,refSource)), 'Currently, only linked dependent sources are possible.  A dependent source must only be dependent on the voltage/current of another dependent source')
+    [~,refIndex] = intersect(depSources,refSource);
+    K(i,refIndex) = obj.components(depSources(i)).paramVals{2};
+end
 
 F = K*H_32;
 
