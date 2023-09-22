@@ -425,8 +425,7 @@ PlossSim = [];
 PoutSim = [];
 conditions = [];
 PossSim = [];
-%drange = linspace(0.15, .85, 6);
-drange = 0.5;
+drange = linspace(0.15, .85, 6);
 Vscloc1 = 49;
 Vscloc2 = 50;
 %Vscloc1 = 50;
@@ -470,7 +469,7 @@ top_Rb = sim_Rb.topology;
 
 % Set to run numerical parsesr
 
-Numerical_Components(12,2) = {1e6};
+Numerical_Components(11,2) = {1e6};
 
 
 %conv.ts = ts;
@@ -483,14 +482,14 @@ top_Rb.Switch_Sequence = swvec;
 top_Rb.Fwd_Voltage = Diode_Forward_Voltage;
 top_Rb.Switch_Names = Switch_Names;
 %
-Numerical_Components(12,2) = {RL};
+Numerical_Components(11,2) = {RL};
 
 
 
 
 %% Analyze circuit
 try
-    for i = 3:5
+    for i = 2:5
         if i==3
             J = 456456465;
         end
@@ -574,7 +573,7 @@ try
 
                 Ib1 = (avgYs(80)+avgYs(39)*ESRo-Vb1)/Rb;
                 Ib2 = (avgYs(81)+avgYs(40)*ESRo-Vb2)/Rb;
-                I1 = -avgYs(34);
+                I1 = avgYs(34);
                 
                 eta = (Ib1*Vb1 + Ib2*Vb2)/(Vin*-I1 - Ib1^2*Rb - Ib2^2*Rb);
                 Ploss = -(Ib1*Vb1 + Ib2*Vb2) + -(Vin*I1);

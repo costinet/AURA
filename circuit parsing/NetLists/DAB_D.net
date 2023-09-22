@@ -27,7 +27,7 @@ D8 0 N007 D
 .model NMOS NMOS
 .model PMOS PMOS
 .lib C:\Users\jb\Documents\LTspiceXVII\lib\cmp\standard.mos
-K1 L3 L2 1
+K1 L2 L3 1
 .tran .1
 .backanno
 .end
