@@ -12,9 +12,9 @@ clear all;
 summaryStrings = {};
 
 debug = 1;
-allAssess = 1;      % run all models sequentially
+allAssess = 0;      % run all models sequentially
 
-models = 6;         % if allAssess == 0, this model will be run
+models = 7;         % if allAssess == 0, this model will be run
 
 
 %% Add test netlist folder to the path
@@ -30,7 +30,7 @@ modelfile{3} = 'Buck_Vout_D.net';
 modelfile{4} = '3levelbuck.net'; 
 modelfile{5} = '3levelbuckDep.net'; 
 modelfile{6} = 'DAB.net'; 
-
+modelfile{7} = 'DAB_secLeakage.net'; 
 
 %% Most recent full run results:
 % Model BuckNoDiodes.net converged after 15 iterations in 0.34148 seconds
@@ -39,6 +39,7 @@ modelfile{6} = 'DAB.net';
 % Model 3levelbuck.net converged after 8 iterations in 0.10606 seconds
 % Model 3levelbuckDep.net converged after 8 iterations in 0.087727 seconds
 % Model DAB.net converged after 24 iterations in 0.56207 seconds
+% Model DAB_secLeakage.net converged after 18 iterations in 0.39417 seconds
 
 
 if allAssess

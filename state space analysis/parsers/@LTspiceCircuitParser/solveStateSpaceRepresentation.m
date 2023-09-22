@@ -2,15 +2,8 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
 %UNTITLED8 Summary of this function goes here
 %   Detailed explanation goes here
 %   Method adapted from L. O. Chua and P-M Lin, Compter Aided Analysis of
-%   Electronic Circuits: Algorithms & Computational Techniques", Chapter 8.
+%   Electronic Circuits: Algorithms & Computational Techniques", Chapter 6 & 8.
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     read_file_num(obj) % needed to set obj.NL
-%     [switches]=obj.findDM;
-%     obj.ON_States = cell(length(switches),1);
-%     obj.OFF_States = cell(length(switches),1);
-%     [obj.NewNL,obj.NewNLnets,~]=obj.Single_states_D(1,1,switches);
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Needed anymore?
     sources = obj.components(strcmp({obj.components.Type},'V') | strcmp({obj.components.Type},'I'));

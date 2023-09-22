@@ -1,0 +1,29 @@
+*
+V1 N002 0 48 Rser=1m
+Lp N006 N008 100µ
+Ls N003m N007 900µ
+Rp N005 N006 1m
+Lks N003 N003m 45µ
+M1 N002 N004 N004 N004 NMOS ron = 1m Coss = {Coss}
+M2 N004 0 0 0 NMOS ron = 1m Coss = {Coss}
+M3 N002 N008 N008 N008 NMOS ron = 1m Coss = {Coss}
+M4 N008 0 0 0 NMOS ron = 1m Coss = {Coss}
+M5 N001 N003 N003 N003 NMOS ron = 1m Coss = {Coss}
+M6 N003 0 0 0 NMOS ron = 1m Coss = {Coss}
+M7 N001 N007 N007 N007 NMOS ron = 1m Coss = {Coss}
+M8 N007 0 0 0 NMOS ron = 1m Coss = {Coss}
+Co N001 0 50µ
+Ro N001 0 10
+Vout N001 0 16 Rser=1m
+RLl N005 N004 10m
+.model NMOS NMOS
+.model PMOS PMOS
+K1 Lp Ls 1
+.param Coss = .1n
+.param ts = [100 5 10 2 100 5 10 2]/234*1e-6
+.param swvec = [1 0 0 1 1 0 0 1; 0 0 0 0 1 0 0 1; 0 1 1 0 1 0 0 1; 0 1 1 0 0 0 0 0; 0 1 1 0 0 1 1 0; 0 0 0 0 0 1 1 0; 1 0 0 1 0 1 1 0; 1 0 0 1 0 0 0 0]
+*.param swvec = [[1 0 0 1 1 0 0 1; 0 0 0 0 1 0 0 1; 0 1 1 0 1 0 0 1; 0 1 1 0 0 0 0 0; 0 1 1 0 0 1 1 0; 0 0 0 0 0 1 1 0; 1 0 0 1 0 1 1 0; 1 0 0 1 0 0 0 0], zeros(8,8)]
+.tran .1
+.backanno
+.end
+

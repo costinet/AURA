@@ -164,8 +164,6 @@ function component = parseSpiceComponent(obj, str)
             component.paramNames = {'Ron', 'Roff', 'Cd', 'Vf'};
             component.paramVals = vals;
         case 'K'
-%             warning('Not sure how Jared wants this (K)')
-
             [inductors,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
 
             component.paramNames = inductors(1:end-1);

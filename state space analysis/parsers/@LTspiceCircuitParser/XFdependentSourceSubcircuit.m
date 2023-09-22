@@ -11,9 +11,44 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
     k = eval(directive.paramVals);
 
     if k==1
-        %%Use ideal transformer model
-        Vi = 2; % for the moment, assume the first inductor is the voltage reference.  
-                % later, should look at impedance seen by each coil
+        %% Use ideal transformer model
+        % model has one current source and all other ports will be voltage
+        % sources.  The following block tries to find a suitable place to
+        % put the current source where it won't results in L-I loops
+
+        %% Attempt to find a low-impedance place to put the current source
+        nodes = unique([components(:).Nodes]);
+        nodes = circshift(nodes, -1*(find(strcmp(nodes,'0'))-1)); % make '0' the first node
+        nodeMap = dictionary(nodes, 1:length(nodes));
+        numNodes = reshape(nodeMap([components.Nodes]), [2,length(components),])';
+
+        possibleLocs = zeros(length(coupledIndLocs),1);
+        % This only looks at the first-order connections.  Loops would be
+        % better.
+        for i = 1:length(coupledIndLocs)
+            for j = 1:2
+                Node = numNodes(coupledIndLocs(i),j);
+                connectedComponents = [find(numNodes(:,1) == Node);  find(numNodes(:,2) == Node)];
+                connectedComponents = unique(connectedComponents);
+                connectedComponents(connectedComponents == coupledIndLocs(i)) = [];
+
+                connectedComponentsTypes = {components(connectedComponents).Type};
+                if all(strcmp(connectedComponentsTypes, "L") | strcmp(connectedComponentsTypes, "I")  | ...
+                        strcmp(connectedComponentsTypes, "Im"))
+                    possibleLocs(i) = -1;
+                end
+            end
+        end
+
+        Vi = find(possibleLocs>=0,1,'first');
+
+        %% If we couldn't find a good location, just guess
+        if(isempty(Vi))
+            Vi = 1; % for the moment, assume the first inductor is the voltage reference.  
+                    % later, should look at impedance seen by each coil
+        end
+
+        %% Replace sources
         N(Vi) = 1;
         LV = coupledInductors(Vi).paramVals(strcmp(coupledInductors(Vi).paramNames,'L'));
         isource = {};
