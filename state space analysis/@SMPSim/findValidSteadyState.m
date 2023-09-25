@@ -19,6 +19,12 @@ function niter = findValidSteadyState(obj)
     conv = obj.converter;
     top = conv.topology;
 
+    if isempty(top.constraints.Cbnd)
+        warning('No constraints specified.  In this case findValidSteadyState is equivalent to steadyState');
+        obj.steadyState;
+        return
+    end
+
     %% finalRun 
     % once everything seems to be error-free based on discrete time points,
     % goes through once more with eigenvalue-based spacing to make sure no 

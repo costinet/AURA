@@ -43,9 +43,11 @@ classdef PLECScircuitParser < circuitParser
 
         function readOnLoadError(obj, msg, fn)
             obj.sourcefn = fn;
+            
             [obj.missingParams.type,~] = regexp(msg, "(?<=Error evaluating parameter ')[\w\s-]+(?=')" , 'match', 'tokens');
             [obj.missingParams.component,~] = regexp(msg, ['(?<=' fn '/)[\w]+(?=\:)' ] , 'match', 'tokens');
             [obj.missingParams.val,~] = regexp(msg, "(?<=Unrecognized function or variable ')[\w\s-]+(?=')" , 'match', 'tokens');
+                
         end
     end
 end

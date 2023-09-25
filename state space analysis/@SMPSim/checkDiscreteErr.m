@@ -18,7 +18,7 @@ function [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = che
 %   circuitParser
 
     Xss = obj.Xs;
-    us = obj.u;
+%     us = obj.u;
     Cbnd = obj.topology.Cbnd(:,:,obj.converter.swind);
     Dbnd = obj.topology.Dbnd(:,:,obj.converter.swind);
     
@@ -28,6 +28,7 @@ function [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = che
     targetValEnd = violateMarginEnd;
 
     for i = 1:length(obj.converter.swind)
+        us = obj.fullu(:,:,i);
         [violateMarginStart(:,i), targetValStart(:,i)] = obj.checkStateValidity( Xss(:,i), us, obj.converter.swind(i));
         [violateMarginEnd(:,i), targetValEnd(:,i)] = obj.checkStateValidity( Xss(:,i+1), us, obj.converter.swind(i));
 

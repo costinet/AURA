@@ -1,0 +1,203 @@
+<deployment-project plugin="plugin.toolbox" plugin-version="1.0">
+  <configuration build-checksum="3699353020" file="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Releases\AURA.prj" location="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Releases" name="AURA" target="target.toolbox" target-name="Package Toolbox">
+    <param.appname>Switched Mode Power Supply Toolbox</param.appname>
+    <param.authnamewatermark>Daniel Costinett</param.authnamewatermark>
+    <param.email>daniel.costinett@utk.edu</param.email>
+    <param.company>University of Tennessee Knoxville</param.company>
+    <param.summary>Steady state solutions to switched mode power supplies</param.summary>
+    <param.description />
+    <param.screenshot />
+    <param.version>0.1.5</param.version>
+    <param.output>${PROJECT_ROOT}\Switched Mode Power Supply Toolbox.mltbx</param.output>
+    <param.products.name />
+    <param.products.id />
+    <param.products.version />
+    <param.platforms />
+    <param.guid>55448833-78be-4eed-87e7-e7b9fe109b8c</param.guid>
+    <param.exclude.filters>% List files contained in your toolbox folder that you would like to exclude
+% from packaging.  Excludes should be listed relative to the toolbox folder.
+% Some examples of how to specify excludes are provided below:
+%
+% A single file in the toolbox folder:
+% .svn
+%
+% A single file in a subfolder of the toolbox folder:
+% example/.svn
+%
+% All files in a subfolder of the toolbox folder:
+% example/*
+%
+% All files of a certain name in all subfolders of the toolbox folder:
+% **/.svn
+%
+% All files matching a pattern in all subfolders of the toolbox folder:
+% **/*.bak
+%
+AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
+**/*.bak
+**/*.bak2
+**/slprj/
+**/*.autosave
+**/*.asv
+**/*slx.r2021a
+**/*.slx.original
+@AURAdb.zip
+**/.gitignore
+**/depricated
+**/Ideas
+**/SPICECompare</param.exclude.filters>
+    <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
+    <param.examples>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;examples&gt;
+   &lt;exampleCategory name="testConverters"&gt;
+      &lt;example name="TestExampleTopologies" type="html"&gt;
+         &lt;file type="source"&gt;/testConverters/html/TestExampleTopologies.html&lt;/file&gt;
+         &lt;file type="main"&gt;/testConverters/TestExampleTopologies.m&lt;/file&gt;
+         &lt;file type="thumbnail"/&gt;
+      &lt;/example&gt;
+      &lt;example name="TestExampleTopologiesLTSpice" type="html"&gt;
+         &lt;file type="source"&gt;/testConverters/html/TestExampleTopologiesLTSpice.html&lt;/file&gt;
+         &lt;file type="main"&gt;/testConverters/TestExampleTopologiesLTSpice.m&lt;/file&gt;
+         &lt;file type="thumbnail"/&gt;
+      &lt;/example&gt;
+      &lt;example name="codeExamples" type="html"&gt;
+         &lt;file type="source"&gt;/testConverters/html/codeExamples.html&lt;/file&gt;
+         &lt;file type="main"&gt;/testConverters/codeExamples.m&lt;/file&gt;
+         &lt;file type="thumbnail"&gt;/testConverters/html/codeExamples.png&lt;/file&gt;
+         &lt;file type="image"&gt;/testConverters/html/codeExamples_01.png&lt;/file&gt;
+         &lt;file type="image"&gt;/testConverters/html/codeExamples_02.png&lt;/file&gt;
+         &lt;file type="image"&gt;/testConverters/html/codeExamples_03.png&lt;/file&gt;
+         &lt;file type="image"&gt;/testConverters/html/codeExamples_04.png&lt;/file&gt;
+      &lt;/example&gt;
+   &lt;/exampleCategory&gt;
+&lt;/examples&gt;</param.examples>
+    <param.demosxml />
+    <param.apps />
+    <param.registered.apps>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\AURAdb\digitizers\plotDigitizer\plotDigitizer.mlapp</file>
+    </param.registered.apps>
+    <param.docs>C:\Users\dcostine\Dropbox\UTK\Research\AURA\html\info.xml</param.docs>
+    <param.getting.started.guide>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc\GettingStarted.mlx</param.getting.started.guide>
+    <param.matlabpath.excludes />
+    <param.javaclasspath.excludes />
+    <param.exported.on.package>false</param.exported.on.package>
+    <param.required.addons>
+      <requiredaddons />
+    </param.required.addons>
+    <param.matlab.project.id />
+    <param.matlab.project.name />
+    <param.release.start />
+    <param.release.end />
+    <param.release.current.only>false</param.release.current.only>
+    <param.compatiblity.windows>true</param.compatiblity.windows>
+    <param.compatiblity.macos>true</param.compatiblity.macos>
+    <param.compatiblity.linux>true</param.compatiblity.linux>
+    <param.compatiblity.matlabonline>true</param.compatiblity.matlabonline>
+    <param.installation.map />
+    <param.additional.sw.names />
+    <param.additional.sw.licenses />
+    <param.additional.sw.win.url />
+    <param.additional.sw.mac.url />
+    <param.additional.sw.linux.url />
+    <unset>
+      <param.description />
+      <param.screenshot />
+      <param.output />
+      <param.products.name />
+      <param.products.id />
+      <param.products.version />
+      <param.platforms />
+      <param.exclude.pcodedmfiles />
+      <param.demosxml />
+      <param.apps />
+      <param.matlabpath.excludes />
+      <param.javaclasspath.excludes />
+      <param.exported.on.package />
+      <param.matlab.project.id />
+      <param.matlab.project.name />
+      <param.release.start />
+      <param.release.end />
+      <param.release.current.only />
+      <param.compatiblity.windows />
+      <param.compatiblity.macos />
+      <param.compatiblity.linux />
+      <param.compatiblity.matlabonline />
+      <param.installation.map />
+      <param.additional.sw.names />
+      <param.additional.sw.licenses />
+      <param.additional.sw.win.url />
+      <param.additional.sw.mac.url />
+      <param.additional.sw.linux.url />
+    </unset>
+    <fileset.rootdir>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA</file>
+    </fileset.rootdir>
+    <fileset.rootfiles>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\@SMPSconverter</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\@SMPSim</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\@SMPStopology</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\AURAdb</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\demos.xml</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\DesktopToolset.xml</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\html</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\parsers</file>
+      <file>${PROJECT_ROOT}</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters</file>
+    </fileset.rootfiles>
+    <fileset.depfun.included />
+    <fileset.depfun.excluded>
+      <file>C:\Users\dcostine\Documents\Plexim\PLECS Blockset 4.6 (64 bit)\plecs.m</file>
+      <file>C:\Users\dcostine\Documents\Plexim\PLECS Blockset 4.6 (64 bit)\plecs.mexw64</file>
+    </fileset.depfun.excluded>
+    <fileset.package />
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}" name="Switched Mode Power Supply Toolbox.mltbx" optional="false">C:\Users\dcostine\Dropbox\UTK\Research\AURA\Releases\Switched Mode Power Supply Toolbox.mltbx</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2022b</root>
+      <toolboxes>
+        <toolbox name="matlabcoder" />
+        <toolbox name="fixedpoint" />
+        <toolbox name="matlabhdlcoder" />
+        <toolbox name="neuralnetwork" />
+      </toolboxes>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
+      </toolbox>
+      <toolbox>
+        <neuralnetwork>
+          <enabled>true</enabled>
+        </neuralnetwork>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.0</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>

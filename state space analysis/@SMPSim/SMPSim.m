@@ -153,8 +153,12 @@ classdef SMPSim < handle
                 obj.u = evalin('base', 'us');
             end
 
-            if size(obj.u,2) == 1
-                obj.u = obj.u';
+            if size(obj.u,1) ~= size(obj.Bs,2)
+                if(size(obj.u,2) ~= size(obj.Bs,2)) && size(obj.u,1) == 1
+                    obj.u = reshape(obj.u, [size(obj.Bs,2), 1, size(obj.u,3)]);
+                else
+                    error('Invalid size of u specified.')
+                end
             end
             
              if ~isempty(ts)
@@ -359,6 +363,9 @@ classdef SMPSim < handle
                 res = repmat(obj.u,1,1,(length(obj.converter.ts)));
             elseif size(obj.converter.u,3) == length(obj.converter.ts)
                 res = obj.converter.u;
+            elseif size(obj.converter.u,3) == size(obj.converter.fullts,2)
+                [~, ints, ~] = obj.converter.getIntervalts();
+                res = obj.converter.u(:,:,ints);
             else
                 error('invalid input vector u specificed');
             end

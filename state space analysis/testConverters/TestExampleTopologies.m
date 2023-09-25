@@ -14,9 +14,9 @@ clear all;
 summaryStrings = {};
 
 debug = 0;
-allAssess = 1;      % run all models sequentially
+allAssess = 0;      % run all models sequentially
 
-models = 4;         % if allAssess == 0, this model will be run
+models = 13;         % if allAssess == 0, this model will be run
 
 %% Add test circuits folder to the path
 sdir = mfilename('fullpath');
@@ -37,6 +37,8 @@ modelfile{9} = 'SCFibb1S_diodes'; PLECsModel{9} = 'Q-FibonacciESRCossDiodes';
 modelfile{10} = 'TwoPhaseBuck'; PLECsModel{10} = 'TwoAsymmBuck';
 modelfile{11} = 'SCBuckHybridBuck_COMPEL23'; PLECsModel{11} = 'BuckBuck';
 modelfile{12} = 'DAB_R'; PLECsModel{12} = 'DAB_Rload';
+modelfile{13} = 'WPT_varyingU'; PLECsModel{13} = 'WPT_SSP';
+
 
 % modelfile{length(modelfile)+1} = 'DABFullNoDiodes'; PLECsModel{length(PLECsModel)+1} = 'DAB_8Cap';
 % modelfile{length(modelfile)+1} = 'SCFibb2S'; PLECsModel{length(PLECsModel)+1} = 'Q-FibonacciESRCoss';
@@ -55,6 +57,7 @@ modelfile{12} = 'DAB_R'; PLECsModel{12} = 'DAB_Rload';
 % Model TwoAsymmBuck converged after 24 iterations in 0.40205 seconds
 % Model BuckBuck converged after 15 iterations in 7.3213 seconds
 % Model DAB_Rload converged after 16 iterations in 0.4769 seconds
+% Model WPT_SSP converged after 11 iterations in 0.66202 seconds
 %
 % Model DAB_8Cap DID NOT converge within 102 iterations
 % Model Q-FibonacciESRCoss converged after 8 iterations

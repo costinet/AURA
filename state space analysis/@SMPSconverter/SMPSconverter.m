@@ -574,8 +574,14 @@ classdef SMPSconverter < handle
         
         function set.u(obj, newU)
             % enforce it being a tall vector
-            assert(min(size(newU,1:2)) == 1, 'invalid dimensions for u');
-            obj.u = reshape(newU,max(size(newU,1:2)),1, size(newU,3));
+            if size(newU,1) ~= size(obj.Bs,2)
+                if size(newU,1) == 1
+                    newU = reshape(newU,[size(obj.Bs,2), 1, size(newU,3)]);
+                end
+            end
+            assert(size(newU,1) == size(obj.Bs,2) && size(newU,2) ==1, 'invalid dimensions for u.  The input vector must be either (Ni x 1 x Nt) or (Ni x 1 x Nt) for Nt time intervals and Ni independent inputs');
+
+            obj.u = newU;%reshape(newU,max(size(newU,1:2)),1, size(newU,3));
         end
         
     end

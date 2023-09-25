@@ -81,12 +81,16 @@ classdef SMPStopology < handle
                     end
                 catch e 
                     % allow to continue trying other parsers
-                    if startsWith(e.message, 'Error evaluating parameter')
+                    if startsWith(e.message, 'Error evaluating parameter') 
                         obj.circuitParser = PLECScircuitParser(obj);
                         obj.circuitParser.readOnLoadError(e.message, fn);
                         obj.circuitParser.inspect();
                         result = 0;
                         return
+                    elseif startsWith(e.message, 'State/source dependence in components')
+                        addlInfo = MException('LOADCIRCUIT:badCircuitConfiguration','Circuit has a C-V loop or LI-net');
+                        e2 = addCause(e,addlInfo);
+						throw(e2)
                     end
                 end
 
