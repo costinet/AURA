@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>codeExamples</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-08-01"><meta name="DC.source" content="codeExamples.m"><style type="text/css">
+      --><title>codeExamples</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-10-27"><meta name="DC.source" content="codeExamples.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,11 +67,56 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Add test circuits folder to the path</a></li><li><a href="#2">Example Underdefined PLECS File</a></li><li><a href="#3">Example Steady-State Solve from PLECS circuit</a></li><li><a href="#4">Example Steady-State Solve from PLECS circuit with dependent States</a></li></ul></div><h2 id="1">Add test circuits folder to the path</h2><pre class="codeinput">sdir = mfilename(<span class="string">'fullpath'</span>);
-sdir = sdir(1:find(sdir==<span class="string">'\'</span>,1,<span class="string">'last'</span>)-1);
+  </style></head><body><div class="content"><pre class="codeinput">clearvars;
+sdir = fileparts(matlab.desktop.editor.getActiveFilename);
 addpath(sdir);
 addpath([sdir <span class="string">'\ExampleTopologies'</span>])
-</pre><h2 id="2">Example Underdefined PLECS File</h2><pre class="codeinput">modelfile = <span class="string">'DAB_Incomplete'</span>; PLECsModel = <span class="string">'DAB_oneCap'</span>;
+addpath([sdir <span class="string">'\LTspice NetLists'</span>])
+modelfile = <span class="string">'AsyncBoost'</span>; PLECsModel = <span class="string">'Boost_Async'</span>;
+loadSimulinkOutputsToBase(modelfile,PLECsModel);    <span class="comment">%Per the file format, all the necessary</span>
+                                                    <span class="comment">% variables are defined in simulink and loaded into the base workspace</span>
+circuitPath = [modelfile <span class="string">'/'</span> PLECsModel];
+sim = SMPSim();
+sim.initialize(circuitPath);        <span class="comment">%swvec, us, and ts are defined in the simulink file and</span>
+                                    <span class="comment">%loaded via loadSimulinkOutputsToBase</span>
+                                    <span class="comment">%They will be pulled from the base workspace</span>
+sim.steadyState();
+sim.plotAllStates(1)
+sim.plotAllOutputs(2)
+modelfile = <span class="string">'BuckTest1.net'</span>;
+
+sim = SMPSim();
+sim.initialize(modelfile);                      <span class="comment">%swvec, us, and ts are defined</span>
+                                                <span class="comment">%in the netlist file and</span>
+                                                <span class="comment">%loaded during parsing</span>
+sim.steadyState();
+sim.plotAllStates(3)
+sim.plotAllOutputs(4)
+
+modelfile = <span class="string">'AsyncBoost'</span>; PLECsModel = <span class="string">'Boost_Async'</span>;
+loadSimulinkOutputsToBase(modelfile,PLECsModel);
+circuitPath = [modelfile <span class="string">'/'</span> PLECsModel];
+sim = SMPSim();
+sim.initialize(circuitPath, swvec, us, ts);     <span class="comment">% here swvec, us, and ts are explicitly specified</span>
+sim.steadyState();
+sim.plotAllStates(5);               <span class="comment">%Plot all states BEFORE solving valid diode conduction</span>
+hold(gcf().Children,<span class="string">'on'</span>);          <span class="comment">%hold on, to compare with final solution</span>
+sim.findValidSteadyState();         <span class="comment">%solves correct dependent state behaviour</span>
+sim.plotAllStates(5)                <span class="comment">%Plot all states AFTER solving valid diode conduction</span>
+modelfile = <span class="string">'BuckTest1.net'</span>;
+
+sim = SMPSim();
+sim.initialize(modelfile);                      <span class="comment">%swvec, us, and ts are defined</span>
+                                                <span class="comment">%in the netlist file and</span>
+                                                <span class="comment">%loaded during parsing</span>
+
+sim.plotAllStates(6);               <span class="comment">%Plot all states BEFORE solving valid diode conduction</span>
+hold(gcf().Children,<span class="string">'on'</span>);          <span class="comment">%hold on, to compare with final solution</span>
+
+sim.findValidSteadyState();         <span class="comment">%solves correct dependent state behaviour</span>
+sim.plotAllStates(6)                <span class="comment">%Plot all states AFTER solving valid diode conduction</span>
+
+modelfile = <span class="string">'DAB_Incomplete'</span>; PLECsModel = <span class="string">'DAB_oneCap'</span>;
 
 open_system(modelfile,<span class="string">'loadonly'</span>);
 circuitPath = [modelfile <span class="string">'/'</span> PLECsModel];
@@ -85,135 +130,271 @@ top = sim.topology;
 <span class="keyword">catch</span> e
     disp(getReport( e, <span class="string">'extended'</span>, <span class="string">'hyperlinks'</span>, <span class="string">'on'</span> ) )
 <span class="keyword">end</span>
-</pre><h2 id="3">Example Steady-State Solve from PLECS circuit</h2><pre class="codeinput">modelfile = <span class="string">'AsyncBoost'</span>; PLECsModel = <span class="string">'Boost_Async'</span>;
+modelfile = <span class="string">'AsyncBoost'</span>; PLECsModel = <span class="string">'Boost_Async'</span>;
+
+circuitPath = [modelfile <span class="string">'/'</span> PLECsModel];
+
+sim = SMPSim();
+sim.initialize(circuitPath);     <span class="comment">%here swvec, us, and ts are not defined, so no switching states will be produced</span>
+                                 <span class="comment">%but, the circuit can be parsed to look at</span>
+                                 <span class="comment">%the switch vector, and arrangement of signals in x,u,y</span>
+
+states = sim.stateNames               <span class="comment">%Show signal assignment in the state vector</span>
+CoutLoc = sim.sigLoc(<span class="string">'Cout'</span>,<span class="string">'x'</span>);   <span class="comment">%Location of Cout's voltage in the state vector, x</span>
+
+switches = sim.switchNames             <span class="comment">%Show switch arrangement for swvec</span>
+
+inputs = sim.inputNames               <span class="comment">%Show signal assignment in input vector</span>
+VdcLoc = sim.sigLoc(<span class="string">'V_dc'</span>,<span class="string">'u'</span>);    <span class="comment">%Location of Vdc's voltage in the input vector, u</span>
+
+outputs = sim.outputNames              <span class="comment">%Show signal assignment in output vector</span>
+VdsLoc = sim.sigLoc(<span class="string">'FET:Vm'</span>,<span class="string">'y'</span>);  <span class="comment">%Location of FETs Vds voltage in the output vector, y</span>
+
+modelfile = <span class="string">'AsyncBoost'</span>; PLECsModel = <span class="string">'Boost_Async'</span>;
 
 loadSimulinkOutputsToBase(modelfile,PLECsModel);
 circuitPath = [modelfile <span class="string">'/'</span> PLECsModel];
 
 sim = SMPSim();
-sim.initialize(circuitPath, swvec, us, ts);
+sim.initialize(circuitPath, swvec, us, ts);     <span class="comment">%here swvec, us, and ts are explicitly specified</span>
 
+sim.findValidSteadyState();         <span class="comment">%solves correct dependent state behaviour</span>
+
+Xss = sim.Xs;                       <span class="comment">% Get state vector at each switching interface</span>
+Yss = sim.Ys;                       <span class="comment">% Get output vector at each switching interface</span>
+YssE = sim.YsEnd;                   <span class="comment">% Get output vector at each switching interface before switching occurs</span>
+
+FETLoc = sim.sigLoc(<span class="string">'FET'</span>,<span class="string">'sw'</span>);
+IdsLoc = sim.sigLoc(<span class="string">'FET:Am'</span>,<span class="string">'y'</span>);
+VdsLoc = sim.sigLoc(<span class="string">'Coss'</span>,<span class="string">'x'</span>);
+
+switchingActions = diff([ sim.swvec(end,:); sim.swvec],1);  <span class="comment">%Looks at when switching states change</span>
+FEToffInt = find(switchingActions(:,FETLoc) == -1); <span class="comment">%Find when FET switches off</span>
+FETonInt = find(switchingActions(:,FETLoc) == 1); <span class="comment">%Find when FET switches on</span>
+
+
+FET_VdsOn = Xss(VdsLoc, FETonInt)               <span class="comment">%Find FET Vds at turn-off instant</span>
+FET_Ioff = YssE(IdsLoc,FEToffInt-1)             <span class="comment">%Find FET Ids at turn-off instant (look at end of previous interval to apply correc C and D matrices)</span>
+modelfile = <span class="string">'BuckTest1.net'</span>;
+
+sim = SMPSim();
+sim.initialize(modelfile);
+
+sim.findValidSteadyState();         <span class="comment">%solves correct dependent state behaviour</span>
+
+[avgXs, avgYs] = sim.ssAvgs();     <span class="comment">%Get average values of all states and outputs in steady-state</span>
+
+VoutLoc = sim.sigLoc(<span class="string">'C1'</span>,<span class="string">'x'</span>);     <span class="comment">%Location of Cout's voltage in the state vector, x</span>
+ILLoc = sim.sigLoc(<span class="string">'L1'</span>,<span class="string">'x'</span>);       <span class="comment">%Location of L's current in the state vector, x</span>
+VgLoc = sim.sigLoc(<span class="string">'V1'</span>,<span class="string">'u'</span>);       <span class="comment">%Location of Input voltage in the input vector, u</span>
+IgLoc = sim.sigLoc(<span class="string">'Im_Ig'</span>,<span class="string">'y'</span>);    <span class="comment">%Location of Input current in the output vector, y</span>
+
+
+Pout = avgXs(VoutLoc)*avgXs(ILLoc);
+Pin = sim.u(VgLoc)*avgYs(IgLoc);
+
+eta = Pout/Pin*100
+
+modelfile = <span class="string">'AsyncBoost'</span>; PLECsModel = <span class="string">'Boost_Async'</span>;
+
+loadSimulinkOutputsToBase(modelfile,PLECsModel);
+circuitPath = [modelfile <span class="string">'/'</span> PLECsModel];
+
+sim = SMPSim();
+sim.initialize(circuitPath, swvec, us, ts);     <span class="comment">%here swvec, us, and ts are explicitly specified</span>
+
+sim.findValidSteadyState();         <span class="comment">%solves correct dependent state behaviour</span>
+
+VoutLoc = sim.sigLoc(<span class="string">'Cout'</span>,<span class="string">'x'</span>);   <span class="comment">%Location of Cout's voltage in the state vector, x</span>
+ILLoc = sim.sigLoc(<span class="string">'L1'</span>,<span class="string">'x'</span>);       <span class="comment">%Location of L's current in the state vector, x</span>
+
+sim.plotAllStates(1,[CoutLoc ILLoc]);   <span class="comment">%Plot just IL and Vout</span>
+
+modelfile = <span class="string">'AsyncBoost'</span>; PLECsModel = <span class="string">'Boost_Async'</span>;
+
+loadSimulinkOutputsToBase(modelfile,PLECsModel);
+circuitPath = [modelfile <span class="string">'/'</span> PLECsModel];
+
+sim = SMPSim();
+sim.initialize(circuitPath, swvec, us, ts);     <span class="comment">%here swvec, us, and ts are explicitly specified</span>
+
+sim.findValidSteadyState();         <span class="comment">%solves correct dependent state behaviour</span>
+
+VoutLoc = sim.sigLoc(<span class="string">'Cout'</span>,<span class="string">'x'</span>);   <span class="comment">%Location of Cout's voltage in the state vector, x</span>
+ILLoc = sim.sigLoc(<span class="string">'L1'</span>,<span class="string">'x'</span>);       <span class="comment">%Location of L's current in the state vector, x</span>
+
+[xs, t, ys] = sim.SS_WF_Reconstruct();  <span class="comment">%expands full-period time waveforms of states and outputs</span>
+
+Ilrms = sqrt(1/t(end)*trapz(t,xs(ILLoc,:)))
+
+
+sdir = fileparts(matlab.desktop.editor.getActiveFilename);
+
+plotDigitizer([sdir <span class="string">'\resources\EPC2023_datasheet.pdf'</span>])
+</pre><pre class="codeoutput">Warning: Name is nonexistent or not a directory:
+C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc\ExampleTopologies 
+Warning: Name is nonexistent or not a directory:
+C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc\LTspice NetLists 
+    Component                Type                Expression
+    _________    ____________________________    __________
+
+    {'L1'  }     {'Inductance'              }     {'Lp'  } 
+    {'C1'  }     {'Capacitance'             }     {'Cp'  } 
+    {'C2'  }     {'Capacitance'             }     {'Cs'  } 
+    {'FET1'}     {'On-resistance Ron'       }     {'ronp'} 
+    {'FET2'}     {'On-resistance Ron'       }     {'ronp'} 
+    {'FET3'}     {'On-resistance Ron'       }     {'ronp'} 
+    {'FET4'}     {'On-resistance Ron'       }     {'ronp'} 
+    {'FET5'}     {'On-resistance Ron'       }     {'rons'} 
+    {'FET6'}     {'On-resistance Ron'       }     {'rons'} 
+    {'FET7'}     {'On-resistance Ron'       }     {'rons'} 
+    {'FET8'}     {'On-resistance Ron'       }     {'rons'} 
+    {'Vout'}     {'Voltage'                 }     {'Vo'  } 
+    {'R1'  }     {'Resistance'              }     {'Rp'  } 
+    {'R2'  }     {'Resistance'              }     {'Rs'  } 
+    {'Tr2' }     {'Number of turns'         }     {'np'  } 
+    {'Tr2' }     {'Magnetization inductance'}     {'Lm'  } 
+    {'D1'  }     {'On-resistance Ron'       }     {'ronp'} 
+    {'D2'  }     {'On-resistance Ron'       }     {'ronp'} 
+    {'D3'  }     {'On-resistance Ron'       }     {'ronp'} 
+    {'D4'  }     {'On-resistance Ron'       }     {'ronp'} 
+    {'D5'  }     {'On-resistance Ron'       }     {'rons'} 
+    {'D6'  }     {'On-resistance Ron'       }     {'rons'} 
+    {'D7'  }     {'On-resistance Ron'       }     {'rons'} 
+    {'D8'  }     {'On-resistance Ron'       }     {'rons'} 
+
+Error using &lt;a href="matlab:matlab.internal.language.introspective.errorDocCallback('PLECScircuitParser/inspect')" style="font-weight:bold"&gt;PLECScircuitParser/inspect&lt;/a&gt;
+Undefined parameters encountered when parsing PLECS circuit.  See table
+above for missing parameters.
+These parameters must be defined in the base workspace or altered in the
+PLECS circuit
+
+Error in &lt;a href="matlab:matlab.internal.language.introspective.errorDocCallback('SMPStopology/loadCircuit', 'C:\Users\dcostine\Dropbox\UTK\Research\AURA\@SMPStopology\SMPStopology.m', 87)" style="font-weight:bold"&gt;SMPStopology/loadCircuit&lt;/a&gt; (&lt;a href="matlab: opentoline('C:\Users\dcostine\Dropbox\UTK\Research\AURA\@SMPStopology\SMPStopology.m',87,0)"&gt;line 87&lt;/a&gt;)
+                        obj.circuitParser.inspect();
+
+Error in &lt;a href="matlab:matlab.internal.language.introspective.errorDocCallback('codeExamples', 'C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters\codeExamples.mlx', 60)" style="font-weight:bold"&gt;codeExamples&lt;/a&gt; (&lt;a href="matlab: opentoline('C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters\codeExamples.mlx',60,0)"&gt;line 60&lt;/a&gt;)
+    top.loadCircuit(circuitPath); %This fails with explanation of missing variables
+
+Error in &lt;a href="matlab:matlab.internal.language.introspective.errorDocCallback('evalmxdom&gt;instrumentAndRun', 'C:\Program Files\MATLAB\R2022b\toolbox\matlab\codetools\private\evalmxdom.m', 116)" style="font-weight:bold"&gt;evalmxdom&gt;instrumentAndRun&lt;/a&gt; (&lt;a href="matlab: opentoline('C:\Program Files\MATLAB\R2022b\toolbox\matlab\codetools\private\evalmxdom.m',116,0)"&gt;line 116&lt;/a&gt;)
+text = evalc(evalstr);
+
+Error in &lt;a href="matlab:matlab.internal.language.introspective.errorDocCallback('evalmxdom', 'C:\Program Files\MATLAB\R2022b\toolbox\matlab\codetools\private\evalmxdom.m', 21)" style="font-weight:bold"&gt;evalmxdom&lt;/a&gt; (&lt;a href="matlab: opentoline('C:\Program Files\MATLAB\R2022b\toolbox\matlab\codetools\private\evalmxdom.m',21,0)"&gt;line 21&lt;/a&gt;)
+[data,text,laste] = instrumentAndRun(file,cellBoundaries,imageDir,imagePrefix,options);
+
+Error in publish
+
+Error in &lt;a href="matlab:matlab.internal.language.introspective.errorDocCallback('matlab.addons.toolbox.internal.publishExamples&gt;publishMFile', 'C:\Program Files\MATLAB\R2022b\toolbox\matlab\toolbox_packaging\+matlab\+addons\+toolbox\+internal\publishExamples.m', 30)" style="font-weight:bold"&gt;matlab.addons.toolbox.internal.publishExamples&gt;publishMFile&lt;/a&gt; (&lt;a href="matlab: opentoline('C:\Program Files\MATLAB\R2022b\toolbox\matlab\toolbox_packaging\+matlab\+addons\+toolbox\+internal\publishExamples.m',30,0)"&gt;line 30&lt;/a&gt;)
+    publish(getQualifiedFunctionOrMethodName(file));
+
+Error in &lt;a href="matlab:matlab.internal.language.introspective.errorDocCallback('matlab.addons.toolbox.internal.publishExamples', 'C:\Program Files\MATLAB\R2022b\toolbox\matlab\toolbox_packaging\+matlab\+addons\+toolbox\+internal\publishExamples.m', 8)" style="font-weight:bold"&gt;matlab.addons.toolbox.internal.publishExamples&lt;/a&gt; (&lt;a href="matlab: opentoline('C:\Program Files\MATLAB\R2022b\toolbox\matlab\toolbox_packaging\+matlab\+addons\+toolbox\+internal\publishExamples.m',8,0)"&gt;line 8&lt;/a&gt;)
+       [statuses(idx), ids{idx}, messages{idx}] = publishMFile(files{idx});
+
+states =
+
+  4&times;1 cell array
+
+    {'L1'  }
+    {'Cout'}
+    {'Cd'  }
+    {'Coss'}
+
+
+switches =
+
+  2&times;1 cell array
+
+    {'FET'}
+    {'D1' }
+
+
+inputs =
+
+  2&times;1 cell array
+
+    {'V_dc' }
+    {'D1:Vf'}
+
+
+outputs =
+
+  4&times;1 cell array
+
+    {'FET:Am'}
+    {'FET:Vm'}
+    {'D1:Am' }
+    {'D1:Vm' }
+
+
+FET_VdsOn =
+
+   68.0230
+
+
+FET_Ioff =
+
+   12.7582
+
+
+eta =
+
+   68.7005
+
+
+Ilrms =
+
+    1.8563
+
+</pre><img vspace="5" hspace="5" src="codeExamples_01.png" alt=""> <img vspace="5" hspace="5" src="codeExamples_02.png" alt=""> <img vspace="5" hspace="5" src="codeExamples_03.png" alt=""> <img vspace="5" hspace="5" src="codeExamples_04.png" alt=""> <img vspace="5" hspace="5" src="codeExamples_05.png" alt=""> <img vspace="5" hspace="5" src="codeExamples_06.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clearvars;
+sdir = fileparts(matlab.desktop.editor.getActiveFilename);
+addpath(sdir);
+addpath([sdir '\ExampleTopologies'])
+addpath([sdir '\LTspice NetLists'])
+modelfile = 'AsyncBoost'; PLECsModel = 'Boost_Async';
+loadSimulinkOutputsToBase(modelfile,PLECsModel);    %Per the file format, all the necessary 
+                                                    % variables are defined in simulink and loaded into the base workspace 
+circuitPath = [modelfile '/' PLECsModel];
+sim = SMPSim();
+sim.initialize(circuitPath);        %swvec, us, and ts are defined in the simulink file and
+                                    %loaded via loadSimulinkOutputsToBase
+                                    %They will be pulled from the base workspace
 sim.steadyState();
 sim.plotAllStates(1)
 sim.plotAllOutputs(2)
-</pre><img vspace="5" hspace="5" src="codeExamples_01.png" alt=""> <img vspace="5" hspace="5" src="codeExamples_02.png" alt=""> <h2 id="4">Example Steady-State Solve from PLECS circuit with dependent States</h2><pre class="codeinput">modelfile = <span class="string">'AsyncBoost'</span>; PLECsModel = <span class="string">'Boost_Async'</span>;
-
-loadSimulinkOutputsToBase(modelfile,PLECsModel);
-circuitPath = [modelfile <span class="string">'/'</span> PLECsModel];
+modelfile = 'BuckTest1.net';
 
 sim = SMPSim();
-sim.initialize(circuitPath, swvec, us, ts);
+sim.initialize(modelfile);                      %swvec, us, and ts are defined 
+                                                %in the netlist file and
+                                                %loaded during parsing
+sim.steadyState();
+sim.plotAllStates(3)
+sim.plotAllOutputs(4)
 
-sim.findValidSteadyState();
-sim.plotAllStates(1)
-sim.plotAllOutputs(2)
-</pre><pre class="codeoutput">   1.0e+03 *
+modelfile = 'AsyncBoost'; PLECsModel = 'Boost_Async';
+loadSimulinkOutputsToBase(modelfile,PLECsModel);
+circuitPath = [modelfile '/' PLECsModel];
+sim = SMPSim();
+sim.initialize(circuitPath, swvec, us, ts);     % here swvec, us, and ts are explicitly specified
+sim.steadyState();
+sim.plotAllStates(5);               %Plot all states BEFORE solving valid diode conduction
+hold(gcf().Children,'on');          %hold on, to compare with final solution
+sim.findValidSteadyState();         %solves correct dependent state behaviour
+sim.plotAllStates(5)                %Plot all states AFTER solving valid diode conduction
+modelfile = 'BuckTest1.net';
 
-    0.0020   -7.3805
+sim = SMPSim();
+sim.initialize(modelfile);                      %swvec, us, and ts are defined 
+                                                %in the netlist file and
+                                                %loaded during parsing
 
-   1.0e+03 *
+sim.plotAllStates(6);               %Plot all states BEFORE solving valid diode conduction
+hold(gcf().Children,'on');          %hold on, to compare with final solution
 
-    0.0030   -7.2836
+sim.findValidSteadyState();         %solves correct dependent state behaviour
+sim.plotAllStates(6)                %Plot all states AFTER solving valid diode conduction
 
-   1.0e+03 *
-
-    0.0040   -7.0887
-
-   1.0e+03 *
-
-    0.0050   -6.6946
-
-   1.0e+03 *
-
-    0.0060   -5.8909
-
-   1.0e+03 *
-
-    0.0070   -4.2291
-
-   1.0e+03 *
-
-    0.0080   -2.0739
-
-   1.0e+03 *
-
-    0.0090   -1.0337
-
-   10.0000 -517.3242
-
-   11.0000 -258.9707
-
-   12.0000 -129.5615
-
-   13.0000  -64.7705
-
-   14.0000  -32.3495
-
-   15.0000  -16.1321
-
-   16.0000   -8.0217
-
-   17.0000   -3.9660
-
-   18.0000   -1.9380
-
-   19.0000   -0.9240
-
-   20.0000   -0.4170
-
-   21.0000   -0.1635
-
-   22.0000   -0.0368
-
-   23.0000 -612.4529
-
-   24.0000 -543.4898
-
-   25.0000 -203.6276
-
-   26.0000 -176.1561
-
-   27.0000 -119.7575
-
-   28.0000  -94.0915
-
-   29.0000  -44.3160
-
-   30.0000   -3.7390
-
-   31.0000   -1.0845
-
-   32.0000   -0.4968
-
-   33.0000   -0.2033
-
-   34.0000   -0.0566
-
-   35.0000  -20.8449
-
-   36.0000  -10.3258
-
-   37.0000   -5.0713
-
-   38.0000   -2.4888
-
-   39.0000   -1.1994
-
-   40.0000   -0.5547
-
-   41.0000   -0.2324
-
-   42.0000   -0.0712
-
-</pre><img vspace="5" hspace="5" src="codeExamples_03.png" alt=""> <img vspace="5" hspace="5" src="codeExamples_04.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
-##### SOURCE BEGIN #####
-%% Add test circuits folder to the path
-sdir = mfilename('fullpath');
-sdir = sdir(1:find(sdir=='\',1,'last')-1);
-addpath(sdir);
-addpath([sdir '\ExampleTopologies'])
-
-%% Example Underdefined PLECS File
 modelfile = 'DAB_Incomplete'; PLECsModel = 'DAB_oneCap';
 
 open_system(modelfile,'loadonly');
@@ -228,32 +409,109 @@ try
 catch e
     disp(getReport( e, 'extended', 'hyperlinks', 'on' ) )
 end
+modelfile = 'AsyncBoost'; PLECsModel = 'Boost_Async';
 
-%% Example Steady-State Solve from PLECS circuit
+circuitPath = [modelfile '/' PLECsModel];
+
+sim = SMPSim();
+sim.initialize(circuitPath);     %here swvec, us, and ts are not defined, so no switching states will be produced
+                                 %but, the circuit can be parsed to look at
+                                 %the switch vector, and arrangement of signals in x,u,y
+
+states = sim.stateNames               %Show signal assignment in the state vector                              
+CoutLoc = sim.sigLoc('Cout','x');   %Location of Cout's voltage in the state vector, x
+
+switches = sim.switchNames             %Show switch arrangement for swvec
+
+inputs = sim.inputNames               %Show signal assignment in input vector
+VdcLoc = sim.sigLoc('V_dc','u');    %Location of Vdc's voltage in the input vector, u
+
+outputs = sim.outputNames              %Show signal assignment in output vector
+VdsLoc = sim.sigLoc('FET:Vm','y');  %Location of FETs Vds voltage in the output vector, y
+
 modelfile = 'AsyncBoost'; PLECsModel = 'Boost_Async';
 
 loadSimulinkOutputsToBase(modelfile,PLECsModel);
 circuitPath = [modelfile '/' PLECsModel];
 
 sim = SMPSim();
-sim.initialize(circuitPath, swvec, us, ts);
+sim.initialize(circuitPath, swvec, us, ts);     %here swvec, us, and ts are explicitly specified
 
-sim.steadyState();
-sim.plotAllStates(1)
-sim.plotAllOutputs(2)
+sim.findValidSteadyState();         %solves correct dependent state behaviour
 
-%% Example Steady-State Solve from PLECS circuit with dependent States
+Xss = sim.Xs;                       % Get state vector at each switching interface
+Yss = sim.Ys;                       % Get output vector at each switching interface
+YssE = sim.YsEnd;                   % Get output vector at each switching interface before switching occurs
+
+FETLoc = sim.sigLoc('FET','sw');
+IdsLoc = sim.sigLoc('FET:Am','y');
+VdsLoc = sim.sigLoc('Coss','x');
+
+switchingActions = diff([ sim.swvec(end,:); sim.swvec],1);  %Looks at when switching states change
+FEToffInt = find(switchingActions(:,FETLoc) == -1); %Find when FET switches off
+FETonInt = find(switchingActions(:,FETLoc) == 1); %Find when FET switches on
+
+
+FET_VdsOn = Xss(VdsLoc, FETonInt)               %Find FET Vds at turn-off instant 
+FET_Ioff = YssE(IdsLoc,FEToffInt-1)             %Find FET Ids at turn-off instant (look at end of previous interval to apply correc C and D matrices)
+modelfile = 'BuckTest1.net';
+
+sim = SMPSim();
+sim.initialize(modelfile);                      
+
+sim.findValidSteadyState();         %solves correct dependent state behaviour
+
+[avgXs, avgYs] = sim.ssAvgs();     %Get average values of all states and outputs in steady-state
+
+VoutLoc = sim.sigLoc('C1','x');     %Location of Cout's voltage in the state vector, x
+ILLoc = sim.sigLoc('L1','x');       %Location of L's current in the state vector, x
+VgLoc = sim.sigLoc('V1','u');       %Location of Input voltage in the input vector, u
+IgLoc = sim.sigLoc('Im_Ig','y');    %Location of Input current in the output vector, y
+
+
+Pout = avgXs(VoutLoc)*avgXs(ILLoc);
+Pin = sim.u(VgLoc)*avgYs(IgLoc);
+
+eta = Pout/Pin*100
+
 modelfile = 'AsyncBoost'; PLECsModel = 'Boost_Async';
 
 loadSimulinkOutputsToBase(modelfile,PLECsModel);
 circuitPath = [modelfile '/' PLECsModel];
 
 sim = SMPSim();
-sim.initialize(circuitPath, swvec, us, ts);
+sim.initialize(circuitPath, swvec, us, ts);     %here swvec, us, and ts are explicitly specified
 
-sim.findValidSteadyState();
-sim.plotAllStates(1)
-sim.plotAllOutputs(2)
+sim.findValidSteadyState();         %solves correct dependent state behaviour
+
+VoutLoc = sim.sigLoc('Cout','x');   %Location of Cout's voltage in the state vector, x
+ILLoc = sim.sigLoc('L1','x');       %Location of L's current in the state vector, x
+
+sim.plotAllStates(1,[CoutLoc ILLoc]);   %Plot just IL and Vout
+
+modelfile = 'AsyncBoost'; PLECsModel = 'Boost_Async';
+
+loadSimulinkOutputsToBase(modelfile,PLECsModel);
+circuitPath = [modelfile '/' PLECsModel];
+
+sim = SMPSim();
+sim.initialize(circuitPath, swvec, us, ts);     %here swvec, us, and ts are explicitly specified
+
+sim.findValidSteadyState();         %solves correct dependent state behaviour
+
+VoutLoc = sim.sigLoc('Cout','x');   %Location of Cout's voltage in the state vector, x
+ILLoc = sim.sigLoc('L1','x');       %Location of L's current in the state vector, x
+
+[xs, t, ys] = sim.SS_WF_Reconstruct();  %expands full-period time waveforms of states and outputs
+
+Ilrms = sqrt(1/t(end)*trapz(t,xs(ILLoc,:)))
+
+
+sdir = fileparts(matlab.desktop.editor.getActiveFilename);
+
+plotDigitizer([sdir '\resources\EPC2023_datasheet.pdf'])
+
+
 
 ##### SOURCE END #####
 --></body></html>

@@ -42,6 +42,8 @@ classdef SMPSconverter < handle
     properties (Hidden)
         caching = 0
         timingThreshold = 1e-15;
+
+        maximumTimeSteps = 150;
         
     end
     
@@ -499,6 +501,8 @@ classdef SMPSconverter < handle
             assert(all(ts>=0, 'all'), 'times in vector ts must all be positive');
             assert(all(swind >= 0 & swind <= size(obj.topology.As,3), 'all'), 'swind must be a vector of values indexing topology state matrices');
             
+            obj.limitTimeIntervals();
+
             obj.controlledts = sum(ts,1);
             obj.fullts = ts;
             obj.fullswind = swind;
@@ -567,7 +571,7 @@ classdef SMPSconverter < handle
         end
         
         function set.ts(obj, newts)
-            error('Needs to be updated or disallowed -- use setSwitchingPattern instead or other methods');
+            error('direct setting of ts not allowed.  Use SMPSconverter.setSwitchingPattern() instead');
 %             obj.ts = newts;
 %             obj.refreshCache();
         end
@@ -584,6 +588,15 @@ classdef SMPSconverter < handle
             obj.u = newU;%reshape(newU,max(size(newU,1:2)),1, size(newU,3));
         end
         
+    end
+
+    methods (Hidden)
+
+        function limitTimeIntervals(obj)
+            assert(sum((obj.fullts >0)+0,'all') <= obj.maximumTimeSteps, ...
+                'Number of timing subintervals greater than setting in SMPSconverter.maximumTimeSteps.')
+        end
+
     end
     
 end

@@ -25,6 +25,10 @@ classdef SMPSim < handle
 
         ts % ts is a vector of the time durations of each inverval
         u % u is the (assumed constant within each interval) independent input vector
+        swvec %swvec is a matrix of binary switch states.  swvec(i,j) is the on/off status of switch i during time interval j
+
+        Ys %Outputs at current steady-state solution
+        YsEnd % Outputs at the end of each subinterval for current steady-state solution
     end
 
     properties (Hidden, Dependent)
@@ -39,10 +43,10 @@ classdef SMPSim < handle
         debug2 = 0;
         debugFigNo = 47;
     
-        suppressIterationOutput = 0;
+        suppressIterationOutput = 1; %will display weighted error once per iteration in findValidSteadyState 
 
-        timeSteppingInit = 0;
-        finalRunMethod = 0;
+        timeSteppingInit = 0;   
+        finalRunMethod = 0; %0= eig2tis, 1=timestepping
 
         maxItns = 100;
 
@@ -67,7 +71,7 @@ classdef SMPSim < handle
         [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = checkDiscreteErr(obj)
         [tLocs,insertAt,adjType] = findRequiredUncontrolledSwitching(obj,violateMarginStart,violateMarginEnd)
 
-        [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
+        [Xf,ts,swinds,us] = timeSteppingPeriod(obj, Xs, ts, origSwind, us)
         [newts,newswinds] = format1DtimingVector(obj,ts,swinds)
         [weightTotalErr] = getWeightedTotalError(obj, errBefore,errAfter)
 
@@ -100,9 +104,11 @@ classdef SMPSim < handle
     methods
         %% Methods from external files
         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
-        [ avgXs, avgYs ] = ssAvgs(obj, Xss)
+        [ avgXs, avgYs, Ints ] = ssAvgs(obj, Xss)
         
         niter = findValidSteadyState(obj)
+
+        Gz = findSSTF(obj, tp, ut)
 
         %% Locally-defined methods
         
@@ -144,13 +150,21 @@ classdef SMPSim < handle
                 top.loadCircuit(circuitPath,swvec,1);
             else
                 top.loadCircuit(circuitPath,[],1);
-                swvec = evalin('base','swvec');
+                try 
+                    swvec = evalin('base','swvec');
+                catch e
+                    return
+                end
             end
 
             if ~isempty(us)
                 obj.u = us;
             else
-                obj.u = evalin('base', 'us');
+                try
+                    obj.u = evalin('base', 'us');
+                catch e
+                    return
+                end
             end
 
             if size(obj.u,1) ~= size(obj.Bs,2)
@@ -164,7 +178,11 @@ classdef SMPSim < handle
              if ~isempty(ts)
                 conv.setSwitchingPattern(swvec, ts);
              else
-                ts = evalin('base','ts');
+                try
+                    ts = evalin('base','ts');
+                catch e
+                    return
+                end
                 conv.setSwitchingPattern(swvec, ts);
             end
             
@@ -358,6 +376,10 @@ classdef SMPSim < handle
             res = obj.converter.u;
         end
 
+        function res = get.swvec(obj)
+            res = obj.converter.swvec;
+        end
+
         function res = get.fullu(obj)
             if size(obj.converter.u,3) == 1
                 res = repmat(obj.u,1,1,(length(obj.converter.ts)));
@@ -391,6 +413,17 @@ classdef SMPSim < handle
         function res = get.switchNames(obj)
             res = obj.converter.topology.switchLabels;
         end
+
+        function res = get.Ys(obj)
+            Xs3 = reshape(obj.Xs,[size(obj.Xs,1), 1, size(obj.Xs,2)]);
+            res = squeeze(pagemtimes(obj.Cs,Xs3(:,:,1:end-1)) + pagemtimes(obj.Ds,obj.fullu));
+        end
+
+        function res = get.YsEnd(obj)
+            Xs3 = reshape(obj.Xs,[size(obj.Xs,1), 1, size(obj.Xs,2)]);
+            res = squeeze(pagemtimes(circshift(obj.Cs,1,3),Xs3(:,:,1:end-1)) + pagemtimes(circshift(obj.Ds,1,3),obj.fullu));
+            res = circshift(res,-1,2);
+        end
             
         
         %% Setters
@@ -405,6 +438,10 @@ classdef SMPSim < handle
         
         function set.ts(varargin)
              error('Setting ts is not recommended for class SMPSsim.  Use methods in SMPSconverter');
+        end
+
+        function set.swvec(varargin)
+            error('Setting swvec is not recommended for class SMPSsim.  Use methods in SMPSconverter');
         end
               
     end

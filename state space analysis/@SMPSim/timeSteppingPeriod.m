@@ -1,4 +1,4 @@
-function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
+function [Xf,ts,swinds,us] = timeSteppingPeriod(obj, Xs, ts, origSwind, us)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 % 
@@ -12,6 +12,7 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
         Xs = [obj.Xs(:,1); 1];
         origSwind = obj.converter.swind;
         ts = obj.ts;
+        us = obj.fullu;
     end
     [~, deltaTs] = getDeltaT(obj.converter, 1:length(ts));
     if size(deltaTs,2) < size(deltaTs,1)
@@ -34,11 +35,14 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
         states = zeros(length(Xs),tVecLength);
     end
     
+    intus = zeros([size(us,[1:2]),tVecLength]);
     for i = 1:length(origSwind)
         if i == 1
+            intus(:,:,1:nMinSteps(1)) = repmat(us(:,:,i),1,nMinSteps(i));
             subInts(1:nMinSteps(1)) = repmat(origSwind(i),1,nMinSteps(i));
             tvec(1:nMinSteps(1)) = linspace(0,ts(1), nMinSteps(1));
         else
+            intus(:,:,sum(nMinSteps(1:i-1))+1:sum(nMinSteps(1:i))) = repmat(obj.fullu(:,:,i),1,nMinSteps(i));
             subInts(sum(nMinSteps(1:i-1))+1:sum(nMinSteps(1:i))) = repmat(origSwind(i),1,nMinSteps(i));
             tvec(sum(nMinSteps(1:i-1))+1:sum(nMinSteps(1:i))) = sum(ts(1:i-1)) + linspace(ts(i)/nMinSteps(i),ts(i),nMinSteps(i));
         end
@@ -74,8 +78,9 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
             B = obj.converter.topology.Bs(:,:,subInts(i));
             Cbnd = obj.converter.topology.Cbnd(:,:,subInts(i));
             Dbnd = obj.converter.topology.Dbnd(:,:,subInts(i));
+            u = intus(:,:,i);
             
-            M = [A, B*obj.u; ...
+            M = [A, B*u; ...
                 zeros(1,size(A,2) + 1)];
             
             oldXs = Xs;
@@ -91,8 +96,8 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
 
             
 %             violateMarginEnd = Cbnd*Xs(1:end-1) + Dbnd*obj.u - obj.converter.topology.bndHyst(:,1) + obj.converter.topology.bndHyst(:,2);
-            [violateMarginEnd,targetValEnd] = obj.checkStateValidity(Xs(1:end-1), obj.u, subInts(i));
-            [violateMarginStart,targetValStart] = obj.checkStateValidity(oldXs(1:end-1), obj.u, subInts(i));
+            [violateMarginEnd,targetValEnd] = obj.checkStateValidity(Xs(1:end-1), u, subInts(i));
+            [violateMarginStart,targetValStart] = obj.checkStateValidity(oldXs(1:end-1), u, subInts(i));
             
 %             if i == 378
 %                 x=1;
@@ -114,8 +119,8 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
                         Xs(jk) = Xs(jk) - violateMarginStart(ij)./Cbnd(ij,jk)*1.5;
                     end
                     oldXs = Xs;
-                    [violateMarginEnd,targetValEnd] = obj.checkStateValidity(Xs(1:end-1), obj.u, subInts(i));
-                    [violateMarginStart,targetValStart] = obj.checkStateValidity(oldXs(1:end-1), obj.u, subInts(i));
+                    [violateMarginEnd,targetValEnd] = obj.checkStateValidity(Xs(1:end-1), u, subInts(i));
+                    [violateMarginStart,targetValStart] = obj.checkStateValidity(oldXs(1:end-1), u, subInts(i));
                     continue
                 elseif any(violateMarginStart < 0) && i>1 && (subInts(i) ~=subInts(i-1))
                     % Error at the beginning of a new subinterval
@@ -169,7 +174,7 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
                     %% Error at end of period
                     crossXs = expm(M*tcross)*oldXs;
 %                     violateMarginCross = Cbnd*crossXs(1:end-1) + Dbnd*obj.u - obj.converter.topology.bndHyst(:,1);
-                    [violateMarginCross,targetValCross] = obj.checkStateValidity(crossXs(1:end-1), obj.u, subInts(i));
+                    [violateMarginCross,targetValCross] = obj.checkStateValidity(crossXs(1:end-1), u, subInts(i));
                     k=1;
 %                     while ~all(abs(violateMarginCross(violateMarginEnd < 0)) < abs(obj.converter.topology.bndHyst((violateMarginEnd < 0),2)))
                     if(errAt == 1) 
@@ -213,7 +218,7 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
 
                             crossXs = expm(M*tcross)*oldXs;
                             violateMarginCrossOld = violateMarginCross;
-                            [violateMarginCross,targetValCross] = obj.checkStateValidity(crossXs(1:end-1), obj.u, subInts(i));
+                            [violateMarginCross,targetValCross] = obj.checkStateValidity(crossXs(1:end-1), u, subInts(i));
 
                             if tcross < firstViolationTime && any(violateMarginCross < 0 & violateMarginEnd < 0)
                                 firstViolationCondition = violateMarginCross < 0 & violateMarginEnd < 0;
@@ -230,7 +235,7 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
                                     tx = linspace(0,deltaT, 1000);
                                     for kk = 1:length(tx)
                                         crossXsx(:,kk) =  expm(M*tx(kk))*oldXs;
-                                        [violateMarginCrossx(:,kk),~] = obj.checkStateValidity(crossXsx(1:end-1,kk), obj.u, subInts(i));
+                                        [violateMarginCrossx(:,kk),~] = obj.checkStateValidity(crossXsx(1:end-1,kk), u, subInts(i));
                                     end
                                     plot(tx, violateMarginCrossx((violateMarginEnd < 0),:))
                                 end
@@ -260,7 +265,7 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
                     end
                     [~, newSwInd] = ismember(newSwVec, obj.topology.swseq, 'rows'); 
 
-                    %% adjust subints and tvec
+                    %% adjust subints and tvec 
 
 %                     tvec(i+1) = tvec(i) + (diff(tvec(i:i+1))-tcross);
                     tvec(i+1) = tvec(i) + tcross;
@@ -289,6 +294,7 @@ function [Xf,ts,swinds] = timeSteppingPeriod(obj, Xs, ts, origSwind )
     
     Xf = Xs;
     swinds = [subInts(diff(subInts)~=0) subInts(end)];
+    us = cat(3,intus(:,:,diff(subInts)~=0), intus(:,:,end));
     ts = [tvec(diff(subInts)~=0); tvec(end)];
     ts = [ts(1); diff(ts)];
     

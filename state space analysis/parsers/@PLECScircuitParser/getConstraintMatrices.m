@@ -20,8 +20,14 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, 
     
     swvec = obj.topology.swseq;
     
+    %% Initialize matrices
+    % Based on the method below, Cbnd and Dbnd are initialized to the same
+    % size as Cs and Ds.  Because all the signals are in the C and D
+    % matrices, currently, this is an upper bound on the required storage.
     Cbnd = zeros(size(obj.topology.Cs));
+%     Cbnd = zeros(length(switchNames), size(obj.topology.Cs,2), size(obj.topology.Cs,3));
     Dbnd = zeros(size(obj.topology.Ds));
+%     Dbnd = zeros(length(switchNames), size(obj.topology.Ds,2), size(obj.topology.Ds,3));
     hyst = zeros(size(obj.topology.Ds,1), 2);
     switchRef = zeros(size(obj.topology.Ds,1), 2);
     allSwitchSignals = zeros(size(obj.topology.Cs,1),1);
@@ -29,8 +35,8 @@ function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, 
     if isempty(obj.devType) || forceRefresh
         % Only re-run this once per file
         obj.isFET = zeros(size(switchNames));
-        obj.isDiode = obj.isFET;
-        obj.Vf = obj.isFET;
+        obj.isDiode = zeros(size(switchNames));
+        obj.Vf = zeros(size(switchNames));
         for i = 1:length(switchNames)
             obj.devType = plecs('get',[modelFile '/' switchNames{i}], 'Type');
             obj.isFET(i) = strcmp(obj.devType, 'MosfetWithDiode') || strcmp(obj.devType, 'Mosfet');

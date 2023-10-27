@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.toolbox" plugin-version="1.0">
-  <configuration build-checksum="3699353020" file="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Releases\AURA.prj" location="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Releases" name="AURA" target="target.toolbox" target-name="Package Toolbox">
+  <configuration build-checksum="3699353020" file="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox\AURA.prj" location="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox" name="AURA" target="target.toolbox" target-name="Package Toolbox">
     <param.appname>Switched Mode Power Supply Toolbox</param.appname>
     <param.authnamewatermark>Daniel Costinett</param.authnamewatermark>
     <param.email>daniel.costinett@utk.edu</param.email>
@@ -7,7 +7,7 @@
     <param.summary>Steady state solutions to switched mode power supplies</param.summary>
     <param.description />
     <param.screenshot />
-    <param.version>0.1.6</param.version>
+    <param.version>0.1.7</param.version>
     <param.output>${PROJECT_ROOT}\Switched Mode Power Supply Toolbox.mltbx</param.output>
     <param.products.name />
     <param.products.id />
@@ -45,7 +45,11 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
 **/.gitignore
 **/depricated
 **/Ideas
-**/SPICECompare</param.exclude.filters>
+**/SPICECompare
+**/PreviousApplications
+**/Releases
+**/webSettings.mat
+**/webserver</param.exclude.filters>
     <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
     <param.examples>&lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;examples&gt;
@@ -80,7 +84,7 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
     <param.getting.started.guide>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc\GettingStarted.mlx</param.getting.started.guide>
     <param.matlabpath.excludes />
     <param.javaclasspath.excludes />
-    <param.exported.on.package>false</param.exported.on.package>
+    <param.exported.on.package>true</param.exported.on.package>
     <param.required.addons>
       <requiredaddons />
     </param.required.addons>
@@ -112,7 +116,6 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
       <param.apps />
       <param.matlabpath.excludes />
       <param.javaclasspath.excludes />
-      <param.exported.on.package />
       <param.matlab.project.id />
       <param.matlab.project.name />
       <param.release.start />
@@ -142,8 +145,8 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\html</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\parsers</file>
-      <file>${PROJECT_ROOT}</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters</file>
+      <file>${PROJECT_ROOT}</file>
     </fileset.rootfiles>
     <fileset.depfun.included />
     <fileset.depfun.excluded>
@@ -152,7 +155,7 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
     </fileset.depfun.excluded>
     <fileset.package />
     <build-deliverables>
-      <file location="${PROJECT_ROOT}" name="Switched Mode Power Supply Toolbox.mltbx" optional="false">C:\Users\dcostine\Dropbox\UTK\Research\AURA\Releases\Switched Mode Power Supply Toolbox.mltbx</file>
+      <file location="${PROJECT_ROOT}" name="Switched Mode Power Supply Toolbox.mltbx" optional="false">C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox\Switched Mode Power Supply Toolbox.mltbx</file>
     </build-deliverables>
     <workflow />
     <matlab>

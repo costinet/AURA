@@ -34,7 +34,11 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
     fig = figure(fn);
 
     ns = size(sigs,1);
-    ns = length(oSelect);
+    if isempty(oSelect)
+        oSelect = 1:ns;
+    else
+        ns = length(oSelect);
+    end
     
     if(subplots)
         nrMax = 10;
@@ -48,14 +52,14 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
                     break
                 end
                 inds = [((i-1)*nGrid+1):(i*nGrid)]*nc - (nc-1) + (j-1);
-                subplot(nGrid*nr,nc,inds)
-                plot(t,sigs(oSelect(nsi),:), 'Linewidth', 3);
+                ax = subplot(nGrid*nr,nc,inds, 'Parent', fig);
+                plot(ax, t,sigs(oSelect(nsi),:), 'Linewidth', 3);
                 hold on;
                 ylims = ylim;
                 ylim(ylims);
                 xlim([min(t) max(t)]);
                 for k = 1:length(obj.ts)
-                    plot(sum(obj.ts(1:k))*ones(1,2), ylims, ':k');
+                    plot(ax,sum(obj.ts(1:k))*ones(1,2), ylims, ':k');
                 end
                 hold off;
                 try
@@ -65,7 +69,7 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
                 end
                 box on
                 if(i<nr)
-                    set(gca, 'Xticklabel', []);
+                    set(ax, 'Xticklabel', []);
                 else
                     xlabel('t')
                 end
@@ -121,6 +125,7 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
             ax = [ax, children(i)];
         end
     end
-    linkaxes(ax,'x');
-
+    if numel(ax) >= 2
+        linkaxes(ax,'x');
+    end
 end

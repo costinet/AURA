@@ -51,8 +51,9 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
     obj.OutputNames = OutputNames;
     obj.ConstantNames = ConstantNames;
 
-    FETs = [obj.origComponents.Type] == 'M';
-    diodes = [obj.origComponents.Type] == 'D';
+    FETs = strcmp({obj.origComponents.Type} , 'M');
+    diodes = strcmp({obj.origComponents.Type} , 'D');
+    
     switches = FETs | diodes;
 
     obj.Switch_Names = {obj.origComponents(switches).Name};

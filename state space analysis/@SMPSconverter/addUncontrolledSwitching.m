@@ -16,7 +16,7 @@ function [altered, newSwInd] = addUncontrolledSwitching(obj, interval, beforeAft
 
 
     if initialTime < .9*obj.timingThreshold
-        warning('should this be here?')
+%         warning('should this be here?')
         obj.eliminateZeroTimeIntervals
         return
     end
@@ -167,4 +167,6 @@ function [altered, newSwInd] = addUncontrolledSwitching(obj, interval, beforeAft
     altered = 1;
     assert(all(abs((sum(obj.fullts,1) - obj.controlledts))<obj.timingThreshold), ...
         'Timing mismatch due to uncontrolled switching');
+
+    obj.limitTimeIntervals();
 end

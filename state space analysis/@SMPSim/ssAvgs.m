@@ -1,9 +1,12 @@
-function [ avgXs, avgYs ] = ssAvgs(obj, Xss)
+function [ avgXs, avgYs, Ints ] = ssAvgs(obj, Xss)
 %ssAvgs Compute average values of states and outputs in steady-state
 %   
-%   [ avgXs, avgYs ] = ssAvgs(obj)
+%   [ avgXs, avgYs, Ints ] = ssAvgs(obj)
 %   for SMPSim object, computes the vector of average states avgXs and
-%   outputs avgYs using the current, stored steady-state solution
+%   outputs avgYs using the current, stored steady-state solution.
+%   Ints gives the integrals of each state and output over each time
+%   interval in a (Ns+Ni x Nt) matrix for a system with Ns states, Ni
+%   inputs, and Nt time intervals
 %   
 %   [ ... ] = ssAvgs(obj, Xss)
 %   uses instead the supplied steady-state initial vector Xss
@@ -42,13 +45,14 @@ function [ avgXs, avgYs ] = ssAvgs(obj, Xss)
             Cs, pagemtimes(Ds,u), zeros(nc,nc+ns,n)];
     Xtil = [Xss; ones(1,n+1); zeros(ns,n+1); zeros(nc,n+1)];
 
-    Ints = zeros(ns*2+nc+1,1);
+    Ints = zeros(ns*2+nc+1,n);
     for i = 1:n
-        Ints = Ints + expm(Atil(:,:,i)*ts(i))*Xtil(:,i);
+        Ints(:,i) =  expm(Atil(:,:,i)*ts(i))*Xtil(:,i);
     end
 
-    avgXs = Ints(ns+2:2*ns+1,:)/sum(ts);
-    avgYs =  Ints(2*ns+2:end,:)/sum(ts);      
+    avgXs = sum(Ints(ns+2:2*ns+1,:),2)/sum(ts);
+    avgYs =  sum(Ints(2*ns+2:end,:),2)/sum(ts);   
+    Ints = Ints(ns+2:end,:);
 
 end
 

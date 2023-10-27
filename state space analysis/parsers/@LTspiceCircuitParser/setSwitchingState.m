@@ -3,8 +3,8 @@ function setSwitchingState(obj, swvec)
 %   Detailed explanation goes here
 
     %% Find all switches in original (pre-linearization) circuit
-    FETs = [obj.origComponents.Type] == 'M';
-    diodes = [obj.origComponents.Type] == 'D';
+    FETs = strcmp({obj.origComponents.Type} , 'M');
+    diodes = strcmp({obj.origComponents.Type} , 'D');
     switches = FETs | diodes;
     numSwitches = sum(switches);
     numDiodes = sum(diodes);

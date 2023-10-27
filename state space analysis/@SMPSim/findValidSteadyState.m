@@ -31,7 +31,7 @@ function niter = findValidSteadyState(obj)
     % inter-sample violations are occuring.  
     finalRun = 0;
     
-    %% Symmetry check
+    %% Symmetry check (Experimental)
     % Checks for converters with half-cycle symmetry.  If one is found,
     % steady-state will only need to examine the first half-cycle
     if obj.allowHalfCycleReduction
@@ -45,27 +45,29 @@ function niter = findValidSteadyState(obj)
         end
     end
     
-    %%  TimeStepping Attempt
+    %%  TimeStepping Attempt (Experimental)
     % If set, the algorithm will first time-step through one period looking
     % for diode switching before entering the steady-state solution.
     % Generally should not be used, as it is slow and requires the initial
     % times to be close such that one time-stepping period is 'close' to
     % steady-state
     if obj.timeSteppingInit > 0
-        [Xf,ts,swinds] = timeSteppingPeriod(obj);
+        [Xf,ts,swinds,us] = timeSteppingPeriod(obj);
         
         numPeriods = obj.timeSteppingInit;
         Xsims = zeros(size(Xf,1),numPeriods);
         for i = 1:numPeriods
             conv.setSwitchingPattern(swinds, ts);
+            conv.u = us;
             Xsims(:,i) = Xf;
-            [Xf,ts,swinds] = obj.timeSteppingPeriod(Xf, ts, swinds );
+            [Xf,ts,swinds,us] = obj.timeSteppingPeriod(Xf, ts, swinds, us);
             if obj.debug == 1
                 disp([Xsims(:,i) Xf]);
             end
         end
     
-        [newts,newswinds] = obj.format1DtimingVector(ts,swinds);        
+        [newts,newswinds] = obj.format1DtimingVector(ts,swinds); 
+        conv.u = us;
         conv.setSwitchingPattern(newswinds, newts)
         clear newts;
 %         X0 = obj.Xs(:,1);
@@ -245,8 +247,15 @@ while(1)
         e(emptyRows) = [];
         A(emptyRows,:) = [];
 
+        orig_state = warning;
+        warning('off','MATLAB:singularMatrix')
+        warning('off','MATLAB:nearlySingularMatrix')
+        warning('off','MATLAB:rankDeficientMatrix')
+        %         [msgstr, msgid] = lastwarn;
+
         tsolve = zeros(size(conv.ts));
         tsolve(~unChangeable) = -(A\b);
+
 
         %% Check for competing constraints
         % Speeds up DAB_Rload, as an example, but may be unnecessary
@@ -296,8 +305,10 @@ while(1)
         %% Backup for unsuccessful solve
         if any(isnan(tsolve))
             tsolve(~unChangeable) = -pinv(A)*b;
-            warning('Sometimes this goes awry')            
+%             warning('Sometimes this goes awry')            
         end
+
+        
 
         %% Check whether solution is valid for local approximation
         solveWorked = abs(b+A*tsolve(~unChangeable)') < abs(e);
@@ -309,6 +320,11 @@ while(1)
             [~,I] = max(err);
             I = find(err > .9*err(I));
 
+            if isempty(I)
+                error('failed to solve iteration in timing');
+                break
+            end
+
             A(I,:) = [];
             b(I,:) = [];
             e(I,:) = [];
@@ -318,13 +334,15 @@ while(1)
 
             if any(isnan(tsolve))
                 tsolve(~unChangeable) = -pinv(A)*b;
-                warning('Sometimes this goes awry')            
+%                 warning('Sometimes this goes awry')            
             end
 
             solveWorked = abs(b+A*tsolve(~unChangeable)') < abs(e);
             solveErr = any(~solveWorked(e ~= conv.timingThreshold));
             
         end
+
+        warning(orig_state);
         
         
 

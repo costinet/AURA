@@ -5,8 +5,8 @@ function linearizeCircuitModel2(obj)
     components = obj.origComponents;
     
     %% Replace FETs with Linear equivalent circuit
-    FETs = [components.Type] == 'M';
-    diodes = [components.Type] == 'D';
+    FETs = strcmp({components.Type} , 'M');
+    diodes = strcmp({components.Type} , 'D');
     switches = FETs | diodes;
     numSwitches = sum(switches);
     numDiodes = sum(diodes);

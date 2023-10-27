@@ -15,7 +15,7 @@ function [ avgXs, avgYs ] = ssAvgsInvert(obj, Xss)
 %   forcedResponse.
 %
 %   Per testing, this approach is only (slightly) faster in select cases
-%   with low numbers of states and intervals, and is much slower as rthe
+%   with low numbers of states and intervals, and is much slower as the
 %   circuit complexity expands.
 %
 %   See also SMPSim.ssAvgs, SMPSim.forcedResponse

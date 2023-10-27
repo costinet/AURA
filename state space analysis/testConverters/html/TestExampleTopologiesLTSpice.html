@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>TestExampleTopologiesLTSpice</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-07-31"><meta name="DC.source" content="TestExampleTopologiesLTSpice.m"><style type="text/css">
+      --><title>TestExampleTopologiesLTSpice</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-10-27"><meta name="DC.source" content="TestExampleTopologiesLTSpice.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">TestExampleTopologies loads and simulates steady-state for a variety of example converters</a></li><li><a href="#2">Add test netlist folder to the path</a></li><li><a href="#3">Test Circuits</a></li><li><a href="#4">Most recent full run results:</a></li><li><a href="#6">Analyze circuit</a></li></ul></div><h2 id="1">TestExampleTopologies loads and simulates steady-state for a variety of example converters</h2><pre class="language-matlab">The <span class="string">script</span> <span class="string">requires</span> <span class="string">properly-formatted</span> <span class="string">netlist</span> <span class="string">files</span> <span class="string">for</span> <span class="string">the</span> <span class="string">example</span>
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">TestExampleTopologies loads and simulates steady-state for a variety of example converters</a></li><li><a href="#2">Add test netlist folder to the path</a></li><li><a href="#3">Test Circuits</a></li><li><a href="#4">Most recent full run results:</a></li><li><a href="#6">Load model file</a></li><li><a href="#7">Analyze circuit</a></li><li><a href="#8">Update progress bar and store result</a></li></ul></div><h2 id="1">TestExampleTopologies loads and simulates steady-state for a variety of example converters</h2><pre class="language-matlab">The <span class="string">script</span> <span class="string">requires</span> <span class="string">properly-formatted</span> <span class="string">netlist</span> <span class="string">files</span> <span class="string">for</span> <span class="string">the</span> <span class="string">example</span>
 topologies <span class="string">that</span> <span class="string">include</span> <span class="string">all</span> <span class="string">initial</span> <span class="string">parameters</span> <span class="string">and</span> <span class="string">inputs.</span>
 </pre><pre class="language-matlab"><span class="keyword">if</span> the allAssess <span class="string">variable</span> <span class="string">is</span> <span class="string">set</span>, all <span class="string">of</span> <span class="string">the</span> <span class="string">topologies</span> <span class="string">listed</span> <span class="string">will</span> <span class="string">be</span>
 simulated <span class="string">sequentially.</span>  <span class="string">Otherwise</span>, only <span class="string">those</span> <span class="string">indices</span> <span class="string">in</span> <span class="string">the</span> <span class="string">models</span>
@@ -76,16 +76,22 @@ varible <span class="string">will</span> <span class="string">be</span> <span cl
 
 summaryStrings = {};
 
-allAssess = 1;      <span class="comment">% run all models sequentially</span>
+debug = 1;
+allAssess = 0;      <span class="comment">% run all models sequentially</span>
 
-models = 1;         <span class="comment">% if allAssess == 0, this model will be run</span>
+models = 7;         <span class="comment">% if allAssess == 0, this model will be run</span>
 </pre><h2 id="2">Add test netlist folder to the path</h2><pre class="codeinput">sdir = mfilename(<span class="string">'fullpath'</span>);
 sdir = sdir(1:find(sdir==<span class="string">'\'</span>,1,<span class="string">'last'</span>)-1);
 addpath(sdir);
 addpath([sdir <span class="string">'\LTspice NetLists'</span>])
-</pre><h2 id="3">Test Circuits</h2><pre class="codeinput">modelfile{1} = <span class="string">'BuckTest1.net'</span>;
-modelfile{2} = <span class="string">'Buck_Vout_D.net'</span>;
-</pre><h2 id="4">Most recent full run results:</h2><p>Model BuckTest1.net converged after 18 iterations in 0.53823 seconds Model Buck_Vout_D.net converged after 11 iterations in 0.15198 seconds</p><pre class="codeinput"><span class="keyword">if</span> allAssess
+</pre><h2 id="3">Test Circuits</h2><pre class="codeinput">modelfile{1} = <span class="string">'BuckNoDiodes.net'</span>;
+modelfile{2} = <span class="string">'BuckTest1.net'</span>;
+modelfile{3} = <span class="string">'Buck_Vout_D.net'</span>;
+modelfile{4} = <span class="string">'3levelbuck.net'</span>;
+modelfile{5} = <span class="string">'3levelbuckDep.net'</span>;
+modelfile{6} = <span class="string">'DAB.net'</span>;
+modelfile{7} = <span class="string">'DAB_secLeakage.net'</span>;
+</pre><h2 id="4">Most recent full run results:</h2><p>Model BuckNoDiodes.net converged after 15 iterations in 0.34148 seconds Model BuckTest1.net converged after 14 iterations in 0.23347 seconds Model Buck_Vout_D.net converged after 11 iterations in 0.10838 seconds Model 3levelbuck.net converged after 8 iterations in 0.10606 seconds Model 3levelbuckDep.net converged after 8 iterations in 0.087727 seconds Model DAB.net converged after 24 iterations in 0.56207 seconds Model DAB_secLeakage.net converged after 18 iterations in 0.39417 seconds</p><pre class="codeinput"><span class="keyword">if</span> allAssess
     warning(<span class="string">'off'</span>,<span class="string">'all'</span>);
     h = waitbar(0,<span class="string">'Initializing'</span>);
     updateWaitBar(h, modelfile, 0, 0, 0, 0);
@@ -95,25 +101,17 @@ modelfile{2} = <span class="string">'Buck_Vout_D.net'</span>;
 <span class="keyword">end</span>
 
 <span class="keyword">for</span> selectedModel = models
-</pre><pre class="codeinput">    circuitPath = [modelfile{selectedModel}];
-</pre><h2 id="6">Analyze circuit</h2><pre class="codeinput">    sim = SMPSim();
-    conv = sim.converter;
-    top = sim.topology;
-
-<span class="comment">%     sim.debug = 1;</span>
-<span class="comment">%     sim.debug2 = 1;</span>
-
-
-
-    top.loadCircuit(circuitPath,[],1);
-    sim.u = us;
-    conv.setSwitchingPattern(swvec, ts)
+</pre><pre class="codeinput">    <span class="comment">% If Debugging</span>
+    <span class="comment">%     sim.debug = 1;</span>
+    <span class="comment">%     sim.debug2 = 1;</span>
+</pre><h2 id="6">Load model file</h2><pre class="codeinput">    circuitPath = [modelfile{selectedModel}];
+</pre><h2 id="7">Analyze circuit</h2><pre class="codeinput">    sim = SMPSim();
+    [top, conv] = sim.initialize(circuitPath);
 
     <span class="keyword">if</span>(debug)
         sim.steadyState;
         sim.plotAllStates(4)
     <span class="keyword">end</span>
-
 
     tic;
     niter = sim.findValidSteadyState;
@@ -122,63 +120,35 @@ modelfile{2} = <span class="string">'Buck_Vout_D.net'</span>;
     <span class="keyword">if</span>(debug)
         sim.plotAllStates(1);
     <span class="keyword">end</span>
+</pre><pre class="codeoutput error">Error using strcmp
+Too many input arguments.
 
-    <span class="keyword">if</span> allAssess
+Error in LTspiceCircuitParser/parseSpiceComponent (line 176)
+    if strcmp(component.Type,'V')
+
+Error in LTspiceCircuitParser/readSpiceNetlist (line 45)
+        newComponent = obj.parseSpiceComponent(componentsLines{i});
+
+Error in LTspiceCircuitParser/loadModel (line 33)
+    obj.readSpiceNetlist(fn)
+
+Error in SMPStopology/loadCircuit (line 113)
+            loadModel(obj.circuitParser, fn, swvec, force); 
+
+Error in SMPSim/initialize (line 152)
+                top.loadCircuit(circuitPath,[],1);
+
+Error in TestExampleTopologiesLTSpice (line 66)
+    [top, conv] = sim.initialize(circuitPath);   
+</pre><h2 id="8">Update progress bar and store result</h2><pre class="codeinput">    <span class="keyword">if</span> allAssess
         updateWaitBar(h, modelfile, selectedModel, niter, 0, 0);
     <span class="keyword">end</span>
-
-
 
     <span class="keyword">if</span>(allAssess &amp;&amp; niter &lt;= sim.maxItns)
         summaryStrings{selectedModel} = [<span class="string">'Model '</span> modelfile{selectedModel} <span class="string">' converged after '</span> num2str(niter+1) <span class="string">' iterations in '</span> num2str(solveTime) <span class="string">' seconds'</span>];
     <span class="keyword">elseif</span> allAssess
         summaryStrings{selectedModel} = [<span class="string">'Model '</span> modelfile{selectedModel} <span class="string">' DID NOT converge within '</span> num2str(niter+1) <span class="string">' in '</span> num2str(solveTime) <span class="string">' seconds'</span>];
     <span class="keyword">end</span>
-</pre><pre class="codeoutput">
-Lf =
-
-   1.0000e-06
-
-
-Coss =
-
-   1.0000e-09
-
-
-Cout =
-
-   1.0000e-03
-
-
-Rout =
-
-   100
-
-
-Vf =
-
-     1
-
-
-ts =
-
-   1.0e-06 *
-
-    1.0000    0.0500    1.0000    0.1000
-
-
-swvec =
-
-     1     0     0     0
-     0     0     0     0
-     0     1     0     0
-     0     0     0     0
-
-</pre><pre class="codeoutput error">Execution of script debug as a function is not supported:
-C:\Program Files\MATLAB\R2022b\toolbox\matlab\codetools\debug.m
-
-Error in TestExampleTopologiesLTSpice (line 65)
-    if(debug)
 </pre><pre class="codeinput"><span class="keyword">end</span>
 
 <span class="keyword">for</span> i = 1:length(summaryStrings)
@@ -218,9 +188,10 @@ clear all;
 
 summaryStrings = {};
 
-allAssess = 1;      % run all models sequentially
+debug = 1;
+allAssess = 0;      % run all models sequentially
 
-models = 1;         % if allAssess == 0, this model will be run
+models = 7;         % if allAssess == 0, this model will be run
 
 
 %% Add test netlist folder to the path
@@ -230,13 +201,22 @@ addpath(sdir);
 addpath([sdir '\LTspice NetLists'])
 
 %% Test Circuits
-modelfile{1} = 'BuckTest1.net'; 
-modelfile{2} = 'Buck_Vout_D.net'; 
-
+modelfile{1} = 'BuckNoDiodes.net'; 
+modelfile{2} = 'BuckTest1.net'; 
+modelfile{3} = 'Buck_Vout_D.net'; 
+modelfile{4} = '3levelbuck.net'; 
+modelfile{5} = '3levelbuckDep.net'; 
+modelfile{6} = 'DAB.net'; 
+modelfile{7} = 'DAB_secLeakage.net'; 
 
 %% Most recent full run results:
-% Model BuckTest1.net converged after 18 iterations in 0.53823 seconds
-% Model Buck_Vout_D.net converged after 11 iterations in 0.15198 seconds
+% Model BuckNoDiodes.net converged after 15 iterations in 0.34148 seconds
+% Model BuckTest1.net converged after 14 iterations in 0.23347 seconds
+% Model Buck_Vout_D.net converged after 11 iterations in 0.10838 seconds
+% Model 3levelbuck.net converged after 8 iterations in 0.10606 seconds
+% Model 3levelbuckDep.net converged after 8 iterations in 0.087727 seconds
+% Model DAB.net converged after 24 iterations in 0.56207 seconds
+% Model DAB_secLeakage.net converged after 18 iterations in 0.39417 seconds
 
 
 if allAssess
@@ -250,30 +230,22 @@ end
 
 for selectedModel = models
         
+    % If Debugging
+    %     sim.debug = 1;
+    %     sim.debug2 = 1;
 
+    %% Load model file
     circuitPath = [modelfile{selectedModel}];
 
     
     %% Analyze circuit
-    
     sim = SMPSim();
-    conv = sim.converter;
-    top = sim.topology;
-
-%     sim.debug = 1;
-%     sim.debug2 = 1;
-
-
-    
-    top.loadCircuit(circuitPath,[],1);
-    sim.u = us;
-    conv.setSwitchingPattern(swvec, ts)
+    [top, conv] = sim.initialize(circuitPath);   
 
     if(debug)
         sim.steadyState;
         sim.plotAllStates(4)
     end
-
     
     tic;
     niter = sim.findValidSteadyState;   
@@ -283,11 +255,11 @@ for selectedModel = models
         sim.plotAllStates(1);
     end
 
+    %% Update progress bar and store result
+
     if allAssess
         updateWaitBar(h, modelfile, selectedModel, niter, 0, 0);
     end
-
-
 
     if(allAssess && niter <= sim.maxItns)
         summaryStrings{selectedModel} = ['Model ' modelfile{selectedModel} ' converged after ' num2str(niter+1) ' iterations in ' num2str(solveTime) ' seconds'];

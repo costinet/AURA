@@ -12,7 +12,7 @@ classdef AURAdb < handle
     
     methods
         function obj = AURAdb()
-            addpath(genpath(strrep(mfilename('fullpath'), '\AURAdb', '')));
+            %addpath(genpath(strrep(mfilename('fullpath'), '\AURAdb', '')));
 
             obj.transistors = transistorDB();
             obj.inductors = 0;

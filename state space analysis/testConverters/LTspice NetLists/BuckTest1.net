@@ -1,7 +1,8 @@
 * C:\Users\dcostine\Dropbox\UTK\Research\AURA\Ideas\LTparseFormat\Buck.asc
 M1 N001 NC_01 N002 N002 BSC900N20NS3
 M2 N002 NC_02 0 0 NMOS ron = 1m Coss = {Coss}
-V1 N005 0 48
+V1 N006 0 48
+Vm_Ig N006 N005 0
 Rg N005 N001 1m
 L1 N002 N003 {Lf}
 C1 N003 0 Cout

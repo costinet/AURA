@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>TestExampleTopologies</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-07-31"><meta name="DC.source" content="TestExampleTopologies.m"><style type="text/css">
+      --><title>TestExampleTopologies</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-10-27"><meta name="DC.source" content="TestExampleTopologies.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">TestExampleTopologies loads and simulates steady-state for a variety of example converters</a></li><li><a href="#2">Add test circuits folder to the path</a></li><li><a href="#3">Test Circuits</a></li><li><a href="#4">Most recent full run results:</a></li><li><a href="#6">Analyze circuit</a></li></ul></div><h2 id="1">TestExampleTopologies loads and simulates steady-state for a variety of example converters</h2><pre class="language-matlab">The <span class="string">script</span> <span class="string">requires</span> <span class="string">properly-formatted</span> <span class="string">simulink</span> <span class="string">files</span> <span class="string">for</span> <span class="string">the</span> <span class="string">example</span>
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">TestExampleTopologies loads and simulates steady-state for a variety of example converters</a></li><li><a href="#2">Add test circuits folder to the path</a></li><li><a href="#3">Test Circuits</a></li><li><a href="#4">Most recent full run results:</a></li><li><a href="#6">Load model file</a></li><li><a href="#7">Analyze circuit</a></li><li><a href="#8">Update progress bar and store result</a></li></ul></div><h2 id="1">TestExampleTopologies loads and simulates steady-state for a variety of example converters</h2><pre class="language-matlab">The <span class="string">script</span> <span class="string">requires</span> <span class="string">properly-formatted</span> <span class="string">simulink</span> <span class="string">files</span> <span class="string">for</span> <span class="string">the</span> <span class="string">example</span>
 topologies <span class="string">that</span> <span class="string">include</span> <span class="string">all</span> <span class="string">initial</span> <span class="string">parameters</span> <span class="string">and</span> <span class="string">inputs.</span>  <span class="string">These</span> <span class="string">are</span>
 loaded <span class="string">into</span> <span class="string">the</span> <span class="string">base</span> <span class="string">workspace</span> <span class="string">so</span> <span class="string">that</span> <span class="string">PLECS</span> <span class="string">will</span> <span class="string">see</span> <span class="string">them</span> <span class="string">when</span> <span class="string">the</span>
 state <span class="string">space</span> <span class="string">matrices</span> <span class="string">are</span> <span class="string">parsed.</span>
@@ -78,11 +78,10 @@ varible <span class="string">will</span> <span class="string">be</span> <span cl
 
 summaryStrings = {};
 
+debug = 0;
+allAssess = 0;      <span class="comment">% run all models sequentially</span>
 
-allAssess = 1;      <span class="comment">% run all models sequentially</span>
-
-models = 4;         <span class="comment">% if allAssess == 0, this model will be run</span>
-</pre><pre class="codeoutput">Cleared PLECS module
+models = 13;         <span class="comment">% if allAssess == 0, this model will be run</span>
 </pre><h2 id="2">Add test circuits folder to the path</h2><pre class="codeinput">sdir = mfilename(<span class="string">'fullpath'</span>);
 sdir = sdir(1:find(sdir==<span class="string">'\'</span>,1,<span class="string">'last'</span>)-1);
 addpath(sdir);
@@ -99,11 +98,13 @@ modelfile{9} = <span class="string">'SCFibb1S_diodes'</span>; PLECsModel{9} = <s
 modelfile{10} = <span class="string">'TwoPhaseBuck'</span>; PLECsModel{10} = <span class="string">'TwoAsymmBuck'</span>;
 modelfile{11} = <span class="string">'SCBuckHybridBuck_COMPEL23'</span>; PLECsModel{11} = <span class="string">'BuckBuck'</span>;
 modelfile{12} = <span class="string">'DAB_R'</span>; PLECsModel{12} = <span class="string">'DAB_Rload'</span>;
+modelfile{13} = <span class="string">'WPT_varyingU'</span>; PLECsModel{13} = <span class="string">'WPT_SSP'</span>;
+
 
 <span class="comment">% modelfile{length(modelfile)+1} = 'DABFullNoDiodes'; PLECsModel{length(PLECsModel)+1} = 'DAB_8Cap';</span>
 <span class="comment">% modelfile{length(modelfile)+1} = 'SCFibb2S'; PLECsModel{length(PLECsModel)+1} = 'Q-FibonacciESRCoss';</span>
 <span class="comment">% modelfile{length(modelfile)+1} = 'Flyback'; PLECsModel{length(PLECsModel)+1} = 'PC_Flyback';</span>
-</pre><h2 id="4">Most recent full run results:</h2><p>Model Boost_Async converged after 43 iterations in 0.80257 seconds Model MRBuck converged after 11 iterations in 0.15147 seconds Model HDSC converged after 6 iterations in 0.22897 seconds Model DAB_oneCap converged after 23 iterations in 0.57024 seconds Model DAB_8Cap DID NOT converge within 102 in 2.8029 seconds Model HDSC_withDiodes converged after 2 iterations in 0.0070346 seconds Model BuckBuck converged after 9 iterations in 1.1233 seconds Model Q-FibonacciESRCossDiodes converged after 8 iterations in 0.79489 seconds Model Q-FibonacciESRCossDiodes converged after 2 iterations in 0.0038019 seconds Model TwoAsymmBuck converged after 24 iterations in 0.40205 seconds Model BuckBuck converged after 15 iterations in 7.3213 seconds Model DAB_Rload converged after 16 iterations in 0.4769 seconds</p><p>Model DAB_8Cap DID NOT converge within 102 iterations Model Q-FibonacciESRCoss converged after 8 iterations</p><pre class="codeinput"><span class="keyword">if</span> allAssess
+</pre><h2 id="4">Most recent full run results:</h2><p>Model Boost_Async converged after 43 iterations in 0.80257 seconds Model MRBuck converged after 11 iterations in 0.15147 seconds Model HDSC converged after 6 iterations in 0.22897 seconds Model DAB_oneCap converged after 23 iterations in 0.57024 seconds Model DAB_8Cap DID NOT converge within 102 in 2.8029 seconds Model HDSC_withDiodes converged after 2 iterations in 0.0070346 seconds Model BuckBuck converged after 9 iterations in 1.1233 seconds Model Q-FibonacciESRCossDiodes converged after 8 iterations in 0.79489 seconds Model Q-FibonacciESRCossDiodes converged after 2 iterations in 0.0038019 seconds Model TwoAsymmBuck converged after 24 iterations in 0.40205 seconds Model BuckBuck converged after 15 iterations in 7.3213 seconds Model DAB_Rload converged after 16 iterations in 0.4769 seconds Model WPT_SSP converged after 11 iterations in 0.66202 seconds</p><p>Model DAB_8Cap DID NOT converge within 102 iterations Model Q-FibonacciESRCoss converged after 8 iterations</p><pre class="codeinput"><span class="keyword">if</span> allAssess
     warning(<span class="string">'off'</span>,<span class="string">'all'</span>);
     h = waitbar(0,<span class="string">'Initializing'</span>);
     updateWaitBar(h, modelfile, 0, 0, 0, 0);
@@ -113,31 +114,13 @@ modelfile{12} = <span class="string">'DAB_R'</span>; PLECsModel{12} = <span clas
 <span class="keyword">end</span>
 
 <span class="keyword">for</span> selectedModel = models
-</pre><pre class="codeinput">    <span class="comment">% find_system(modelfile,'SearchDepth',1, 'IncludeCommented', 'on')</span>
-    open_system(modelfile{selectedModel},<span class="string">'loadonly'</span>);
-    circuitPath = [modelfile{selectedModel} <span class="string">'/'</span> PLECsModel{selectedModel}];
-    set_param(circuitPath,<span class="string">'Commented'</span>,<span class="string">'on'</span>);
-    clear <span class="string">sim</span>;
-    simout = sim(modelfile{selectedModel},eps);
-
-    <span class="keyword">for</span> i = 1:length(simout.properties)
-        assignin(<span class="string">'base'</span>,simout.properties{i},eval([<span class="string">'simout.'</span> simout.properties{i}]));
-    <span class="keyword">end</span>
-
-    set_param(circuitPath,<span class="string">'Commented'</span>,<span class="string">'off'</span>);
-</pre><pre class="codeoutput">Loaded PLECS module Version 4.6.5
-Warning: This version of PLECS is not officially supported for use with MATLAB Version 9.13. Please refer to the manual for a list of the supported platforms.
-</pre><h2 id="6">Analyze circuit</h2><pre class="codeinput">    sim = SMPSim();
-    conv = sim.converter;
-    top = sim.topology;
-
-<span class="comment">% If Debugging</span>
-<span class="comment">%     sim.debug = 1;</span>
-<span class="comment">%     sim.debug2 = 1;</span>
-
-    top.loadCircuit(circuitPath,swvec,1);
-    sim.u = us';
-    conv.setSwitchingPattern(swvec, ts)
+</pre><pre class="codeinput">    <span class="comment">% If Debugging</span>
+    <span class="comment">%     sim.debug = 1;</span>
+    <span class="comment">%     sim.debug2 = 1;</span>
+</pre><h2 id="6">Load model file</h2><pre class="codeinput">    circuitPath = [modelfile{selectedModel} <span class="string">'/'</span> PLECsModel{selectedModel}];
+    loadSimulinkOutputsToBase(modelfile{selectedModel},PLECsModel{selectedModel});
+</pre><h2 id="7">Analyze circuit</h2><pre class="codeinput">    sim = SMPSim();
+    sim.initialize(circuitPath, swvec, us, ts);
 
     <span class="keyword">if</span>(debug)
         sim.steadyState;
@@ -151,8 +134,7 @@ Warning: This version of PLECS is not officially supported for use with MATLAB V
     <span class="keyword">if</span>(debug)
         sim.plotAllStates(1);
     <span class="keyword">end</span>
-
-    <span class="keyword">if</span> allAssess
+</pre><h2 id="8">Update progress bar and store result</h2><pre class="codeinput">    <span class="keyword">if</span> allAssess
         updateWaitBar(h, modelfile, selectedModel, niter, 0, 0);
     <span class="keyword">end</span>
 
@@ -161,11 +143,6 @@ Warning: This version of PLECS is not officially supported for use with MATLAB V
     <span class="keyword">elseif</span> allAssess
         summaryStrings{selectedModel} = [<span class="string">'Model '</span> PLECsModel{selectedModel} <span class="string">' DID NOT converge within '</span> num2str(niter+1) <span class="string">' in '</span> num2str(solveTime) <span class="string">' seconds'</span>];
     <span class="keyword">end</span>
-</pre><pre class="codeoutput error">Execution of script debug as a function is not supported:
-C:\Program Files\MATLAB\R2022b\toolbox\matlab\codetools\debug.m
-
-Error in TestExampleTopologies (line 103)
-    if(debug)
 </pre><pre class="codeinput"><span class="keyword">end</span>
 
 <span class="keyword">for</span> i = 1:length(summaryStrings)
@@ -207,10 +184,10 @@ clear all;
 
 summaryStrings = {};
 
+debug = 0;
+allAssess = 0;      % run all models sequentially
 
-allAssess = 1;      % run all models sequentially
-
-models = 4;         % if allAssess == 0, this model will be run
+models = 13;         % if allAssess == 0, this model will be run
 
 %% Add test circuits folder to the path
 sdir = mfilename('fullpath');
@@ -231,6 +208,8 @@ modelfile{9} = 'SCFibb1S_diodes'; PLECsModel{9} = 'Q-FibonacciESRCossDiodes';
 modelfile{10} = 'TwoPhaseBuck'; PLECsModel{10} = 'TwoAsymmBuck';
 modelfile{11} = 'SCBuckHybridBuck_COMPEL23'; PLECsModel{11} = 'BuckBuck';
 modelfile{12} = 'DAB_R'; PLECsModel{12} = 'DAB_Rload';
+modelfile{13} = 'WPT_varyingU'; PLECsModel{13} = 'WPT_SSP';
+
 
 % modelfile{length(modelfile)+1} = 'DABFullNoDiodes'; PLECsModel{length(PLECsModel)+1} = 'DAB_8Cap';
 % modelfile{length(modelfile)+1} = 'SCFibb2S'; PLECsModel{length(PLECsModel)+1} = 'Q-FibonacciESRCoss';
@@ -249,6 +228,7 @@ modelfile{12} = 'DAB_R'; PLECsModel{12} = 'DAB_Rload';
 % Model TwoAsymmBuck converged after 24 iterations in 0.40205 seconds
 % Model BuckBuck converged after 15 iterations in 7.3213 seconds
 % Model DAB_Rload converged after 16 iterations in 0.4769 seconds
+% Model WPT_SSP converged after 11 iterations in 0.66202 seconds
 %
 % Model DAB_8Cap DID NOT converge within 102 iterations
 % Model Q-FibonacciESRCoss converged after 8 iterations
@@ -266,33 +246,18 @@ end
 
 for selectedModel = models
         
-    % find_system(modelfile,'SearchDepth',1, 'IncludeCommented', 'on')
-    open_system(modelfile{selectedModel},'loadonly');
+    % If Debugging
+    %     sim.debug = 1;
+    %     sim.debug2 = 1;
+
+    %% Load model file
     circuitPath = [modelfile{selectedModel} '/' PLECsModel{selectedModel}];
-    set_param(circuitPath,'Commented','on');
-    clear sim;
-    simout = sim(modelfile{selectedModel},eps);
-    
-    for i = 1:length(simout.properties)
-        assignin('base',simout.properties{i},eval(['simout.' simout.properties{i}]));
-    end
-    
-    set_param(circuitPath,'Commented','off');
+    loadSimulinkOutputsToBase(modelfile{selectedModel},PLECsModel{selectedModel});
     
     
     %% Analyze circuit
-    
     sim = SMPSim();
-    conv = sim.converter;
-    top = sim.topology;
-    
-% If Debugging
-%     sim.debug = 1;
-%     sim.debug2 = 1;
-    
-    top.loadCircuit(circuitPath,swvec,1);
-    sim.u = us';
-    conv.setSwitchingPattern(swvec, ts)
+    sim.initialize(circuitPath, swvec, us, ts);
 
     if(debug)
         sim.steadyState;
@@ -306,6 +271,8 @@ for selectedModel = models
     if(debug)
         sim.plotAllStates(1);
     end
+
+    %% Update progress bar and store result
 
     if allAssess
         updateWaitBar(h, modelfile, selectedModel, niter, 0, 0);

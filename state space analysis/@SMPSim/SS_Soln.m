@@ -47,14 +47,15 @@ function [ Xs] = SS_Soln(obj)
     Bs = obj.Bs;
     ts = obj.ts;
     
-    if size(obj.u,3) == 1
-        %% HEY THIS SHOULD BE MOVED ELSEWHERE
-        u = repmat(obj.u,1,1,(length(ts)));
-    elseif size(obj.u,3) == length(ts)
-        u = obj.u;
-    else
-        error('invalid input vector u specificed');
-    end
+%     if size(obj.u,3) == 1
+%         %% HEY THIS SHOULD BE MOVED ELSEWHERE
+%         u = repmat(obj.u,1,1,(length(ts)));
+%     elseif size(obj.u,3) == length(ts)
+%         u = obj.u;
+%     else
+%         error('invalid input vector u specificed');
+%     end
+    u = obj.fullu;
 
 %     if(nargin == 1 || obj.tryOpt == 0)
 %         tryOpt = 0;
