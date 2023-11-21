@@ -1,13 +1,13 @@
 <deployment-project plugin="plugin.toolbox" plugin-version="1.0">
-  <configuration build-checksum="3699353020" file="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox\AURA.prj" location="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox" name="AURA" target="target.toolbox" target-name="Package Toolbox">
+  <configuration build-checksum="3409702089" file="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox\AURA.prj" location="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox" name="AURA" target="target.toolbox" target-name="Package Toolbox">
     <param.appname>Switched Mode Power Supply Toolbox</param.appname>
     <param.authnamewatermark>Daniel Costinett</param.authnamewatermark>
     <param.email>daniel.costinett@utk.edu</param.email>
     <param.company>University of Tennessee Knoxville</param.company>
     <param.summary>Steady state solutions to switched mode power supplies</param.summary>
-    <param.description />
-    <param.screenshot />
-    <param.version>0.1.7</param.version>
+    <param.description>The Switched Mode Power Supply Toolbox provides capabilities for the steady-state and small-signal modeling of switched mode power supplies.  These capabilities facilitate design optimization in power electronics for a variety of applications.</param.description>
+    <param.screenshot>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc\images\LB2.png</param.screenshot>
+    <param.version>0.2.0</param.version>
     <param.output>${PROJECT_ROOT}\Switched Mode Power Supply Toolbox.mltbx</param.output>
     <param.products.name />
     <param.products.id />
@@ -51,30 +51,7 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
 **/webSettings.mat
 **/webserver</param.exclude.filters>
     <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
-    <param.examples>&lt;?xml version="1.0" encoding="utf-8"?&gt;
-&lt;examples&gt;
-   &lt;exampleCategory name="testConverters"&gt;
-      &lt;example name="TestExampleTopologies" type="html"&gt;
-         &lt;file type="source"&gt;/testConverters/html/TestExampleTopologies.html&lt;/file&gt;
-         &lt;file type="main"&gt;/testConverters/TestExampleTopologies.m&lt;/file&gt;
-         &lt;file type="thumbnail"/&gt;
-      &lt;/example&gt;
-      &lt;example name="TestExampleTopologiesLTSpice" type="html"&gt;
-         &lt;file type="source"&gt;/testConverters/html/TestExampleTopologiesLTSpice.html&lt;/file&gt;
-         &lt;file type="main"&gt;/testConverters/TestExampleTopologiesLTSpice.m&lt;/file&gt;
-         &lt;file type="thumbnail"/&gt;
-      &lt;/example&gt;
-      &lt;example name="codeExamples" type="html"&gt;
-         &lt;file type="source"&gt;/testConverters/html/codeExamples.html&lt;/file&gt;
-         &lt;file type="main"&gt;/testConverters/codeExamples.m&lt;/file&gt;
-         &lt;file type="thumbnail"&gt;/testConverters/html/codeExamples.png&lt;/file&gt;
-         &lt;file type="image"&gt;/testConverters/html/codeExamples_01.png&lt;/file&gt;
-         &lt;file type="image"&gt;/testConverters/html/codeExamples_02.png&lt;/file&gt;
-         &lt;file type="image"&gt;/testConverters/html/codeExamples_03.png&lt;/file&gt;
-         &lt;file type="image"&gt;/testConverters/html/codeExamples_04.png&lt;/file&gt;
-      &lt;/example&gt;
-   &lt;/exampleCategory&gt;
-&lt;/examples&gt;</param.examples>
+    <param.examples />
     <param.demosxml />
     <param.apps />
     <param.registered.apps>
@@ -82,7 +59,15 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
     </param.registered.apps>
     <param.docs>C:\Users\dcostine\Dropbox\UTK\Research\AURA\html\info.xml</param.docs>
     <param.getting.started.guide>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc\GettingStarted.mlx</param.getting.started.guide>
-    <param.matlabpath.excludes />
+    <param.matlabpath.excludes>
+      <item>/testConverters/slprj</item>
+      <item>/testConverters/slprj/sim</item>
+      <item>/testConverters/slprj/sim/varcache</item>
+      <item>/testConverters/slprj/sim/varcache/VcflyControlBlockandPlant2021a</item>
+      <item>/testConverters/slprj/sim/varcache/VcflyControlBlockandPlant2021a/tmwinternal</item>
+      <item>/testConverters/slprj/sim/varcache/Voutcontrol3Levelboost21a</item>
+      <item>/testConverters/slprj/sim/varcache/Voutcontrol3Levelboost21a/tmwinternal</item>
+    </param.matlabpath.excludes>
     <param.javaclasspath.excludes />
     <param.exported.on.package>true</param.exported.on.package>
     <param.required.addons>
@@ -104,17 +89,15 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
     <param.additional.sw.mac.url />
     <param.additional.sw.linux.url />
     <unset>
-      <param.description />
-      <param.screenshot />
       <param.output />
       <param.products.name />
       <param.products.id />
       <param.products.version />
       <param.platforms />
       <param.exclude.pcodedmfiles />
+      <param.examples />
       <param.demosxml />
       <param.apps />
-      <param.matlabpath.excludes />
       <param.javaclasspath.excludes />
       <param.matlab.project.id />
       <param.matlab.project.name />
@@ -144,6 +127,7 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\DesktopToolset.xml</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\html</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\LICENSE.txt</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\parsers</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters</file>
       <file>${PROJECT_ROOT}</file>

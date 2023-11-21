@@ -336,15 +336,27 @@ classdef SMPSim < handle
         end
 
         %% Constructors
-        function obj = SMPSim(conv)
-            if nargin == 1
-                obj.converter = conv;
-            elseif nargin == 0
-                conv = SMPSconverter();
-                top = SMPStopology();
-                conv.topology = top;
-                obj.converter = conv;
+        function obj = SMPSim(circuitPath, swvec, us, ts)
+            
+            conv = SMPSconverter();
+            top = SMPStopology();
+            conv.topology = top;
+            obj.converter = conv;
+
+            if nargin == 0
+                return
+            elseif nargin == 1
+                swvec = [];
+                us = [];
+                ts = [];
+            elseif nargin == 2
+                us = [];
+                ts = [];
+            elseif nargin == 3
+                ts = [];
             end
+            
+            initialize(obj, circuitPath, swvec, us, ts);
         end
         
         %% Getters

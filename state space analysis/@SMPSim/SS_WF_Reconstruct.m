@@ -1,9 +1,13 @@
 function [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
 % Steady-state waveform reconstruction for periodic switched systems
 %
-% [ xs, t, ys ] = SS_WF_Reconstruct( Xss, As, Bs, ts, u, Cs, Ds ) produces
+% [ xs, t, ys ] = SS_WF_Reconstruct(obj) produces
 % time domain system states xs, outputs ys, and time vector t for the
-% switched system described by 
+% switched system described by the SMPSim object obj
+%
+% [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps) the additional tsteps
+% argument allows the user to specify the number of linearl-spaced points 
+% in the timing vector, t.
 
 
 Xss = obj.Xs;
