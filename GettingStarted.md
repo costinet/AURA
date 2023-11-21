@@ -17,7 +17,7 @@ The following software is **not** required, but is used if present to enhance to
 
 # Structure and Use
 
-![image_0.png](AURA/doc/images/gettingStartedImages/ToolboxStructure.png)
+![image_0.png](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/images/gettingStartedImages/ToolboxStructure.png)
 
 ### Switched Mode Power Supply Simulation
 
@@ -340,7 +340,7 @@ Ilrms = sqrt(1/t(end)*trapz(t,xs(ILLoc,:)))
 
 The file loaded in this example has the circuit structure shown below.  This can be interpreted as a wireless power transfer converter with coupled coils given by M2.  Here, the rectifier is implemented with switching devices, but no inverter is included.  Instead, the intention is to implement a squarewave voltage source Vg.  
 
-![image_1.png](AURA/doc/images/gettingStartedImages/WPTvaryingU.PNG)
+![image_1.png](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/images/gettingStartedImages/WPTvaryingU.PNG)
 
 Because the value of the input voltage will show up in the input vector u of the state space description, its value can be changed between discrete intervals.  
 
@@ -454,4 +454,3 @@ Gd0 = 85.3333
 w0 = 1.0607e+05
 ```
 
-![figure_0.png](GettingStarted_images/figure_0.png)
