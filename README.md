@@ -8,7 +8,8 @@ The Switched Mode Power Supply Toolbox provides capabilities for the steady-stat
 The toolbox is tested with MATLAB R2022b and after.  Known issues will occur with MATLAB versions prior to R2020b.  
 
 ## Installation
-See latest toolbox releases from the [Releases](https://github.com/costinet/AURA/tree/master/Releases) folder of the repository.  Drag and drop the mlbtx file into your matlab workspace to install.  To view the installed files, uninstall, or manage the installation of the toolbox, go to MATLAB Home->Add-Ons->Manage Add-Ons and find "Switched Mode Power Supply Toolbox" in your list of installed toolboxes.
+The latest releases is always available as a [packaged toolbox](https://github.com/costinet/AURA/blob/master/Releases/Switched%20Mode%20Power%20Supply%20Toolbox.mltbx) from the repository.
+additional releases are available from the [Releases](https://github.com/costinet/AURA/releases) folder of the repository.  Drag and drop the mlbtx file into your matlab workspace to install.  To view the installed files, uninstall, or manage the installation of the toolbox, go to MATLAB Home->Add-Ons->Manage Add-Ons and find "Switched Mode Power Supply Toolbox" in your list of installed toolboxes.
 
 ## Documentation
 For an introduction to the tooplbox, see the [GettingStarted.mlx](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/GettingStarted.mlx)
