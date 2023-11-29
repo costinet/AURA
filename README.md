@@ -74,3 +74,39 @@ swvec is a matrix of binary switch states.  swvec(i,j) is the on/off status of s
 Outputs at current steady-state solution
 ### YsEnd 
 Outputs at the end of each subinterval for current steady-state solution
+
+
+## SMPSconverter()
+## Methods
+### setSwitchingPattern()
+
+## Properties
+
+
+## SMPStopology()
+## Methods
+### loadCircuit()
+
+## Properties
+### circuitParser
+### constraints
+### labels
+### sourcefn
+
+
+## AURAdb()
+## Methods
+### sync()
+
+## Properties
+### transistors
+### inductors
+Not yet implemented
+### capacitors
+Not yet implemented
+### cores
+Not yet implemented
+### wires
+Not yet implemented
+### topologies
+Not yet implemented

@@ -25,7 +25,7 @@ classdef netConnect < handle
                 end
             end
             
-            obj.serverURL = serverURL;%'http://powerlib.ddns.net/powerlib';
+            obj.serverURL = serverURL;
             obj.apiKey = apiKey;
             try
                 obj.handshakeServer();
@@ -108,10 +108,6 @@ classdef netConnect < handle
                     end
                 end
             end
-
-            fid = fopen('C:\Users\dcostine\Desktop\new 10.html', 'w');
-            fwrite(fid, result);
-            fclose(fid);
         end
         
         function [graphs, params] = pullData(obj)

@@ -11,8 +11,8 @@ clear all;
 
 summaryStrings = {};
 
-debug = 1;
-allAssess = 0;      % run all models sequentially
+debug = 0;
+allAssess = 1;      % run all models sequentially
 
 models = 7;         % if allAssess == 0, this model will be run
 

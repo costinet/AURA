@@ -173,17 +173,19 @@ function component = parseSpiceComponent(obj, str)
             warning(['Unrecognized netlist line ' str '.  This line will be ignored.'] );
     end
 
-    if strcmp(component.Type,'V')
-        if component.paramVals == 0
-            % convert 0V sources to current measurement
-            component.Type = 'Vm';
-            component.Name(1) = 'I';
-        end
-    elseif strcmp(component.Type,'I')
-        if component.paramVals == 0
-            % convert 0A sources to voltage measurement
-            component.Type = 'Im';
-            component.Name(1) = 'V';
+    for i = 1:length(component) %For loop in case embedded params de-embeeded
+        if strcmp(component(i).Type,'V')
+            if component(i).paramVals == 0
+                % convert 0V sources to current measurement
+                component(i).Type = 'Vm';
+                component(i).Name(1) = 'I';
+            end
+        elseif strcmp(component(i).Type,'I')
+            if component(i).paramVals == 0
+                % convert 0A sources to voltage measurement
+                component(i).Type = 'Im';
+                component(i).Name(1) = 'V';
+            end
         end
     end
 

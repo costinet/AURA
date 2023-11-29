@@ -69,6 +69,20 @@ classdef SMPStopology < handle
             if isempty(fn) && ~isempty(obj.circuitParser) && ~isempty(obj.sourcefn)
                 fn = obj.sourcefn;
             end
+
+            if isempty(fn)
+                error('loadCircuit requires a file defining the circuit structure');
+            end
+
+            % Throw error if file doesn't exist
+            if ~exist(fn,'file')
+                % if simulink, check if referencing subcircuit in model
+                subfn = split(fn,'/');
+                subfn = [subfn{1:end-1}];
+                if ~exist(subfn,'file')
+                    error(['Supplied filename ' fn ' does not exist, is not on the path, or is not readable ']);
+                end
+            end
             
             if isempty(obj.circuitParser)
                 try %Test if the file is a valid PLECS circuit

@@ -63,7 +63,7 @@ classdef transistorDB < componentDB
         function sync(obj)
             % Upload all transistors
             host = netConnect();
-            host.postData(obj.transistors);
+            response = host.postData(obj.transistors)
             
             [graphs, params] = host.pullData;
             
