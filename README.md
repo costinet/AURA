@@ -27,50 +27,50 @@ For an introduction to the toolbox, see the [GettingStarted.mlx](https://github.
 
 ![image_0.png](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/images/gettingStartedImages/ToolboxStructure.png)
 
-##SMPSim()
-##Methods
+## SMPSim()
+## Methods
 
-###steadyState()
-###findValidSteadyState
-###ssAvgs()
-###plotAllStates
-###plotAllOutputs()
-###SS_WF_Reconstruct
-###findSSTF()
-###sigLoc
+### steadyState()
+### findValidSteadyState
+### ssAvgs()
+### plotAllStates
+### plotAllOutputs()
+### SS_WF_Reconstruct
+### findSSTF()
+### sigLoc
 
-##Properties
-###Xs 
+## Properties
+### Xs 
 Current steady-state solution e.g. as solved by SteadyState
-###converter 
+### converter 
 link to a SMPSconverter class object specifying the converter
-###As 
+### As 
 3-dimensional matrix of values for Ai, where As(:,:,i) is the 2D square matrix Ai during the ith interval.
-###Bs 
+### Bs 
 3-dimensional matrix of values for Bi, where Bs(:,:,i) is the 2D matrix/vector Bi during the ith interval.
-###Cs 
+### Cs 
 3-dimensional matrix of values for Ci, where Cs(:,:,i) is the 2D square matrix Ci during the ith interval.  
-###Ds 
+### Ds 
 3-dimensional matrix of values for Di, where Ds(:,:,i) is the 2D vector Di during the ith interval.
-###Is 
+### Is 
 3-dimensional matrix of values for Ii, where Is(:,:,i) is the 2D vector Ii during the ith interval.
-###topology 
+### topology 
 link to a SMPStopology class object specifying the converter topology
-###stateNames 
+### stateNames 
 Cell array with names of states ordered to correspond to their order in Xs
-###outputNames 
+### outputNames 
 Cell array with names of outputs ordered to correspond to their order in Y
-###switchNames 
+### switchNames 
 Cell array with names of switches ordered to correspond to their order in the SMPSconverter swvec
-###inputNames  
+### inputNames  
 Cell array with names of inputs ordered to correspond to their order in u
-###ts 
+### ts 
 ts is a vector of the time durations of each inverval
-###u 
+### u 
 u is the (assumed constant within each interval) independent input vector
-###swvec 
+### swvec 
 swvec is a matrix of binary switch states.  swvec(i,j) is the on/off status of switch i during time interval j
-###Ys 
+### Ys 
 Outputs at current steady-state solution
-###YsEnd 
+### YsEnd 
 Outputs at the end of each subinterval for current steady-state solution
