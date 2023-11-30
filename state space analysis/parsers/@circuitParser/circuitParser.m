@@ -1,6 +1,7 @@
 classdef circuitParser < handle
-    %UNTITLED4 Summary of this class goes here
-    %   Detailed explanation goes here
+    %CIRCUITPARSER abstract class defining requirements of a circuitParser
+    %   
+    %   See also @LTspiceCircuitParser, @PLECScircuitParser
     
     properties (Abstract, SetAccess = private)
         sourcefn

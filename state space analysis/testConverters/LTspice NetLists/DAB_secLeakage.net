@@ -16,14 +16,10 @@ Co N001 0 50µ
 Ro N001 0 10
 Vout N001 0 16 Rser=1m
 RLl N005 N004 10m
-.model NMOS NMOS
-.model PMOS PMOS
 K1 Lp Ls 1
 .param Coss = .1n
 .param ts = [100 5 10 2 100 5 10 2]/234*1e-6
 .param swvec = [1 0 0 1 1 0 0 1; 0 0 0 0 1 0 0 1; 0 1 1 0 1 0 0 1; 0 1 1 0 0 0 0 0; 0 1 1 0 0 1 1 0; 0 0 0 0 0 1 1 0; 1 0 0 1 0 1 1 0; 1 0 0 1 0 0 0 0]
 *.param swvec = [[1 0 0 1 1 0 0 1; 0 0 0 0 1 0 0 1; 0 1 1 0 1 0 0 1; 0 1 1 0 0 0 0 0; 0 1 1 0 0 1 1 0; 0 0 0 0 0 1 1 0; 1 0 0 1 0 1 1 0; 1 0 0 1 0 0 0 0], zeros(8,8)]
-.tran .1
-.backanno
 .end
 

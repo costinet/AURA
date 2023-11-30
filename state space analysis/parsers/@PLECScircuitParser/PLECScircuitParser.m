@@ -1,6 +1,12 @@
 classdef PLECScircuitParser < circuitParser
-    %UNTITLED5 Summary of this class goes here
-    %   Detailed explanation goes here
+    %PLECScircuitParser Interface to PLECS to extract state space
+    %descriptions from simulink-embedded PLECS circuit schematics
+    %   
+    %   PLECScircuitParser implements a @circuitParser class that uses the
+    %   built-in command line interface with PLECS (commercial tool) to
+    %   parse state space descriptions.
+    %
+    %   See also @LTspiceCircuitParser, @SMPSim, @circuitParser
     
    properties (SetAccess = private)
         sourcefn

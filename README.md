@@ -19,7 +19,9 @@ The latest build of the [packaged toolbox](https://github.com/costinet/AURA/blob
 Additional releases are available from the [Releases](https://github.com/costinet/AURA/releases) folder of the repository.  Drag and drop the mlbtx file into your matlab workspace to install.  To view the installed files, uninstall, or manage the installation of the toolbox, go to MATLAB Home->Add-Ons->Manage Add-Ons and find "Switched Mode Power Supply Toolbox" in your list of installed toolboxes.
 
 ## Documentation
-For an introduction to the toolbox, see the [GettingStarted.mlx](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/GettingStarted.mlx) or the web-based version of the smae file [GettingStarted.md](https://github.com/costinet/AURA/blob/master/GettingStarted.md)
+For an introduction to the toolbox, see the [GettingStarted.mlx](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/GettingStarted.mlx) or the web-based version of the same file [GettingStarted.md](https://github.com/costinet/AURA/blob/master/GettingStarted.md)
+
+For an example use case, see [SeriesCapBuck.mlx](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/examples/SeriesCapBuck.mlx) or the web-based version of the same file [SeriesCapBuck.md](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/examples/SeriesCapBuck.md)
 
 [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=costinet/AURA&project=state%20space%20analysis/Toolbox/AURA.prj&file=state%20space%20analysis/doc/GettingStarted.mlx)
 
@@ -31,13 +33,23 @@ For an introduction to the toolbox, see the [GettingStarted.mlx](https://github.
 ## Methods
 
 ### steadyState()
-### findValidSteadyState
+Finds periodic steady-state of the switched circuit without consideration of state-dependent switching actions (e.g. diodes)
+### findValidSteadyState()
+Iterates steady-state solution to find a valid solution considering state-dependent switching actions
 ### ssAvgs()
-### plotAllStates
+Returns the average values of all states and outputs over one period of the current steady-state solution
+### plotAllStates()
+Plots all states of the circuit over one period of the current steady-state solution
 ### plotAllOutputs()
-### SS_WF_Reconstruct
+Plots all outputs of the circuit over one period of the current steady-state solution
+### SS_WF_Reconstruct()
+Generates full waveforms with fine timestep for all states and outputs
+### sigLoc()
+Returns index into output, input, state, or switch vector for a specified signal name
 ### findSSTF()
-### sigLoc
+(*experimental*) Finds small-signal transfer function from a specified time interval to all states at the end of the period
+
+
 
 ## Properties
 ### Xs 
@@ -79,6 +91,7 @@ Outputs at the end of each subinterval for current steady-state solution
 ## SMPSconverter()
 ## Methods
 ### setSwitchingPattern()
+Sets the modulation pattern, consisting of both switching state of each switching element and the time duration of each interval
 
 ## Properties
 

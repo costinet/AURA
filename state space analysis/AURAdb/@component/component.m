@@ -115,6 +115,11 @@ classdef component < handle
                             error('Invalid type specified');
                         end
                     end
+                elseif length(varargin{2}) == 2
+                    typVal = varargin{2}(1);
+                    maxVal = varargin{2}(2);
+                    minVal = [];
+                    assert(maxVal > typVal, 'values must be specified such that min < typ < max');
                 elseif length(varargin{2}) == 3
                     typVal = varargin{2}(1);
                     maxVal = varargin{2}(2);
@@ -350,6 +355,7 @@ classdef component < handle
                                    [varargout{1}] = builtin('subsref',obj.parameters(loc),s(2:end));
                                end
                            else
+
                                blankParam = componentTableData(obj, name, [], [], [], [], '');
                                if length(s) == 1
                                     varargout{1} = blankParam;

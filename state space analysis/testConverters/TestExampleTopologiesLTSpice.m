@@ -14,7 +14,7 @@ summaryStrings = {};
 debug = 0;
 allAssess = 1;      % run all models sequentially
 
-models = 7;         % if allAssess == 0, this model will be run
+models = 8;         % if allAssess == 0, this model will be run
 
 
 %% Add test netlist folder to the path
@@ -31,6 +31,7 @@ modelfile{4} = '3levelbuck.net';
 modelfile{5} = '3levelbuckDep.net'; 
 modelfile{6} = 'DAB.net'; 
 modelfile{7} = 'DAB_secLeakage.net'; 
+modelfile{8} = 'SeriesCapBuck.net'; 
 
 %% Most recent full run results:
 % Model BuckNoDiodes.net converged after 15 iterations in 0.34148 seconds
@@ -40,7 +41,7 @@ modelfile{7} = 'DAB_secLeakage.net';
 % Model 3levelbuckDep.net converged after 8 iterations in 0.087727 seconds
 % Model DAB.net converged after 24 iterations in 0.56207 seconds
 % Model DAB_secLeakage.net converged after 18 iterations in 0.39417 seconds
-
+% Model SeriesCapBuck.net converged after 11 iterations in 0.53228 seconds
 
 if allAssess
     warning('off','all');
@@ -53,9 +54,6 @@ end
 
 for selectedModel = models
         
-    % If Debugging
-    %     sim.debug = 1;
-    %     sim.debug2 = 1;
 
     %% Load model file
     circuitPath = [modelfile{selectedModel}];
@@ -63,7 +61,11 @@ for selectedModel = models
     
     %% Analyze circuit
     sim = SMPSim();
-    [top, conv] = sim.initialize(circuitPath);   
+    [top, conv] = sim.initialize(circuitPath); 
+
+    % If Debugging
+%         sim.debug = 1;
+%         sim.debug2 = 1;
 
     if(debug)
         sim.steadyState;

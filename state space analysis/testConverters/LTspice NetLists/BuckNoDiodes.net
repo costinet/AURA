@@ -1,4 +1,4 @@
-* C:\Users\dcostine\Dropbox\UTK\Research\AURA\Ideas\LTparseFormat\Buck.asc
+* Buck.asc
 M1 N001 NC_01 N002 N002 BSC900N20NS3
 M2 N002 NC_02 0 0 NMOS ron = 1m Coss = {Coss}
 V1 N005 0 48
@@ -6,9 +6,7 @@ Rg N005 N001 1m
 L1 N002 N003 {Lf}
 C1 N003 0 Cout
 R1 N003 0 Rout
-.model NMOS NMOS
-.model PMOS PMOS
-.lib F:\Users\dcostine\Documents\LTspiceXVII\lib\cmp\standard.mos
+.lib LTspiceXVII\lib\cmp\standard.mos
 .param Lf = 1u
 .param Coss = 1n
 .param Cout = 1e-3
@@ -16,5 +14,4 @@ R1 N003 0 Rout
 .param Vf = 1
 .param ts = [1u 50n 1u 50n]
 .param swvec = [1 0 ; 0 0; 0 1; 0 0 ]
-.backanno
 .end

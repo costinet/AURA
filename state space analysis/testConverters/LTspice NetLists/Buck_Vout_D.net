@@ -1,4 +1,4 @@
-* G:\My Drive\Graduate Reserach\LTSpice\Buck\Buck_Vout_D.asc
+* Buck_Vout_D.asc
 V1 N001 N007 12
 M1 N001 NC_01 N002 N002 NMOS ron = 0.8m Coss = {Coss}
 M2 N002 NC_02 0 0 NMOS ron = 0.8m Coss = {Coss}
@@ -11,16 +11,10 @@ R1 N003 N002 0.0064
 D1 N002 N001 D Vf={Vf} Ron={1m} Cd=0.67n
 D2 0 N002 D Vf={Vf} Ron={1m} Cd=0.67n
 R3 N007 0 1m
-.model D D
-.lib C:\Users\jb\Documents\LTspiceXVII\lib\cmp\standard.dio
-.model NMOS NMOS
-.model PMOS PMOS
-.lib C:\Users\jb\Documents\LTspiceXVII\lib\cmp\standard.mos
+.lib LTspiceXVII\lib\cmp\standard.mos
 .param Lf = 1u
 .param Coss = 0.67n
 .param Vf = 1
 .param ts = [1u 1n 1u 1n]
 .param swvec = [1 0 0 0; 0 0 0 0; 0 1 0 0; 0 0 0 0]
-.tran 1
-.backanno
 .end

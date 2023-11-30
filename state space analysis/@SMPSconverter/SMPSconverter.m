@@ -1,6 +1,12 @@
 classdef SMPSconverter < handle
-    %UNTITLED2 Summary of this class goes here
-    %   Detailed explanation goes here
+    %Converter object for use with AURA
+    %   SMPSconverter is contained within the SMPSim class.  SMPSconverter
+    %   contains methods and handles information related to the modulation
+    %   pattern of the converter.  In most cases, SMPSconverter is
+    %   automatically constructed when SMPSim() is constructed.
+    %
+    %   See also SMPSim, SMPStopology, AURAdb
+    
     
     properties
         topology

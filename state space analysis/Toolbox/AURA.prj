@@ -7,7 +7,7 @@
     <param.summary>Steady state solutions to switched mode power supplies</param.summary>
     <param.description>The Switched Mode Power Supply Toolbox provides capabilities for the steady-state and small-signal modeling of switched mode power supplies.  These capabilities facilitate design optimization in power electronics for a variety of applications.</param.description>
     <param.screenshot>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc\images\LB2.png</param.screenshot>
-    <param.version>0.2.0</param.version>
+    <param.version>0.2.2</param.version>
     <param.output>${PROJECT_ROOT}\Switched Mode Power Supply Toolbox.mltbx</param.output>
     <param.products.name />
     <param.products.id />
@@ -51,7 +51,16 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
 **/webSettings.mat
 **/webserver</param.exclude.filters>
     <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
-    <param.examples />
+    <param.examples>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;examples&gt;
+   &lt;exampleCategory name="SeriesCapBuck"&gt;
+      &lt;example name="SweepSeriesCapBuck" type="html"&gt;
+         &lt;file type="source"&gt;/doc/examples/SeriesCapBuck/html/SweepSeriesCapBuck.html&lt;/file&gt;
+         &lt;file type="main"&gt;/doc/examples/SeriesCapBuck/SweepSeriesCapBuck.mlx&lt;/file&gt;
+         &lt;file type="thumbnail"/&gt;
+      &lt;/example&gt;
+   &lt;/exampleCategory&gt;
+&lt;/examples&gt;</param.examples>
     <param.demosxml />
     <param.apps />
     <param.registered.apps>
@@ -75,12 +84,12 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
     </param.required.addons>
     <param.matlab.project.id />
     <param.matlab.project.name />
-    <param.release.start />
-    <param.release.end />
+    <param.release.start>R2020b</param.release.start>
+    <param.release.end>latest</param.release.end>
     <param.release.current.only>false</param.release.current.only>
     <param.compatiblity.windows>true</param.compatiblity.windows>
-    <param.compatiblity.macos>true</param.compatiblity.macos>
-    <param.compatiblity.linux>true</param.compatiblity.linux>
+    <param.compatiblity.macos>false</param.compatiblity.macos>
+    <param.compatiblity.linux>false</param.compatiblity.linux>
     <param.compatiblity.matlabonline>true</param.compatiblity.matlabonline>
     <param.installation.map />
     <param.additional.sw.names />
@@ -95,18 +104,13 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
       <param.products.version />
       <param.platforms />
       <param.exclude.pcodedmfiles />
-      <param.examples />
       <param.demosxml />
       <param.apps />
       <param.javaclasspath.excludes />
       <param.matlab.project.id />
       <param.matlab.project.name />
-      <param.release.start />
-      <param.release.end />
       <param.release.current.only />
       <param.compatiblity.windows />
-      <param.compatiblity.macos />
-      <param.compatiblity.linux />
       <param.compatiblity.matlabonline />
       <param.installation.map />
       <param.additional.sw.names />

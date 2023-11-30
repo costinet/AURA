@@ -1,6 +1,11 @@
 classdef SMPStopology < handle
-    %UNTITLED3 Summary of this class goes here
-    %   Detailed explanation goes here
+    %Topology object for use with AURA
+    %   SMPStopology is contained within the SMPSConverter class.  SMPStopology
+    %   contains methods and handles information related to topological 
+    %   description of the circuit.  In most cases, SMPStopology is
+    %   automatically constructed when SMPSim() is constructed.
+    %
+    %   See also SMPSim, SMPSconverter, AURAdb, @circuitParser
     
     properties
         As

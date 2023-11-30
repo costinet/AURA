@@ -61,7 +61,18 @@ function component = parseSpiceComponent(obj, str)
                 paramVal = spiceNumFormat(obj,paramVal);
                 paramVal = strrep(paramVal,'{','');
                 paramVal = strrep(paramVal,'}','');
-                paramVal = evalin('base', paramVal);
+                try
+                    paramVal = evalin('base', paramVal);
+                catch e
+                     if (strcmp(e.identifier,'MATLAB:UndefinedFunction'))
+                      msg = ['Paramter ' paramName ' of component ' component.Name ' is not defined. ' ...
+                          'The expression ' paramVal ' is not defined in the netlist of in the base workspace.'];
+                        causeException = MException('MATLAB:LTSpiceParser:UndefinedParameter',msg);
+                        e = addCause(e,causeException);
+                    end
+                    rethrow(e)
+                    
+                end
                 
                 if strcmp(paramName, 'Rds')
                     vals(1) = paramVal;

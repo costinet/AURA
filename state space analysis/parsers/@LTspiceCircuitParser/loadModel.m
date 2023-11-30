@@ -49,7 +49,12 @@ if isempty(obj.Anum) || force
 end
 
 if isempty(swseq)
-    swseq = evalin('base', 'swvec');
+    try
+        swseq = evalin('base', 'swvec');
+    catch 
+        % None defined, just use all FETS off
+        swseq = zeros(1,length(obj.Switch_Resistors));
+    end       
 end
 
 if(strcmp(obj.method, 'old'))

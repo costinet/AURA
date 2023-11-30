@@ -3,6 +3,14 @@ classdef SMPSim < handle
     %   SMPSim works in conjunction with SMPSTopology and SMPSConverter to
     %   simulate steady-state performance of Switched Mode Power Supplies.
     %
+    %   Constructors:
+    %   obj = SMPSim() returns an empty class object
+    %   obj = SMPSim(circuitPath) circuitPath is a character vector path to an 
+    %       LTspice or PLECS (simulink-embedded) file containing a description of a converter.  
+    %   obj = SMPSim(circuitPath, swvec, us, ts) will load the specified
+    %   modulation pattern and set the input vector.  Inputs can be
+    %   ommitted by replacing them with []
+    %
     %   See also SMPSconverter, SMPStopology, AURAdb
    
     properties
@@ -337,7 +345,11 @@ classdef SMPSim < handle
 
         %% Constructors
         function obj = SMPSim(circuitPath, swvec, us, ts)
-            
+        %construct a new object of class SMPSim
+        % 
+        %   obj = SMPSim(circuitPath, swvec, us, ts) all inputs are
+        %   optional. 
+
             conv = SMPSconverter();
             top = SMPStopology();
             conv.topology = top;

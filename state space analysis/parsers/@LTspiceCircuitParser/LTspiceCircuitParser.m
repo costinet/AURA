@@ -1,8 +1,20 @@
 classdef LTspiceCircuitParser < handle
-    %LTspiceCircuitParser Holds all of the variables need to parse a netlist
-    %   Currently unit checks on initialize function
+    %LTspiceCircuitParser circuitParser handling spice netlist files
+    %   LTspiceCircuitParser interfaces spice netlists (LTspice or
+    %   otherwise) to parse state space descriptions of circuit topologies.
+    %
+    %   Currently only V, M, D, L, C, R, I elements are supported.  K
+    %   statements (inductor coupling) have limited support.  Parametric
+    %   definitions of variables which are available in the MATLAB base
+    %   workspace are supported.
     %
     %   Contributed by J. Baxter
+    %
+    %   Methods replicated from L. Chua and P-M Lin, *Computer Aided
+    %   Analysis of Electronic Circuits: Algorithms and Computational
+    %   Techniques* and referenced works
+    %
+    %   See also @PLECScircuitParser, @SMPSim, @circuitParser
 
     properties 
         %Installation directory of LTspice.  Replace this with your own.

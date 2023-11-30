@@ -34,7 +34,8 @@ classdef transistor < component
     methods
         function obj = transistor(partNumber, type, material, varargin)
             %transistor() Construct an instance of the transistor class
-            %   Detailed explanation goes here
+            %   
+            %   obj = transistor(partNumber, type, material)
             
             if nargin == 0
                 return
@@ -86,7 +87,67 @@ classdef transistor < component
             end
             obj.upDated = 1;
         end
+
+        function Ceq = eqCap(obj, type, Vds)
+            %Linear-equivalent capacitance to voltage-dependent Coss
+            %
+            %   [Ceq] = eqCap(obj, type, Vds) finds a scalar
+            %   linear-equivalent capacitance Ceq for the nonlinear C-V
+            %   relationship contained in a transistors graphs data.
+            %       -type is 'Q' for charge equivalent or 'E' for energy
+            %       equivalent
+            %       -Vds is a maximum voltage considered.  The output is
+            %       always an equivalent when charged from 0 to Vds.
+
+            graphs = [obj.graphs(:)];
+            CplotLoc = find(strcmp({graphs.yLabel}, 'Capacitance'),1,'last');
+            if isempty(CplotLoc)
+                CplotLoc = find(startsWith({graphs.yLabel}, 'Coss'),1,'last');
+            end
+            
+
+            if ~isempty(CplotLoc) 
+                if length(graphs(CplotLoc).dataLabels) >1
+                    curveLoc = strcmp(graphs(CplotLoc).dataLabels, 'Coss');
+                else 
+                    curveLoc = 1;
+                end
+                if ~isempty(curveLoc)
+
+            
+                    CossV = graphs(CplotLoc).plotData{curveLoc};
+        
+                    if nargin == 2
+                        Vds = max(CossV(:,1));
+                    end
+        
+                    Vrange = CossV(:,1) < Vds;
+                    if sum(Vrange) < 10 || min(Vrange) > 0 || max(Vrange) < Vds
+                        %When operating with sparsely sampeld data over the
+                        %Vds range
+                        newV = linspace(0,Vds,max(10,sum(Vrange)));
+                        CossV = [newV', interp1(CossV(:,1),CossV(:,2),newV,'linear','extrap')'];
+                        Vrange = ones(size(newV))==1;
+                    end
+
+                    if strcmp(type,'Q')
+                        Ceq = 1/Vds*trapz(CossV(Vrange,1), CossV(Vrange,2));
+                    elseif strcmp(type,'E')
+                        Ceq = 2/Vds^2*trapz(CossV(Vrange,1), CossV(Vrange,1).*CossV(Vrange,2));
+                    end
+                    return
+                end
+            end
+            warning('Unable to locate Coss-vs-Vds plots in transistor graphs.')
+%             Ceq = obj.Coss.approx();
+            s.type = '.';
+            s.subs = 'Coss';
+            tableData = subsref(obj,s);
+            Ceq = tableData.approx();
+        end
     end
+
+
 
     methods (Hidden)
         function clearUpdated(obj)
