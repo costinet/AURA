@@ -21,7 +21,7 @@ Additional releases are available from the [Releases](https://github.com/costine
 ## Documentation
 For an introduction to the toolbox, see the [GettingStarted.mlx](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/GettingStarted.mlx) or the web-based version of the same file [GettingStarted.md](https://github.com/costinet/AURA/blob/master/GettingStarted.md)
 
-For an example use case, see [SeriesCapBuck.mlx](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/examples/SeriesCapBuck.mlx) or the web-based version of the same file [SeriesCapBuck.md](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/examples/SeriesCapBuck.md)
+For an example use case, see [SeriesCapBuck.mlx](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/examples/SeriesCapBuck/SweepSeriesCapBuck.mlx) or the web-based version of the same file [SeriesCapBuck.md](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/examples/SeriesCapBuck/SweepSeriesCapBuck.md)
 
 [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=costinet/AURA&project=state%20space%20analysis/Toolbox/AURA.prj&file=state%20space%20analysis/doc/GettingStarted.mlx)
 
