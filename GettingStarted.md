@@ -33,9 +33,9 @@ The simulation, with or without the component repository is constructed to allow
 
 # Attribution
 
-If the framework provided in this toolbox is used in preparation of a published work in a manner warranting a citation, the following is the suggested refernece format for the toolbox itself
+If the framework provided in this toolbox is used in preparation of a published work in a manner warranting a citation, the following is the suggested reference format for the toolbox itself
 
-D. Costinett, Switched Mode Power Supply Toolbox,  https://github.com/costinet/AURA
+J. A. Baxter and D. Costinett, Switched Mode Power Supply Toolbox, v0.2, https://github.com/costinet/AURA
 
 Select aspects of the framework are detailed in the following publicaitons
 

@@ -128,6 +128,7 @@ ans = 12x7
 For a more detailed look at the state waveforms, the `plotAllStates` function expands the discrete sample points into finely-sampled continuous time waveforms and plots them for visualization.
 
 ```matlab:Code
+figure
 sim.plotAllStates()
 ```
 

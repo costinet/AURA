@@ -505,13 +505,13 @@ classdef SMPSconverter < handle
             
             assert(all(size(swind) == size(ts)), 'Dimensions of swind and ts must be the same');
             assert(all(ts>=0, 'all'), 'times in vector ts must all be positive');
-            assert(all(swind >= 0 & swind <= size(obj.topology.As,3), 'all'), 'swind must be a vector of values indexing topology state matrices');
-            
-            obj.limitTimeIntervals();
+            assert(all(swind >= 0 & swind <= size(obj.topology.As,3), 'all'), 'swind must be a vector of values indexing topology state matrices');          
 
             obj.controlledts = sum(ts,1);
             obj.fullts = ts;
             obj.fullswind = swind;
+
+            obj.limitTimeIntervals();
         end
         
 
