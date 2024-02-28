@@ -7,7 +7,7 @@
     <param.summary>Steady state solutions to switched mode power supplies</param.summary>
     <param.description>The Switched Mode Power Supply Toolbox provides capabilities for the steady-state and small-signal modeling of switched mode power supplies.  These capabilities facilitate design optimization in power electronics for a variety of applications.</param.description>
     <param.screenshot>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc\images\LB2.png</param.screenshot>
-    <param.version>0.2.3</param.version>
+    <param.version>0.2.4</param.version>
     <param.output>${PROJECT_ROOT}\Switched Mode Power Supply Toolbox.mltbx</param.output>
     <param.products.name />
     <param.products.id />
@@ -127,6 +127,7 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\@SMPSim</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\@SMPStopology</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\AURAdb</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\Contents.m</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\demos.xml</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\DesktopToolset.xml</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc</file>
@@ -135,6 +136,7 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\parsers</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters</file>
       <file>${PROJECT_ROOT}</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\updateToolbox.m</file>
     </fileset.rootfiles>
     <fileset.depfun.included />
     <fileset.depfun.excluded>

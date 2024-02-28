@@ -20,16 +20,18 @@ function [ avgXs, avgYs, Ints ] = ssAvgs(obj, Xss)
     ts = obj.ts;
     u = obj.fullu;
 
+    n = size(As,3);
+    ns = size(Bs,1);
+    nc = size(Cs,1);
+
     if nargin<2
         Xss = obj.Xs;
-        if isempty(obj.Xs)
+        if isempty(obj.Xs) || size(Xss,2) ~= n 
             Xss = obj.steadyState;
         end
     end
 
-    n = size(As,3);
-    ns = size(Bs,1);
-    nc = size(Cs,1);
+
     
     %% Augmented State matrix
     %           ns      1       ns      nc

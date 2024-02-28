@@ -26,6 +26,7 @@ classdef SMPSim < handle
         Is % 3-dimensional matrix of values for Ii, where Is(:,:,i) is the 2D vector Ii during the ith interval.
       
         topology % link to a SMPStopology class object specifying the converter topology
+        parser % link to a circuitParser class interfancing the topology description
         stateNames % Cell array with names of states ordered to correspond to their order in Xs
         outputNames % Cell array with names of outputs ordered to correspond to their order in Y
         switchNames % Cell array with names of switches ordered to correspond to their order in the SMPSconverter swvec
@@ -419,6 +420,10 @@ classdef SMPSim < handle
         
         function res = get.topology(obj)
             res = obj.converter.topology;
+        end
+
+        function res = get.parser(obj)
+            res = obj.converter.topology.circuitParser;
         end
         
         

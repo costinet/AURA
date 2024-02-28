@@ -18,13 +18,15 @@ classdef LTspiceCircuitParser < handle
 
     properties 
         %Installation directory of LTspice.  Replace this with your own.
-        LTSpiceFolder = 'C:\Users\dcostine\Documents\LTspiceXVII'  
+        LTSpiceFolder = ['C:\Users\' getenv('USERNAME') '\Documents\LTspiceXVII'];
+        LTSpiceExe = ['C:\Program Files\LTC\LTspiceXVII\' 'XVIIx64.exe'];
         method = 'new'
     end
     
     properties (SetAccess = private)
         sourcefn
         sourcefdate
+        ascfn
         
         topology 
 		origComponents
@@ -48,11 +50,7 @@ classdef LTspiceCircuitParser < handle
         eigA % The eiganvalues of Anum
         
         
-        % Htemp of ABCD (used when unable to solve rref(sym))
-        HtempAB
-        HtempCD
-        dependsAB
-        savedCD
+       
 
         % Find Switch and Diode Position
         Diodes
@@ -63,14 +61,9 @@ classdef LTspiceCircuitParser < handle
         % Names of State, Input, and Output Variables
         StateNames % All state variables [OutputNames;DependentNames]
         OutputNamesCD % Names of Measurements
-        InputNames % Such as Vg
-        DependentNames % Dependent states in circuit
         OutputNames % Independent states in circuit
-        SwitchNames % Names of Switching elements (FETs and Diodes)
-        StateNumbers % Number of either voltage or current measurement in Y output vector that corresponds to the state variable index
-        StateNumbers_Opposite % Number of either voltage and current source but is the opposite source as StateNumbers
         ConstantNames % Constant Inputs to the system such as Vg or the forward voltage of a diode
-        
+
         %%% Need to change OutputNamesCD to OutputNames
         %%% Need to change OutputNames to MeasurementNames
         %%% For clarity %%%
@@ -78,36 +71,8 @@ classdef LTspiceCircuitParser < handle
         % Netlist files
         NL % Numerical Representation of net list
         NLnets % Cell Representation of net list
-        NLwhole % Net list file as it is received
 
-        SortedTree % Elements in Tree
-        SortedCoTree % Elements in CoTree
-
-        % K value for inductors
-        K
-
-        % List the chars of the swithces that are on and off for the
-        % state number (column of cell array)
-        ON_States
-        OFF_States
-
-
-        % Lists whether a FET or diode is on or off during a state
-        ONorOFF
-
-        % List the refernce postion of state variables to and there
-        % row location in ABCD matricies relative to their postion in
-        % the netlist
-        
-        OrderedNamesnum
-        
-        BD_state % Lists the off diode states index in NL
-
-        BD_OFF_state % Lists the off diode states index in NL
-        
-        
-        % The Codex
-        Codex
+       
         Component_Values = {}
         
         index
@@ -124,23 +89,15 @@ classdef LTspiceCircuitParser < handle
         SortedCoTree_cutloop
 %         NewNL
 %         NewNLnets
-        
         % Htemp for AB and CD matrix for large converters
-
         % Store indexing values hear as well
-
         % Diode placement from ABCD matrix
-
         % Identify topology and converter from name of netlist file
-
         % Create void fuction that when called takes Htemp and creates
         % numerical ABCD matrix
-
         % Have a public class and function to input measured states in cell
         % format maybe place in converter class???
-
         % etc...????
-
 
         % Measurement Voltage and Current Nodes
         Meas_Voltage = {}
@@ -155,6 +112,47 @@ classdef LTspiceCircuitParser < handle
 
      properties (Hidden)
         defaultRoff = 10e6;
+
+        %% Depricated (?) properties
+%         % Htemp of ABCD (used when unable to solve rref(sym))
+%         HtempAB
+%         HtempCD
+%         dependsAB
+%         savedCD
+% 
+%         InputNames % Such as Vg
+%         DependentNames % Dependent states in circuit
+%         SwitchNames % Names of Switching elements (FETs and Diodes)
+%         StateNumbers % Number of either voltage or current measurement in Y output vector that corresponds to the state variable index
+%         StateNumbers_Opposite % Number of either voltage and current source but is the opposite source as StateNumbers
+% 
+%          NLwhole % Net list file as it is received
+%         SortedTree % Elements in Tree
+%         SortedCoTree % Elements in CoTree
+% 
+%         % K value for inductors
+%         K
+% 
+%         % List the chars of the swithces that are on and off for the
+%         % state number (column of cell array)
+%         ON_States
+%         OFF_States
+% 
+% 
+%         % Lists whether a FET or diode is on or off during a state
+        ONorOFF
+% 
+%         % List the refernce postion of state variables to and there
+%         % row location in ABCD matricies relative to their postion in
+%         % the netlist
+%         OrderedNamesnum
+%         
+%         BD_state % Lists the off diode states index in NL
+%         BD_OFF_state % Lists the off diode states index in NL
+%         
+%         % The Codex
+%         Codex
+        
      end
 
    properties (Access = private)
@@ -275,6 +273,10 @@ classdef LTspiceCircuitParser < handle
                 obj.topology = topology;
              else
                  warning('Incorrect number of inputs supplied')
+             end
+
+             if ~exist(obj.LTSpiceFolder,'dir')
+                 warning('Value of @LTSpiceCircuitParse.LTSpiceFolder is not the installation directory of LTSpice.  Libarary use may be limited')
              end
          end
 

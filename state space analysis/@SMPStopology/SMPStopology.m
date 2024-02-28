@@ -118,6 +118,8 @@ classdef SMPStopology < handle
                         [~,~,EXT] = fileparts(fn);
                         if strcmp(EXT,'.net') && exist(fn,'file')
 						    obj.circuitParser = LTspiceCircuitParser(obj);
+                        elseif strcmp(EXT,'.asc') && exist(fn,'file')
+                            obj.circuitParser = LTspiceCircuitParser(obj);
                         else
                             error('Circuit cannot be parsed as either a PLECS or LTSpice file')
                         end

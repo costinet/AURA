@@ -41,6 +41,7 @@ function readSpiceNetlist(obj,filename)
     sources = [];
     switches = [];
     coupling = [];
+    meters = [];
     for i = 1:length(componentsLines)
         newComponent = obj.parseSpiceComponent(componentsLines{i});
         for j = 1:length(newComponent) % second loop in case parsing dembedded parameters
@@ -50,19 +51,51 @@ function readSpiceNetlist(obj,filename)
                 switches = [switches, newComponent(j)];
             elseif strcmp(newComponent(j).Type, 'K') 
                 coupling = [coupling, newComponent(j)];
+            elseif strcmp(newComponent(j).Type, 'Vm') || strcmp(newComponent(j).Type, 'Im')
+                meters = [meters, newComponent(j)];
             else
                 passives = [passives, newComponent(j)];
             end
         end
     end
 
-    components = [passives, sources, switches];
+    %% 
+    components = [passives, sources, switches, meters];
 
+
+
+    %% Check for zero-valued passives
+    shorts = (strcmp({passives.Type},'L') & ([passives.paramVals] == 0) ) | ...
+        (strcmp({passives.Type},'R') & ([passives.paramVals] == 0) );
+    opens = (strcmp({passives.Type},'C') & ([passives.paramVals] == 0) ) | ...
+        (strcmp({passives.Type},'L') & isinf([passives.paramVals]) ) | ...
+        (strcmp({passives.Type},'R') & isinf([passives.paramVals]) );
+
+    passives(opens) = [];
+
+    sameNodes = {passives(shorts).Nodes}';
+
+    passives(shorts) = [];
+
+    components = [passives, sources, switches, meters];
+
+    for i = 1:length(sameNodes)
+        for j = 1:length(components)
+            if any(strcmp(components(j).Nodes, sameNodes{i}{1}))
+                components(j).Nodes{strcmp(components(j).Nodes, sameNodes{i}{1})} = ...
+                    sameNodes{i}{2};
+            end
+        end
+    end
 
     obj.origComponents = components;
     obj.netListDirectives = coupling;
 
     obj.topology.switchLabels = {switches.Name};
+
+    
+
+
 
 
 end

@@ -27,8 +27,23 @@ function loadModel(obj, fn, swseq, force)
 
 % obj.initialize(fn,{},{});
 
+[fp,fn2,EXT] = fileparts(fn);
+if strcmp(EXT,'.asc')
+    try
+        obj.ascfn = fn;
+        system(['"' obj.LTSpiceExe '" -netlist "' fn '"' ]);
+        fn = [fp fn2 '.net'];
+    catch e
+        errID = 'LOADMODEL:BadIndex';
+        msg = 'Unable to call LTSpice to generate netlist from asc file.  Check @LTSpiceCircuitParser.LTSpiceExe or supply a .net file directly.';
+        addlException = MException(errID,msg);
+        e = addCause(e,addlException);
+        throw(e)
+    end
+end
 
-if isempty(obj.Anum) || force
+
+if isempty(obj.Anum) || force || ~strcmp(obj.sourcefn,fn)
     obj.sourcefn = fn;
     obj.readSpiceNetlist(fn)
 
