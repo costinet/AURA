@@ -27,15 +27,29 @@ function loadModel(obj, fn, swseq, force)
 
 % obj.initialize(fn,{},{});
 
+if nargin == 1
+    fn = obj.sourcefn;
+    force = 0;
+    swseq = [];
+end
+
 [fp,fn2,EXT] = fileparts(fn);
 if strcmp(EXT,'.asc')
     try
         obj.ascfn = fn;
-        system(['"' obj.LTSpiceExe '" -netlist "' fn '"' ]);
         fn = [fp fn2 '.net'];
+        if ~exist(fn,'file') %if no netlist already in existence
+            status = system(['"' obj.LTSpiceExe '" -netlist "' fileparts(which(obj.ascfn)) '\' obj.ascfn '"' ]);
+            if status == -1
+                msg = 'Unable to execute LTSpice from the command line. This could be a file path or permissions issue';
+                error(msg);
+            end
+        end
     catch e
         errID = 'LOADMODEL:BadIndex';
-        msg = 'Unable to call LTSpice to generate netlist from asc file.  Check @LTSpiceCircuitParser.LTSpiceExe or supply a .net file directly.';
+        msg = ['Unable to call LTSpice to generate netlist from asc file. '...
+            ' Check <a href="matlab:matlab.desktop.editor.openAndGoToLine(''',...
+            which('LTspiceCircuitParser'),''',22)">LTspiceCircuitParser</a> parameter LTSpiceExe or supply a .net file directly.'];
         addlException = MException(errID,msg);
         e = addCause(e,addlException);
         throw(e)
@@ -44,11 +58,15 @@ end
 
 
 if isempty(obj.Anum) || force || ~strcmp(obj.sourcefn,fn)
-    obj.sourcefn = fn;
-    obj.readSpiceNetlist(fn)
+    if ~strcmp(obj.sourcefn,fn) || isempty(obj.origComponents) || force
+        obj.sourcefn = fn;
+        obj.readSpiceNetlist(fn)       
+    end
 
     if(strcmp(obj.method, 'new'))
-        obj.linearizeCircuitModel2()
+        if ~strcmp(obj.sourcefn,fn) || isempty(obj.components) || force
+            obj.linearizeCircuitModel2()
+        end
     elseif(strcmp(obj.method, 'old'))
         obj.linearizeCircuitModel()
     
@@ -62,6 +80,7 @@ if isempty(obj.Anum) || force || ~strcmp(obj.sourcefn,fn)
         obj.Component_Values = obj.Element_Properties;
     end
 end
+
 
 if isempty(swseq)
     try
@@ -101,6 +120,10 @@ if ~force
             startLoc = size(obj.Anum,3);
             obj.topology.swseq  = [obj.topology.swseq; newSwSeq];
         end
+    elseif nargin <= 2
+        obj.topology.swseq = swseq;
+        newSwSeq = swseq;
+        startLoc = 0;
     end
 else
     obj.topology.swseq = swseq;

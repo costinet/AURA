@@ -10,10 +10,20 @@ function [params] = parseSpiceParamList(obj, str, params)
         return
     end
     
-    [sI, eI] = regexp(str,'\s[a-zA-Z_]+[\s]*[=][\s]*[\w.{}()-*+/]+');
+%     [sI, eI] = regexp(str,'\s[a-zA-Z_]+[\s]*[=][\s]*[\w.{}()-*+/]+');
+    [sI, eI] = regexp(str,'(?<=[\W])[a-zA-Z][\w]*[\s]*[=][\s]*[\w.{}()\-*+/]+');
     if ~isempty(sI)
         for j=length(sI):-1:1
-            params = [params; strtrim(str(sI(j):eI(j)))];
+            paramstr = strtrim(str(sI(j):eI(j)));
+            % The final element in a library will catch the closing
+            % parentheses, but we don't want to ignore all parentheses, so
+            % check 
+            if j==length(sI) && endsWith(paramstr,')')
+                if sum(paramstr == ')') > sum(paramstr == '(')
+                    paramstr = paramstr(1:end-1);
+                end
+            end
+            params = [params; paramstr];
         end
     end
 end

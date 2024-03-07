@@ -259,23 +259,37 @@ classdef SMPSim < handle
         %   plotAllOutputs(obj,fn) will use the figure number fn
         %
         %   plotAllOutputs(obj, fn, oSelect) will only plot outputs numbers
-        %   specified by the vector oSelect
+        %   specified by the vector oSelect.  If oSelect is omitted or left
+        %   blank, all original circuit outputs will be included.  If
+        %   oSelect is -1 or any vector, the outputs resulting from
+        %   state-dependent switch and other measurements will be included.
         %
         %   plotAllOutputs(obj, fn, oSelect, subplots) uses the boolean
         %   variable subplots to determine whether to plot each outputs on
         %   its own subplot or plot them all on a single plot.
         %
-        %   See Also SMPSim, SMPSim.SS_WF_Reconstruct,  SMPSim.plotWaveforms           
+        %   See Also SMPSim, SMPSim.SS_WF_Reconstruct,  SMPSim.plotWaveforms   
+
+            no = size(obj.Cs,1);
+            [Iname, Vname] = obj.parser.getSwitchMeasSourceNames(obj.switchNames);
+            [~,origOuts] = setdiff(obj.outputNames, [Vname, Iname]');
             if(nargin <= 1)
                 f = figure;
                 fn = f.Number;
                 subplots = 1;
-                oSelect = 1:size(obj.Xs,1); 
+                oSelect = origOuts; 
             elseif(nargin <= 2)
                 subplots = 1;
-                oSelect = 1:size(obj.Cs,1); 
+                oSelect = origOuts; 
             elseif(nargin <=3)
                 subplots = 1;
+                if numel(oSelect) == 1 || isempty(oSelect)
+                    if isempty(oSelect) ||  oSelect == 0
+                        oSelect = origOuts;
+                    elseif oSelect == -1
+                        oSelect = 1:no;
+                    end
+                end
             end
             plotWaveforms(obj, 2, fn, oSelect, subplots);
         end

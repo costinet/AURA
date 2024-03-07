@@ -18,6 +18,8 @@ function readSpiceNetlist(obj,filename)
     ind4 = @(x) {x(6:end)};
     ind6 = @(x) {x(8:end)};
 
+    obj.undefinedExpressions = {};
+
     libs = [cellfun(ind4, lines(startsWith(lines,'.lib')))];
     params = [cellfun(ind6, lines(startsWith(lines,'.param')))];
     models = [cellfun(ind6, lines(startsWith(lines,'.model')))];

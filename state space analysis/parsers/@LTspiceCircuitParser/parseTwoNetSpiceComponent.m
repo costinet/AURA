@@ -1,4 +1,4 @@
-function [paramVal, additionalParams] = parseTwoNetSpiceComponent(obj,str)
+function [paramVal, additionalParams, paramExpr] = parseTwoNetSpiceComponent(obj,str,component)
 %UNTITLED6 Summary of this function goes here
 %   Detailed explanation goes here
     [~, eI] = regexp(str, '[\w]*[\s]*[\w]*[\s]*[\w]*[\s]*'); %name, then 2 nets
@@ -15,6 +15,14 @@ function [paramVal, additionalParams] = parseTwoNetSpiceComponent(obj,str)
         end
     end
 
-    paramVal = evalin('base', paramVal);
+    paramExpr = paramVal;
+    try
+        paramVal = evalin('base', paramVal);
+    catch
+        obj.undefinedExpressions = [obj.undefinedExpressions; ...
+            {component.Name, '', paramExpr }];
+        paramVal = 0;
+    end
+
 
 end

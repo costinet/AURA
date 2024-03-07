@@ -50,6 +50,7 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
 
         %% Replace sources
         N(Vi) = 1;
+        Nexpr{Vi} = '1';
         LV = coupledInductors(Vi).paramVals(strcmp(coupledInductors(Vi).paramNames,'L'));
         isource = {};
         isource.Name = ['F_' coupledInductors(Vi).Name];
@@ -57,11 +58,14 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
         isource.Nodes = coupledInductors(Vi).Nodes;
         isource.paramNames = {};
         isource.paramVals = {};
+        isource.paramExpressions = {};
 
 
         for i = setdiff(1:length(coupledInductors),Vi)
             Li = coupledInductors(i).paramVals(strcmp(coupledInductors(i).paramNames,'L'));
             N(i) = sqrt(Li/LV);
+            Nexpr{i} = ['sqrt(' coupledInductors(i).paramExpressions(strcmp(coupledInductors(i).paramNames,'L')) ...
+                '/' coupledInductors(Vi).paramExpressions(strcmp(coupledInductors(Vi).paramNames,'L')) ')'];
             
             Vsource = {};
             Vsource.Name = ['E_' coupledInductors(i).Name];
@@ -69,11 +73,13 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
             Vsource.Nodes = [coupledInductors(i).Nodes];
             Vsource.paramNames = {'Inam', 'gain'};   %This is not valid LTspice, but it is easier to make it a two-node component
             Vsource.paramVals = {isource.Name, N(i)};
+            Vsource.paramExpressions = {isource.Name, Nexpr{i} };
 
             isource.paramNames = [isource.paramNames, ...
                 {['Vnam' num2str(i)], ['gain' num2str(i)]}];
             isource.paramVals = [isource.paramVals, ...
                 {Vsource.Name, N(i)}];
+            isource.paramExpressions = {isource.paramExpressions; {isource.Name, Nexpr{i}} };
 
             components(coupledIndLocs(i)) = Vsource;    %Replace all secondaries
 

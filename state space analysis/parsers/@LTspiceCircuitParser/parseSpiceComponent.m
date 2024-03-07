@@ -14,6 +14,7 @@ function component = parseSpiceComponent(obj, str)
     component = struct;
     component.Name = name;
     component.Type = type;
+    component.paramExpressions = {};
 
 
     switch type 
@@ -41,6 +42,7 @@ function component = parseSpiceComponent(obj, str)
                 end
                 % default values if none other specified
                 vals = [.1 obj.defaultRoff 1e-9];
+                expr = {.1, obj.defaultRoff, 1e-9 };
             end
 
             %params
@@ -62,21 +64,27 @@ function component = parseSpiceComponent(obj, str)
                 paramVal = strrep(paramVal,'{','');
                 paramVal = strrep(paramVal,'}','');
                 try
+                    paramExpr = paramVal;
                     paramVal = evalin('base', paramVal);
                 catch e
-                     if (strcmp(e.identifier,'MATLAB:UndefinedFunction'))
-                      msg = ['Paramter ' paramName ' of component ' component.Name ' is not defined. ' ...
-                          'The expression ' paramVal ' is not defined in the netlist of in the base workspace.'];
-                        causeException = MException('MATLAB:LTSpiceParser:UndefinedParameter',msg);
-                        e = addCause(e,causeException);
-                    end
-                    rethrow(e)
+%                      if (strcmp(e.identifier,'MATLAB:UndefinedFunction'))
+%                       msg = ['Paramter ' paramName ' of component ' component.Name ' is not defined. ' ...
+%                           'The expression ' paramVal ' is not defined in the netlist of in the base workspace.'];
+%                         causeException = MException('MATLAB:LTSpiceParser:UndefinedParameter',msg);
+%                         e = addCause(e,causeException);
+%                     end
+%                     rethrow(e)
+                    obj.undefinedExpressions = [obj.undefinedExpressions; ...
+                        {component.Name, paramName, paramExpr }];
+                    paramVal = 0;
                     
                 end
                 
                 if strcmp(paramName, 'Rds')
+                    expr{1} = paramExpr;
                     vals(1) = paramVal;
                 elseif strcmp(paramName, 'Coss') || strcmp(paramName, 'Cds')
+                    expr{3} = paramExpr;
                     vals(3) = paramVal;
                 end
 
@@ -84,44 +92,46 @@ function component = parseSpiceComponent(obj, str)
             
             component.paramNames = {'Rds', 'Roff', 'Coss'};
             component.paramVals = vals;
+            component.paramExpressions = expr;
         case 'V'
             [nodes,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
             component.Nodes = nodes([1 2]);
 
             component.paramNames = {type};
-            [component.paramVals, embeddedParams] = parseTwoNetSpiceComponent(obj,str);
+            [component.paramVals, embeddedParams, component.paramExpressions] = parseTwoNetSpiceComponent(obj,str,component);
             component = deEmbedSpiceParams(obj,component,embeddedParams);
         case 'I'
             [nodes,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
             component.Nodes = nodes([1 2]);
 
             component.paramNames = {type};
-            [component.paramVals, embeddedParams] = parseTwoNetSpiceComponent(obj,str);
+            [component.paramVals, embeddedParams, component.paramExpressions] = parseTwoNetSpiceComponent(obj,str,component);
             component = deEmbedSpiceParams(obj,component,embeddedParams);
         case 'L'
             [nodes,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
             component.Nodes = nodes([1 2]);
 
             component.paramNames = {type};
-            [component.paramVals, embeddedParams] = parseTwoNetSpiceComponent(obj,str);
+            [component.paramVals, embeddedParams, component.paramExpressions] = parseTwoNetSpiceComponent(obj,str,component);
             component = deEmbedSpiceParams(obj,component,embeddedParams);
         case 'C'
             [nodes,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
             component.Nodes = nodes([1 2]);
 
             component.paramNames = {type};
-            [component.paramVals, embeddedParams] = parseTwoNetSpiceComponent(obj,str);
+            [component.paramVals, embeddedParams, component.paramExpressions] = parseTwoNetSpiceComponent(obj,str,component);
             component = deEmbedSpiceParams(obj,component,embeddedParams);
         case 'R'
             [nodes,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
             component.Nodes = nodes([1 2]);
 
             component.paramNames = {type};
-            [component.paramVals, embeddedParams] = parseTwoNetSpiceComponent(obj,str);
+            [component.paramVals, embeddedParams, component.paramExpressions] = parseTwoNetSpiceComponent(obj,str,component);
             component = deEmbedSpiceParams(obj,component,embeddedParams);
         case 'D'
              %Need ron, roff, Cd, Vf
             vals = [0 obj.defaultRoff 0 0];
+            expr = {0, obj.defaultRoff, 0, 0};
 
             [nodes,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
             component.Nodes = nodes([1 2]); 
@@ -160,25 +170,31 @@ function component = parseSpiceComponent(obj, str)
                 paramVal = spiceNumFormat(obj,paramVal);
                 paramVal = strrep(paramVal,'{','');
                 paramVal = strrep(paramVal,'}','');
+                paramExpr = paramVal;
                 paramVal = evalin('base', paramVal);
                 
                 if strcmpi(paramName, 'Vf')
                     vals(4) = paramVal;
+                    expr{4} = paramExpr;
                 elseif ~strcmpi(paramName, 'Roff') && strcmpi(paramName(1), 'R')
                     vals(1) = paramVal;
+                    expr{41} = paramExpr;
                 elseif strcmpi(paramName(1), 'C')
                     vals(3) = paramVal;
+                    expr{3} = paramExpr;
                 end
 
             end
             
             component.paramNames = {'Ron', 'Roff', 'Cd', 'Vf'};
             component.paramVals = vals;
+            component.paramExpressions = expr;
         case 'K'
             [inductors,~,~] = regexp(str, '(?<=[\s])[\w]*(?=[\s]*)', 'match', 'tokens');
 
             component.paramNames = inductors(1:end-1);
             component.paramVals = inductors{end}; %actual K value
+            component.paramExpressions = {};
             component.Nodes = {};
         otherwise
             warning(['Unrecognized netlist line ' str '.  This line will be ignored.'] );

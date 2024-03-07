@@ -89,7 +89,7 @@ classdef transistor < component
         end
 
         function Ceq = eqCap(obj, type, Vds)
-            %Linear-equivalent capacitance to voltage-dependent Coss
+            %EQCAP Linear-equivalent capacitance to voltage-dependent Coss
             %
             %   [Ceq] = eqCap(obj, type, Vds) finds a scalar
             %   linear-equivalent capacitance Ceq for the nonlinear C-V
@@ -145,8 +145,74 @@ classdef transistor < component
             tableData = subsref(obj,s);
             Ceq = tableData.approx();
         end
-    end
 
+        function [Qg, Qgs1, Qgd, Qgs2, Qsw] = gateCharge(obj, Vgs, Vth)
+            %GATECHARGE gate charge values for transistor
+            %
+            %   [Qg, Qgs1, Qgd, Qgs2, Qsw] = gateCharge(obj, Vgs, Vth)
+            %   finds total gate charge at voltage Vgs for the transistor
+            %   object obj.  
+            %   Additional outputs are partial charges found from the plot
+            %   of Vgs-vs-Qg, when available.
+
+            graphs = [obj.graphs(:)];
+            QplotLoc = find(startsWith({graphs.title}, 'Vgs-vs-Qg'),1,'last');
+            if isempty(QplotLoc)
+                QplotLoc = find(startsWith({graphs.yLabel}, 'Vgs') & ...
+                    startsWith({graphs.xLabel}, 'Qg'),1,'last');
+            end
+
+            if ~exist('Vth','var')
+                params = obj.parameters;
+                VthLoc = strcmp(params(:).name,'Vth');
+    
+                if ~any(VthLoc)
+                    Vth = 2;
+                    warning('No Vth value given or available, guessing Vth=2V')
+                else
+                    Vth = params(VthLoc).approx();
+                end
+            end
+
+            if isempty(QplotLoc)
+                QgLoc = strcmp(params(:).name,'Qg');
+                if ~ isempty(paramLoc)
+                    Qg = params(QgLoc).approx();
+                    Qgs1 = [];
+                    Qgd = [];
+                    Qgs2 = [];
+                    Qsw = [];
+                else
+                    error('Unable to find any data to base Qg approximation on');
+                end
+            else
+                Qgplot = obj.graphs(QplotLoc);
+                if ~exist('Vgs','var')
+                    Vgs = max(Qgplot.plotData{1}(:,2));
+                end
+                totalLoc = find(Qgplot.plotData{1}(:,2) >= Vgs,1);
+                if isempty(totalLoc)
+                    totalLoc = numel(Qgplot.plotData{1}(:,2));
+                end
+                Qg = Qgplot.plotData{1}(totalLoc,1);
+
+                dVdQ = diff(Qgplot.plotData{1},1);
+                deldVdQ = diff(dVdQ(:,2)./dVdQ(:,1));
+                millerStartLoc = find(deldVdQ == min(deldVdQ));
+                millerEndLoc = find(deldVdQ == max(deldVdQ));
+                VthLoc = find(Qgplot.plotData{1}(:,2) >= Vth,1);
+
+                Qs = Qgplot.plotData{1}([VthLoc, millerStartLoc, millerEndLoc, totalLoc],1);
+
+                Qgs1 = Qs(2);
+                Qgd = Qs(3)-Qs(2);
+                Qgs2 = Qs(4)-Qs(3);
+                Qsw = Qs(3)-Qs(1);
+            end
+        end
+
+    end
+     
 
 
     methods (Hidden)

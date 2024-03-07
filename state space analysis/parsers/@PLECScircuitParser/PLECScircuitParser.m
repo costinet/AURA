@@ -56,5 +56,18 @@ classdef PLECScircuitParser < circuitParser
                 
         end
     end
+
+    methods (Hidden)
+         function [Iname, Vname] = getSwitchMeasSourceNames(obj,sName)
+            if ~isa(sName,'cell')
+                sName = {sName};
+            end
+
+            for i = 1:numel(sName)
+                Iname{i} = [sName{i} ':Am'];
+                Vname{i} = [sName{i} ':Vm'];
+            end
+        end
+    end
 end
 

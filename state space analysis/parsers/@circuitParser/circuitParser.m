@@ -14,6 +14,10 @@ classdef circuitParser < handle
         [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath)
         loadModel(obj, fn, swseq, force)
     end
+
+    methods (Abstract, Hidden)
+        [Iname, Vname] = getSwitchMeasSourceNames(obj,sName)
+    end
     
 %     methods
 %         %%constructor

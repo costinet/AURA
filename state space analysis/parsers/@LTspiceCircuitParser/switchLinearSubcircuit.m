@@ -42,6 +42,11 @@ function components = switchLinearSubcircuit(obj, component)
     Req.paramVals  = component.paramVals(strcmp(component.paramNames,'Roff'));
     Cpar.paramVals  = component.paramVals(strcmp(component.paramNames,'Coss') | strcmp(component.paramNames,'Cd'));
 
+    Vmeas.paramExpressions = {};
+    Ameas.paramExpressions = {};
+    Req.paramExpressions  = component.paramExpressions(strcmp(component.paramNames,'Roff'));
+    Cpar.paramExpressions  = component.paramExpressions(strcmp(component.paramNames,'Coss') | strcmp(component.paramNames,'Cd'));
+
     %% Deal with zero (neglected) parasitics
     components = [Vmeas, Ameas, Req]; 
     if Cpar.paramVals > 0  

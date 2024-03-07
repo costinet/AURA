@@ -104,6 +104,7 @@ classdef LTspiceCircuitParser < handle
         Meas_Current = {}
         filename
         
+        
 
         %% Netlist things
         netlistLibraries
@@ -112,6 +113,8 @@ classdef LTspiceCircuitParser < handle
 
      properties (Hidden)
         defaultRoff = 10e6;
+
+        undefinedExpressions = {}
 
         %% Depricated (?) properties
 %         % Htemp of ABCD (used when unable to solve rref(sym))
@@ -180,12 +183,13 @@ classdef LTspiceCircuitParser < handle
         evalSpiceParams(obj,param)
         str = spiceNumFormat(obj,str)
         component = parseSpiceComponent(obj, str, type)
-        [paramVal, embeddedParams] = parseTwoNetSpiceComponent(obj,str)
+        [paramVal, embeddedParams, paramExpr] = parseTwoNetSpiceComponent(obj,str,component)
         [params] = parseSpiceParamList(obj, str, params)
         [components] = deEmbedSpiceParams(obj,component,embeddedParams)
         
         linearizeCircuitModel(obj)
         linearizeCircuitModel2(obj)
+        updateComponentValues(obj)
         components = switchLinearSubcircuit(obj, component)
         components = XFdependentSourceSubcircuit(obj, directive, components)
 
@@ -279,6 +283,20 @@ classdef LTspiceCircuitParser < handle
                  warning('Value of @LTSpiceCircuitParse.LTSpiceFolder is not the installation directory of LTSpice.  Libarary use may be limited')
              end
          end
+
+    end
+
+    methods(Hidden)
+        function [Iname, Vname] = getSwitchMeasSourceNames(obj,sName)
+            if ~isa(sName,'cell')
+                sName = {sName};
+            end
+
+            for i = 1:numel(sName)
+                Iname{i} = ['Im_' sName{i}];
+                Vname{i} = ['Vm_' sName{i}];
+            end
+        end
 
     end
 end

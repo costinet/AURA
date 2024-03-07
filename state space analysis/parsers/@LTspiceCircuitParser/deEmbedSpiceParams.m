@@ -10,7 +10,15 @@ function [components] = deEmbedSpiceParams(obj,component,embeddedParams)
         paramVal = spiceNumFormat(obj,paramVal);
         paramVal = strrep(paramVal,'{','');
         paramVal = strrep(paramVal,'}','');
-        paramVal = evalin('base', paramVal);
+        expr = paramVal;
+        try
+            paramVal = evalin('base', paramVal);
+        catch
+            obj.undefinedExpressions = [obj.undefinedExpressions; ...
+                {component.Name, paramName, expr }];
+            paramVal = 0;
+        end
+                
         
         switch paramName
             case 'Rser'
@@ -23,6 +31,7 @@ function [components] = deEmbedSpiceParams(obj,component,embeddedParams)
                 newComponent.Name = ['R_' component.Name '_Ser'];
                 newComponent.Type = 'R';
                 newComponent.Nodes = {oldNode, newNode};
+                newComponent.paramExpressions = expr;
                 newComponent.paramNames = paramName;
                 newComponent.paramVals = paramVal;
 
