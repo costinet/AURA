@@ -16,7 +16,9 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
     %% Interpret
     % Give nodes numeric identifiers
     nodes = unique([obj.components(:).Nodes]);
-    nodes = circshift(nodes, -1*(find(strcmp(nodes,'0'))-1)); % make '0' the first node
+    if ~isempty(find(strcmp(nodes,'0'),1))
+        nodes = circshift(nodes, -1*(find(strcmp(nodes,'0'))-1)); % make '0' the first node
+    end
     nodeMap = dictionary(nodes, 1:length(nodes));
     numNodes = reshape(nodeMap([obj.components.Nodes]), [2,length(obj.components),])';
 

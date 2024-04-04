@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.toolbox" plugin-version="1.0">
-  <configuration build-checksum="3409702089" file="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox\AURA.prj" location="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox" name="AURA" target="target.toolbox" target-name="Package Toolbox">
+  <configuration build-checksum="1158843736" file="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox\AURA.prj" location="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox" name="AURA" target="target.toolbox" target-name="Package Toolbox">
     <param.appname>Switched Mode Power Supply Toolbox</param.appname>
     <param.authnamewatermark>Daniel Costinett</param.authnamewatermark>
     <param.email>daniel.costinett@utk.edu</param.email>
@@ -7,7 +7,7 @@
     <param.summary>Steady state solutions to switched mode power supplies</param.summary>
     <param.description>The Switched Mode Power Supply Toolbox provides capabilities for the steady-state and small-signal modeling of switched mode power supplies.  These capabilities facilitate design optimization in power electronics for a variety of applications.</param.description>
     <param.screenshot>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc\images\LB2.png</param.screenshot>
-    <param.version>0.2.5</param.version>
+    <param.version>0.2.6</param.version>
     <param.output>${PROJECT_ROOT}\Switched Mode Power Supply Toolbox.mltbx</param.output>
     <param.products.name />
     <param.products.id />
@@ -77,6 +77,55 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
       <item>/testConverters/slprj/sim/varcache/Voutcontrol3Levelboost21a</item>
       <item>/testConverters/slprj/sim/varcache/Voutcontrol3Levelboost21a/tmwinternal</item>
       <item>/Ideas</item>
+      <item>/AURAdb/digitizers/depricated</item>
+      <item>/AURAdb/digitizers/depricated/plotDigitizer-Test</item>
+      <item>/AURAdb/digitizers/depricated/plotDigitizer-Test/appDesignerTempData_239952525664</item>
+      <item>/AURAdb/digitizers/depricated/settings</item>
+      <item>/AURAdb/digitizers/depricated/temp</item>
+      <item>/Ideas/DERIVESTsuite</item>
+      <item>/Ideas/DERIVESTsuite/demo</item>
+      <item>/Ideas/DERIVESTsuite/demo/html</item>
+      <item>/Ideas/DERIVESTsuite/doc</item>
+      <item>/Ideas/Documentation Files</item>
+      <item>/Ideas/Documentation Files/PNG</item>
+      <item>/Ideas/Past Database Attempts</item>
+      <item>/Ideas/Past Database Attempts/Database</item>
+      <item>/Ideas/Past Database Attempts/Database/Components</item>
+      <item>/Ideas/Past Database Attempts/Database/Components/Transistor</item>
+      <item>/Ideas/Past Database Attempts/Database/Components/Transistor/TransistorDB</item>
+      <item>/Ideas/Past Database Attempts/Database/Resources</item>
+      <item>/Ideas/Past Database Attempts/Database_old</item>
+      <item>/Ideas/Past Database Attempts/components</item>
+      <item>/Ideas/PlotDigitizer</item>
+      <item>/Ideas/PlotDigitizer/appDesignerTempData_528533135506</item>
+      <item>/Ideas/PlotDigitizer/appDesignerTempData_792207329559</item>
+      <item>/Ideas/PlotDigitizer/oldVersions</item>
+      <item>/Ideas/PlotDigitizer/settings</item>
+      <item>/Ideas/PlotDigitizer/src</item>
+      <item>/Ideas/PlotDigitizer/src/appDesignerTempData_421761282626</item>
+      <item>/Ideas/PlotDigitizer/src/pdfRead</item>
+      <item>/Ideas/PlotDigitizer/temp</item>
+      <item>/Ideas/SwLoss</item>
+      <item>/Ideas/slprj</item>
+      <item>/Ideas/slprj/_sfprj</item>
+      <item>/Ideas/slprj/_sfprj/EMLReport</item>
+      <item>/Ideas/slprj/_sfprj/EMLReport/WPLl2EsfNyHoMjCo9vKiFG</item>
+      <item>/testConverters/PreviousApplications/VRMoptimization</item>
+      <item>/testConverters/PreviousApplications/LossExtraction</item>
+      <item>/testConverters/PreviousApplications/InverterLoadPull</item>
+      <item>/testConverters/PreviousApplications/DicksonSweep</item>
+      <item>/testConverters/PreviousApplications</item>
+      <item>/testConverters/ExampleTopologies/depricated</item>
+      <item>/testConverters/depricated</item>
+      <item>/testConverters/depricated/SPICECompare</item>
+      <item>/testConverters/depricated/html</item>
+      <item>/AURAdb/digitizers/plotDigitizer/temp</item>
+      <item>/AURAdb/digitizers/plotDigitizer/src</item>
+      <item>/AURAdb/digitizers/plotDigitizer/settings</item>
+      <item>/Toolbox</item>
+      <item>/depricated</item>
+      <item>/testConverters/LTspice NetLists/schematics</item>
+      <item>/testConverters/LTspice NetLists/unformatted</item>
     </param.matlabpath.excludes>
     <param.javaclasspath.excludes />
     <param.exported.on.package>true</param.exported.on.package>
@@ -141,43 +190,24 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
       <file>${PROJECT_ROOT}</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\updateToolbox.m</file>
     </fileset.rootfiles>
-    <fileset.depfun.included />
-    <fileset.depfun.excluded>
-      <file>C:\Users\dcostine\Documents\Plexim\PLECS Blockset 4.6 (64 bit)\plecs.m</file>
-      <file>C:\Users\dcostine\Documents\Plexim\PLECS Blockset 4.6 (64 bit)\plecs.mexw64</file>
-    </fileset.depfun.excluded>
+    <fileset.depfun.included>
+      <file>${MATLAB_ROOT}\toolbox\local\userpath.m</file>
+    </fileset.depfun.included>
+    <fileset.depfun.excluded />
     <fileset.package />
     <build-deliverables>
       <file location="${PROJECT_ROOT}" name="Switched Mode Power Supply Toolbox.mltbx" optional="false">C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox\Switched Mode Power Supply Toolbox.mltbx</file>
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\MATLAB\R2022b</root>
+      <root>C:\Program Files\MATLAB\R2023b</root>
       <toolboxes>
-        <toolbox name="matlabcoder" />
         <toolbox name="fixedpoint" />
-        <toolbox name="matlabhdlcoder" />
-        <toolbox name="neuralnetwork" />
       </toolboxes>
-      <toolbox>
-        <matlabcoder>
-          <enabled>true</enabled>
-        </matlabcoder>
-      </toolbox>
       <toolbox>
         <fixedpoint>
           <enabled>true</enabled>
         </fixedpoint>
-      </toolbox>
-      <toolbox>
-        <matlabhdlcoder>
-          <enabled>true</enabled>
-        </matlabhdlcoder>
-      </toolbox>
-      <toolbox>
-        <neuralnetwork>
-          <enabled>true</enabled>
-        </neuralnetwork>
       </toolbox>
     </matlab>
     <platform>

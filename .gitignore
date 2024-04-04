@@ -11,3 +11,4 @@ slprj/
 *.slx.original
 state space analysis/Releases/*.prj
 state space analysis/AURAdb/digitizers/plotDigitizer/temp/
+state space analysis/AURAdb/databases/@capacitorDB/capacitors.mat

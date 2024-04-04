@@ -96,18 +96,32 @@ classdef componentPlotData
                axes = gca;
            end
            hold(axes, 'off');
+
+          
                      
-           xM = obj.componentType.defaultMultipliers(strcmp(obj.xSignal, obj.componentType.knownParams));
+           xM = obj.componentType.defaultMultipliers(strcmpi(isParamOf(obj.componentType,obj.xSignal), obj.componentType.knownParams));
            xMn = obj.componentType.SIprefixes(xM{1});
-           yM = obj.componentType.defaultMultipliers(strcmp(obj.ySignal,obj.componentType.knownParams));
+           yM = obj.componentType.defaultMultipliers(strcmpi(isParamOf(obj.componentType,obj.ySignal),obj.componentType.knownParams));
            if isempty(yM)
-               yM = obj.componentType.defaultMultipliers(strcmp(obj.dataLabels{1}, obj.componentType.knownParams));
+               yM = obj.componentType.defaultMultipliers(strcmpi(obj.dataLabels{1}, obj.componentType.knownParams));
            end
            yMn = obj.componentType.SIprefixes(yM{1});
            
            for i=1:obj.nTraces
 
-               plot(axes, obj.plotData{i}(:,1)/xMn, obj.plotData{i}(:,2)/yMn, '-o');
+               if strcmp(obj.axisType{1}, 'log')
+                   xData = abs(obj.plotData{i}(:,1)/xMn);
+               else
+                   xData = obj.plotData{i}(:,1)/xMn;
+               end
+
+               if strcmp(obj.axisType{2}, 'log')
+                   yData = abs(obj.plotData{i}(:,2)/yMn);
+               else
+                   yData = obj.plotData{i}(:,2)/yMn;
+               end
+
+               plot(axes, xData, yData, '-o');
                hold(axes, 'on');
            end
            legend(axes, obj.dataLabels);
@@ -125,7 +139,7 @@ classdef componentPlotData
                legend(axes, {obj.dataLabels{:}, entry});
            end
            
-           if strcmp(obj.axisType{1}, 'log')
+          if strcmp(obj.axisType{1}, 'log')
                axes.XScale = 'log';
                grid(axes, 'on');
            end
@@ -187,14 +201,14 @@ classdef componentPlotData
         end
         
         function xU = get.xUnit(obj)
-            xU = obj.componentType.defaultUnits(strcmp(obj.componentType.knownParams, obj.xSignal));
+            xU = obj.componentType.defaultUnits(strcmpi(obj.componentType.knownParams, obj.xSignal));
             xU = xU{1};
         end
 
         function yU = get.yUnit(obj)
-            yU = obj.componentType.defaultUnits(strcmp(obj.componentType.knownParams, obj.ySignal));
+            yU = obj.componentType.defaultUnits(strcmpi(obj.componentType.knownParams, obj.ySignal));
             if isempty(yU)
-               yU = obj.componentType.defaultUnits(strcmp(obj.componentType.knownParams, obj.dataLabels{1}));
+               yU = obj.componentType.defaultUnits(strcmpi(obj.componentType.knownParams, obj.dataLabels{1}));
             end
             yU = yU{1};
         end        
@@ -208,7 +222,7 @@ classdef componentPlotData
         end
         
         function xM = get.xMult(obj)
-            if strcmp(obj.xSI, 'none') || strcmp(obj.xSI, '1')
+            if strcmp(obj.xSI, 'none') || strcmpi(obj.xSI, '1')
                xM = 1;
             else
                xM = obj.componentType.SIprefixes(obj.xSI);
@@ -216,7 +230,7 @@ classdef componentPlotData
         end
 
         function yM = get.yMult(obj)
-            if strcmp(obj.ySI, 'none') || strcmp(obj.ySI, '1')
+            if strcmp(obj.ySI, 'none') || strcmpi(obj.ySI, '1')
                 yM = 1;
             else
                 yM = obj.componentType.SIprefixes(obj.ySI);
@@ -273,7 +287,8 @@ classdef componentPlotData
                         % resolution may be lost, so check for less then
                         % 1e-6 % difference in values
                         exact =  all([exact ...
-                            all(abs(obj.plotData{i} - graph.plotData{i})./max(abs(graph.plotData{i}),eps) < obj.conversionEps) ...
+                            all(abs(obj.plotData{i} - graph.plotData{i})./max(abs(graph.plotData{i}),eps) < obj.conversionEps | ...
+                                (isnan(obj.plotData{i}) & isnan(graph.plotData{i}))) ...
                             ]);
                     end
                 end
@@ -323,8 +338,10 @@ classdef componentPlotData
                      mergedGraph.plotData{end+1} = newGraph.plotData{i};
                      mergedGraph.dataLabels{end+1} =  newGraph.dataLabels{end+1};
                 end
-                mergedGraph.testConditions = table2cell(unique(cell2table([ ...
-                    obj.testConditions;newGraph.testConditions])));
+                mergedTestConditions = [obj.testConditions;newGraph.testConditions];
+                if ~isempty(mergedTestConditions)
+                    mergedGraph.testConditions = table2cell(unique(cell2table(mergedTestConditions)));
+                end
             end
             
             if mode == 1

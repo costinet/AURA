@@ -1,0 +1,6 @@
+Capacitance,Equivalent Series Resistance,Equivalent Series Inductance,Impedance,Maximum DC Voltage,Maximum AC Voltage,Maximum RMS Voltage,Maximum Ripple Current,Self-Resonant Frequency,Width,Length,Thickness,Frequency,Temperature
+C,Esr,Esl,Z,Vdc,Vac,Vrms,Irip,Srf,X,Y,T,F,Tc
+F,Ohm,H,Ohm,V,V,V,A,Hz,m,m,m,Hz,[char(176)]C
+[char(181)],m,n,1,1,1,1,1,M,m,m,m,1,1
+Cnom,Rs,Ls,,Vdcmax,Vacmax,Vrmsmax,,Fres,W,L,Z,freq,Tj
+,,,,,,,,,,,H,,Temp

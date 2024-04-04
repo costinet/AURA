@@ -1,5 +1,7 @@
 classdef AURAdb < handle
-    %AURAdb is a collection of databases used in Power Electronics Design
+    %% AURAdb is a collection of databases used in Power Electronics Design
+    %
+    % See also SMPSim, @transistor, @capacitor
     
     properties (SetAccess = immutable, GetAccess = public)
         transistors
@@ -11,12 +13,16 @@ classdef AURAdb < handle
     end
     
     methods
-        function obj = AURAdb()
-            %addpath(genpath(strrep(mfilename('fullpath'), '\AURAdb', '')));
+        function obj = AURAdb(softLoad)
+
+            % addpath(genpath(strrep(mfilename('fullpath'), '\AURAdb', '')));
+            if nargin == 1 && softLoad
+                return
+            end
 
             obj.transistors = transistorDB();
             obj.inductors = 0;
-            obj.capacitors = 0;
+            obj.capacitors = capacitorDB();
             obj.cores = 0;
             obj.wires = 0;
         end
@@ -25,6 +31,31 @@ classdef AURAdb < handle
             obj.transistors.sync();
             obj.inductors.sync();
             obj.capacitors.sync();
+        end
+
+        function updateLibraries(obj)
+            gitRelease = webread('https://api.github.com/repos/costinet/AURAdb/releases/latest');
+            latestVersion = gitRelease.tag_name;
+            releaseURL = gitRelease.zipball_url;
+            if ~exist(fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion), 'dir')
+                disp(['Downloading latest libraries from ' releaseURL]);
+                % outfn = websave(fullfile(userpath, 'SMPSToolbox', 'AURAdb', [latestVersion '.zip']) , releaseURL);
+                fns = unzip(releaseURL, fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion));
+            end
+            if ~isempty(fns)
+                disp('Extracting files');
+                for db = {'capacitorDB', 'transistorDB', 'inductorDB'}
+                    dirLoc = endsWith(fns,[db{1} filesep]);
+                    if any(dirLoc)
+                       dirLoc = find(dirLoc,1);
+                       movefile(fns{dirLoc}, fullfile(userpath, 'SMPSToolbox', 'AURAdb', filesep));
+                    end
+                end
+            end
+            disp(['Cleaning up']);
+            if exist(fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion), 'dir')
+                rmdir(fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion),'s');
+            end
         end
     end
     

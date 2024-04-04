@@ -7,6 +7,7 @@
 gitRelease = webread('https://api.github.com/repos/costinet/aura/releases/latest');
 latestVersion = gitRelease.tag_name;
 % installedVersion = ver("Switched Mode Power Supply Toolbox").Version;
+% isMATLABReleaseOlderThan('R2023b')
 toolboxes = matlab.addons.toolbox.installedToolboxes;
 thisToolbox = toolboxes(strcmp(toolboxes.Name,"Switched Mode Power Supply Toolbox"));
 if isempty(thisToolbox)
@@ -39,4 +40,7 @@ if ~isempty(find(verDiff > 0,1,'first') )
         end
     end
 end
+
+%% update component libraries
+AURAdb(1).updateLibraries
 

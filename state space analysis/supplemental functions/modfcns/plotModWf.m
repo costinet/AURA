@@ -27,6 +27,10 @@ function plotModWf(ts,swvec,varargin)
         state = state(:);
 
         plot(ted,state, 'LineWidth', 3);
+
+        if i< numSw
+            set(gca, 'XTickLabel', [])
+        end
     end
 
     linkaxes

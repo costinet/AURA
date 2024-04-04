@@ -29,8 +29,8 @@ classdef componentDB < handle
 %         add(obj, item)
 %         subsref(obj, index)
         subTable(obj, varargin) % Return a nicely-formatted table with searchable parameters
-        saveDB(obj)
-        loadDB(obj)
+        % saveDB(obj)
+        % loadDB(obj)
     end
     
     methods
@@ -56,6 +56,28 @@ classdef componentDB < handle
                 obj.components(ind).merge(item);
             end
         end
+
+        function addMult(obj, items)
+            assert(isa(items, class(obj.componentType)), ...
+                ['class ' class(obj) ' can only be used to store objects of type ' class(obj.componentType)] );
+           
+            if isempty(obj.components)
+                obj.components = items;
+                return
+            end
+            
+            [~, indObj, indItems] = intersect({obj.components.partNumber}, {items.partNumber});
+            if isempty(indObj)
+                obj.components = [obj.components items];
+            else
+                [~,newComps] = setdiff({items.partNumber}, {obj.components.partNumber});
+                obj.components = [obj.components items(newComps)];
+                for i = 1:length(indObj)
+                    obj.components(indObj(i)).merge(items(indItems(i)));
+                end
+            end
+        end
+
         
         
         function type = get.type(obj)
@@ -71,6 +93,64 @@ classdef componentDB < handle
         
         function s = size(obj)
             s = size(obj.components);
+        end
+
+        function saveDB(obj)
+            % fn = mfilename('fullpath');
+            % fn = [strrep(fn, '\transistorDB', '\') 'transistors.mat'];
+            % save(fn,'obj')
+            DBpath = fullfile(userpath, 'SMPSToolbox', 'AURAdb', [class(obj.componentType) 'DB'],filesep);
+            if isempty(dir(DBpath))
+                mkdir(DBpath)
+            end
+            save(fullfile(DBpath,[class(obj.componentType) 's']),'obj');
+        end
+        
+        function loadDB(obj, reload)
+            if nargin == 1
+                reload = 0;
+            end
+
+            DBpath = fullfile(userpath, 'SMPSToolbox', 'AURAdb', [class(obj.componentType) 'DB'],filesep);
+            if isempty(dir(DBpath))
+                mkdir(DBpath)
+                return
+            end
+            if ~isempty(dir(DBpath))
+                matfiles = dir(fullfile(DBpath, '*.mat'));
+                if ~isempty(matfiles)
+                    for i = 1:numel(matfiles)
+                        savedData = load(fullfile(DBpath,matfiles(i).name),'obj');
+                        % for j = 1:numel(savedData.obj.components)
+                        %     obj.add(savedData.obj.components(j));
+                        % end
+                        obj.addMult(savedData.obj.components);
+                    end
+                    if numel(matfiles) > 1
+                        warning(['Only one saved database should be present in ' DBpath '.  Possible duplication of data may occur']);
+                    end
+                end
+                if isempty(matfiles) || reload
+                    libfiles = dir(fullfile(DBpath,'lib','*.mat'));
+                    if ~isempty(libfiles)
+                        for i = 1:numel(libfiles)
+                            savedData = load(fullfile(DBpath,'lib',libfiles(i).name),'obj');
+                            % for j = 1:numel(savedData.obj.components)
+                            %     obj.add(savedData.obj.components(j));
+                            % end
+                            if isa(savedData.obj, 'componentDB')
+                                obj.addMult(savedData.obj.components);
+                            elseif isa(savedData.obj, 'component')
+                                obj.addMult(savedData.obj);
+                            else
+                                error(['Incorrect formatting of file ' fullfile(DBpath,'lib',libfiles(i).name)]);
+                            end
+                        end
+                    end
+                end
+            else
+                warning(['Unable to access user documents path at ' userpath]);
+            end
         end
         
         function ind = end(obj, k, n)

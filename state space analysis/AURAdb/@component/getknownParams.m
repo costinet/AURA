@@ -49,6 +49,8 @@ function getknownParams()
             'defaultMultipliers = ' defaultMultipliers newline...
             'paramDict = ' paramDict newline ...
             'paramNames = ' paramNames];
+
+        disp(paramDef)
         
 %         SQLtable = 
 

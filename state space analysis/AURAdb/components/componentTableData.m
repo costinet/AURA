@@ -139,7 +139,7 @@ classdef componentTableData
                     end
 
                     
-                    if all(newData == curData)
+                    if all(newData == curData | (isnan(newData) & isnan(curData)) )
                         paramTF = true;
                     else
                         paramTF = false;

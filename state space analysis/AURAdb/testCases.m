@@ -2,13 +2,13 @@
 if(1)
     % Test 1: valid parameters
     t=transistor;
-    t.addParameter('Inductance', 5)
-%     try 
-%         t.addParameter('Inductance', 5)
-%     catch e 
-%         err = 1;
-%     end
-%     assert(err == 1, 'Failed Test 1');
+    % t.addParameter('Inductance', 5)
+    try 
+        t.addParameter('Inductance', 5)
+    catch e 
+        err = 1;
+    end
+    assert(err == 1, 'Failed Test 1');
     
     % Test 2: valid parameters
     t=transistor;
@@ -76,7 +76,7 @@ if(1)
    assert(length({tDB(:).graphs}) == len, 'Failed 5');
    
    assert(length({tDB(1:2).ron.typ}) == 2, 'Failed 6');
-   assert(length(tDB(1).ron.max) == 1, 'Failed 7');
+   assert(length(tDB(1).ron.typ) == 1, 'Failed 7');
    assert(length({tDB(:).ron.max}) == len, 'Failed 8');
    
    fet1 = tDB(1);
@@ -85,17 +85,17 @@ if(1)
    
    assert(isequal(fet1.parameters,param1), 'Failed 9');
    assert(isequal(fet1.parameters(1).name , param1(1).name), 'Failed 10');
-   assert(strcmp(tDB(1).parameters(1).name(1), 'V'), 'Failed 11');
+   assert(strcmp(tDB(1).parameters(1).name(1), 'R'), 'Failed 11');
    assert(isequal({fet1.parameters.name} , name1), 'Failed 12');
-   assert(isequal(tDB(1).parameters.name , name1), 'Failed 13');
-   assert(isequal(tDB(1).parameters(:).name , name1), 'Failed 14');
+   assert(isequal({tDB(1).parameters.name} , name1), 'Failed 13');
+   assert(isequal({tDB(1).parameters(:).name} , name1), 'Failed 14');
    
    
    disp('component->subsref tests completed successfully');
 
 %% componentDB->subsref
 
-    tDB(end).graphs(end).plot
+    tDB(end-1).graphs(end).plot
    
 end
 

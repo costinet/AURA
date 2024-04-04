@@ -8,14 +8,33 @@ function varargout = subsref(obj,s)
         else 
             comps = obj.components(s(1).subs{:});
             varargout = {};
-            for i = 1:length(comps)
-%                 [varargout{i}] = builtin('subsref',comps(i),s(2:end));
-                component = comps(i);
-                varargout = {varargout{:}, [subsref(component,s(2:end))]};
+            if length(comps) == 1
+                component = comps(1);
+                [varargout{1:nargout}] = subsref(component,s(2:end));
+            else
+                for i = 1:length(comps)
+    %                 [varargout{i}] = builtin('subsref',comps(i),s(2:end));
+                    component = comps(i);
+                    if numel(subsref(component,s(2:end))) > 1
+                        [compOut{1:nargout}] = subsref(component,s(2:end));
+                        [varargout{i,1:nargout}] = compOut{1:nargout};
+                    else
+                        [varargout{i}] = subsref(component,s(2:end));
+                    end
+                end
+                for i = 1:nargout
+                    varargout{i} = {varargout{:,i}};
+                end
             end
-        end
+        end        
     else
-        [varargout{1:nargout}] = builtin('subsref',obj,s);
+        try
+            %try applying it to the DB
+            [varargout{1:nargout}] = builtin('subsref',obj,s);
+        catch
+            %If that fails, try applying it to the components in the DB
+            [varargout{1:nargout}] = arrayfun(@(x)builtin('subsref',x,s),obj.components,'UniformOutput',false); 
+        end
     end
     
     %% MATLAB TEMPLATE

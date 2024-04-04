@@ -5,7 +5,8 @@ function [ts,swvec] = combineMods(ts1,swvec1,switchCol1,ts2,swvec2,switchCol2, v
 %   states and switchCol is the indexes of switches in the combined
 %   modulation
 %
-%   if switchCol is 2-D, each row is a copy of the associated swvec. 
+%   if switchCol is 2-D, each row is a copy of the associated swvec.    
+
 
     p = inputParser;
     p.addRequired('ts1',@(x)numel(x)>1 && isnumeric(x) && size(x,1) == 1);

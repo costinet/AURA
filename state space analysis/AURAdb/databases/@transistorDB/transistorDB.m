@@ -34,20 +34,20 @@ classdef transistorDB < componentDB
             transistors = obj.components;
         end    
         
-        function saveDB(obj)
-            fn = mfilename('fullpath');
-            fn = [strrep(fn, '\transistorDB', '\') 'transistors.mat'];
-            save(fn,'obj')
-        end
-        
-        function loadDB(obj)
-            fn = mfilename('fullpath');
-            fn = [strrep(fn, '\transistorDB', '\') 'transistors.mat'];
-            if isfile(fn)
-                savedData = load(fn,'obj');
-                obj.components = savedData.obj.transistors;
-            end
-        end
+        % function saveDB(obj)
+        %     fn = mfilename('fullpath');
+        %     fn = [strrep(fn, '\transistorDB', '\') 'transistors.mat'];
+        %     save(fn,'obj')
+        % end
+        % 
+        % function loadDB(obj)
+        %     fn = mfilename('fullpath');
+        %     fn = [strrep(fn, '\transistorDB', '\') 'transistors.mat'];
+        %     if isfile(fn)
+        %         savedData = load(fn,'obj');
+        %         obj.components = savedData.obj.transistors;
+        %     end
+        % end
 
         function clearUpdated(obj)
             for i = 1:length(obj.components)

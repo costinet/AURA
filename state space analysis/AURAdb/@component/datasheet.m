@@ -30,24 +30,46 @@ function UIFigure = datasheet(obj)
             NameplateParametersLabel.Position = [78 565+ExtraHeight 129 22];
             NameplateParametersLabel.Text = 'Nameplate Parameters';
 
+            P = properties(obj);
+            P(strcmp(P, {'parameters'})) = [];
+            P(strcmp(P, {'partNumber'})) = [];
+            P(strcmp(P, {'graphs'})) = [];
+
+            for i = 1:length(P)
+                NameplateParams.Data{i,1} = P{i};
+                NameplateParams.Data{i,2} = obj.(P{i});
+            end
+            
+
+
             % Create Characteristics
             Characteristics = uitable(UIFigure);
             Characteristics.ColumnName = {'Parameter'; 'Test Conditions'; 'Min'; 'Typ'; 'Max'; 'Unit'};
             Characteristics.RowName = {};
             Characteristics.Position = [40 287+ExtraHeight 547 121];
             
-            Characteristics.Data = {'Id', 'Continuous, T_A = 25C, Rtja = 220 C/W', '', 3.4, '', 'A'; ...
-                'Id', 'Pulsed, T_A = 25C, Tpulse = 300 \mus', '', 28, '', 'A'; ... 
-                'Rds(on)', 'Vgs = 5 V, Id = 1.5 A',24, 30, '', ['m', char(937)];
-                'Id', 'Continuous, T_A = 25C, Rtja = 220 C/W', '', 3.4, '', 'A'; ...
-                'Id', 'Pulsed, T_A = 25C, Tpulse = 300 \mus', '', 28, '', 'A'; ... 
-                'Rds(on)', 'Vgs = 5 V, Id = 1.5 A',24, 30, '', ['m', char(937)];
-                'Id', 'Continuous, T_A = 25C, Rtja = 220 C/W', '', 3.4, '', 'A'; ...
-                'Id', 'Pulsed, T_A = 25C, Tpulse = 300 \mus', '', 28, '', 'A'; ... 
-                'Rds(on)', 'Vgs = 5 V, Id = 1.5 A',24, 30, '', ['m', char(937)];
-                'Id', 'Continuous, T_A = 25C, Rtja = 220 C/W', '', 3.4, '', 'A'; ...
-                'Id', 'Pulsed, T_A = 25C, Tpulse = 300 \mus', '', 28, '', 'A'; ... 
-                'Rds(on)', 'Vgs = 5 V, Id = 1.5 A',24, 30, '', ['m', char(937)];};
+            Characteristics.Data = cell(length(obj.parameters),6);   
+            
+            for i = 1:length(obj.parameters)
+                Characteristics.Data{i,1} = obj.parameters(i).name;
+                Characteristics.Data{i,2} = char(obj.parameters(i).conditions(:));
+                Characteristics.Data{i,3} = obj.parameters(i).min;
+                Characteristics.Data{i,4} = obj.parameters(i).typ;
+                Characteristics.Data{i,5} = obj.parameters(i).max;
+                Characteristics.Data{i,6} = [obj.parameters(i).unit{1}, obj.parameters(i).unit{2}];
+            end
+%             Characteristics.Data = {'Id', 'Continuous, T_A = 25C, Rtja = 220 C/W', '', 3.4, '', 'A'; ...
+%                 'Id', 'Pulsed, T_A = 25C, Tpulse = 300 \mus', '', 28, '', 'A'; ... 
+%                 'Rds(on)', 'Vgs = 5 V, Id = 1.5 A',24, 30, '', ['m', char(937)];
+%                 'Id', 'Continuous, T_A = 25C, Rtja = 220 C/W', '', 3.4, '', 'A'; ...
+%                 'Id', 'Pulsed, T_A = 25C, Tpulse = 300 \mus', '', 28, '', 'A'; ... 
+%                 'Rds(on)', 'Vgs = 5 V, Id = 1.5 A',24, 30, '', ['m', char(937)];
+%                 'Id', 'Continuous, T_A = 25C, Rtja = 220 C/W', '', 3.4, '', 'A'; ...
+%                 'Id', 'Pulsed, T_A = 25C, Tpulse = 300 \mus', '', 28, '', 'A'; ... 
+%                 'Rds(on)', 'Vgs = 5 V, Id = 1.5 A',24, 30, '', ['m', char(937)];
+%                 'Id', 'Continuous, T_A = 25C, Rtja = 220 C/W', '', 3.4, '', 'A'; ...
+%                 'Id', 'Pulsed, T_A = 25C, Tpulse = 300 \mus', '', 28, '', 'A'; ... 
+%                 'Rds(on)', 'Vgs = 5 V, Id = 1.5 A',24, 30, '', ['m', char(937)];};
 
             % Create CharacteristicsLabel
             CharacteristicsLabel = uilabel(UIFigure);

@@ -185,6 +185,7 @@ classdef component < handle
                     obj.upDated = 1;
                 else
                     [sameParam, sameData] = eq(obj.parameters,param);
+                    sameParam = find(sameParam,1);
                     if ~any(sameParam)
                         % New plot
                         obj.parameters(length(obj.parameters)+1) = param;
@@ -242,7 +243,7 @@ classdef component < handle
                         % obj.graphs(length(obj.graphs)+1) = graph; 
                         % warning(['Adding a duplicate plot for ', graph.title]);
                         
-                        obj.graphs(find(sameData,1)).merge(graph);
+                        obj.graphs(find(samePlots,1)).merge(graph);
                         obj.upDated = 1;
                         
                     else
@@ -258,6 +259,14 @@ classdef component < handle
             assert(length(obj.graphs) >= ind, 'Cannot replace nonexistant graph')
             obj.graphs(ind) = graph;
         end
+
+         function replaceParam(obj, newParam)
+            params = obj.parameters;
+            names = {params.name};
+            paramLoc = strcmp(newParam.name,names);
+            assert(~isempty(paramLoc), 'Cannot replace nonexistant param')
+            obj.parameters(paramLoc) = newParam;
+         end
 
         function deleteGraphTrace(obj,iGraph, iTrace)
             newGraph = obj.graphs(iGraph).deleteTrace(iTrace);
@@ -367,7 +376,11 @@ classdef component < handle
                            rethrow(e)
                        end
                            
+                    
+                    else
+                        rethrow(e)
                     end
+
                 end
             else
                  [varargout{1:nargout}] = builtin('subsref',obj,s);
@@ -406,6 +419,12 @@ classdef component < handle
             %valid for the component type, or if it is an alias of a known
             %parameter. 
             
+            if isempty(obj)
+                refobj = eval(class(obj));
+            else
+                refobj = obj(1);
+            end
+
         	%drop any underscores or parentheses
             name = erase(name, {'_', '(', '[', ')', ']'});
             
@@ -413,16 +432,19 @@ classdef component < handle
             name = [upper(name(1)), lower(name(2:end))];
             
             %Check if it is a known parameter
-            if any(ismember(obj(1).knownParams, name))
+            if any(ismember(refobj.knownParams, name))
+                valid = true;
+                return;
+            elseif any(strcmpi(refobj.knownParams, name))
                 valid = true;
                 return;
             end
             
             % Else, check if it is an aliased name
-            [~,IA,~] = intersect(obj(1).paramDict.keys, name);
+            [~,IA,~] = intersect(refobj.paramDict.keys, name);
             if ~isempty(IA)
-                name = obj(1).paramDict(name);
-                name = obj.knownParams{strcmp(name, obj.paramNames)};
+                name = refobj.paramDict(name);
+                name = refobj.knownParams{strcmpi(name, refobj.paramNames)};
                 valid = true;
             else
                 valid = false;

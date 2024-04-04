@@ -494,7 +494,7 @@ classdef SMPSconverter < handle
                     else
                         %If the switching state doesn't already exist,
                         %parse it
-                        obj.topology.loadCircuit(obj.topology.sourcefn,swseqIn(i,:));
+                        obj.topology.loadCircuit([],swseqIn(i,:));
                         [~, idx] = intersect(obj.topology.swseq, swseqIn(i,:), 'rows');
                         swind(i) = idx;
                     end
