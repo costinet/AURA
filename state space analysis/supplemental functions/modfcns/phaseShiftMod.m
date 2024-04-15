@@ -48,6 +48,10 @@ function [ts,swvec] = phaseShiftMod(ts,swvec, phase, propName, propVal)
             ts = diff([0 circshift(cumts,rshift)]); 
         end
     end
+
+    zeroints = ts <= 10*max(eps(ts));
+    ts(zeroints) = [];
+    swvec(zeroints,:) = [];
 end
 
 function mustMatchts(ts,swvec)

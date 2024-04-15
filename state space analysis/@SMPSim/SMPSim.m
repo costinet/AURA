@@ -99,7 +99,7 @@ classdef SMPSim < handle
     end
 
     methods (Hidden)
-        plotWaveforms(obj, type, fn, oSelect, subplots)     
+        plotWaveforms(obj, type, fn, oSelect, subplots)    
 
         %% Debugging (Verbose) helper functions
         describeDiscreteErrors(obj)
@@ -114,12 +114,38 @@ classdef SMPSim < handle
         %% Methods from external files
         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs, Ints ] = ssAvgs(obj, Xss)
-        
         niter = findValidSteadyState(obj)
-
-        Gz = findSSTF(obj, tp, ut)
+        Gz = findSSTF(obj, tp, oi, tm, ut)
+        [ xs, t, ys, xd ] = simTransient(obj, nPeriods, Xss, tsteps)
 
         %% Locally-defined methods
+
+         %% Constructors
+        function obj = SMPSim(circuitPath, swvec, us, ts)
+        %construct a new object of class SMPSim
+        % 
+        %   obj = SMPSim(circuitPath, swvec, us, ts) all inputs are
+        %   optional. 
+
+            conv = SMPSconverter();
+            top = SMPStopology();
+            conv.topology = top;
+            obj.converter = conv;
+
+            if nargin == 0
+                return
+            elseif nargin == 1
+                initialize(obj, circuitPath);
+            elseif nargin == 2
+                initialize(obj, circuitPath, swvec);
+            elseif nargin == 3
+                initialize(obj, circuitPath, swvec, us);
+            elseif nargin == 4
+                initialize(obj, circuitPath, swvec, us, ts);
+            end
+            
+            
+        end
         
         function [top, conv] = initialize(obj, circuitPath, swvec, us, ts)
         % load circuit file and necessary parameters for simulation
@@ -192,7 +218,18 @@ classdef SMPSim < handle
                 catch e
                     return
                 end
-                conv.setSwitchingPattern(swvec, ts);
+                try
+                    conv.setSwitchingPattern(swvec, ts);
+                catch e
+                    if nargin < 5
+                        % They didn't supply all parameters, and finding
+                        % them on base didn't work.
+                        warning('Not all parameters defined, SMPSim object will need to be updated with ts, us, and swvec before running.')
+                        return
+                    else
+                        rethrow(e);
+                    end
+                end
             end
             
         end
@@ -212,6 +249,10 @@ classdef SMPSim < handle
         %
         %   See Also SMPSim, SMPSim.FindValidSteadyState,
         %   SMPSim.AugmentedSteadyState, SMPSim.SS_Soln
+            assert(~isempty(obj.u), 'No input vector u specified.')
+            assert(~isempty(obj.ts), 'No timing vector ts specified.')
+            assert(size(obj.Bs,2) == size(obj.u,1), 'Invalid input vector u specificed')
+
             if nargin > 1 
                 Xss = obj.AugmentedSteadyState(dts);
             else
@@ -358,33 +399,7 @@ classdef SMPSim < handle
             end
         end
 
-        %% Constructors
-        function obj = SMPSim(circuitPath, swvec, us, ts)
-        %construct a new object of class SMPSim
-        % 
-        %   obj = SMPSim(circuitPath, swvec, us, ts) all inputs are
-        %   optional. 
-
-            conv = SMPSconverter();
-            top = SMPStopology();
-            conv.topology = top;
-            obj.converter = conv;
-
-            if nargin == 0
-                return
-            elseif nargin == 1
-                swvec = [];
-                us = [];
-                ts = [];
-            elseif nargin == 2
-                us = [];
-                ts = [];
-            elseif nargin == 3
-                ts = [];
-            end
-            
-            initialize(obj, circuitPath, swvec, us, ts);
-        end
+       
         
         %% Getters
         function res = get.As(obj)

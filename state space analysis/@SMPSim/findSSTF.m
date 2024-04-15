@@ -1,4 +1,4 @@
-function Gz = findSSTF(obj, tp, tm, ut)
+function Gz = findSSTF(obj, tp, oi, tm, ut)
 %findSSTF finds the small-signal transfer function from time interval tp to
 %all states
 %   Gz = findSSTF(obj, tp) finds the z-domain transfer function from a time
@@ -11,23 +11,37 @@ function Gz = findSSTF(obj, tp, tm, ut)
 %   functions, where the ith transfer function is the small signal gain
 %   from time interval tp to state i.
 %
-%   Gz = findSSTF(obj, tp, tm) also includes a measurement interval tm
+%   Gz = findSSTF(obj, Km) instead uses a vector Km of gains from each
+%   switching interface, so that multiple simultaneous perturbations can be
+%   considered.  numel(Km) == numel(obj.ts).
+%
+%   Gz = findSSTF(___, oi) only outputs the state signals referenced by
+%   indices in oi.
+%
+%   Gz = findSSTF(__, tm) also includes a measurement interval tm
 %   at which all state outputs are measured.  If tm is ommiteed,
 %   measurements are taken after the final interval, tm=length(obj.ts)
 %
 %   see also SMPSim, ss   
 
-    if nargin==2
+    if ~exist('tm', 'var')
         tm = size(obj.converter.fullts,2);
     else
-         assert( numel(tm) == 1 && tm > tp && tm<=size(obj.converter.fullts,2), 'tm must be an integer index into the controlled switch times after tp')
+         assert( isscalar(tm) && all(tm > tp) && tm<=size(obj.converter.fullts,2), 'tm must be an integer index into the controlled switch times after tp')
     end
 
     if isempty(tp)
         Gz = 0;
         return
     end
-    assert( numel(tp) == 1 && tp > 0 && tp<size(obj.converter.fullts,2), 'tp must be an integer index into the controlled switch times')
+
+    if isscalar(tp)
+        assert( tp > 0 && tp<size(obj.converter.fullts,2), 'tp must be an integer index into the controlled switch times')
+        Km = ones(1,numel(obj.ts));
+    else
+        Km = tp;
+        assert(numel(tp) == size(obj.converter.fullts,2), 'Km must be specified as a vector of gains of the same lenght as the controlled switching times')
+    end
 %     if size(tp) == size(obj.converter.fullts,2)
 %         tps = tp;
 %     elseif numel(tp) == 1
@@ -35,11 +49,15 @@ function Gz = findSSTF(obj, tp, tm, ut)
 %         tps(tp) = 1;
 %     tps = find(tps);
 
+    if ~exist('oi', 'var') || isempty(oi)
+        oi = 1:size(obj.As,1);
+    end
+
     if isempty(obj.Xs)
         obj.steadyState;
     end
 
-    if nargin < 4
+    if nargin <= 4
         ut = 1;
     else 
         error('functionality for input transfer function not implemented')
@@ -57,38 +75,103 @@ function Gz = findSSTF(obj, tp, tm, ut)
 
     [~, ints, ~] = obj.converter.getIntervalts();
     ActualStopTime = find(ints == tm, 1, 'last');
+    if isscalar(tp)
+        actualPertTime = find(ints == tp, 1, 'last');
+    else
+        actualPertTime = 0*obj.ts;
+        for i = 1:numel(tp)
+            if tp(i)~=0
+                actualPertTime(i) = find(ints == i, 1, 'last');
+            end
+        end
+        
+    end
 
     nt = size(As,3);
     ns = size(As,1);
     ni = size(Bs,2);
 
-    In = eye(ns + ni, ns + ni);
-    EA = In;
-    Atil = zeros(size(EA,1), size(EA,2), ActualStopTime);
-    for i = ActualStopTime:-1:1
-        Atil(:,:,i) = [As(:,:,i), Bs(:,:,i); zeros(ni, size(EA,1))];
-        expAtil(:,:,i) = expm(Atil(:,:,i)*ts(i));
-        EA = EA*expAtil(:,:,i);
-    end
+    % In = eye(ns + ni, ns + ni);
+    % EA = In;
+    % Atil = zeros(size(EA,1), size(EA,2), ActualStopTime);
+    % for i = ActualStopTime:-1:1
+    %     Atil(:,:,i) = [As(:,:,i), Bs(:,:,i); zeros(ni, size(EA,1))];
+    %     expAtil(:,:,i) = expm(Atil(:,:,i)*ts(i));
+    %     EA = expAtil(:,:,i)*EA;
+    % end
+    % 
+    % PHI = EA(1:ns,1:ns);
 
-    PHI = EA(1:ns,1:ns);
+    % PHI = eye(ns);
+    % for i = ActualStopTime:-1:1
+    %     PHI = PHI*expm(As(:,:,i)*ts(i));
+    % end
+    % 
+    % PHI1 = PHI;
+    % 
+    % PHI = eye(ns);
+    % for i = ActualStopTime:-1:1
+    %     depStates = sum(abs(eye(ns)-obj.Is(:,:,i)),2)  ~= 0;
+    %     EA = expm(As(~depStates,~depStates,i)*ts(i));
+    %     EA2 = zeros(ns,ns);
+    %     EA2(~depStates,~depStates) = EA;
+    %     EA2 = obj.Is(:,:,i)*EA2;
+    %     PHI = PHI*EA2;
+    % end
+    % Handle Dependent States?
+    
 
     
-    actualTime = find(ints == tp, 1, 'last');
-
-    XP = obj.Xs(:,actualTime+1);
-    xphat = As(:,:,actualTime)*XP + Bs(:,:,actualTime)*u(:,:,actualTime) - ...
-        As(:,:,actualTime+1)*XP + Bs(:,:,actualTime+1)*u(:,:,actualTime+1);
-
-    Aprop = eye(ns);
-    for i = ActualStopTime:-1:actualTime
-        Aprop = expm(As(:,:,i)*ts(i))*Aprop;
+       
+    for i = 1:numel(actualPertTime)
+        if actualPertTime(i) ~= 0
+            XP = obj.Xs(:,actualPertTime(i)+1);
+            xphat(:,:,i) = As(:,:,actualPertTime(i))*XP + Bs(:,:,actualPertTime(i))*u(:,:,actualPertTime(i)) - ...
+                (As(:,:,actualPertTime(i)+1)*XP + Bs(:,:,actualPertTime(i)+1)*u(:,:,actualPertTime(i)+1));
+            xphat(:,:,i) = xphat(:,:,i)*Km(i);
+        end
     end
 
-    GAMMA = Aprop*xphat;
+
+    PHI = eye(ns);
+    for i = ActualStopTime:-1:1
+        if any(i == actualPertTime)
+            % every interval after this one already multiplied in
+            Aprop(:,:,i) = PHI;
+        end
+        EA = zeros(ns,ns);
+        depStates = sum(abs(eye(ns)-obj.Is(:,:,i)),2)  ~= 0;
+        EA(~depStates,~depStates) = expm(As(~depStates,~depStates,i)*ts(i));
+        EA= obj.Is(:,:,i)*EA;
+
+        PHI = PHI*EA;
+
+    end
+
+
+    % Aprop = eye(ns);
+    % for i = ActualStopTime:-1:actualTime+1
+    %     Aprop = Aprop*expm(As(:,:,i)*ts(i));
+    % end
+    % % 
+    % Aprop = eye(ns);
+    % for i = ActualStopTime:-1:actualTime+1
+    %     depStates = sum(abs(eye(ns)-obj.Is(:,:,i)),2)  ~= 0;
+    %     EA = expm(As(~depStates,~depStates,i)*ts(i));
+    %     EA2 = zeros(ns,ns);
+    %     EA2(~depStates,~depStates) = EA;
+    %     EA2 = obj.Is(:,:,i)*EA2;
+    %     Aprop = Aprop*EA2;
+    % end
+
+
+    GAMMA = sum(pagemtimes(Aprop,xphat),3);
 
     Ts = sum(obj.ts(1:ActualStopTime));
 
-    Gz = ss(PHI, GAMMA, eye(ns), zeros(ns, 1), Ts);
+    C = zeros(ns, ns);
+    C(sub2ind(size(C),oi,oi)) = 1;
+    C(all(C==0,2),:) = [];
+    Gz = ss(PHI, GAMMA, C, zeros(size(C,1), 1), Ts);
 
 end

@@ -21,7 +21,7 @@ function [paramVal, additionalParams, paramExpr] = parseTwoNetSpiceComponent(obj
     catch
         obj.undefinedExpressions = [obj.undefinedExpressions; ...
             {component.Name, '', paramExpr }];
-        paramVal = 0;
+        paramVal = nan;
     end
 
 

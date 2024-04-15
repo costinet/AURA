@@ -20,9 +20,15 @@ function updateComponentValues(obj)
     
         for j = 1:numel(expr)
             if ~isempty(expr{j})
-                newParam = evalin('base',char(expr{j}));
-                if ~isempty(newParam)
-                    obj.origComponents(i).paramVals(j) = newParam;
+                try
+                    newParam = evalin('base',char(expr{j}));
+                    if ~isempty(newParam)
+                        obj.origComponents(i).paramVals(j) = newParam;
+                    end
+                catch e
+                    obj.undefinedExpressions = [obj.undefinedExpressions; ...
+                            {obj.origComponents(i).Name, '', char(expr{j}) }];
+                    obj.origComponents(i).paramVals(j) = nan;
                 end
             end
         end
@@ -31,5 +37,12 @@ function updateComponentValues(obj)
     obj.Anum = [];
     obj.components = [];
 
-    obj.loadModel;
+    if ~isempty(obj.undefinedExpressions)
+        T = table(obj.undefinedExpressions(:,1), obj.undefinedExpressions(:,3), 'VariableNames',{'Component', 'Expression'});        
+        warning(strjoin(["Parameter values undefined.  See table Below: ", newline,  formattedDisplayText(T)]));
+
+        return;
+    else
+        obj.loadModel;
+    end
 end

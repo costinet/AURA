@@ -34,6 +34,7 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
     n = size(As,3);
     ns = size(Bs,1);
 
+
     In = eye(size(As,1) + 1, size(As,2) + 1);
     EA = In;
     Atil = zeros(size(EA,1), size(EA,2), n);

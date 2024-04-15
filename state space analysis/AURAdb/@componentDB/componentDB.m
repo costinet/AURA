@@ -103,7 +103,7 @@ classdef componentDB < handle
             if isempty(dir(DBpath))
                 mkdir(DBpath)
             end
-            save(fullfile(DBpath,[class(obj.componentType) 's']),'obj');
+            save(fullfile(DBpath,[class(obj.componentType) 's.mat']),'obj');
         end
         
         function loadDB(obj, reload)

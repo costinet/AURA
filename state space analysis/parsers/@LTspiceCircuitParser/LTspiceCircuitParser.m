@@ -276,7 +276,7 @@ classdef LTspiceCircuitParser < handle
                     'input argument topology must be a handle to an object of class SMPStopology');
                 obj.topology = topology;
              else
-                 warning('Incorrect number of inputs supplied')
+                 % warning('Incorrect number of inputs supplied')
              end
 
              if ~exist(obj.LTSpiceFolder,'dir')
@@ -296,6 +296,10 @@ classdef LTspiceCircuitParser < handle
                 Iname{i} = ['Im_' sName{i}];
                 Vname{i} = ['Vm_' sName{i}];
             end
+        end
+
+        function setComponents(obj,compList)
+            obj.origComponents = compList;
         end
 
     end

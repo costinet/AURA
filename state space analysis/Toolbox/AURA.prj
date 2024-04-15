@@ -129,9 +129,7 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
     </param.matlabpath.excludes>
     <param.javaclasspath.excludes />
     <param.exported.on.package>true</param.exported.on.package>
-    <param.required.addons>
-      <requiredaddons />
-    </param.required.addons>
+    <param.required.addons />
     <param.matlab.project.id />
     <param.matlab.project.name />
     <param.release.start>R2020b</param.release.start>
@@ -148,6 +146,9 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
     <param.additional.sw.mac.url />
     <param.additional.sw.linux.url />
     <unset>
+      <param.authnamewatermark />
+      <param.email />
+      <param.company />
       <param.output />
       <param.products.name />
       <param.products.id />
@@ -184,6 +185,7 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\html</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\LICENSE.txt</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\packageAURA.m</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\parsers</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\supplemental functions</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters</file>

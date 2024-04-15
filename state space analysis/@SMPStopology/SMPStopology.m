@@ -110,6 +110,10 @@ classdef SMPStopology < handle
                         addlInfo = MException('LOADCIRCUIT:badCircuitConfiguration','Circuit has a C-V loop or LI-net');
                         e2 = addCause(e,addlInfo);
 						throw(e2)
+                    elseif startsWith(e.message, 'Invalid component path')
+                         addlInfo = MException('LOADCIRCUIT:cannotOpenFile','Unable to access PLECS file.  Try opening the PLECs model directly in your browser before calling loadCircuit');
+                        e2 = addCause(e,addlInfo);
+						throw(e2)
                     end
                 end
 
@@ -208,6 +212,23 @@ classdef SMPStopology < handle
         
         function res = get.sourcefn(obj)
             res = obj.circuitParser.sourcefn;
+        end
+
+        function res = get.swseq(obj)
+            if isempty(obj.swseq)
+                try
+                    numSw = startsWith({obj.circuitParser.origComponents.Type}, {'D','M'});
+                catch 
+                    numSw = [];
+                end
+                if ~isempty(numSw)
+                    res = double.empty(0,sum(numSw));
+                else
+                    res = [];
+                end
+            else
+                res = obj.swseq;
+            end
         end
 
         function res = get.eigAs(obj)

@@ -12,31 +12,6 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
     obj.Element_Properties(IA,:) = [];
     obj.Component_Values = obj.Element_Properties;
 
-
-    %% Interpret
-    % Give nodes numeric identifiers
-    nodes = unique([obj.components(:).Nodes]);
-    if ~isempty(find(strcmp(nodes,'0'),1))
-        nodes = circshift(nodes, -1*(find(strcmp(nodes,'0'))-1)); % make '0' the first node
-    end
-    nodeMap = dictionary(nodes, 1:length(nodes));
-    numNodes = reshape(nodeMap([obj.components.Nodes]), [2,length(obj.components),])';
-
-    %% Numerical nodes corresponding to components
-    typeMap = dictionary({'V','BV', 'MV','C','R','L','MI','BI','I',       'E', 'F', 'Vm', 'Im'}, [1:9,      2, 8, 3, 7]);
-    typeOrder = typeMap({obj.components.Type})';  
-
-    obj.NL = [typeOrder, numNodes , transpose(1:length(typeOrder))];
-    obj.NLnets = [{obj.components.Name}' {obj.components.Nodes}' ];
-
-    %% Graph backend?
-%     G = graph(obj.NL(:,2)', obj.NL(:,3)', 1:size(obj.NL,1));
-%     G.Edges.Name = {obj.components(G.Edges.Weight).Name}';
-% 
-%     P = plot(G);
-%     P.EdgeLabel = G.Edges.Name;
-
-
     obj.findNormalTree();
 
 
