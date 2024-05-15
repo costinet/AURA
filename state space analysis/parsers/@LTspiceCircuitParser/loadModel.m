@@ -26,12 +26,18 @@ function loadModel(obj, fn, swseq, force)
 %%  The above all replaced by LTSpice parsing
 
 % obj.initialize(fn,{},{});
-
-if nargin == 1
-    fn = obj.sourcefn;
-    force = 0;
-    swseq = [];
+arguments 
+    obj LTspiceCircuitParser
+    fn {mustBeText} = obj.sourcefn
+    swseq {mustBeNumeric} = [];
+    force {mustBeScalarOrEmpty} = 0;
 end
+
+% if nargin == 1
+%     fn = obj.sourcefn;
+%     force = 0;
+%     swseq = [];
+% end
 
 if ~isempty(fn)
     [fp,fn2,EXT] = fileparts(fn);
@@ -87,7 +93,7 @@ if isempty(obj.Anum) || force || ~strcmp(obj.sourcefn,fn)
 end
 
 
-if isempty(swseq)
+if ~exist('swseq','var') || isempty(swseq)
     try
         swseq = evalin('base', 'swvec');
     catch 

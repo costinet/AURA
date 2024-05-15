@@ -15,7 +15,11 @@ function varargout = subsref(obj,s)
                 for i = 1:length(comps)
     %                 [varargout{i}] = builtin('subsref',comps(i),s(2:end));
                     component = comps(i);
-                    if numel(subsref(component,s(2:end))) > 1
+                    res = subsref(component,s(2:end));
+                    if ischar(res)
+                        res = cellstr(res);
+                    end
+                    if numel(res) > 1
                         [compOut{1:nargout}] = subsref(component,s(2:end));
                         [varargout{i,1:nargout}] = compOut{1:nargout};
                     else

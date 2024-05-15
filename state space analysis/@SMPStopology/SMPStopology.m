@@ -100,10 +100,15 @@ classdef SMPStopology < handle
                     end
                 catch e 
                     % allow to continue trying other parsers
-                    if startsWith(e.message, 'Error evaluating parameter') 
+                    if startsWith(e.message, "Undefined function 'plecs' ") 
+                        e = MException('LOADCIRCUIT:plecsNotInstalled','supplied file appears to be a PLECS circuit but plecs is not installed or is not on the path ');
+                        % e2 = addCause(e,addlInfo);
+						throw(e)
+                    elseif startsWith(e.message, 'Error evaluating parameter') 
                         obj.circuitParser = PLECScircuitParser(obj);
                         obj.circuitParser.readOnLoadError(e.message, fn);
                         obj.circuitParser.inspect();
+                        obj.circuitParser = [];
                         result = 0;
                         return
                     elseif startsWith(e.message, 'State/source dependence in components')
@@ -121,9 +126,11 @@ classdef SMPStopology < handle
                     try
                         [~,~,EXT] = fileparts(fn);
                         if strcmp(EXT,'.net') && exist(fn,'file')
-						    obj.circuitParser = LTspiceCircuitParser(obj);
+						    % obj.circuitParser = LTspiceCircuitParser(obj);
+                            obj.circuitParser = NetlistCircuitParser(obj);
                         elseif strcmp(EXT,'.asc') && exist(fn,'file')
-                            obj.circuitParser = LTspiceCircuitParser(obj);
+                            % obj.circuitParser = LTspiceCircuitParser(obj);
+                            obj.circuitParser = NetlistCircuitParser(obj);
                         else
                             error('Circuit cannot be parsed as either a PLECS or LTSpice file')
                         end

@@ -8,7 +8,7 @@ classdef PLECScircuitParser < circuitParser
     %
     %   See also @LTspiceCircuitParser, @SMPSim, @circuitParser
     
-   properties (SetAccess = private)
+   properties (SetAccess = protected)
         sourcefn
         sourcefdate
         topology
@@ -41,16 +41,21 @@ classdef PLECScircuitParser < circuitParser
         loadModel(obj, fn, swseq, force)
         inspect(obj)
         
-         function obj = PLECScircuitParser(topology)
+        function obj = PLECScircuitParser(topology)
             assert(isa(topology, 'SMPStopology'), ...
                 'input argument topology must be a handle to an object of class SMPStopology');
             obj.topology = topology;
-         end
+        end
+
+        function updateComponentValues(obj)
+          
+            loadModel(obj) %For PLECS, there is no way to do this more elegantly
+        end
 
         function readOnLoadError(obj, msg, fn)
             obj.sourcefn = fn;
             
-            [obj.missingParams.type,~] = regexp(msg, "(?<=Error evaluating parameter ')[\w\s-]+(?=')" , 'match', 'tokens');
+            [obj.missingParams.type,~] = regexp(msg, "(?<=Error evaluating parameter ')[\(\)\?\w\s-]+(?=')" , 'match', 'tokens');
             [obj.missingParams.component,~] = regexp(msg, ['(?<=' fn '/)[\w]+(?=\:)' ] , 'match', 'tokens');
             [obj.missingParams.val,~] = regexp(msg, "(?<=Unrecognized function or variable ')[\w\s-]+(?=')" , 'match', 'tokens');
                 
@@ -67,6 +72,13 @@ classdef PLECScircuitParser < circuitParser
                 Iname{i} = [sName{i} ':Am'];
                 Vname{i} = [sName{i} ':Vm'];
             end
+         end
+
+        function storedTopology = saveTopology(obj,name)
+            error('Not possible for PLECS-derived topologies');
+        end
+        function loadTopology(obj,storedTopolpogy)
+            error('Not possible for PLECS-derived topologies');
         end
     end
 end

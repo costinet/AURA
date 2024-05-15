@@ -1,36 +1,36 @@
-function plotCircuitGraph2(obj, subgraph)
+function plotCircuitGraph2(obj)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
-    if nargin == 1
-        subgraph = obj.NL;
-    end
-    G = graph(subgraph(:,2)', subgraph(:,3)', subgraph(:,4)');
-    G.Edges.Name = {obj.components(G.Edges.Weight).Name}';
-
-    G2 = table();
-    nextPow10 = 10^ceil(log10(size(G.Edges,1)));
-    for i = size(G.Edges,1):-1:1
-        segMentedComp = [G.Edges(i,:);
-            G.Edges(i,:);
-            G.Edges(i,:)];
-        segMentedComp.Name(1) = {'W'};
-        segMentedComp.Name(3) = {'W'};
-        segMentedComp.EndNodes(1,2) =  nextPow10 + 2*i-1;
-        segMentedComp.EndNodes(2,1) =  nextPow10 + 2*i-1;
-        segMentedComp.EndNodes(2,2) = nextPow10 + 2*i;
-        segMentedComp.EndNodes(3,1) =  nextPow10 + 2*i;
-        G2 = [G2; segMentedComp];
-    end
-
-    curNodes = sort(unique(G2.EndNodes));
-    remap = dictionary(curNodes, [1:numel(curNodes)]');
-    G2.EndNodes = remap(G2.EndNodes);
-
-    G = graph(G2);
-
-    P = plot(G);
-    P.EdgeLabel = G.Edges.Name;
+    % if nargin == 1
+    %     subgraph = obj.NL;
+    % end
+    % G = graph(subgraph(:,2)', subgraph(:,3)', subgraph(:,4)');
+    % G.Edges.Name = {obj.components(G.Edges.Weight).Name}';
+    % 
+    % G2 = table();
+    % nextPow10 = 10^ceil(log10(size(G.Edges,1)));
+    % for i = size(G.Edges,1):-1:1
+    %     segMentedComp = [G.Edges(i,:);
+    %         G.Edges(i,:);
+    %         G.Edges(i,:)];
+    %     segMentedComp.Name(1) = {'W'};
+    %     segMentedComp.Name(3) = {'W'};
+    %     segMentedComp.EndNodes(1,2) =  nextPow10 + 2*i-1;
+    %     segMentedComp.EndNodes(2,1) =  nextPow10 + 2*i-1;
+    %     segMentedComp.EndNodes(2,2) = nextPow10 + 2*i;
+    %     segMentedComp.EndNodes(3,1) =  nextPow10 + 2*i;
+    %     G2 = [G2; segMentedComp];
+    % end
+    % 
+    % curNodes = sort(unique(G2.EndNodes));
+    % remap = dictionary(curNodes, [1:numel(curNodes)]');
+    % G2.EndNodes = remap(G2.EndNodes);
+    % 
+    % G = graph(G2);
+    % 
+    % P = plot(G);
+    % P.EdgeLabel = G.Edges.Name;
 
 
     %% ASC-like format

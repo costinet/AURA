@@ -26,8 +26,10 @@ classdef transistorDB < componentDB
     end
     
     methods
-        function obj = transistorDB()
-            loadDB(obj)
+        function obj = transistorDB(skipLoad)
+            if nargin == 0 || skipLoad~=1
+                loadDB(obj)
+            end
         end
         
         function transistors = get.transistors(obj)

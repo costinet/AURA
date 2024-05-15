@@ -325,6 +325,15 @@ classdef SMPSconverter < handle
                     end
                 end
             end
+
+            allZeroRows = all(obj.fullts ==0,2);
+            allZeroCols = all(obj.fullts ==0,1);
+
+            obj.fullts(allZeroRows,:) = [];
+            obj.fullts(:,allZeroCols) = [];
+
+            obj.fullswind(allZeroRows,:) = [];
+            obj.fullswind(:,allZeroCols) = [];
             
 %             if ~isempty(r)
 %                 obj.fullts(r,c) = -1;

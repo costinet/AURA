@@ -33,4 +33,5 @@ plotModWf(ts,swvec,8);
 [ts2,swvec2] = phaseShiftMod(ts1,swvec1,phi, 'phaseUnits', 'rad');
 
 [ts,swvec] = combineMods(ts1,swvec1,[1 2; 4 3],ts2,swvec2,[5 6; 8 7]);
-plotModWf(ts,swvec,9);
+hold(gcf().Children,"on")
+plotModWf(ts,swvec,8, ':');

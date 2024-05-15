@@ -1,0 +1,7 @@
+### v0.2.7
+- Added changelog
+- Initial implementation of switchLosses() function in SMPSim to calculate per-switch average loss
+- Refactoring LTspiceCircuitParser into NetlistCircuitParser.  Former will be depricated over time
+- Initial implementaition of modularCircuitParser to allow modular (e.g. multilevel) topologies
+- Added saveTopology and loadTopology classes to circuitParser to prep for stored topologies in AURAdb
+- Updated findSSTF to allow multiple input times, with gains, and to allow output sampling to happen at a time other than the end of the period.

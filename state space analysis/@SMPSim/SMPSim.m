@@ -399,6 +399,38 @@ classdef SMPSim < handle
             end
         end
 
+        function PlossSW = switchLosses(obj, tsteps)
+        %Calculate averaged power loss for each switch in steady-state
+        %
+        %   PlossFET = switchLosses(obj) returns a vector of average power
+        %   losses where PlossFET(i) is the loss of the FET corresponding
+        %   to obj.switchNamse(i).  The calculated losses are total losses,
+        %   including swithcing and conduction as specified by the models
+        %   used.
+        %
+        %   PlossFET = switchLosses(obj, tsteps) also allows the user to
+        %   specify the number of time steps in the expansion fo the
+        %   waveforms.
+        %
+        %   See Also SMPSim
+            arguments
+                obj SMPSim
+                tsteps = []
+            end
+            if ~isempty(tsteps)
+                [ ~, t, ys ] = obj.SS_WF_Reconstruct(tsteps);
+            else
+                [ ~, t, ys ] = obj.SS_WF_Reconstruct();
+            end
+            for j = 1:numel(obj.switchNames)
+                [Iname, Vname] = obj.parser.getSwitchMeasSourceNames(obj.switchNames{j});
+                vloc = obj.sigLoc(Vname{1},'y');
+                iloc = obj.sigLoc(Iname{1},'y');
+                PlossSW(j) = trapz(t,ys(vloc,:).*ys(iloc,:))/sum(obj.ts);
+            end
+
+        end
+
        
         
         %% Getters

@@ -2,7 +2,7 @@ function [Pov, TurnOffCurrent, TurnOnVoltage]  = overlapLoss(sim,switchNames,swi
 %OVERLAPLOSS compute overlap loss from steady-state simulation
 %   Detailed explanation goes here
     arguments
-        sim {mustBeA(sim,'SMPSim')}
+        sim SMPSim
         switchNames {mustBeText(switchNames)}
         switchModel {mustBeA(switchModel,'transistor'), ...
                 mustMatchSize(switchNames,switchModel)}
@@ -44,13 +44,13 @@ function [Pov, TurnOffCurrent, TurnOnVoltage]  = overlapLoss(sim,switchNames,swi
         TurnOffCurrent(i) = sim.YsEnd(idsLoc,lastOn(swLoc));
         TurnOnVoltage(i) = sim.YsEnd(vdsLoc,lastOff(swLoc));
 
-        if numel(switchModel) == 1
+        if isscalar(switchModel)
             trans = switchModel;
         else
             trans = switchModel(i);
         end
 
-        if numel(Ig) == 1
+        if isscalar(Ig)
             ig = Ig;
         else
             ig = Ig(i);
@@ -65,6 +65,7 @@ function [Pov, TurnOffCurrent, TurnOnVoltage]  = overlapLoss(sim,switchNames,swi
 end
 
 function mustMatchSize(switchNames,switchModel)
+% Used in argument validation
     msg = 'switchModel must either be one transistor, or one transistor for each switchName specified';
     if isa(switchNames,'cell')
         if ~isequal(numel(switchNames),numel(switchModel))  && ...

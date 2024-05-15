@@ -122,7 +122,7 @@ function Gz = findSSTF(obj, tp, oi, tm, ut)
     
 
     
-       
+    xphat = zeros(ns,1,nt);
     for i = 1:numel(actualPertTime)
         if actualPertTime(i) ~= 0
             XP = obj.Xs(:,actualPertTime(i)+1);
@@ -165,7 +165,11 @@ function Gz = findSSTF(obj, tp, oi, tm, ut)
     % end
 
 
-    GAMMA = sum(pagemtimes(Aprop,xphat),3);
+    if any(ActualStopTime > actualPertTime(actualPertTime>0))
+        GAMMA = sum(pagemtimes(Aprop,xphat(:,:,1:size(Aprop,3))),3);
+    else
+        GAMMA = zeros(ns,1);
+    end
 
     Ts = sum(obj.ts(1:ActualStopTime));
 

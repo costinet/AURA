@@ -1,0 +1,26 @@
+* 3LevelBuck.asc
+M1 N002 NC_01 N003 N003 BSC900N20NS3
+M2 N003 NC_02 N005 N005 NMOS ron = 1m Coss = {Coss}
+V1 N001 0 48
+L1 N005 N006 {Lf}
+C1 N006 0 Cout
+R1 N006 0 Rout
+Rg N002 N001 1m
+M3 N005 NC_03 N007 N007 BSC900N20NS3
+M4 N007 NC_04 0 0 NMOS ron = 1m Coss = {Coss}
+D1 N003 N002 D Vf={Vf} Ron={1m} Cd=100p
+D2 N005 N003 D Vf={Vf} Ron={1m} Cd=100p
+D3 N007 N005 D Vf={Vf} Ron={1m} Cd=100p
+D4 0 N007 D Vf={Vf} Ron={1m} Cd=100p
+Cfly N004 N007 10µ
+R2 N003 N004 1m
+.lib LTspiceXVII\lib\cmp\standard.mos
+.param Lf = 1u
+.param Coss = 1n
+.param Cout = 1e-3
+.param Rout = 100
+.param Vf = 1
+.param ts = [1u 50n 1u 50n]
+.param swvec = [1 0 1 0 0 0 0 0; 0 0 0 0 0 0 0 0; 0 1 0 1 0 0 0 0; 0 0 0 0 0 0 0 0]
+* Note: The parser will look for Cout \nand Rout in the base workspace
+.end

@@ -23,7 +23,7 @@ classdef LTspiceCircuitParser < handle
         method = 'new'
     end
     
-    properties (SetAccess = private)
+    properties (SetAccess = protected)
         sourcefn
         sourcefdate
         ascfn
@@ -300,6 +300,13 @@ classdef LTspiceCircuitParser < handle
 
         function setComponents(obj,compList)
             obj.origComponents = compList;
+        end
+
+        function storedTopology = saveTopology(obj,name)
+            error('Not currently implemented');
+        end
+        function loadTopology(obj,storedTopolpogy)
+            error('Not currently implemented');
         end
 
     end

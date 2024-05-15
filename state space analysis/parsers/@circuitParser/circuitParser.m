@@ -3,7 +3,7 @@ classdef circuitParser < handle
     %   
     %   See also @LTspiceCircuitParser, @PLECScircuitParser
     
-    properties (Abstract, SetAccess = private)
+    properties (Abstract, SetAccess = protected)
         sourcefn
         sourcefdate
         
@@ -13,6 +13,9 @@ classdef circuitParser < handle
     methods (Abstract)
         [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath)
         loadModel(obj, fn, swseq, force)
+        updateComponentValues(obj)
+        storedTopology = saveTopology(obj,name)
+        loadTopology(obj,storedTopolpogy)
     end
 
     methods (Abstract, Hidden)
