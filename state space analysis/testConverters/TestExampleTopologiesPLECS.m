@@ -45,19 +45,19 @@ modelfile{13} = 'WPT_varyingU'; PLECsModel{13} = 'WPT_SSP';
 % modelfile{length(modelfile)+1} = 'Flyback'; PLECsModel{length(PLECsModel)+1} = 'PC_Flyback';
 
 %% Most recent full run results:
-% Model Boost_Async converged after 43 iterations in 0.80257 seconds
-% Model MRBuck converged after 11 iterations in 0.15147 seconds
-% Model HDSC converged after 6 iterations in 0.22897 seconds
-% Model DAB_oneCap converged after 23 iterations in 0.57024 seconds
-% Model DAB_8Cap DID NOT converge within 102 in 2.8029 seconds
-% Model HDSC_withDiodes converged after 2 iterations in 0.0070346 seconds
-% Model BuckBuck converged after 9 iterations in 1.1233 seconds
-% Model Q-FibonacciESRCossDiodes converged after 8 iterations in 0.79489 seconds
-% Model Q-FibonacciESRCossDiodes converged after 2 iterations in 0.0038019 seconds
-% Model TwoAsymmBuck converged after 24 iterations in 0.40205 seconds
-% Model BuckBuck converged after 15 iterations in 7.3213 seconds
-% Model DAB_Rload converged after 16 iterations in 0.4769 seconds
-% Model WPT_SSP converged after 11 iterations in 0.66202 seconds
+% Model Boost_Async converged after 43 iterations in 0.39162 seconds
+% Model MRBuck converged after 11 iterations in 0.088323 seconds
+% Model HDSC converged after 6 iterations in 0.13764 seconds
+% Model DAB_oneCap converged after 37 iterations in 0.74975 seconds
+% Model DAB_8Cap DID NOT converge within 102 in 1.7696 seconds
+% Model HDSC_withDiodes converged after 2 iterations in 0.0043238 seconds
+% Model BuckBuck converged after 9 iterations in 0.79623 seconds
+% Model Q-FibonacciESRCossDiodes converged after 8 iterations in 0.48962 seconds
+% Model Q-FibonacciESRCossDiodes converged after 2 iterations in 0.0027774 seconds
+% Model TwoAsymmBuck converged after 24 iterations in 0.222 seconds
+% Model BuckBuck converged after 15 iterations in 5.0886 seconds
+% Model DAB_Rload converged after 41 iterations in 0.931 seconds
+% Model WPT_SSP converged after 11 iterations in 0.14177 seconds
 %
 % Model DAB_8Cap DID NOT converge within 102 iterations
 % Model Q-FibonacciESRCoss converged after 8 iterations

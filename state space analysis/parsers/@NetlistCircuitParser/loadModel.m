@@ -1,6 +1,6 @@
 function loadModel(obj, fn, swseq, force)
-% loadModel(obj, fn, swseq, force) (LTSpice Implementation)
-% fn = path to ltspice model
+% loadModel(obj, fn, swseq, force) (Netlist Implementation)
+% fn = path to netlist file (*.asc or *.net), or a string netlist
 % swseq = binary vector of switching states to be parsed
 % force = binary scalar.  If force == 0, the action won't
 % repeat on subsequent calls unless the file has been updated
@@ -8,7 +8,6 @@ function loadModel(obj, fn, swseq, force)
 % Required behavior:
 % populates fields As, Bs, Cs, Ds, Is, K
 %     switchLabels, stateLabels, outputLabels, inputLabels
-
 
 arguments
     obj circuitParser
@@ -30,9 +29,8 @@ if ~isempty(fn)
         assert(exist(fn,'file'), 'Supplied filename does not exist or is not on the current path');
         try
             obj.ascfn = fn;
-            
             fn = fullfile(fp,[fn2 '.net']);
-            if ~exist(fn,'file') || datetime(dir(fn).date) < datetime(dir(obj.ascfn).date)  %if no netlist already in existence
+            if ~exist(fn,'file') || datetime(dir(fn).date) < datetime(dir(obj.ascfn).date)  %if no netlist already in existence, or the asc file has been modified recently
                 status = system(['"' obj.LTSpiceExe '" -netlist "' fileparts(which(obj.ascfn)) filesep obj.ascfn '"' ]);
                 if status == -1
                     msg = 'Unable to execute LTSpice from the command line. This could be a file path or permissions issue';
@@ -40,13 +38,16 @@ if ~isempty(fn)
                 end
             end
         catch e
-            errID = 'LOADMODEL:BadIndex';
+            
             msg = ['Unable to call LTSpice to generate netlist from asc file. '...
                 ' Check <a href="matlab:matlab.desktop.editor.openAndGoToLine(''',...
-                which('LTspiceCircuitParser'),''',22)">LTspiceCircuitParser</a> parameter LTSpiceExe or supply a .net file directly.'];
-            addlException = MException(errID,msg);
-            e = addCause(e,addlException);
-            throw(e)
+                which('NetlistCircuitParser'),''',22)">NetlistCircuitParser</a> parameter LTSpiceExe or supply a .net file directly.'];
+            % errID = 'LOADMODEL:BadIndex';
+            % disp(msg);
+            % addlException = MException(errID,msg);
+            % e = addCause(e,addlException);
+            % throw(e)
+            error(msg);
         end
     end
 
@@ -78,7 +79,7 @@ if isempty(obj.Anum) || force || ~strcmp(obj.sourcefn,fn)
 end
 
 
-if ~exist(swseq,'var') || isempty(swseq)
+if ~exist('swseq','var') || isempty(swseq)
     try
         swseq = evalin('base', 'swvec');
     catch 
@@ -100,7 +101,7 @@ elseif(strcmp(obj.method, 'new'))
      end
 end
 
-% What is this?  It seems errant -- length(Diodes_POS) is alwasys
+% What is this?  It seems errant -- length(Diodes_POS) is always
 % length(Switch_Resistors)
 if(strcmp(obj.method, 'old'))
     Diodes_POS = contains(obj.Switch_Resistors,'D')';

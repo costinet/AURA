@@ -25,13 +25,15 @@ classdef AURAdb < handle
             obj.capacitors = capacitorDB();
             obj.cores = 0;
             obj.wires = 0;
+
+            obj.topologies = topologyDB();
         end
         
-        function sync(obj)
-            obj.transistors.sync();
-            obj.inductors.sync();
-            obj.capacitors.sync();
-        end
+        % function sync(obj)
+        %     obj.transistors.sync();
+        %     obj.inductors.sync();
+        %     obj.capacitors.sync();
+        % end
 
         function updateLibraries(obj)
             gitRelease = webread('https://api.github.com/repos/costinet/AURAdb/releases/latest');

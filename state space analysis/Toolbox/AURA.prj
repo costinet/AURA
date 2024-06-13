@@ -1,13 +1,13 @@
 <deployment-project plugin="plugin.toolbox" plugin-version="1.0">
-  <configuration build-checksum="1158843736" file="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox\AURA.prj" location="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox" name="AURA" target="target.toolbox" target-name="Package Toolbox">
+  <configuration build-checksum="1583031519" file="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox\AURA.prj" location="C:\Users\dcostine\Dropbox\UTK\Research\AURA\Toolbox" name="AURA" target="target.toolbox" target-name="Package Toolbox">
     <param.appname>Switched Mode Power Supply Toolbox</param.appname>
-    <param.authnamewatermark>Daniel Costinett</param.authnamewatermark>
-    <param.email>daniel.costinett@utk.edu</param.email>
-    <param.company>University of Tennessee Knoxville</param.company>
+    <param.authnamewatermark />
+    <param.email />
+    <param.company />
     <param.summary>Steady state solutions to switched mode power supplies</param.summary>
     <param.description>The Switched Mode Power Supply Toolbox provides capabilities for the steady-state and small-signal modeling of switched mode power supplies.  These capabilities facilitate design optimization in power electronics for a variety of applications.</param.description>
     <param.screenshot>C:\Users\dcostine\Dropbox\UTK\Research\AURA\doc\images\LB2.png</param.screenshot>
-    <param.version>0.2.6</param.version>
+    <param.version>0.2.8</param.version>
     <param.output>${PROJECT_ROOT}\Switched Mode Power Supply Toolbox.mltbx</param.output>
     <param.products.name />
     <param.products.id />
@@ -49,7 +49,8 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
 **/PreviousApplications
 **/Releases
 **/webSettings.mat
-**/webserver</param.exclude.filters>
+**/webserver
+**/Test</param.exclude.filters>
     <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
     <param.examples>&lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;examples&gt;
@@ -179,6 +180,7 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\@SMPSoptimizer</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\@SMPStopology</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\AURAdb</file>
+      <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\changelog.txt</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\Contents.m</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\demos.xml</file>
       <file>C:\Users\dcostine\Dropbox\UTK\Research\AURA\DesktopToolset.xml</file>
@@ -202,15 +204,8 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\MATLAB\R2023b</root>
-      <toolboxes>
-        <toolbox name="fixedpoint" />
-      </toolboxes>
-      <toolbox>
-        <fixedpoint>
-          <enabled>true</enabled>
-        </fixedpoint>
-      </toolbox>
+      <root>C:\Program Files\MATLAB\R2024a</root>
+      <toolboxes />
     </matlab>
     <platform>
       <unix>false</unix>

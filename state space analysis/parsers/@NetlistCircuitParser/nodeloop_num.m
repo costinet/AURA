@@ -10,7 +10,6 @@ function [almost_H] = nodeloop_num(obj,NL,NLnets)
 %% Sort numeric index values 
 % This section matches the user given values to all variables from the
 % topology level to allow numerical solving through a lookup table
-% 
 [~,IA,IB] = intersect(NLnets(:,1),obj.Component_Values(:,1));
 obj.index = zeros(size(NLnets,1),1);
 obj.index(IA) = IB;
@@ -46,25 +45,7 @@ numJB = 11;
 numJ = 12;
 
 
-% hey = find(SortedTree(:,1)==numR,1); % find first index of resistor (R) in tree
-% if isempty(hey) % if there are no R in tree then set to zero
-%     R = row+1;
-%     Z_R = 0;
-%     Y_R = 0;
-% else % if there are resistors in tree
-%     % Create symbolic values for all resistor names:
-%     R = hey;
-%     %syms(NLnets(SortedTree(hey:end,4),1));
-%     %syms 'Z_R';
-%     % Create numeric resistor matrix for Tree:
-%     for i = 1:1:row-R+1
-%         Z_R(i,i) = obj.Component_Values{obj.index(SortedTree(R+i-1,4)),2};
-%         % Z_R(i,i) = NLnets(SortedTree(R+i-1,4),1); % What the
-%         % symbolic vesion was
-%     end
-%     % Find inverse of symbolic resistor matrix for Tree:
-%     Y_R = inv(Z_R);
-% end
+% Find all resistors in the tree
 Rlocs = SortedTree(:,1)==numR;
 Relements = obj.index(SortedTree(Rlocs,4));
 Z_R = diag([obj.Component_Values{Relements,2}]);
@@ -74,28 +55,7 @@ if(isempty(Z_R))
     Y_R = 0;
 end
 
-
-
-
-% ya = find(SortedCoTree(:,1)==numG,1,'last'); % find last index of resistor (R) in tree
-% if isempty(ya) % if there are no resistors in cotree then set to zero
-%     G = 0;
-%     Y_G = 0;
-%     Z_G = 0;
-% else % if there are resistors in cotree
-%     % Create symbolic values for all resistor names:
-%     G = ya;
-%     % syms(NLnets(SortedCoTree(1:ya,4),1));
-%     % syms 'Z_G';
-%     % Create symbolic resistor matrix for CoTree:
-%     for i = 1:1:G
-%         Z_G(i,i) = obj.Component_Values{obj.index(SortedCoTree(i,4)),2};
-%         % Z_G(i,i) = NLnets(SortedCoTree(i,4),1);
-%     end
-%     % Find inverse of symbolic resistor matrix for CoTree:
-%     Y_G = inv(Z_G);
-% end
-
+% Find all resistors in the coTree
 Glocs = SortedCoTree(:,1)==numG;
 Gelements = obj.index(SortedCoTree(Glocs,4));
 Z_G = diag([obj.Component_Values{Gelements,2}]);
@@ -106,10 +66,6 @@ if(isempty(Z_G))
 end
 
 %% Parsing D_L Matrix
-% D_EG = D_L(1:R-1,1:G);
-% D_EJ = D_L(1:R-1,G+1:col);
-% D_RG = D_L(R:row,1:G);
-% D_RJ = D_L(R:row,G+1:col);
 D_EG = D_L(~Rlocs,Glocs);
 D_EJ = D_L(~Rlocs,~Glocs);
 D_RG = D_L(Rlocs,Glocs);
@@ -153,57 +109,35 @@ end
 Z = Z_G+(D_RG.')*Z_R*D_RG;
 Y = Y_R+D_RG*Y_G*(D_RG.');
 
-% Solve for the inverse of Z and Y Matrices
-if Z == 0
-    inv_Z = 0;
-else
-    inv_Z = inv(Z);
-end
-
-if Y == 0
-    inv_Y = 0;
-else
-    inv_Y = inv(Y);
-end
 
 %% Find H Sub Matrix
-
 % Add more cases as needed for now
-
 
 if Flag_RJ == 0 && Flag_RG == 0 && Flag_EG == 0 && Flag_EJ == 0
     % Normal Case
-    H_EE = -(D_EG*inv_Z*(D_EG.'));
-    H_EJ = D_EG*inv_Z*(D_RG.')*Z_R*D_RJ-D_EJ;
-    H_JE = (D_EJ.')-((D_RJ.')*inv_Y*D_RG*Y_G*(D_EG.'));
-    H_JJ = -((D_RJ.')*inv_Y*D_RJ);
+    H_EE = -(D_EG*(Z\(D_EG.')));
+    H_EJ = D_EG*(Z\D_RG')*Z_R*D_RJ-D_EJ;
+    H_JE = (D_EJ.')-((D_RJ')*(Y\D_RG)*Y_G*(D_EG'));
+    H_JJ = -(D_RJ')*(Y\D_RJ);
 %     almost_H = [H_EE,H_EJ;H_JE,H_JJ];
 elseif Flag_RJ == 1 && Flag_RG == 1 && Flag_EG == 0 && Flag_EJ == 0
     % Correct H_JJ if there are no resistors in the tree
-    H_EE = -(D_EG*(Z\(D_EG.')));%-(D_EG*inv_Z*(D_EG.'));
+    H_EE = -(D_EG*(Z\(D_EG.')));
     H_EJ = -D_EJ;
     H_JE = (D_EJ.');
-    [~,H_EJ_col]=size(H_EJ);
-    [H_JE_row,~]=size(H_JE);
-    H_JJ = zeros(H_JE_row,H_EJ_col);
-%         almost_H = [H_EE,H_EJ;H_JE,H_JJ];
+    H_JJ = zeros(size(H_JE,1),size(H_EJ,2));
 elseif  Flag_EG == 1 && Flag_RG == 1 && Flag_RJ == 0 && Flag_EJ == 0
     % Correct H_EE if there are no resistors in the cotree
-    H_JJ = -((D_RJ.')*inv_Y*D_RJ);
+    H_JJ = -(D_RJ.')*(Y\D_RJ);
     H_EJ = -D_EJ;
     H_JE = (D_EJ.');
-    [H_EJ_row,~]=size(H_EJ);
-    [~,H_JE_col]=size(H_JE);
-    H_EE = zeros(H_EJ_row,H_JE_col);
+    H_EE = zeros(size(H_EJ,1),size(H_JE,2));
 %             almost_H = [H_EE,H_EJ;H_JE,H_JJ];
 elseif Flag_RJ == 1 && Flag_RG == 1 && Flag_EG == 1 && Flag_EJ == 0
     H_EJ = -D_EJ;
     H_JE = (D_EJ.');
-    [H_EJ_row,H_EJ_col]=size(H_EJ);
-    [H_JE_row,H_JE_col]=size(H_JE);
-    H_JJ = zeros(H_JE_row,H_EJ_col);
-    H_EE = zeros(H_EJ_row,H_JE_col);
-%                 almost_H = [H_EE,H_EJ;H_JE,H_JJ];
+    H_JJ = zeros(size(H_JE,1),size(H_EJ,2));
+    H_EE = zeros(size(H_EJ,1),size(H_JE,2));
 else
     error('Unknown combination of elements')
 end

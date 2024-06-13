@@ -133,6 +133,14 @@ function [skinnyLines,thickLines,fills] = circuitElementImage(type)
                 1   1
                -1    1
                  0   -0.75];
+    elseif strcmpi(type,'Vm')
+        skinnyLines = [0 -5
+                0 5];
+        thickLines = [];
+        fills = [0   -0.75
+                .5   1
+               -.5    1
+                 0   -0.75];        
     else
         error('Invalid component type');
     end

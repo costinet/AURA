@@ -1,0 +1,21 @@
+* C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters\LTspice NetLists\schematics\SeriesCapBuck3Lvl.asc
+M2 N002 NC_01 N006 N006 NMOS ron = {ron} Coss = {Coss}
+V1 N005 0 {Vg}
+L1 N003 N004 {Lf}
+C1 N004 0 {Cout}
+R1 N004 0 {Rout}
+M1 N001 NC_02 N002 N002 NMOS ron = {ron} Coss = {Coss}
+M3 N006 NC_03 N008 N008 NMOS ron = {ron} Coss = {Coss}
+M4 N008 NC_04 0 0 NMOS ron = {ron} Coss = {Coss}
+M5 N007 NC_05 0 0 NMOS ron = {ron} Coss = {Coss}
+M6 N003 NC_06 0 0 NMOS ron = {ron} Coss = {Coss}
+Cfly1 N003 N002 {Cfly}
+Cfly2 N007 N006 {Cfly}
+L2 N007 N004 {Lf}
+L3 N008 N004 {Lf}
+R2 N001 N005 10m
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\dcostine\Documents\LTspiceXVII\lib\cmp\standard.mos
+.backanno
+.end

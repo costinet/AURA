@@ -44,7 +44,7 @@ function component = parseSpiceComponent(obj, str)
                 end
                 % default values if none other specified
                 vals = [.1 obj.defaultRoff 1e-9];
-                expr = {.1, obj.defaultRoff, 1e-9 };
+                expr = {'.1', num2str(obj.defaultRoff), '1e-9' };
             end
 
             %params
@@ -133,7 +133,7 @@ function component = parseSpiceComponent(obj, str)
         case 'D'
              %Need ron, roff, Cd, Vf
             vals = [0 obj.defaultRoff 0 0];
-            expr = {0, obj.defaultRoff, 0, 0};
+            expr = {'0', num2str(obj.defaultRoff), '0', '0'};
 
             [nodes,~,~] = regexp(str, NodeRegStr, 'match', 'tokens');
             component.Nodes = nodes([1 2]); 

@@ -53,9 +53,9 @@ function UIFigure = datasheet(obj)
             for i = 1:length(obj.parameters)
                 Characteristics.Data{i,1} = obj.parameters(i).name;
                 Characteristics.Data{i,2} = char(obj.parameters(i).conditions(:));
-                Characteristics.Data{i,3} = obj.parameters(i).min;
-                Characteristics.Data{i,4} = obj.parameters(i).typ;
-                Characteristics.Data{i,5} = obj.parameters(i).max;
+                Characteristics.Data{i,3} = num2str(obj.parameters(i).min);
+                Characteristics.Data{i,4} = num2str(obj.parameters(i).typ);
+                Characteristics.Data{i,5} = num2str(obj.parameters(i).max);
                 Characteristics.Data{i,6} = [obj.parameters(i).unit{1}, obj.parameters(i).unit{2}];
             end
 %             Characteristics.Data = {'Id', 'Continuous, T_A = 25C, Rtja = 220 C/W', '', 3.4, '', 'A'; ...

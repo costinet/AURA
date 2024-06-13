@@ -34,33 +34,80 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
     n = size(As,3);
     ns = size(Bs,1);
 
+    method = 1;
 
-    In = eye(size(As,1) + 1, size(As,2) + 1);
-    EA = In;
-    Atil = zeros(size(EA,1), size(EA,2), n);
-    for i = n:-1:1
-        Atil(:,:,i) = [As(:,:,i), Bs(:,:,i)*u(:,:,i); zeros(1, size(EA,1))];
-        expAtil(:,:,i) = expm(Atil(:,:,i)*ts(i));
-        EA = EA*expAtil(:,:,i);
+    if method == 1
+        %Faster method relying on consistent depedent states
+        In = eye(size(As,1) + 1, size(As,2) + 1);
+        EA = In;
+        Atil = zeros(size(EA,1), size(EA,2), n);
+        for i = n:-1:1
+            Atil(:,:,i) = [As(:,:,i), Bs(:,:,i)*u(:,:,i); zeros(1, size(EA,1))];
+            expAtil(:,:,i) = expm(Atil(:,:,i)*ts(i));
+
+            EA = EA*expAtil(:,:,i);
+        end
+    
+        IHC = eye(size(EA));
+        IHC(1:ns,1:ns) = obj.IHC;
+    
+    
+        depStates = sum(abs(eye(ns)-obj.Is(:,:,1)),2)  ~= 0;
+        depStates(end+1) = 0;
+    
+        Zn = null(In(~depStates,~depStates)-IHC(~depStates,~depStates)*EA(~depStates,~depStates));
+    
+        k = Zn(end,:)\1;
+        Xss = zeros(ns,1);
+        Xss(~depStates(1:end-1)) = Zn(1:end-1,:)*k;
+        Xss = obj.Is(:,:,1)*Xss;
+
+    else
+        %Slower method using dependent states in each subinterval
+        In = eye(size(As,1) + 1, size(As,2) + 1);
+        EA = In;
+        for i = n:-1:1
+            dS = sum(abs(eye(ns)-obj.Is(:,:,i)),2)  ~= 0;
+            At = [As(~dS,~dS,i), Bs(~dS,:,i)*u(:,:,i); zeros(1, sum(~dS)+1)]*ts(i);
+            eatilde = expm(At); 
+            eat = eatilde(1:end-1,1:end-1);
+            convInt = eatilde(1:end-1,end);
+    
+            fullPhi = zeros(size(As,1), size(As,1));
+            fullPhi(~dS,~dS) = eat;
+            fullPhi(dS,:) = obj.Is(dS,:,i);
+    
+            fullGamma =  zeros(size(As,1), 1);
+            fullGamma(~dS) = convInt;
+           
+    
+            expAtil(:,:,i) = [fullPhi, fullGamma ; zeros(1, size(EA,1)-1) 1];
+    
+            if any(isnan(expAtil(:,:,i)),'all')
+                warning('Augmented A matrix is badly scaled.  Attempting to continue')
+                dS = sum(abs(eye(ns)-obj.Is(:,:,i)),2)  ~= 0;
+                At = [As(~dS,~dS,i), Bs(~dS,:,i)*u(:,:,i); zeros(1, sum(~dS)+1)];
+                [T,B] = balance(At*ts(i),'noperm');
+                appr = T*expm(B)/T;
+                appr(size(As,1),size(As,2)) = 0;
+                expAtil(:,:,i) = [obj.Is(:,:,i)*appr zeros(size(obj.As,1),1) ; zeros(1, size(EA,1))];
+                if  any(isnan(expAtil(:,:,i)),'all')
+                   error('Augmented A matrix is badly scaled.  This may be due to unreasonably fast dynamics present in the circuit.')
+                end
+            end
+    
+            EA = EA*expAtil(:,:,i);
+        end
+    
+        IHC = eye(size(EA));
+        IHC(1:ns,1:ns) = obj.IHC;
+   
+        Zn = null(In-IHC*EA);
+    
+        k = Zn(end,:)\1;
+        Xss= k*obj.Is(:,:,1)*Zn(1:end-1,:);
     end
 
-    IHC = eye(size(EA));
-    IHC(1:ns,1:ns) = obj.IHC;
-
-
-    depStates = sum(abs(eye(ns)-obj.Is(:,:,1)),2)  ~= 0;
-    depStates(end+1) = 0;
-    nd = sum(depStates);
-
-
-%     PHI = In(~depStates,~depStates)-IHC(~depStates,~depStates)*EA(~depStates,~depStates);
-%     Zn = null(PHI(1:end-1,1:end-1));
-    Zn = null(In(~depStates,~depStates)-IHC(~depStates,~depStates)*EA(~depStates,~depStates));
-
-    k = Zn(end,:)\1;
-    Xss = zeros(ns,1);
-    Xss(~depStates(1:end-1)) = Zn(1:end-1,:)*k;
-    Xss = obj.Is(:,:,1)*Xss;
 
 %     EA*[Xss; 1] - [Xss; 1] %=0!
 
@@ -101,6 +148,7 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
     Xs(:,1) = [Xss; 1];
     for i=1:n
         Xs(:,i+1) = expAtil(:,:,i)*Xs(:,i);
+        % Xs(1:end-1,i+1) = obj.Is(:,:,i)*Xs(1:end-1,i+1);
     end
     Xs=Xs(1:end-1,:);
 

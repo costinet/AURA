@@ -1,7 +1,7 @@
 function plotCircuitElement(f,type, loc, sz, rot, baseLineWidth)
     arguments
         f
-        type {mustBeTextScalar,mustBeMember(type,{'M','C','L','R','V','I','D'})}
+        type {mustBeTextScalar,mustBeMember(type,{'M','C','L','R','V','I','D','Vm'})}
         loc (1,2) {mustBeNumeric}
         sz (1,1) {mustBeNumeric, mustBeScalarOrEmpty}
         rot (1,1) {mustBeNumeric, mustBeScalarOrEmpty}

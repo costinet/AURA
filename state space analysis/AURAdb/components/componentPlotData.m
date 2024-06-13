@@ -12,6 +12,7 @@ classdef componentPlotData
     properties (Dependent)
        xLabel
        yLabel
+       zLabel
     end
     
     properties (Access = protected)
@@ -23,6 +24,7 @@ classdef componentPlotData
         axisType = {'lin', 'lin'}    % two-element {x,y}, values 'log', 'norm', or 'lin'
         SIUnits
         conversionEps = 1e-8; %relative change in data acceptable from sync
+        dim = 2
     end
     
     properties (Dependent, Hidden)
@@ -31,15 +33,19 @@ classdef componentPlotData
        
         xSignal
         ySignal 
+        zSignal
         
         xUnit
         yUnit
+        zUnit
         
         xSI
         ySI
+        zSI
         
         xMult
         yMult
+        zMult
     end
         
     
@@ -121,7 +127,25 @@ classdef componentPlotData
                    yData = obj.plotData{i}(:,2)/yMn;
                end
 
-               plot(axes, xData, yData, '-o');
+               if size(obj.plotData{i},2) == 2
+                    plot(axes, xData, yData, '-o');
+               else
+                   zM = obj.componentType.defaultMultipliers(strcmpi(isParamOf(obj.componentType,obj.zSignal), obj.componentType.knownParams));
+                   zMn = obj.componentType.SIprefixes(zM{1});
+                   if numel(obj.axisType) >= 3 && strcmp(obj.axisType{3}, 'log')
+                       zData = abs(obj.plotData{i}(:,3)/zMn);
+                   else
+                       zData = obj.plotData{i}(:,3)/zMn;
+                   end
+                   xAx = unique(xData);
+                   yAx = unique(yData);
+
+                   [Xg,Yg] = meshgrid(xAx,yAx);
+                   F = scatteredInterpolant(xData,yData,zData);
+                   Zg = F(Xg,Yg);
+
+                   surf(axes, Xg, Yg, Zg);
+               end
                hold(axes, 'on');
            end
            legend(axes, obj.dataLabels);
@@ -136,7 +160,7 @@ classdef componentPlotData
                     end
                     entry = [entry obj.testConditions{i,2}, '=', num2str(obj.testConditions{i,3}), unit, obj.testConditions{i,5} newline];
                end
-               legend(axes, {obj.dataLabels{:}, entry});
+               legend(axes, {obj.dataLabels{:}, entry},'location','best');
            end
            
           if strcmp(obj.axisType{1}, 'log')
@@ -151,6 +175,10 @@ classdef componentPlotData
            
            xlabel(axes, [obj.xLabel, ' [', xM{1}, obj.xUnit, ']']);
            ylabel(axes, [obj.yLabel, ' [', yM{1}, obj.yUnit, ']']);
+
+           if size(obj.plotData{1},2) >= 3
+               zlabel(axes, [obj.zLabel, ' [', zM{1}, obj.zUnit, ']']);
+           end
            
         end
 
@@ -177,6 +205,14 @@ classdef componentPlotData
         function ys = get.yLabel(obj)
             ys = obj.axisLabels{2};
         end
+
+        function zs = get.zLabel(obj)
+            if numel(obj.axisLabels) >= 3
+                zs = obj.axisLabels{3};
+            else
+                zs = [];
+            end
+        end
         
         function xs = get.xSignal(obj)
             indX = strfind(obj.xLabel, ',');
@@ -195,6 +231,15 @@ classdef componentPlotData
                ys = obj.yLabel;
             end
         end
+
+         function zs = get.zSignal(obj)
+            indZ = strfind(obj.zLabel, ',');
+            if ~isempty(indZ)
+                zs = obj.zLabel(1:indZ-1);
+            else
+               zs = obj.zLabel;
+            end
+        end
         
         function nT = get.nTraces(obj)
             nT = size(obj.plotData,2);
@@ -211,7 +256,15 @@ classdef componentPlotData
                yU = obj.componentType.defaultUnits(strcmpi(obj.componentType.knownParams, obj.dataLabels{1}));
             end
             yU = yU{1};
-        end        
+        end    
+
+        function zU = get.zUnit(obj)
+            zU = obj.componentType.defaultUnits(strcmpi(obj.componentType.knownParams, obj.zSignal));
+            if isempty(zU)
+               zU = obj.componentType.defaultUnits(strcmpi(obj.componentType.knownParams, obj.dataLabels{1}));
+            end
+            zU = zU{1};
+        end  
         
         function xU = get.xSI(obj)
             xU = obj.SIUnits{1}; 
@@ -219,6 +272,14 @@ classdef componentPlotData
         
         function yU = get.ySI(obj)
             yU = obj.SIUnits{2}; 
+        end
+
+        function zU = get.zSI(obj)
+            if numel(obj.SIUnits) >= 3
+                zU = obj.SIUnits{3}; 
+            else
+                zU = '1';
+            end
         end
         
         function xM = get.xMult(obj)
@@ -234,6 +295,14 @@ classdef componentPlotData
                 yM = 1;
             else
                 yM = obj.componentType.SIprefixes(obj.ySI);
+            end
+        end
+
+        function zM = get.zMult(obj)
+            if strcmp(obj.zSI, 'none') || strcmpi(obj.zSI, '1')
+                zM = 1;
+            else
+                zM = obj.componentType.SIprefixes(obj.zSI);
             end
         end
 
@@ -286,7 +355,9 @@ classdef componentPlotData
                         % Due to storing online and returning, some
                         % resolution may be lost, so check for less then
                         % 1e-6 % difference in values
-                        exact =  all([exact ...
+                        exact =  all(size(obj.plotData) == size(graph.plotData)) && ...
+                            all(cellfun(@isequal,cellfun(@size,obj.plotData,'UniformOutput',false),cellfun(@size,graph.plotData,'UniformOutput',false)) )&& ...
+                            all([exact ...
                             all(abs(obj.plotData{i} - graph.plotData{i})./max(abs(graph.plotData{i}),eps) < obj.conversionEps | ...
                                 (isnan(obj.plotData{i}) & isnan(graph.plotData{i}))) ...
                             ]);

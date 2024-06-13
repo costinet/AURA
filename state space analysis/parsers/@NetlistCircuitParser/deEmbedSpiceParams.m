@@ -28,11 +28,11 @@ function [components] = deEmbedSpiceParams(obj,component,embeddedParams)
                 component.Nodes(nodeToReplace) = {newNode};
 
                 newComponent = {};
-                newComponent.Name = ['R_' component.Name '_Ser'];
+                newComponent.Name = ['R_{' component.Name '_{Ser}}'];
                 newComponent.Type = 'R';
                 newComponent.Nodes = {oldNode, newNode};
                 newComponent.paramExpressions = expr;
-                newComponent.paramNames = paramName;
+                newComponent.paramNames = {paramName};
                 newComponent.paramVals = paramVal;
 
                 components = [component, newComponent];

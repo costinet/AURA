@@ -102,9 +102,12 @@ function readSpiceNetlist(obj,filename)
 
     obj.topology.switchLabels = {switches.Name};
 
-    
-
-
+    try
+        obj.readLTspiceSchematic;
+    catch
+        % Do nothing.  This function is only to gelp with graphical
+        % representation
+    end
 
 
 end

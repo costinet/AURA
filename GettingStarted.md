@@ -19,6 +19,10 @@ The following software is **not** required, but is used if present to enhance to
 
 ![image_0.png](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/images/gettingStartedImages/ToolboxStructure.png)
 
+### Updating Libraries
+
+From the MATLAB command line, run `updateToolbox` to update both the toolbox code and associated libraries.  After the first installation, re-running this script will always allow you to update to the latest version of the toolbox and databases.
+
 ### Switched Mode Power Supply Simulation
 
 The toolbox is structured with class wrappers to manage data access and manipulation.  At the top level, the `SMPSim()` class implements a Switched Mode Power Supply steady-state simulation.  Most interactions with the toolbox occur through this class.  The SMPSim() class contains references internally to `SMPSConverter()` and `SMPSTopology()` classes that, respectively, generate/store the modulation pattern and state space description of the converter.  `CircuitParser()` class objects interface wither PLECS circuits (via simulink) or LTSpice netlists as a means of defining the converter circuit.  
@@ -35,7 +39,14 @@ The simulation, with or without the component repository is constructed to allow
 
 If the framework provided in this toolbox is used in preparation of a published work in a manner warranting a citation, the following is the suggested reference format for the toolbox itself
 
-J. A. Baxter and D. Costinett, Switched Mode Power Supply Toolbox, v0.2, https://github.com/costinet/AURA
+J. A. Baxter and D. Costinett, Switched Mode Power Supply Toolbox, v0.2.x, https://github.com/costinet/AURA
+
+\@electronic{SMPSToolbox,
+  author        = "J. A. Baxter and D. Costinett",
+  title         = "Switched Mode Power Supply Toolbox, v0.2.x",
+  url           = "https://github.com/costinet/AURA",
+  year          = "2023"
+}
 
 Select aspects of the framework are detailed in the following publicaitons
 

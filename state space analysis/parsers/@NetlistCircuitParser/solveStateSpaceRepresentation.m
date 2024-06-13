@@ -1,11 +1,13 @@
 function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
-%UNTITLED8 Summary of this function goes here
-%   Detailed explanation goes here
+%solveStateSpaceRepresentation solves state space matrices for
+%circuitParser class.  
+%   Requires that obj.components is populated.
+%
 %   Method adapted from L. O. Chua and P-M Lin, Compter Aided Analysis of
-%   Electronic Circuits: Algorithms & Computational Techniques", Chapter 6 & 8.
+%   Electronic Circuits: Algorithms & Computational Techniques", Chapters 6 & 8.
 
 
-    % Needed anymore?
+
     sources = obj.components(strcmp({obj.components.Type},'V') | strcmp({obj.components.Type},'I'));
     [~,IA,~] = intersect({obj.components.Name}, {sources.Name});
     obj.Element_Properties = [{obj.components.Name}' {obj.components.paramVals}'];
@@ -13,7 +15,6 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
     obj.Component_Values = obj.Element_Properties;
 
     obj.findNormalTree();
-
 
     %% Below equivalent to old call to ABCD_num
     [almost_H] = obj.nodeloop_num(obj.NL,obj.NLnets);
@@ -34,5 +35,11 @@ function [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
     switches = FETs | diodes;
 
     obj.Switch_Names = {obj.origComponents(switches).Name};
+
+
+    % H = obj.hybrid();
+    % if ~all(H==almost_H,"all")
+    %     error('New method broke')
+    % end
 
 end

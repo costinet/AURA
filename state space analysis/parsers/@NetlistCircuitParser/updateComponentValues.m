@@ -34,8 +34,7 @@ function updateComponentValues(obj)
         end
     end
 
-    obj.Anum = [];
-    obj.components = [];
+    obj.clearNumericalResults();
 
     if ~isempty(obj.undefinedExpressions)
         T = table(obj.undefinedExpressions(:,1), obj.undefinedExpressions(:,3), 'VariableNames',{'Component', 'Expression'});        

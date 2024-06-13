@@ -1,7 +1,7 @@
 classdef modularCircuitParser < NetlistCircuitParser
-    %CIRCUITPARSER abstract class defining requirements of a circuitParser
+    %modularCircuitParser circuit parser for modular topologies
     %   
-    %   See also @LTspiceCircuitParser, @PLECScircuitParser
+    %   See also @NetlistCircuitParser, @PLECScircuitParser
     
     properties ( SetAccess = private)
 
@@ -32,7 +32,13 @@ classdef modularCircuitParser < NetlistCircuitParser
 
 
         function obj = modularCircuitParser(topology, baseFile, modularFile, Nmodules)
+
+            if nargin==0
+                topology = [];
+            end
+
             obj = obj@NetlistCircuitParser(topology);
+            
 
             if nargin >= 3
                 obj.baseParser = NetlistCircuitParser(topology);
@@ -50,6 +56,9 @@ classdef modularCircuitParser < NetlistCircuitParser
 
 
         function assemble(obj,Nmodules)
+
+            assert(Nmodules >= 1, 'modular parser cannot be used without at least one module')
+
             obj.Nmodules = Nmodules;
             baseComps = obj.baseParser.origComponents;
             moduleComps = obj.moduleParser.origComponents;
@@ -106,21 +115,36 @@ classdef modularCircuitParser < NetlistCircuitParser
         end
 
 
-        function storedTopology = saveTopology(obj,name)
-            storedTopology = {};
-            storedTopology.name = name;
-            % storedTopology.components = obj.origComponents;
-            % storedTopology.props = obj.netListDirectives;
-            % storedTopology.switches = obj.topology.switchLabels;
-            storedTopology.baseParser = saveTopology(obj.baseParser,[name '(base)']);
-            storedTopology.moduleParser = saveTopology(obj.moduleParser,[name '(base)']);
+        function storedTop= saveTopology(obj,name, description,overwrite)
+             arguments
+                obj circuitParser
+                name {mustBeText} = ''
+                description {mustBeText} = ''
+                overwrite = 0
+             end
+            storedTop = storedTopology(name, description, obj);
+            tDB = topologyDB();
+            tDB.add(storedTop, overwrite);
+            tDB.saveDB();
+            % storedTopology = {};
+            % storedTopology.name = name;
+            % % storedTopology.components = obj.origComponents;
+            % % storedTopology.props = obj.netListDirectives;
+            % % storedTopology.switches = obj.topology.switchLabels;
+            % storedTopology.baseParser = saveTopology(obj.baseParser,[name '(base)']);
+            % storedTopology.moduleParser = saveTopology(obj.moduleParser,[name '(base)']);
         end
 
-        function loadTopology(obj,storedTopology, Nmodules)
+        function loadTopology(obj,storedTop, Nmodules)
             obj.baseParser = NetlistCircuitParser;
             obj.moduleParser = NetlistCircuitParser;
-            obj.baseParser.loadTopology(storedTopology.baseParser);
-            obj.moduleParser.loadTopology(storedTopology.moduleParser);
+            obj.baseParser.loadTopology(storedTop.baseParser);
+            obj.moduleParser.loadTopology(storedTop.moduleParser);
+
+            obj.sheetConnectorOutSym = storedTop.sheetConnectorOutSym;
+            obj.sheetConnectorInSym = storedTop.sheetConnectorInSym;
+            obj.sheetConnectorOutFormat = storedTop.sheetConnectorOutFormat;
+            obj.sheetConnectorInFormat = storedTop.sheetConnectorInFormat;
 
             assemble(obj,Nmodules)
             % obj.linearizeCircuitModel2();

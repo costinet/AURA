@@ -52,7 +52,7 @@ classdef component < handle
 %             obj.Property1 = inputArg1 + inputArg2;
 %         end
         
-        function addParameter(obj,varargin)
+        function result = addParameter(obj,varargin)
             %obj.addParameter(param) add parameter to component
             %   param -> componentTableData
             %obj.addParameter(name, value)
@@ -62,6 +62,9 @@ classdef component < handle
             %  type -> "min", "max", or "typ"
             %obj.addParameter(name, [typ max min])
             %obj.addParameter(..., conditions)
+            % 
+            % result is zero if nothing was added, one if a parameter was
+            % added and -1 if the parameter is already present
             
 %             addparameter(name, value)
 %             addparameter(name, value, conditions)
@@ -79,6 +82,7 @@ classdef component < handle
             testConditions = {};
             typeStr = [];
 %             
+            result = false;
 
             if nargin == 1+1
                 param = varargin{1};
@@ -119,12 +123,12 @@ classdef component < handle
                     typVal = varargin{2}(1);
                     maxVal = varargin{2}(2);
                     minVal = [];
-                    assert(maxVal > typVal, 'values must be specified such that min < typ < max');
+                    assert(maxVal >= typVal, 'values must be specified such that min < typ < max');
                 elseif length(varargin{2}) == 3
                     typVal = varargin{2}(1);
                     maxVal = varargin{2}(2);
                     minVal = varargin{2}(3);
-                    assert(maxVal > typVal && minVal < typVal, 'values must be specified such that min < typ < max');
+                    assert(maxVal >= typVal && minVal <= typVal, 'values must be specified such that min < typ < max');
                 else
                     error('parameter value must be singleton or a vector of three values');
                 end
@@ -176,43 +180,55 @@ classdef component < handle
             %assert(length(param)==1, 'addParameter() can only be used with a single parameter at a time');
             if length(param) > 1
                 for i = 1:length(param)
-                    obj.addParameter(param(i));
+                    result(i) = obj.addParameter(param(i));
                 end
             end
             if isa(param, 'componentTableData')
                 if isempty(obj.parameters)
                     obj.parameters = param;
                     obj.upDated = 1;
+                    result = true;
                 else
                     [sameParam, sameData] = eq(obj.parameters,param);
                     sameParam = find(sameParam,1);
                     if ~any(sameParam)
-                        % New plot
+                        % New param
                         obj.parameters(length(obj.parameters)+1) = param;
                         obj.upDated = 1;
+                        result = true;
                     elseif ~any(sameData)
                         % Existing parameter, but new data
                         if isempty(obj.parameters(sameParam).min)
                             obj.parameters(sameParam).min = param.min;
                         elseif ~isempty(param.min) && obj.parameters(sameParam).min ~= param.min
-                            warning(['Adding a duplicate param for ', param.name]);
-                            obj.parameters(length(obj.parameters)+1) = param;
+                            if nargout == 0
+                                warning(['Conflict with exsiting parameter ', param.name, '. Use replaceParam instead to overwrite.  Capture function output to suppress this warning']);
+                            end
+                            result = false;
+                            % obj.parameters(length(obj.parameters)+1) = param;
                         end
                         if isempty(obj.parameters(sameParam).typ)
                             obj.parameters(sameParam).typ = param.typ;
                         elseif ~isempty(param.typ) && obj.parameters(sameParam).typ ~= param.typ
-                            warning(['Adding a duplicate param for ', param.name]);
-                            obj.parameters(length(obj.parameters)+1) = param;
+                            if nargout == 0
+                                warning(['Conflict with exsiting parameter ', param.name, '. Use replaceParam instead to overwrite.  Capture function output to suppress this warning']);
+                            end
+                            result = false;
+                            % obj.parameters(length(obj.parameters)+1) = param;
                         end
                         if isempty(obj.parameters(sameParam).max)
                             obj.parameters(sameParam).max = param.max;
                         elseif ~isempty(param.max) && obj.parameters(sameParam).max ~= param.max
-                            warning(['Adding a duplicate param for ', param.name]);
-                            obj.parameters(length(obj.parameters)+1) = param;
+                            if nargout == 0
+                                warning(['Conflict with exsiting parameter ', param.name, '. Use replaceParam instead to overwrite.  Capture function output to suppress this warning']);
+                            end
+                            result = false;
+                            % obj.parameters(length(obj.parameters)+1) = param;
                         end
                         obj.upDated = 1;
                     else
                         % parameter already present, do nothing
+                        result = -1;
                     end
 %                     obj.parameters(length(obj.parameters)+1) = param; 
                 end

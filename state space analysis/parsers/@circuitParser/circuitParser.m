@@ -21,6 +21,12 @@ classdef circuitParser < handle
     methods (Abstract, Hidden)
         [Iname, Vname] = getSwitchMeasSourceNames(obj,sName)
     end
+
+    methods(Hidden)
+        function linkTopology(obj,top)
+            obj.topology = top;
+        end
+    end
     
 %     methods
 %         %%constructor

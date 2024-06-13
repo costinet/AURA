@@ -25,7 +25,7 @@ classdef componentDB < handle
     
     methods (Abstract)
         [table, addlTable, graph] = json(obj)
-        sync(obj)
+        % sync(obj)
 %         add(obj, item)
 %         subsref(obj, index)
         subTable(obj, varargin) % Return a nicely-formatted table with searchable parameters

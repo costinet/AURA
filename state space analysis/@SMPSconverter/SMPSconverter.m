@@ -602,6 +602,15 @@ classdef SMPSconverter < handle
 
             obj.u = newU;%reshape(newU,max(size(newU,1:2)),1, size(newU,3));
         end
+
+        function set.topology(obj,top)
+            arguments
+                obj SMPSconverter
+                top SMPStopology
+            end
+            obj.topology = top;
+            top.linkConverter(obj);
+        end
         
     end
 

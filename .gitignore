@@ -12,3 +12,4 @@ slprj/
 state space analysis/Releases/*.prj
 state space analysis/AURAdb/digitizers/plotDigitizer/temp/
 state space analysis/AURAdb/databases/@capacitorDB/capacitors.mat
+state space analysis/Toolbox/Switched Mode Power Supply Toolbox.mltbx

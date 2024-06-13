@@ -1,5 +1,5 @@
 classdef NetlistCircuitParser < circuitParser
-    %NetlistCircuitParser circuitParser handling spice netlist files
+    %NetlistCircuitParser circuitParser handling SPICE netlist files
     %   NetlistCircuitParser interfaces spice netlists (LTspice or
     %   otherwise) to parse state space descriptions of circuit topologies.
     %
@@ -19,11 +19,6 @@ classdef NetlistCircuitParser < circuitParser
     properties (Hidden, Constant)
         method = 'new'
     end
-
-    properties
-        LTSpiceFolder = ['C:\Users\' getenv('USERNAME') '\Documents\LTspiceXVII'];
-        LTSpiceExe = ['C:\Program Files\LTC\LTspiceXVII\' 'XVIIx64.exe'];
-    end
     
     properties (SetAccess = protected)
         sourceType
@@ -37,6 +32,12 @@ classdef NetlistCircuitParser < circuitParser
 
         components
 		
+    end
+
+    properties (SetAccess = protected, Hidden)
+        %% Properties for schematic display
+        schemPositions
+        schemWires
     end
     
     properties (SetAccess = private, Hidden)
@@ -110,19 +111,8 @@ classdef NetlistCircuitParser < circuitParser
         %% Netlist things
         netlistLibraries
         netlistModels
-     end
 
-     properties (Hidden)
-        defaultRoff = 10e6;
-
-        undefinedExpressions = {}
-%         % Lists whether a FET or diode is on or off during a state
-        ONorOFF
-
-     end
-
-   properties (Access = private)
-       % From Jared's Topology Class
+         % From Jared's Topology Class
         order % Need right now becuase it breaks code if not here
         Element_Properties = {}% 1st column is char of all element names 2nd column is the value of that element ** Resistor values for switches must be at the end
         Switch_Resistors  % List of chars that represent the switch names plus '_R'
@@ -136,7 +126,22 @@ classdef NetlistCircuitParser < circuitParser
         Vf
 
         parsedU
-    end
+     end
+
+     properties (Hidden)
+        LTSpiceFolder = ['C:\Users\' getenv('USERNAME') '\Documents\LTspiceXVII'];
+        LTSpiceExe = ['C:\Program Files\LTC\LTspiceXVII\' 'XVIIx64.exe'];
+
+        defaultRoff = 10e6;
+        undefinedExpressions = {}
+%         % Lists whether a FET or diode is on or off during a state
+        ONorOFF
+
+     end
+
+     properties (Hidden, Dependent)
+        settings
+     end
     
     methods
         % Superclass Required
@@ -146,6 +151,7 @@ classdef NetlistCircuitParser < circuitParser
 
         %File I/O / Parsing
         readSpiceNetlist(obj,filename)
+        readLTspiceSchematic(obj)
         evalSpiceParams(obj,param)
         str = spiceNumFormat(obj,str)
         component = parseSpiceComponent(obj, str, type)
@@ -160,18 +166,29 @@ classdef NetlistCircuitParser < circuitParser
         components = XFdependentSourceSubcircuit(obj, directive, components)
         setSwitchingState(obj, swvec)
         [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
+        [H, tree, coTree, nNL] = hybrid(obj)
+
+        %Graphical Representation
+        plotSchematic(obj,fn)
 
         function obj = NetlistCircuitParser(topology)
-            if nargin ==1 
+            if nargin ==1 && ~isempty(topology)
                 assert(isa(topology, 'SMPStopology'), ...
                     'input argument topology must be a handle to an object of class SMPStopology');
                 obj.topology = topology;
             else
                 % warning('Incorrect number of inputs supplied')
             end
+
+            settingsPath = fullfile(userpath, 'SMPSToolbox', 'AURA', 'parsers', class(obj),filesep);
+            if isempty(dir(settingsPath))
+                mkdir(settingsPath)
+            else
+                obj.loadSettings();
+            end
             
             if ~exist(obj.LTSpiceFolder,'dir')
-                warning('Value of @LTSpiceCircuitParse.LTSpiceFolder is not the installation directory of LTSpice.  Libarary use may be limited')
+                warning('Value of @LTSpiceCircuitParse.LTSpiceFolder is not the installation directory of LTSpice.  Library use may be limited')
             end
         end
             
@@ -241,21 +258,64 @@ classdef NetlistCircuitParser < circuitParser
         
         
 
-        function storedTopology = saveTopology(obj,name)
-            storedTopology = {};
-            storedTopology.name = name;
-            storedTopology.components = obj.origComponents;
-            storedTopology.props = obj.netListDirectives;
-            storedTopology.switches = obj.topology.switchLabels;
+        function storedTop = saveTopology(obj,name,description,overwrite)
+            arguments
+                obj circuitParser
+                name {mustBeText} = ''
+                description {mustBeText} = ''
+                overwrite = 0
+            end
+            % storedTopology = {};
+            % storedTopology.name = name;
+            % storedTopology.components = obj.origComponents;
+            % storedTopology.props = obj.netListDirectives;
+            % storedTopology.switches = obj.topology.switchLabels;
+            % storedTopology.schemPositions = obj.schemPositions;
+            % storedTopology.schemWires = obj.schemWires;
+            storedTop = storedTopology(name, description, obj);
+            tDB = topologyDB();
+            tDB.add(storedTop, overwrite);
+            tDB.saveDB();
         end
-        function loadTopology(obj,storedTopology)
-            obj.origComponents = storedTopology.components;
-            obj.netListDirectives = storedTopology.props;
-            obj.topology.switchLabels = storedTopology.switches;
+        function loadTopology(obj,storedTop)
+            obj.origComponents = storedTop.components;
+            obj.netListDirectives = storedTop.props;
+            obj.topology.switchLabels = storedTop.switches;
             obj.sourceType = 'stored';
+            obj.schemPositions = storedTop.schemPositions;
+            obj.schemWires = storedTop.schemWires;
             % obj.linearizeCircuitModel2();
             obj.loadModel();
+        end
 
+        function set.LTSpiceFolder(obj, newpath)
+            if exist(newpath,'dir') == 7
+                obj.LTSpiceFolder = newpath;
+            else
+                error(['Supplied path ' newpath ' does not exist'])
+            end
+            settingsPath = fullfile(userpath, 'SMPSToolbox', 'AURA', 'parsers', class(obj),'settings.mat');
+            settings = obj.settings;
+            save(settingsPath, 'settings');
+        end
+
+        function set.LTSpiceExe(obj,newpath)
+            if exist(newpath,'file')
+                obj.LTSpiceExe = newpath;
+            else
+                error(['Supplied path ' newpath ' does not exist'])
+            end
+            settingsPath = fullfile(userpath, 'SMPSToolbox', 'AURA', 'parsers', class(obj),'settings.mat');
+            settings = obj.settings;
+            save(settingsPath, 'settings');
+        end
+
+
+        function settings = get.settings(obj)
+            % Settings meant to be saved between runs
+            settings = cell.empty;
+            settings.LTSpiceFolder = obj.LTSpiceFolder;
+            settings.LTSpiceExe = obj.LTSpiceExe;
         end
 
     end
@@ -275,6 +335,21 @@ classdef NetlistCircuitParser < circuitParser
         function setComponents(obj,compList)
             obj.origComponents = compList;
         end
+
+        function loadSettings(obj)
+            settingsPath = fullfile(userpath, 'SMPSToolbox', 'AURA', 'parsers', class(obj),'settings.mat');
+            if exist(settingsPath, 'file')
+                S = load(settingsPath, 'settings');
+                obj.LTSpiceFolder = S.settings.LTSpiceFolder;
+                obj.LTSpiceExe = S.settings.LTSpiceExe;
+            end
+        end
+
+        function clearNumericalResults(obj)
+            obj.Anum = []; obj.Bnum =[]; obj.Cnum =[]; obj.Dnum = []; obj.Inum = []; obj.eigA = [];
+            obj.components = [];
+        end
+
 
     end
 end

@@ -1,3 +1,11 @@
+### v0.2.8
+- removed net sync (unfinished) code
+- added StoredTopology class and TopologyDB
+- added modularTopology class
+- Continued refactoring LTspiceCircuitParser into NetlistCircuitParser.  NetlistCircuitParser is now default for unspecified model parsing.  Former will be depricated over time.
+- Moved additional settings into user files that will persist as versions updated.
+- minor bugfixes
+
 ### v0.2.7
 - Added changelog
 - Initial implementation of switchLosses() function in SMPSim to calculate per-switch average loss
@@ -5,3 +13,4 @@
 - Initial implementaition of modularCircuitParser to allow modular (e.g. multilevel) topologies
 - Added saveTopology and loadTopology classes to circuitParser to prep for stored topologies in AURAdb
 - Updated findSSTF to allow multiple input times, with gains, and to allow output sampling to happen at a time other than the end of the period.
+- Implementing MATLAB test

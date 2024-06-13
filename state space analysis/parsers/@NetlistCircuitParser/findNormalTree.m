@@ -60,7 +60,7 @@ function findNormalTree(obj)
         colIndex(colIndex <= 0) = inf;
         TreeRows = min(colIndex,[],2)';
     catch
-        error('Possible Singular Incidence Matrix. Check ground nodes in netlist (No isolation across transformer)')
+        error('Possible Singular Incidence Matrix. It is possible that the circuit is not connected.')
     end
     
     

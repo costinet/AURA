@@ -18,6 +18,14 @@ The latest build of the [packaged toolbox](https://github.com/costinet/AURA/rele
 
 Additional releases are available from the [Releases](https://github.com/costinet/AURA/releases) folder of the repository.  Drag and drop the mlbtx file into your matlab workspace to install.  To view the installed files, uninstall, or manage the installation of the toolbox, go to MATLAB Home->Add-Ons->Manage Add-Ons and find "Switched Mode Power Supply Toolbox" in your list of installed toolboxes.
 
+### Updating Libraries
+
+From the MATLAB command line, run `updateToolbox` to update both the toolbox code and associated libraries.  After the first installation, re-running this script will always allow you to update to the latest version of the toolbox and databases.
+
+# Structure and Use
+
+![image_0.png](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/images/gettingStartedImages/ToolboxStructure.png)
+
 ## Documentation
 For an introduction to the toolbox, see the [GettingStarted.mlx](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/GettingStarted.mlx) or the web-based version of the same file [GettingStarted.md](https://github.com/costinet/AURA/blob/master/GettingStarted.md)
 
@@ -25,10 +33,31 @@ For an example use case, see [SeriesCapBuck.mlx](https://github.com/costinet/AUR
 
 [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=costinet/AURA&project=state%20space%20analysis/Toolbox/AURA.prj&file=state%20space%20analysis/doc/GettingStarted.mlx)
 
-# Structure and Use
+# Licensing
 
-![image_0.png](https://github.com/costinet/AURA/blob/master/state%20space%20analysis/doc/images/gettingStartedImages/ToolboxStructure.png)
+The toolbox is available under the [MIT License](https://github.com/costinet/AURA/blob/master/LICENSE.txt)
 
+# Attribution
+
+If the framework provided in this toolbox is used in preparation of a published work in a manner warranting a citation, the following is the suggested reference format for the toolbox itself
+
+J. A. Baxter and D. Costinett, Switched Mode Power Supply Toolbox, v0.2.x, https://github.com/costinet/AURA
+
+\@electronic{SMPSToolbox,
+  author        = "J. A. Baxter and D. Costinett",
+  title         = "Switched Mode Power Supply Toolbox, v0.2.x",
+  url           = "https://github.com/costinet/AURA",
+  year          = "2023"
+}
+
+Select aspects of the framework are detailed in the following publicaitons
+
+   1.  J. A. Baxter and D. J. Costinett, "Power Converter and Discrete Device Optimization Utilizing Discrete Time State-Space Modeling," 2023 IEEE 24th Workshop on Control and Modeling for Power Electronics (COMPEL), Ann Arbor, MI, USA, 2023, pp. 1-8, doi: 10.1109/COMPEL52896.2023.10221030. 
+   1.  J. A. Baxter and D. J. Costinett, "Broad-Scale Converter Optimization Utilizing Discrete Time State-Space Modeling," 2022 IEEE Design Methodologies Conference (DMC), Bath, United Kingdom, 2022, pp. 1-6, doi: 10.1109/DMC55175.2022.9906473. 
+   1.  J. A. Baxter and D. J. Costinett, "Steady-State Convergence of Discrete Time State-Space Modeling with State-Dependent Switching," 2020 IEEE 21st Workshop on Control and Modeling for Power Electronics (COMPEL), Aalborg, Denmark, 2020, pp. 1-8, doi: 10.1109/COMPEL49091.2020.9265734. 
+   1.  J. A. Baxter and D. J. Costinett, "Converter Analysis Using Discrete Time State-Space Modeling," 2019 20th Workshop on Control and Modeling for Power Electronics (COMPEL), Toronto, ON, Canada, 2019, pp. 1-8, doi: 10.1109/COMPEL.2019.8769686. 
+
+<!--
 ## SMPSim()
 ## Methods
 
@@ -123,3 +152,5 @@ Not yet implemented
 Not yet implemented
 ### topologies
 Not yet implemented
+
+-->

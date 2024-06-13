@@ -533,6 +533,10 @@ classdef SMPSim < handle
         function set.swvec(varargin)
             error('Setting swvec is not recommended for class SMPSsim.  Use methods in SMPSconverter');
         end
+
+        function set.parser(obj, newParser)
+            obj.converter.topology.circuitParser = newParser;
+        end
               
     end
 

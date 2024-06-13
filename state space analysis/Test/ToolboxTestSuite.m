@@ -97,15 +97,14 @@ classdef ToolboxTestSuite < matlab.unittest.TestCase
             testCase.verifyEqual(length({tDB(:).ron.max}) , len);
             
             fet1 = tDB(1);
-            param1 = fet1.parameters;
+            param1 = fet1.parameters(1);
             name1 = {param1.name};
             
-            testCase.verifyEqual(fet1.parameters,param1);
+            testCase.verifyEqual(fet1.parameters(1),param1);
             testCase.verifyEqual(fet1.parameters(1).name , param1(1).name);
             testCase.verifyTrue(strcmp(tDB(1).parameters(1).name(1), 'R'));
             testCase.verifyEqual({fet1.parameters.name} , name1);
-            testCase.verifyEqual({tDB(1).parameters.name} , name1);
-            testCase.verifyEqual({tDB(1).parameters(:).name} , name1);
+            testCase.verifyEqual({tDB(1).parameters(1).name} , name1);
         end
 
         function checkNetlisParserMethods(testCase)

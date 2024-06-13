@@ -12,6 +12,7 @@ classdef componentTableData
     
     properties (Dependent)
         unit
+        mult
     end
     
     properties (Hidden)
@@ -82,6 +83,10 @@ classdef componentTableData
         function cT = get.type(obj)
             cT = class(obj.componentType);
         end
+
+        function m = get.mult(obj)
+            m = obj.componentType.SIprefixes(obj.unit{1});
+        end
         
         function [tf, paramTF] = eq(obj, param)
             % [tf, paramTF] = eq(obj, param)
@@ -109,7 +114,8 @@ classdef componentTableData
                     tf = false; 
                 elseif ~strcmp(obj.name, param.name)
                     tf = false; 
-                elseif ~strcmp(obj.conditions, param.conditions)
+                elseif (~isempty(param.conditions) && isempty(obj.conditions)) ...
+                        || ~strcmp(obj.conditions, param.conditions)
                     tf = false; 
                 else
                     tf = true;
@@ -139,7 +145,7 @@ classdef componentTableData
                     end
 
                     
-                    if all(newData == curData | (isnan(newData) & isnan(curData)) )
+                    if numel(newData) == numel(curData) && all(newData == curData | (isnan(newData) & isnan(curData)) )
                         paramTF = true;
                     else
                         paramTF = false;

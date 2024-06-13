@@ -5,7 +5,7 @@ function [A,B,C,D,I,Htemp,depends,StateNames,OutputNames,DependentNames,Constant
 
 % if the number of state variables is greater than sym_comput, sym AB
 % matrix will not be computed
-sym_comput = 99;  %% 99 or 1
+    sym_comput = 99;  %% 99 or 1
     numE = 1;
     numEB = 2;
     numEM = 3;
@@ -19,7 +19,7 @@ sym_comput = 99;  %% 99 or 1
     numJB = 11;
     numJ = 12;
     
-    index = obj.index;
+    % index = obj.index;
     
     SortedTrees = SortedTree;
     SortedCoTrees = SortedCoTree;
@@ -220,7 +220,8 @@ sym_comput = 99;  %% 99 or 1
                 I(end-size(depends,1)+1:end, 1:size(depends,2)) = depends;
             end
         end
-        
+    else
+        error('Greater than 99 independent circuit elements found; failing')
     end
 end % That's all Folks
 

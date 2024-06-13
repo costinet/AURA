@@ -44,6 +44,8 @@ classdef SMPStopology < handle
     properties (Hidden, SetAccess = private)
         expAs
         eigAs
+
+        converter
     end
     
     methods
@@ -251,7 +253,23 @@ classdef SMPStopology < handle
             end
         end
 
+        %% Setters
+        function set.circuitParser(obj,parser)
+            arguments
+                obj SMPStopology
+                parser circuitParser
+            end
+            obj.circuitParser = parser;
+            parser.linkTopology(obj);
+        end
               
+    end
+
+    methods (Hidden)
+        function linkConverter(obj, conv)
+            % for making link bidrectional when converter adds topology.
+            obj.converter = conv;
+        end
     end
     
 end
