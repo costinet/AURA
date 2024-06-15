@@ -19,7 +19,7 @@ function Gz = findSSTF(obj, tp, oi, tm, ut)
 %   indices in oi.
 %
 %   Gz = findSSTF(__, tm) also includes a measurement interval tm
-%   at which all state outputs are measured.  If tm is ommiteed,
+%   at which all state outputs are measured.  If tm is ommitted,
 %   measurements are taken after the final interval, tm=length(obj.ts)
 %
 %   see also SMPSim, ss   
@@ -126,9 +126,9 @@ function Gz = findSSTF(obj, tp, oi, tm, ut)
     for i = 1:numel(actualPertTime)
         if actualPertTime(i) ~= 0
             XP = obj.Xs(:,actualPertTime(i)+1);
-            xphat(:,:,i) = As(:,:,actualPertTime(i))*XP + Bs(:,:,actualPertTime(i))*u(:,:,actualPertTime(i)) - ...
+            xphat(:,:,actualPertTime(i)) = As(:,:,actualPertTime(i))*XP + Bs(:,:,actualPertTime(i))*u(:,:,actualPertTime(i)) - ...
                 (As(:,:,actualPertTime(i)+1)*XP + Bs(:,:,actualPertTime(i)+1)*u(:,:,actualPertTime(i)+1));
-            xphat(:,:,i) = xphat(:,:,i)*Km(i);
+            xphat(:,:,actualPertTime(i)) = xphat(:,:,actualPertTime(i))*Km(actualPertTime(i));
         end
     end
 

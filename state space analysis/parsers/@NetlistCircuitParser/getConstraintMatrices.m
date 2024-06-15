@@ -13,6 +13,7 @@ end
 
 
 switchNames = obj.topology.switchLabels;
+% switchNames = cellfun(@(x) ['{' x '}'], switchNames, 'UniformOutput', false);
 outputs = obj.topology.outputLabels;
 
 swvec = obj.topology.swseq;

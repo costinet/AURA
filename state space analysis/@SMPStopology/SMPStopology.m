@@ -257,7 +257,7 @@ classdef SMPStopology < handle
         function set.circuitParser(obj,parser)
             arguments
                 obj SMPStopology
-                parser circuitParser
+                parser
             end
             obj.circuitParser = parser;
             parser.linkTopology(obj);

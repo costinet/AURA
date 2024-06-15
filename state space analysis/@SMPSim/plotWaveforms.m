@@ -63,7 +63,13 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
                 end
                 hold off;
                 try
-                    ylabel(names{oSelect(nsi)});
+                    sigName = names{oSelect(nsi)};
+                    underInd = strfind(sigName,'_');
+                    if ~isempty(underInd)
+                        sigName = strrep(sigName, '_', '_{');
+                        sigName = [sigName repmat('}',1,numel(underInd))];
+                    end
+                    ylabel(sigName);
                 catch
                     warning('State Names not set in topology subclass');
                 end
@@ -73,6 +79,16 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
                 else
                     xlabel('t')
                 end
+
+                %% remove yticks near ends
+                closeYTicks = min(abs(ax.YTick - ax.YLim')/diff(ax.YLim),[],1) < 0.1;
+                if sum(~closeYTicks) >= 3
+                    ax.YTick(closeYTicks) = [];
+                else
+                    ax.YTick = ax.YLim(1) + diff(ax.YLim)*[.25 .5 .75];
+                end
+
+
             end
             if nsi > ns
                 break

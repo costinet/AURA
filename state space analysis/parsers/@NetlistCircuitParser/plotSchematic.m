@@ -165,4 +165,5 @@ function plotSchematic(obj,fn)
 
     ax.XTick = [];
     ax.YTick = [];
+    set(gca,'Visible','off')
 end

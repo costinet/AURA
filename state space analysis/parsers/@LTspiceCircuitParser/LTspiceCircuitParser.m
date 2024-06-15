@@ -1,4 +1,4 @@
-classdef LTspiceCircuitParser < handle
+classdef LTspiceCircuitParser < circuitParser
     %LTspiceCircuitParser circuitParser handling spice netlist files
     %   LTspiceCircuitParser interfaces spice netlists (LTspice or
     %   otherwise) to parse state space descriptions of circuit topologies.
