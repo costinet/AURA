@@ -126,8 +126,13 @@ function Gz = findSSTF(obj, tp, oi, tm, ut)
     for i = 1:numel(actualPertTime)
         if actualPertTime(i) ~= 0
             XP = obj.Xs(:,actualPertTime(i)+1);
-            xphat(:,:,actualPertTime(i)) = As(:,:,actualPertTime(i))*XP + Bs(:,:,actualPertTime(i))*u(:,:,actualPertTime(i)) - ...
-                (As(:,:,actualPertTime(i)+1)*XP + Bs(:,:,actualPertTime(i)+1)*u(:,:,actualPertTime(i)+1));
+            if actualPertTime(i) == size(As,3)
+                xphat(:,:,actualPertTime(i)) = As(:,:,actualPertTime(i))*XP + Bs(:,:,actualPertTime(i))*u(:,:,actualPertTime(i)) - ...
+                    (As(:,:,1)*XP + Bs(:,:,1)*u(:,:,1));
+            else
+                xphat(:,:,actualPertTime(i)) = As(:,:,actualPertTime(i))*XP + Bs(:,:,actualPertTime(i))*u(:,:,actualPertTime(i)) - ...
+                    (As(:,:,actualPertTime(i)+1)*XP + Bs(:,:,actualPertTime(i)+1)*u(:,:,actualPertTime(i)+1));
+            end
             xphat(:,:,actualPertTime(i)) = xphat(:,:,actualPertTime(i))*Km(actualPertTime(i));
         end
     end

@@ -117,7 +117,7 @@ classdef transistor < component
             
                     CossV = graphs(CplotLoc).plotData{curveLoc};
         
-                    if nargin == 2
+                    if nargin == 2 || isempty(Vds) || Vds<0
                         Vds = max(CossV(:,1));
                     end
         
@@ -155,6 +155,8 @@ classdef transistor < component
             %   Additional outputs are partial charges found from the plot
             %   of Vgs-vs-Qg, when available.
 
+
+            Qg = []; Qgs1 = []; Qgd = []; Qgs2 = []; Qsw = [];
             graphs = [obj.graphs(:)];
             QplotLoc = find(startsWith({graphs.title}, 'Vgs-vs-Qg'),1,'last');
             if isempty(QplotLoc)
@@ -162,8 +164,9 @@ classdef transistor < component
                     startsWith({graphs.xLabel}, 'Qg'),1,'last');
             end
 
+            params = obj.parameters;
             if ~exist('Vth','var')
-                params = obj.parameters;
+                
                 VthLoc = strcmp(params(:).name,'Vth');
     
                 if ~any(VthLoc)
@@ -175,15 +178,15 @@ classdef transistor < component
             end
 
             if isempty(QplotLoc)
-                QgLoc = strcmp(params(:).name,'Qg');
-                if ~ isempty(paramLoc)
+                QgLoc = find(strcmp({params(:).name},'Qg'),1);
+                if ~isempty(QgLoc)
                     Qg = params(QgLoc).approx();
                     Qgs1 = [];
                     Qgd = [];
                     Qgs2 = [];
                     Qsw = [];
                 else
-                    error('Unable to find any data to base Qg approximation on');
+                    warning('Unable to find any data to base Qg approximation on');
                 end
             else
                 Qgplot = obj.graphs(QplotLoc);
@@ -193,21 +196,27 @@ classdef transistor < component
                 totalLoc = find(Qgplot.plotData{1}(:,2) >= Vgs,1);
                 if isempty(totalLoc)
                     totalLoc = numel(Qgplot.plotData{1}(:,2));
+                    if totalLoc == 0
+                        totalLoc = [];
+                    end
                 end
-                Qg = Qgplot.plotData{1}(totalLoc,1);
+                QgplotData = Qgplot.plotData{1};
+                Qg = QgplotData(totalLoc,1);
 
                 dVdQ = diff(Qgplot.plotData{1},1);
                 deldVdQ = diff(dVdQ(:,2)./dVdQ(:,1));
-                millerStartLoc = find(deldVdQ == min(deldVdQ));
-                millerEndLoc = find(deldVdQ == max(deldVdQ));
+                millerStartLoc = find(deldVdQ == min(deldVdQ),1);
+                millerEndLoc = find(deldVdQ == max(deldVdQ),1);
                 VthLoc = find(Qgplot.plotData{1}(:,2) >= Vth,1);
 
                 Qs = Qgplot.plotData{1}([VthLoc, millerStartLoc, millerEndLoc, totalLoc],1);
 
-                Qgs1 = Qs(2);
-                Qgd = Qs(3)-Qs(2);
-                Qgs2 = Qs(4)-Qs(3);
-                Qsw = Qs(3)-Qs(1);
+                if numel(Qs) == 4
+                    Qgs1 = Qs(2);
+                    Qgd = Qs(3)-Qs(2);
+                    Qgs2 = Qs(4)-Qs(3);
+                    Qsw = Qs(3)-Qs(1);
+                end
             end
         end
 

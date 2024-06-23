@@ -39,6 +39,8 @@ if ~isempty(find(verDiff > 0,1,'first') )
             installedToolbox = matlab.addons.toolbox.installToolbox(outfn);
         end
     end
+else
+    disp('Toolbox is up to date')
 end
 
 %% update component libraries

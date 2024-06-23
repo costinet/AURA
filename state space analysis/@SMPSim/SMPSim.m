@@ -116,6 +116,7 @@ classdef SMPSim < handle
         [ avgXs, avgYs, Ints ] = ssAvgs(obj, Xss)
         niter = findValidSteadyState(obj)
         Gz = findSSTF(obj, tp, oi, tm, ut)
+        Gs = findAvgModelTF(obj, tp, oi)
         [ xs, t, ys, xd ] = simTransient(obj, nPeriods, Xss, tsteps)
 
         %% Locally-defined methods

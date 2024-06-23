@@ -5,10 +5,10 @@ classdef AURAdb < handle
     
     properties (SetAccess = immutable, GetAccess = public)
         transistors
-        inductors
         capacitors
-        cores
-        wires
+        % inductors
+        % cores
+        % wires
         topologies
     end
     
@@ -21,10 +21,25 @@ classdef AURAdb < handle
             end
 
             obj.transistors = transistorDB();
-            obj.inductors = 0;
-            obj.capacitors = capacitorDB();
-            obj.cores = 0;
-            obj.wires = 0;
+            
+            try
+                obj.capacitors = capacitorDB();
+            catch e
+                % RF Toolbox also has a capacitor() function.  Check if it
+                % is conflicting and report to user.
+                if endsWith(e.stack(1).file, fullfile('rf','capacitor.m'))
+                    e = e.addCause(MException('CAPACITOR:shadowedByRFToolbox',[ ...
+                        'function capacitor() for AURAdb components is shadowed by a identiclaly-named function in the RF Toolbox. ' ...
+                        'Move the AURAdb\\components\\capacitor folder lower than the RF toolbox in the matlab path']));
+                    throw(e);
+                else
+                    rethrow(e)
+                end
+
+            end
+            % obj.inductors = 0;
+            % obj.cores = 0;
+            % obj.wires = 0;
 
             obj.topologies = topologyDB();
         end
@@ -43,6 +58,9 @@ classdef AURAdb < handle
                 disp(['Downloading latest libraries from ' releaseURL]);
                 % outfn = websave(fullfile(userpath, 'SMPSToolbox', 'AURAdb', [latestVersion '.zip']) , releaseURL);
                 fns = unzip(releaseURL, fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion));
+            else
+                disp('AURAdb already updated to lates version');
+                fns = [];
             end
             if ~isempty(fns)
                 disp('Extracting files');
@@ -54,9 +72,10 @@ classdef AURAdb < handle
                     end
                 end
             end
-            disp(['Cleaning up']);
+            disp('Cleaning up');
             if exist(fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion), 'dir')
-                rmdir(fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion),'s');
+                % rmdir(fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion),'s');
+                % mkdir(fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion));
             end
         end
     end
