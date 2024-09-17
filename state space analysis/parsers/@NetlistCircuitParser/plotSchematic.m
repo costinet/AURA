@@ -3,7 +3,7 @@ function plotSchematic(obj,fn)
 %   Detailed explanation goes here
 
     if nargin < 2
-        f = fig;
+        f = figure();
     else
         f = figure(fn);
     end

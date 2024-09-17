@@ -3,8 +3,21 @@ function varargout = subsref(obj,s)
     
     %numerical indexing is passed on to components list
     if strcmp(s(1).type, '()')
-        if length(s) == 1
-            varargout = {obj.components(s(1).subs{:})};
+        if isscalar(s)
+            if numel(obj.components) >  max(s(1).subs{:})
+                varargout = {obj.components(s(1).subs{:})};
+            else
+                try 
+                    varargout = {obj(s(1).subs{:})};
+                catch e
+                    if isempty(obj)
+                        ME = MException('componentDB:empty', ...
+                            ['AURAdb databse ' class(obj) ' is empty.  Run updateToolbox from the command line to get the latest databases from the repository']);
+                        e = e.addCause(ME);
+                    end
+                    rethrow(e)
+                end
+            end
         else 
             comps = obj.components(s(1).subs{:});
             varargout = {};
@@ -35,7 +48,7 @@ function varargout = subsref(obj,s)
         try
             %try applying it to the DB
             [varargout{1:nargout}] = builtin('subsref',obj,s);
-        catch
+        catch e
             %If that fails, try applying it to the components in the DB
             [varargout{1:nargout}] = arrayfun(@(x)builtin('subsref',x,s),obj.components,'UniformOutput',false); 
         end

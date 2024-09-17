@@ -42,6 +42,10 @@ classdef AURAdb < handle
             % obj.wires = 0;
 
             obj.topologies = topologyDB();
+
+            if isempty(obj.transistors) && isempty(obj.capacitors) && isempty(obj.topologies)
+                warning('AURAdb is empty.  Run AURAdb(1).updateLibraries() to sync the lates libraries from the repository')
+            end
         end
         
         % function sync(obj)
@@ -56,10 +60,17 @@ classdef AURAdb < handle
             releaseURL = gitRelease.zipball_url;
             if ~exist(fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion), 'dir')
                 disp(['Downloading latest libraries from ' releaseURL]);
+                selection = questdlg(['AURAdb device library version ' latestVersion ' is available from GitHub.  Would you like to install?'], ...
+                    "Confirm Install");
                 % outfn = websave(fullfile(userpath, 'SMPSToolbox', 'AURAdb', [latestVersion '.zip']) , releaseURL);
-                fns = unzip(releaseURL, fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion));
+                if strcmp(selection, 'Yes')
+                    fns = unzip(releaseURL, fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion));
+                else
+                    fns = [];
+                    warning('Run updateToolbox() anytime to update both AURA and AURAdb.');
+                end
             else
-                disp('AURAdb already updated to lates version');
+                disp('AURAdb is updated to latest version');
                 fns = [];
             end
             if ~isempty(fns)
@@ -77,6 +88,7 @@ classdef AURAdb < handle
                 % rmdir(fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion),'s');
                 % mkdir(fullfile(userpath, 'SMPSToolbox', 'AURAdb', latestVersion));
             end
+            disp('AURAdb Sync completed');
         end
     end
     

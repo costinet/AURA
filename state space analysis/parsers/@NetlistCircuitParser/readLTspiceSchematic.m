@@ -53,9 +53,11 @@ function readLTspiceSchematic(obj)
             inds = endsWith(compNames, names{i});
             if any(inds)
                 assocComponents(inds) = {names{i}};
-                xloc(inds) = str2num(locs{1,i,1});
-                yloc(inds) = str2num(locs{1,i,2});
-                rot(inds) = str2num(locs{1,i,3}(2:end));
+                if i <= size(locs,2)
+                    xloc(inds) = str2num(locs{1,i,1});
+                    yloc(inds) = str2num(locs{1,i,2});
+                    rot(inds) = str2num(locs{1,i,3}(2:end));
+                end
             end
         end
 

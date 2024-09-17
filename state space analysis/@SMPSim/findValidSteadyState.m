@@ -156,6 +156,7 @@ while(1)
             % in between discrete samples.
             finalRun = 1;
             if obj.finalRunMethod
+                finalCandidate = {obj.swvec, obj.ts};
                 obj.steadyState;
                 [~,ts,swinds] = obj.timeSteppingPeriod();
                 conv.setSwitchingPattern(swinds, ts);
@@ -164,6 +165,7 @@ while(1)
                     disp('**Attempting Final Run with timeSteppingPeriod');
                 end
             else
+                finalCandidate = {obj.swvec, obj.ts};
                 eigs2tis(conv);
 %                 obj.steadyState;
                 if obj.debug2 == 1
@@ -173,6 +175,10 @@ while(1)
             continue;
         elseif ~any(any(errBefore) | any(errAfter)) && finalRun == 1
             % If no errors and we've done the above, we're finished
+            % set timing back to final without extra
+            % eigenvalue/timestepping interfaces
+            obj.setModulation(finalCandidate{1}, finalCandidate{2})
+            obj.steadyState;
             break;
         else
             % Otherwise keep looping
@@ -319,6 +325,9 @@ while(1)
             err = abs(b+A*tsolve(~unChangeable)') - abs(e);
             [~,I] = max(err);
             I = find(err > .9*err(I));
+            if length(I) >= sum(~unChangeable)
+                I = I(1:sum(~unChangeable)-1);
+            end
 
             if isempty(I)
                 error('failed to solve iteration in timing');

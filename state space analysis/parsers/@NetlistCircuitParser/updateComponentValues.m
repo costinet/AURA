@@ -43,5 +43,20 @@ function updateComponentValues(obj)
         return;
     else
         obj.loadModel;
+
+        % Try to populate input vector, if fully defined
+        if isempty(obj.topology.converter.u) && ~isempty(obj.topology.labels.inputLabels)
+            try 
+                u= [];
+                for i = 1:length(obj.topology.labels.inputLabels)
+                    loc = strcmp({obj.origComponents.Name},obj.topology.labels.inputLabels(i));
+                    assocComp = obj.origComponents(loc);
+                    u(i) = assocComp.paramVals;
+                end
+                obj.topology.converter.u = u;
+            catch
+                % no action, just don't update u
+            end
+        end
     end
 end

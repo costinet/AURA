@@ -98,6 +98,41 @@ classdef SMPSim < handle
         
     end
 
+    methods %% Forwarding to child objects
+        %% converter
+        function setModulation(obj, swvec, ts)
+            %setModulation set switching converter modulation pattern
+            %
+            % setModulation(obj, swvec, ts)
+            %   swvec is a binary matrix with a number of columns equal to
+            %   the number of switching devices and a number of rows equal
+            %   to the number of switching intervals. 
+            %   ts is a vector of time-durations of each switching interval
+            %
+            % See also SMPSconverter/setSwitchingPattern, dutyMod
+            %
+            obj.converter.setSwitchingPattern(swvec, ts);
+        end
+
+        %% parser
+        function updateComponents(obj)
+            %updateComponents update parameter values for all converter components
+            %
+            % updateComponents(obj) re-parses all state space matrices using currently 
+            % available variables from the base workspace where appropriate.
+            %
+            % this function call is passed on to the parser child object
+            %
+            % See also circuitParser/updateComponentValues, NetlistCircuitParser/updateComponentValues
+            obj.parser.updateComponentValues();
+        end
+
+        function plotSchematic(obj,varargin)
+            %Forwarding function for <a href="matlab:help NetlistCircuitParser/plotSchematic">NetlistCircuitParser/plotSchematic</a>
+            obj.parser.plotSchematic(varargin{:});
+        end
+    end
+
     methods (Hidden)
         plotWaveforms(obj, type, fn, oSelect, subplots)    
 
@@ -109,6 +144,7 @@ classdef SMPSim < handle
 
         [ avgXs, avgYs ] = ssAvgsInvert(obj, Xss)
     end
+
     
     methods
         %% Methods from external files
@@ -127,6 +163,8 @@ classdef SMPSim < handle
         % 
         %   obj = SMPSim(circuitPath, swvec, us, ts) all inputs are
         %   optional. 
+
+            obj.checkFirstRun;
 
             conv = SMPSconverter();
             top = SMPStopology();
@@ -430,6 +468,13 @@ classdef SMPSim < handle
                 PlossSW(j) = trapz(t,ys(vloc,:).*ys(iloc,:))/sum(obj.ts);
             end
 
+        end
+
+        function checkFirstRun(obj)
+            if ~(exist(fullfile(userpath, 'SMPSToolbox', 'AURA'),'dir') == 7)
+                warning('Detected that this is the first run of the Switched Mode Power Supply Toolbox.  Checking for updates')
+                    updateToolbox;
+            end
         end
 
        

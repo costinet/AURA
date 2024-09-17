@@ -9,7 +9,11 @@ latestVersion = gitRelease.tag_name;
 % installedVersion = ver("Switched Mode Power Supply Toolbox").Version;
 % isMATLABReleaseOlderThan('R2023b')
 toolboxes = matlab.addons.toolbox.installedToolboxes;
-thisToolbox = toolboxes(strcmp(toolboxes.Name,"Switched Mode Power Supply Toolbox"));
+if isempty(toolboxes)
+    thisToolbox = {};
+else
+    thisToolbox = toolboxes(strcmp(toolboxes.Name,"Switched Mode Power Supply Toolbox"));
+end
 if isempty(thisToolbox)
     releaseURL = gitRelease.assets.browser_download_url;
     outfn = websave(gitRelease.assets.name, releaseURL);
@@ -18,6 +22,7 @@ if isempty(thisToolbox)
         "Confirm Install");
     if strcmp(selection, 'Yes')
         installedToolbox = matlab.addons.toolbox.installToolbox(outfn);
+        AURAdb(1).updateLibraries
     end
     return
 else

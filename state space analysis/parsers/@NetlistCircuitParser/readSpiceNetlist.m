@@ -104,7 +104,7 @@ function readSpiceNetlist(obj,filename)
 
     try
         obj.readLTspiceSchematic;
-    catch
+    catch e
         % Do nothing.  This function is only to gelp with graphical
         % representation
     end

@@ -1,3 +1,15 @@
+### v0.3.1
+- added forwarding functions in SMPSim to prevent the need to access parser and converter for basic data update
+- added a check for first run of the toolbox that will ask to update
+- fixed issue with transparency on some figures
+- Updated parser.updateComponentValues to also try to populate the input vector, if possible
+- fixed an issue in findValidSteadyState where the error checking could prevent any timing update to occur
+
+### v0.2.9
+- add findAvgModelTF()
+- update error reporting on conflict with RFtoolbox and class capacitor()
+- minor bugfixes
+
 ### v0.2.8
 - removed net sync (unfinished) code
 - added StoredTopology class and TopologyDB

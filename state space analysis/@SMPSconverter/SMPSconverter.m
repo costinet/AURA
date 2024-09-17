@@ -481,8 +481,6 @@ classdef SMPSconverter < handle
         function setSwitchingPattern(obj, swind, ts)  
         % SETSWITCHINGPATTERN set switching pattern and controlled timing
         %
-        %   setSwitchingPattern(obj, swind, ts)  
-        %
         %   setSwitchingPattern(obj, swvec, ts)  
         %
         %
