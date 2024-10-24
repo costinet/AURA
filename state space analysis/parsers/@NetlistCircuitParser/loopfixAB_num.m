@@ -5,7 +5,7 @@ function [A,B,C,D,I,Htemp,depends,StateNames,OutputNames,DependentNames,Constant
 
 % if the number of state variables is greater than sym_comput, sym AB
 % matrix will not be computed
-    sym_comput = 99;  %% 99 or 1
+    sym_comput = 250;  %% 250 or 1
     numE = 1;
     numEB = 2;
     numEM = 3;
@@ -129,13 +129,9 @@ function [A,B,C,D,I,Htemp,depends,StateNames,OutputNames,DependentNames,Constant
         i= i+1;
     end
     
-    
-    
     % Need to format output how i want it
     [H_row2,~] = size(Htemp);
     H_row2 = H_row2+1;
-    
-    
     
     %% For small number of state variables solve ABCD
     
@@ -221,7 +217,7 @@ function [A,B,C,D,I,Htemp,depends,StateNames,OutputNames,DependentNames,Constant
             end
         end
     else
-        error('Greater than 99 independent circuit elements found; failing')
+        error('Greater than 250 independent circuit elements found; failing')
     end
 end % That's all Folks
 

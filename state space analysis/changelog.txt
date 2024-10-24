@@ -1,3 +1,9 @@
+### v0.3.2
+- Added functionality for multi-winding transformers
+- Updated warning message for port assignment on transformers
+- Updated error messaging when LTspice executable not found
+- Fixed an error where circuits without any switched couldn't be parsed
+
 ### v0.3.1
 - added forwarding functions in SMPSim to prevent the need to access parser and converter for basic data update
 - added a check for first run of the toolbox that will ask to update

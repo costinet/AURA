@@ -100,7 +100,9 @@ function readSpiceNetlist(obj,filename)
     obj.origComponents = components;
     obj.netListDirectives = coupling;
 
-    obj.topology.switchLabels = {switches.Name};
+    if ~isempty(switches)
+        obj.topology.switchLabels = {switches.Name};
+    end
 
     try
         obj.readLTspiceSchematic;

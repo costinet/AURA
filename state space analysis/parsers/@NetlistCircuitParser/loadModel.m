@@ -32,8 +32,10 @@ if ~isempty(fn)
             fn = fullfile(fp,[fn2 '.net']);
             if ~exist(fn,'file') || datetime(dir(fn).date) < datetime(dir(obj.ascfn).date)  %if no netlist already in existence, or the asc file has been modified recently
                 status = system(['"' obj.LTSpiceExe '" -netlist "' fileparts(which(obj.ascfn)) filesep obj.ascfn '"' ]);
-                if status == -1
-                    msg = 'Unable to execute LTSpice from the command line. This could be a file path or permissions issue';
+                if status == -1 || ~exist(fn,'file')
+                    msg = ['Unable to execute LTSpice from the command line. This could be a file path or permissions issue.  ' ...
+                        'Make sure NetlistCircuitParser().LTSpiceExe is the correct path to the LTSpice executable' ...
+                        ' e.g. ' newline newline 'NP = NetlistCircuitParser(); NP.LTSpiceExe = ''C:\Program Files\LTC\LTspiceXVII\XVIIx64.exe'''];
                     error(msg);
                 end
             end

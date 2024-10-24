@@ -1,0 +1,16 @@
+* C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters\LTspice NetLists\schematics\BB_4sw.asc
+M1 N001 NC_01 N003 N003 ron={ronp} Coss = 0
+M2 N003 NC_02 0 0 ron={ronp} Coss = {2*Cossp}
+L1 N003 N004 {L}
+M3 N002 NC_03 N004 N004 ron={rons} Coss = 0
+M4 N004 NC_04 0 0 ron={rons} Coss = {2*Cosss}
+V1 N001 N005 {Vg}
+Cout N002 0 {Cout}
+R1 N002 N006 {Rload}
+VIg N005 0 0
+VIo N006 0 0
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\dcostine\Documents\LTspiceXVII\lib\cmp\standard.mos
+.backanno
+.end

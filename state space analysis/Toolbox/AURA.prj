@@ -44,13 +44,13 @@ AURAdb/digitizers/plotDigitizer/appDesignerTempData_*
 @AURAdb.zip
 **/.gitignore
 **/depricated
-**/Ideas
 **/SPICECompare
 **/PreviousApplications
 **/Releases
 **/webSettings.mat
 **/webserver
 **/Test
+**/Ideas
 packageAURA.m</param.exclude.filters>
     <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
     <param.examples>&lt;?xml version="1.0" encoding="utf-8"?&gt;

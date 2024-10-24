@@ -200,18 +200,35 @@ H_32 = depent(size_state(2)+1:size_const(1)-size_const(2),:); % will need to alt
 %% Find coefficients of dependent souces
 depSources = find(strcmp({obj.components.Type}, 'E') | strcmp({obj.components.Type}, 'F') | ...
     strcmp({obj.components.Type}, 'G') | strcmp({obj.components.Type}, 'H'));
+% Change order to match tree/cotree
+ord = zeros(length(depSources),1);
+for i = 1:length(depSources)
+    ord(i) = find(depSources(i)==[SortedTree(:,4); SortedCoTree(:,4)],1);
+end
+[~,ord] = sort(ord);
+depSources = depSources(ord);
+
 K = zeros(length(depSources));
 for i = 1:length(depSources)
-    refSource = find(strcmp({obj.components.Name}, obj.components(depSources(i)).paramVals{1}));
-    assert(~isempty(intersect(depSources,refSource)), 'Currently, only linked dependent sources are possible.  A dependent source must only be dependent on the voltage/current of another dependent source')
-    [~,refIndex] = intersect(depSources,refSource);
-    K(i,refIndex) = obj.components(depSources(i)).paramVals{2};
+    if numel({obj.components(depSources(i)).paramVals{1:2:end}}) == 1
+        refSource = find(strcmp({obj.components.Name}, obj.components(depSources(i)).paramVals{1}));
+        assert(~isempty(intersect(depSources,refSource)), 'Currently, only linked dependent sources are possible.  A dependent source must only be dependent on the voltage/current of another dependent source')
+        [~,refIndex] = intersect(depSources,refSource);
+        K(i,refIndex) = obj.components(depSources(i)).paramVals{2};
+    else
+        for j = 1:numel({obj.components(depSources(i)).paramVals{1:2:end}})
+            refSource = find(strcmp({obj.components.Name}, obj.components(depSources(i)).paramVals{1 + 2*(j-1)}));
+            assert(~isempty(intersect(depSources,refSource)), 'Currently, only linked dependent sources are possible.  A dependent source must only be dependent on the voltage/current of another dependent source')
+            [~,refIndex] = intersect(depSources,refSource);
+            K(i,refIndex) = obj.components(depSources(i)).paramVals{2*j};
+        end
+    end
 end
 
 F = K*H_32;
 
-if cond(eye(size(F))-F) == Inf
-    error('Singular Matrix when trying to solve for transformer integration in solver.')
+if cond(eye(size(F))-F) > 1e6
+    warning('Singular Matrix when trying to solve ideal transformer.  This is likely due to poor port assignment.  Try changing the ordering of winding inductors in the K (coupling) directive.')
 end
 
 
@@ -223,8 +240,12 @@ if isempty(F)
     s = H_14;
 else
     
-    H = H_11+H_12*((eye(size(F))-F)^-1)*K*H_31;
-    s = H_14+H_12*((eye(size(F))-F)^-1)*K*H_34;
+    % H = H_11+H_12*((eye(size(F))-F)^-1)*K*H_31;
+    % s = H_14+H_12*((eye(size(F))-F)^-1)*K*H_34;
+
+    I32 = eye(size(H_32));
+    H = H_11+H_12*K*((I32-H_32*K)\H_31);
+    s = H_14+H_12*K*((I32-H_32*K)\H_34);
 end
 
 end % That's all Folks

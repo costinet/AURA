@@ -23,6 +23,7 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
         numNodes = reshape(nodeMap([components.Nodes]), [2,length(components),])';
 
         possibleLocs = zeros(length(coupledIndLocs),1);
+        
         % This only looks at the first-order connections.  Loops would be
         % better.
         for i = 1:length(coupledIndLocs)
@@ -33,20 +34,24 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
                 connectedComponents(connectedComponents == coupledIndLocs(i)) = [];
 
                 connectedComponentsTypes = {components(connectedComponents).Type};
-                if all(strcmp(connectedComponentsTypes, "L") | strcmp(connectedComponentsTypes, "I")  | ...
-                        strcmp(connectedComponentsTypes, "Im"))
+                if isempty(connectedComponentsTypes)
+                    possibleLocs(i) = -2;
+                elseif all(strcmp(connectedComponentsTypes, "L") | strcmp(connectedComponentsTypes, "I")  | ...
+                        strcmp(connectedComponentsTypes, "Im")) 
                     possibleLocs(i) = -1;
                 end
             end
         end
 
-        Vi = find(possibleLocs>=0,1,'first');
+        Vi = find(possibleLocs == max(possibleLocs),1);
 
-        %% If we couldn't find a good location, just guess
-        if(isempty(Vi))
-            Vi = 1; % for the moment, assume the first inductor is the voltage reference.  
-                    % later, should look at impedance seen by each coil
-        end
+        % Vi = find(possibleLocs>=0,1,'first');
+        % 
+        % %% If we couldn't find a good location, just guess
+        % if(isempty(Vi))
+        %     Vi = 1; % for the moment, assume the first inductor is the voltage reference.  
+        %             % later, should look at impedance seen by each coil
+        % end
 
         %% Replace sources
         N(Vi) = 1;
@@ -60,6 +65,7 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
         isource.paramVals = {};
         isource.paramExpressions = {};
 
+        Lmin = 0;
 
         for i = setdiff(1:length(coupledInductors),Vi)
             Li = coupledInductors(i).paramVals(strcmp(coupledInductors(i).paramNames,'L'));
@@ -78,15 +84,22 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
             isource.paramNames = [isource.paramNames, ...
                 {['Vnam' num2str(i)], ['gain' num2str(i)]}];
             isource.paramVals = [isource.paramVals, ...
-                {Vsource.Name, N(i)}];
-            isource.paramExpressions = {isource.paramExpressions; {isource.Name, Nexpr{i}} };
+                {Vsource.Name, -N(i)}];
+            isource.paramExpressions = {isource.paramExpressions; {isource.Name, ['-' Nexpr{i}]} };
 
+            if Lmin == 0
+                Lmin = 1;
+                %Leave one Lm in (save for later to not ruin indexing
+                Lm = components(coupledIndLocs(i));  
+            end
             components(coupledIndLocs(i)) = Vsource;    %Replace all secondaries
 
         end
 
 
-        components = [components(1:Vi) isource components(Vi+1:end)];   %Leave primary (magnetizing) inductance in
+        components(coupledIndLocs(Vi)) = isource;
+        components(end+1) = Lm;
+        % components = [components(1:NVi-1) isource components(NVi+1:end)]; 
     else
         error('coupled inductors with k=/=1 not currently supported');
     end

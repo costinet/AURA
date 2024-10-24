@@ -41,11 +41,16 @@ function findNormalTree(obj)
 
     if any(all(REF ==0,2))
         % Some rows are completely zero in the incidence matrix
-        % Eliminating some nodes?  What does this mean?
-        error(['Invalid circuit.  This may be becuase some elements are unconnected,' ...
-            ' invalid components used, or some other error']);
-        % incidence_1 = incidence_1(~all(REF ==0,2),:);
-        % REF = rref(incidence_1);
+        if sum(all(REF ==0,2)) == sum(strcmp({obj.netListDirectives.Type},'K'))
+            % In transformer-isolated circuits, there will be unconnected
+            % segments.  So this can continue, though the following may not
+            % be the best wy to handle it.
+            incidence_1 = incidence_1(~all(REF ==0,2),:);
+            REF = rref(incidence_1);
+        else
+            error(['Invalid circuit.  This may be becuase some elements are unconnected,' ...
+                 ' invalid components used, or some other error']);
+        end
     end
     
     [numRowsI,numColsI]=size(incidence_1);
