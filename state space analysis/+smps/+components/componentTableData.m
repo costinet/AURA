@@ -32,11 +32,17 @@ classdef componentTableData
         function obj = componentTableData(type, paramName,typVal,maxVal,minVal,testConditions, units)
             %componentTableData Construct an instance of this class
             %   Detailed explanation goes here
-            
+
+            if nargin == 1 && isa(type, 'componentTableData') 
+                obj = obj.loadshim(type);
+                return
+            end
+
             %Make sure the type input is a valid component class
-            assert( isa(type, 'component'), 'input ''type'' must be a component class or subclass of component');
+            assert( isa(type, 'component') || isa(type, 'smps.component'), 'input ''type'' must be a component class or subclass of component');
             obj.componentType = type;
-            
+
+
             %Check that paramName is a valid paramter of component class
             [name, valid] = isParamOf(obj.componentType, paramName);
             if valid
@@ -115,7 +121,7 @@ classdef componentTableData
                 elseif ~strcmp(obj.name, param.name)
                     tf = false; 
                 elseif (~isempty(param.conditions) && isempty(obj.conditions)) ...
-                        || ~strcmp(obj.conditions, param.conditions)
+                        || ~all(strcmp(obj.conditions, param.conditions))
                     tf = false; 
                 else
                     tf = true;
@@ -155,5 +161,21 @@ classdef componentTableData
             end
         end
     end
+
+    methods (Hidden)
+        function obj = loadshim(obj, orig)
+            % Shim method for loading outdated versions of the class by
+            % copying into all parameters.
+            obj.name = orig.name;
+            obj.max = orig.max;
+            obj.typ = orig.typ;
+            obj.min = orig.min;
+            obj.conditions = orig.conditions;
+
+            obj.baseUnit = orig.baseUnit;
+            obj.multiplier = orig.multiplier;
+        end
+    end
+
 end
 

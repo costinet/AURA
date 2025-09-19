@@ -301,27 +301,33 @@ classdef SMPSconverter < handle
 %             [r,c] = find(fts(2:end,:) == dts & fts(2:end,:) ~= 0);
 %             [r,c] = find(obj.fullts == 0 & obj.fullswind ~= 0);
             [r,c] = find(obj.fullts < obj.timingThreshold*0.9 & obj.fullswind ~= 0);
+            orig = obj.fullts;
             
             for i = length(r):-1:1
-                if obj.fullts(r(i),c(i)) > eps/100
-                    % if it isn't actually zero, set it to zero and keep
-                    % from altering the overall controlled interval length.
-                    obj.adjustUncontrolledTiming(find(obj.ts == obj.fullts(r(i),c(i))), -obj.fullts(r(i),c(i)));
-                    %NOTE: adjustUncontrolledTiming will re-call this
-                    %function, so we can end here.
+                if r(i) > size(obj.fullts,1) || c(i) > size(obj.fullts,2)
+                    %necessay if a prior loop e.g. eliminated a whole row
+                    continue
                 else
-                    obj.fullts(r(i),c(i)) = 0;
-                    obj.fullswind(r(i),c(i)) = 0;
-                    
-                    if r(i) < size(obj.fullts,1) && obj.fullswind(r(i)+1,c(i)) ~= 0
-                	    obj.fullts(:,c(i)) = ...
-                            [obj.fullts(1:r(i)-1,c(i));
-                             obj.fullts(r(i)+1:end,c(i));
-                             0];     
-                        obj.fullswind(:,c(i)) = ...
-                            [obj.fullswind(1:r(i)-1,c(i));
-                             obj.fullswind(r(i)+1:end,c(i));
-                             0];   
+                    if obj.fullts(r(i),c(i)) > eps/100
+                        % if it isn't actually zero, set it to zero and keep
+                        % from altering the overall controlled interval length.
+                        obj.adjustUncontrolledTiming(find(obj.ts == obj.fullts(r(i),c(i))), -obj.fullts(r(i),c(i)));
+                        %NOTE: adjustUncontrolledTiming will re-call this
+                        %function, so we can end here.
+                    else
+                        obj.fullts(r(i),c(i)) = 0;
+                        obj.fullswind(r(i),c(i)) = 0;
+                        
+                        if r(i) < size(obj.fullts,1) && obj.fullswind(r(i)+1,c(i)) ~= 0
+                	        obj.fullts(:,c(i)) = ...
+                                [obj.fullts(1:r(i)-1,c(i));
+                                 obj.fullts(r(i)+1:end,c(i));
+                                 0];     
+                            obj.fullswind(:,c(i)) = ...
+                                [obj.fullswind(1:r(i)-1,c(i));
+                                 obj.fullswind(r(i)+1:end,c(i));
+                                 0];   
+                        end
                     end
                 end
             end
@@ -487,10 +493,14 @@ classdef SMPSconverter < handle
             if size(ts,2) == 1
                 ts = ts';
             end
-            if size(swind,2) == 1
+            % if size(swind,2) == 1
+            %     swind = swind';
+            % end
+            % if numel(swind) ~= length(swind) && all(swind == 1 | swind == 0, 'all')
+            if size(swind,2) == 1 && ~any(swind==0)
                 swind = swind';
             end
-            if numel(swind) ~= length(swind) && all(swind == 1 | swind == 0, 'all')
+            if all(swind == 1 | swind == 0, 'all') && (any(swind == 0, 'all') || isscalar(ts))
                 %2D swind, assume swseq
                 swseqIn = swind;
                 swind = zeros(1,size(swseqIn,1));

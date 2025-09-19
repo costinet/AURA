@@ -1,4 +1,4 @@
-classdef capacitor < component
+classdef capacitor < smps.component
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     

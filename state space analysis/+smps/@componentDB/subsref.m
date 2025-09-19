@@ -4,7 +4,7 @@ function varargout = subsref(obj,s)
     %numerical indexing is passed on to components list
     if strcmp(s(1).type, '()')
         if isscalar(s)
-            if numel(obj.components) >  max(s(1).subs{:})
+            if numel(obj.components) >=  max(s(1).subs{:})
                 varargout = {obj.components(s(1).subs{:})};
             else
                 try 

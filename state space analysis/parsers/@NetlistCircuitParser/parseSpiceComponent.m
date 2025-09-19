@@ -53,7 +53,7 @@ function component = parseSpiceComponent(obj, str)
                 %them here to update values.
                 eqLoc = strfind( params{i}, '=');
                 paramName = strtrim(params{i}(1:eqLoc-1));
-                t = transistor();
+                t = smps.components.transistor();
                 [paramName, isValid] = t.isParamOf(paramName);
 %                 assert(isValid, ['Unknown transistor parameter "' params{i} '"'])
                 if ~isValid

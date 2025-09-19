@@ -34,14 +34,14 @@ modelfile{7} = 'DAB_secLeakage.net';
 modelfile{8} = 'SeriesCapBuck.net'; 
 
 %% Most recent full run results:
-% Model BuckNoDiodes.net converged after 15 iterations in 0.22928 seconds
-% Model BuckTest1.net converged after 14 iterations in 0.1005 seconds
-% Model Buck_Vout_D.net converged after 11 iterations in 0.056845 seconds
-% Model 3levelbuck.net converged after 8 iterations in 0.057836 seconds
-% Model 3levelbuckDep.net converged after 8 iterations in 0.051612 seconds
-% Model DAB.net DID NOT converge within 102 in 0.93781 seconds
-% Model DAB_secLeakage.net converged after 18 iterations in 0.1682 seconds
-% Model SeriesCapBuck.net converged after 11 iterations in 0.23795 seconds
+% Model BuckNoDiodes.net converged after 15 iterations in 0.27408 seconds
+% Model BuckTest1.net converged after 14 iterations in 0.14771 seconds
+% Model Buck_Vout_D.net converged after 11 iterations in 0.09945 seconds
+% Model 3levelbuck.net converged after 8 iterations in 0.087732 seconds
+% Model 3levelbuckDep.net converged after 8 iterations in 0.080131 seconds
+% Model DAB.net DID NOT converge within 102 in 2.4063 seconds
+% Model DAB_secLeakage.net converged after 19 iterations in 0.30942 seconds
+% Model SeriesCapBuck.net converged after 11 iterations in 0.36128 seconds
 
 if allAssess
     warning('off','all');

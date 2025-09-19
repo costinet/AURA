@@ -69,6 +69,12 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
                         sigName = strrep(sigName, '_', '_{');
                         sigName = [sigName repmat('}',1,numel(underInd))];
                     end
+                    if type == 1 && strcmpi(sigName(1), 'C')
+                        sigName = ['V_{' sigName '}'];
+                    end
+                    if type == 1 && strcmpi(sigName(1), 'L')
+                        sigName = ['I_{' sigName '}'];
+                    end
                     ylabel(sigName);
                 catch
                     warning('State Names not set in topology subclass');
@@ -86,6 +92,13 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
                     ax.YTick(closeYTicks) = [];
                 else
                     ax.YTick = ax.YLim(1) + diff(ax.YLim)*[.25 .5 .75];
+                    sF = round(log10(abs(diff(ax.YTick([1 length(ax.YTick)])))));
+                    newTicksProp = round(ax.YTick/10^sF ,3);
+                    if any(abs(newTicksProp) < .05)
+                        newTicksProp(abs(newTicksProp) < .05) = 0;
+                    end
+                    ax.YTickLabel = newTicksProp*10^sF;
+
                 end
 
 

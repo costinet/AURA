@@ -1,8 +1,13 @@
+### v0.3.3
+- Began migration to smps namespace.  Addresses conflicts with rftoolbox
+- Fixed issues with single-FET and single-interval converters
+- updated plotting functions to indicate voltages/currents rather than just state element
+
 ### v0.3.2
 - Added functionality for multi-winding transformers
 - Updated warning message for port assignment on transformers
 - Updated error messaging when LTspice executable not found
-- Fixed an error where circuits without any switched couldn't be parsed
+- Fixed an error where circuits without any switches couldn't be parsed
 
 ### v0.3.1
 - added forwarding functions in SMPSim to prevent the need to access parser and converter for basic data update

@@ -1,0 +1,24 @@
+%%%%%% Allowable Elements
+M, V, I, L, C, R, D
+M: only three-terminal NMOS devices should be used.
+V, I: Independent sources have their value dictated by the u vector, defined later in matlab.  Any variable or non-zero value can later be overwritten by changing u.  If their value is set to zero, they become meters
+
+
+%%%%%% Allowable directives
+K
+.lib (limited support) e.g. transistors from the LTSpice standard.mos can be used, an dic NetlistCiruitParser().LTSpiceFolder is correctly defined, the code will search for the paramerter values from the model definition
+
+
+%%%%%% Meters
+Adding a 0V or 0A voltage/current source will result in the dual signal being placed in the output vector y.  e.g., placing a zero current I-source in parallel with a resistor will result in the resistor voltage being an output signal.
+
+%%%%%% Transformers
+Coupled inductors are currently only allowed with perfect coupling (k==1).  The turns ratio is the square root of the ratio of the winding inductances.
+However, setting a coupling greater than one in a "K" statement will implement an ideal transformer with infinite magnetizing inductance (while modeling with k==1)
+Include a ground reference on each isolated subcircuit when transformers are used.
+
+%%%%%% Parameters
+Component parameters defined anywhere in the netlist line will be treated as variables when imported to Matlab
+MOSFET parameters recognized include ron and Coss
+Any separate .param statements in the netlist will be evaluated in the base workspace in MATLAB when the netlist is parsed.
+

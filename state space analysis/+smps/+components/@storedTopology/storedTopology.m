@@ -1,7 +1,7 @@
 classdef storedTopology < handle
     %storedTopology minimal implementation of circuit parser for storing
     %topology description
-    %   Detailed explanation goes here
+    %   
     
     properties
         name
@@ -75,6 +75,23 @@ classdef storedTopology < handle
     methods (Hidden)
         function clearUpdated(obj)
             obj.upDated = 0;
+        end
+
+        function loadshim(obj,orig)
+            obj.name = orig.name;
+            obj.description = orig.description;
+      
+            obj.components = orig.components;
+            obj.props = orig.props;
+            obj.switches = orig.switches;
+            obj.schemPositions = orig.schemPositions;
+            obj.schemWires = orig.schemWires;
+            obj.baseParser = orig.baseParser;
+            obj.moduleParser = orig.moduleParser;
+            obj.sheetConnectorOutSym  = orig.sheetConnectorOutSym;
+            obj.sheetConnectorInSym = orig.sheetConnectorInSym;
+            obj.sheetConnectorOutFormat = orig.sheetConnectorOutFormat;
+            obj.sheetConnectorInFormat = orig.sheetConnectorInFormat;
         end
     end
     

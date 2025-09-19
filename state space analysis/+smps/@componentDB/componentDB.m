@@ -41,11 +41,15 @@ classdef componentDB < handle
         end
         
         function add(obj, item)
-            assert(isa(item, class(obj.componentType)), ...
+            assert(isa(item, class(obj.componentType)) || isa(item, obj.namespaceFreeComponentType), ...
                 ['class ' class(obj) ' can only be used to store objects of type ' class(obj.componentType)] );
            
             if isempty(obj.components)
-                obj.components = item;
+                if isa(items, class(obj.componentType))
+                    obj.components = item;
+                else
+
+                end
                 return
             end
             
@@ -58,11 +62,39 @@ classdef componentDB < handle
         end
 
         function addMult(obj, items)
-            assert(isa(items, class(obj.componentType)), ...
+            assert(isa(items, class(obj.componentType)) || isa(items, obj.namespaceFreeComponentType), ...
                 ['class ' class(obj) ' can only be used to store objects of type ' class(obj.componentType)] );
            
             if isempty(obj.components)
-                obj.components = items;
+                if strcmp(class(items), class(obj.componentType))
+                    %using strcmp instead of isa to ignore superclass
+                    obj.components = items;
+                else
+                    % This block is reached when we need to convert from
+                    % pre-namespace databases
+                    % This should no longer be neceesary with the shim
+                    % classes in back-compat
+                    pathFolders = strsplit(path, pathsep);
+                    rfToolboxFolders = [pathFolders(contains(pathFolders, '\toolbox\rf\', 'IgnoreCase', true))...
+                        pathFolders(contains(pathFolders, '\toolbox\rfpcb\', 'IgnoreCase', true))];
+                    if ~isempty(rfToolboxFolders)
+                         rmpath(rfToolboxFolders{:});
+                    end
+                    for i = 1:length(items)
+                        comp = feval(class(obj.componentType));
+                        if isa(comp,'smps.component')
+                            comp.partNumber = items(i).partNumber;
+                            merge(comp, items(i));
+                        elseif isa(comp,'smps.components.storedTopology')
+                            obj.add(items(i));
+                        end
+                        
+                        obj.components = [obj.components comp];
+                    end
+                     if ~isempty(rfToolboxFolders)
+                         addpath(rfToolboxFolders{:});
+                    end
+                end
                 return
             end
             
@@ -99,6 +131,7 @@ classdef componentDB < handle
             % fn = mfilename('fullpath');
             % fn = [strrep(fn, '\transistorDB', '\') 'transistors.mat'];
             % save(fn,'obj')
+            % DBpath = fullfile(userpath, 'SMPSToolbox', 'AURAdb', [obj.namespaceFreeComponentType 'DB'],filesep);
             DBpath = fullfile(userpath, 'SMPSToolbox', 'AURAdb', [class(obj.componentType) 'DB'],filesep);
             if isempty(dir(DBpath))
                 mkdir(DBpath)
@@ -114,7 +147,11 @@ classdef componentDB < handle
             DBpath = fullfile(userpath, 'SMPSToolbox', 'AURAdb', [class(obj.componentType) 'DB'],filesep);
             if isempty(dir(DBpath))
                 mkdir(DBpath)
-                return
+                % Check if old version exists
+                DBpath  = fullfile(userpath, 'SMPSToolbox', 'AURAdb', [obj.namespaceFreeComponentType 'DB'],filesep);
+                if isempty(dir(DBpath))
+                    return
+                end
             end
             if ~isempty(dir(DBpath))
                 matfiles = dir(fullfile(DBpath, '*.mat'));
@@ -156,6 +193,16 @@ classdef componentDB < handle
         function ind = end(obj, k, n)
             %% redefined to aid in subsref
             ind = length(obj.components);
+        end
+
+        function tf = isempty(obj)
+            % Overload to pass to components array
+            tf = isempty(obj.components);
+        end
+
+        function compName = namespaceFreeComponentType(obj)
+             compName = split(class(obj.componentType),'.');
+             compName = compName{end};
         end
         
         function n = numArgumentsFromSubscript(obj,s,indexingContext)

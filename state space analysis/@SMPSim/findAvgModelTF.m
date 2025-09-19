@@ -1,4 +1,4 @@
-function Gs = findAvgModelTF(obj, tp, oi)
+function [Gs, B] = findAvgModelTF(obj, tp, oi)
 %findAvgModelTF finds the small-signal transfer function from time interval tp to
 %all states using state space averaging.  
 % For discrete time transfer functions, use findSSTF()
@@ -86,6 +86,23 @@ function Gs = findAvgModelTF(obj, tp, oi)
     nt = size(As,3);
     ns = size(As,1);
     ni = size(Bs,2);
+
+    %Singular A Matrix
+    if any(isnan(XP))
+        A = eye(ns);
+        for i = 1:nt
+            depStates = sum(abs(eye(ns)-obj.Is(:,:,i)),2)  ~= 0;
+            Ai = zeros(ns,ns);
+            Ai(~depStates,~depStates) = obj.As(~depStates,~depStates,i);
+            A = A+obj.Is(:,:,i)*Ai*obj.ts(i)/Ts;
+        end
+        XP = -A\B*obj.u;
+        % idiff = (eye(ns) - obj.Is(:,:,1));
+        % zeroRows = ~(sum(idiff==0,2) == length(idiff));
+        % XP = A(~zeroRows,~zeroRows)\B(~zeroRows,:)*obj.u;
+        % XP(zeroRows) = 0;
+        % XP = obj.Is(:,:,1)*XP;
+    end
     
     xphat = zeros(ns,1,nt);
     for i = 1:numel(actualPertTime)

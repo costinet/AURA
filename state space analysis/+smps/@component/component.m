@@ -1,10 +1,9 @@
 classdef component < handle
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+    %Component is a template for individual components
     
     properties (SetAccess=protected)
-        parameters = componentTableData.empty;
-        graphs = componentPlotData.empty;
+        parameters = smps.components.componentTableData.empty;
+        graphs = smps.components.componentPlotData.empty;
     end
     
     properties (Abstract)
@@ -133,7 +132,7 @@ classdef component < handle
                     error('parameter value must be singleton or a vector of three values');
                 end
                 
-                param = componentTableData(obj, paramName,typVal,maxVal,minVal,testConditions);
+                param = smps.components.componentTableData(obj, paramName,typVal,maxVal,minVal,testConditions);
                 
             end
                 
@@ -183,7 +182,10 @@ classdef component < handle
                     result(i) = obj.addParameter(param(i));
                 end
             end
-            if isa(param, 'componentTableData')
+            if isa(param, 'componentTableData') || isa(param, 'smps.components.componentTableData')
+                if strcmp(class(param), 'componentTableData')
+                    param = smps.components.componentTableData(obj, param.name,param.typ,param.max,param.min,param.conditions, [param.unit{:}]);
+                end
                 if isempty(obj.parameters)
                     obj.parameters = param;
                     obj.upDated = 1;
@@ -244,31 +246,36 @@ classdef component < handle
                     obj.addGraph(graph(i));
                 end
             end
-            if isa(graph, 'componentPlotData')
-                if isempty(obj.graphs)
-                    obj.graphs = graph;
-                    obj.upDated = 1;
-                else
-                    [sameData, samePlots] = eq(obj.graphs,graph);
-                    if ~any(samePlots)
-                        % New plot
-                        obj.graphs(length(obj.graphs)+1) = graph; 
-                        obj.upDated = 1;
-                    elseif ~any(sameData)
-                        % Existing plot, but new data
-                        % obj.graphs(length(obj.graphs)+1) = graph; 
-                        % warning(['Adding a duplicate plot for ', graph.title]);
-                        
-                        obj.graphs(find(samePlots,1)).merge(graph);
-                        obj.upDated = 1;
-                        
-                    else
-                        % Plot already present, do nothing
-                    end
-                end
+            if strcmp(class(graph), 'smps.components.componentPlotData')
+                %
+            elseif strcmp(class(graph), 'componentPlotData')
+                graph = smps.components.componentPlotData(obj,graph);
             else
                 error([class(obj) '.addParameter() not defined for inputs of type ' class(graph) ]);
             end
+
+            if isempty(obj.graphs)
+                obj.graphs = graph;
+                obj.upDated = 1;
+            else
+                [sameData, samePlots] = eq(obj.graphs,graph);
+                if ~any(samePlots)
+                    % New plot
+                    obj.graphs(length(obj.graphs)+1) = graph; 
+                    obj.upDated = 1;
+                elseif ~any(sameData)
+                    % Existing plot, but new data
+                    % obj.graphs(length(obj.graphs)+1) = graph; 
+                    % warning(['Adding a duplicate plot for ', graph.title]);
+                    
+                    obj.graphs(find(samePlots,1)).merge(graph);
+                    obj.upDated = 1;
+                    
+                else
+                    % Plot already present, do nothing
+                end
+            end
+
         end
 
         function replaceGraph(obj, ind, graph)
@@ -290,17 +297,17 @@ classdef component < handle
         end
         
         function merge(obj, newComponent)
-           assert( strcmp(obj.partNumber, newComponent.partNumber), ...
+           assert( strcmp(obj.partNumber, newComponent.partNumber) || isempty(obj.partNumber) || isempty(newComponent.partNumber), ...
                'merge can only be used on two components with the same part number');
            assert(isa(newComponent, class(obj)), ...
                 ['class ' class(obj) ' can only be merged with other objects of type ' class(obj)] );
            
            for i = 1:length(newComponent.parameters)
-               obj.addParameter(newComponent.parameters(i))
+               obj.addParameter(newComponent.parameters(i));
            end
            
            for i = 1:length(newComponent.graphs)
-               obj.addGraph(newComponent.graphs(i))
+               obj.addGraph(newComponent.graphs(i));
            end
            
 %            obj.parameters = [obj.parameters, newComponent.parameters];
@@ -381,7 +388,7 @@ classdef component < handle
                                end
                            else
 
-                               blankParam = componentTableData(obj, name, [], [], [], [], '');
+                               blankParam = smps.components.componentTableData(obj, name, [], [], [], [], '');
                                if length(s) == 1
                                     varargout{1} = blankParam;
                                else

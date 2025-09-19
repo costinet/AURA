@@ -7,10 +7,16 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
         coupledIndLocs(i) = find(strcmp({components.Name}, directive.paramNames{i}));
         coupledInductors(i) = components(coupledIndLocs(i));
     end
-    
-    k = eval(directive.paramVals);
+    try
+        k = eval(directive.paramVals);
+    catch
+         paramVal = directive.paramVals;
+         paramVal = strrep(paramVal,'{','');
+         paramVal = strrep(paramVal,'}','');
+         k = evalin('base',paramVal);
+    end
 
-    if k==1
+    if k>=1
         %% Use ideal transformer model
         % model has one current source and all other ports will be voltage
         % sources.  The following block tries to find a suitable place to
@@ -23,7 +29,7 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
         numNodes = reshape(nodeMap([components.Nodes]), [2,length(components),])';
 
         possibleLocs = zeros(length(coupledIndLocs),1);
-        
+
         % This only looks at the first-order connections.  Loops would be
         % better.
         for i = 1:length(coupledIndLocs)
@@ -98,10 +104,12 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
 
 
         components(coupledIndLocs(Vi)) = isource;
-        components(end+1) = Lm;
-        % components = [components(1:NVi-1) isource components(NVi+1:end)]; 
+        if ~(k>1)
+            components(end+1) = Lm;
+            % components = [components(1:NVi-1) isource components(NVi+1:end)]; 
+        end
     else
-        error('coupled inductors with k=/=1 not currently supported');
+        error('coupled inductors with k < 1 not currently supported');
     end
 
 end

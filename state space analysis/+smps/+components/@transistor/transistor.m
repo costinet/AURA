@@ -1,4 +1,4 @@
-classdef transistor < component
+classdef transistor < smps.component
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -167,7 +167,7 @@ classdef transistor < component
             params = obj.parameters;
             if ~exist('Vth','var')
                 
-                VthLoc = strcmp(params(:).name,'Vth');
+                VthLoc = strcmp({params(:).name},'Vth');
     
                 if ~any(VthLoc)
                     Vth = 2;

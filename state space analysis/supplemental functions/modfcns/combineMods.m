@@ -26,9 +26,9 @@ function [ts,swvec] = combineMods(ts1,swvec1,switchCol1,ts2,swvec2,switchCol2, v
     ts1 = p.Results.ts1;
     ts2 = p.Results.ts2;
 
-    assert(abs(sum(ts1)-sum(ts2))<10*max(eps(ts1)),'to combine modulations, they must have the same overall period');
+    assert(abs(sum(ts1)-sum(ts2))<100*max(eps(ts1)),'to combine modulations, they must have the same overall period');
 
-    cumts1 = cumsum (ts1);
+    cumts1 = cumsum(ts1);
     cumts2 = cumsum(ts2);
 
     [cumts,~] = sort([cumts1,cumts2]);

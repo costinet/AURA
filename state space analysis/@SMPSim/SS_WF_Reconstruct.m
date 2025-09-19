@@ -21,6 +21,11 @@ ts = obj.ts;
 % u = obj.u;
 Cs = obj.Cs;
 Ds = obj.Ds;
+if ~isempty(obj.Is)
+    Is = obj.Is;
+else
+    Is = rempat(eye(size(As(:,:,1))),[1 1 size(As,3)]);
+end
 u = obj.fullu;
 
 try
@@ -61,8 +66,8 @@ try
             ti = find(t<=tmax & t>=tmin);
         end
 
+        SS = ss(Is(:,:,i)*As(:,:,i), Is(:,:,1)*Bs(:,:,i), Cs(:,:,i), Ds(:,:,i));
         if length(ti) > 1
-            SS = ss(As(:,:,i), Bs(:,:,i), Cs(:,:,i), Ds(:,:,i));
             [y, ~, x] = lsim(SS, u(:,:,i)*ones(size(ti)), t(ti)-t(ti(1)), Xss(:,i));
 
             xs(:,ti) = x';
@@ -70,7 +75,6 @@ try
 
         elseif length(ti) == 1 % special case if only one timestep in range
            tinter = linspace(0, t(2), 100);
-           SS = ss(As(:,:,i), Bs(:,:,i), Cs(:,:,i), Ds(:,:,i));
            [y, ~, x] = lsim(SS, u(:,:,i)*ones(size(tinter)), tinter, xs(:,max(ti(1)-1,1)));
            ind = find(abs(tinter + tmin - t(ti)) == min(abs(tinter + tmin - t(ti))),1);
            xs(:,ti) =x(ind,:)';

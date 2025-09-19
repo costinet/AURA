@@ -1,4 +1,4 @@
-classdef topologyDB < componentDB
+classdef topologyDB < smps.componentDB
     %topologyDB is a database of stored SMPS converter topology objects
     
 %     Inherited properties:
@@ -12,7 +12,7 @@ classdef topologyDB < componentDB
     end
     
     properties (Hidden, Transient, Constant)
-        componentType = storedTopology();
+        componentType = smps.components.storedTopology();
     end
     
     % componentDB required methods
@@ -41,8 +41,8 @@ classdef topologyDB < componentDB
 
         function add(obj, item, overwrite)
             arguments
-                obj topologyDB
-                item storedTopology
+                obj smps.databases.topologyDB
+                item smps.components.storedTopology
                 overwrite = 0
             end
             assert(isa(item, class(obj.componentType)), ...

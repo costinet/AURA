@@ -20,28 +20,28 @@ classdef AURAdb < handle
                 return
             end
 
-            obj.transistors = transistorDB();
+            obj.transistors = smps.databases.transistorDB();
+            obj.capacitors = smps.databases.capacitorDB();
+            obj.topologies = smps.databases.topologyDB();
             
-            try
-                obj.capacitors = capacitorDB();
-            catch e
-                % RF Toolbox also has a capacitor() function.  Check if it
-                % is conflicting and report to user.
-                if endsWith(e.stack(1).file, fullfile('rf','capacitor.m'))
-                    e = e.addCause(MException('CAPACITOR:shadowedByRFToolbox',[ ...
-                        'function capacitor() for AURAdb components is shadowed by a identiclaly-named function in the RF Toolbox. ' ...
-                        'Move the AURAdb\\components\\capacitor folder lower than the RF toolbox in the matlab path']));
-                    throw(e);
-                else
-                    rethrow(e)
-                end
-
-            end
+            % try
+                % obj.capacitors = smps.databases.capacitorDB();
+            % catch e
+            %     % RF Toolbox also has a capacitor() function.  Check if it
+            %     % is conflicting and report to user.
+            %     if endsWith(e.stack(1).file, fullfile('rf','capacitor.m'))
+            %         e = e.addCause(MException('CAPACITOR:shadowedByRFToolbox',[ ...
+            %             'function capacitor() for AURAdb components is shadowed by a identically-named function in the RF Toolbox. ' ...
+            %             'Move the AURAdb\\components\\capacitor folder lower than the RF toolbox in the matlab path']));
+            %         throw(e);
+            %     else
+            %         rethrow(e)
+            %     end
+            % 
+            % end
             % obj.inductors = 0;
             % obj.cores = 0;
             % obj.wires = 0;
-
-            obj.topologies = topologyDB();
 
             if isempty(obj.transistors) && isempty(obj.capacitors) && isempty(obj.topologies)
                 warning('AURAdb is empty.  Run AURAdb(1).updateLibraries() to sync the lates libraries from the repository')

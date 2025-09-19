@@ -20,7 +20,7 @@ function [ts,swvec] = phaseShiftMod(ts,swvec, phase, propName, propVal)
     if isempty(propVal)
         phaseUnits = 'rad';
     else
-        phaseUnits = propVal{strcmp(propName,'phaseUnits')};
+        phaseUnits = propVal{strcmp(propName{:},'phaseUnits')};
     end
 
     Ts = sum(ts);

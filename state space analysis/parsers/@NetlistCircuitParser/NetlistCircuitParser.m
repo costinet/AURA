@@ -129,8 +129,8 @@ classdef NetlistCircuitParser < circuitParser
      end
 
      properties (Hidden)
-        LTSpiceFolder = ['C:\Users\' getenv('USERNAME') '\Documents\LTspiceXVII'];
-        LTSpiceExe = ['C:\Program Files\LTC\LTspiceXVII\' 'XVIIx64.exe'];
+        LTSpiceFolder = ''%['C:\Users\' getenv('USERNAME') '\Documents\LTspiceXVII'];
+        LTSpiceExe = ''%['C:\Program Files\LTC\LTspiceXVII\' 'XVIIx64.exe'];
 
         defaultRoff = 10e6;
         undefinedExpressions = {}
@@ -150,11 +150,12 @@ classdef NetlistCircuitParser < circuitParser
         updateComponentValues(obj)
 
         %File I/O / Parsing
+        [ltspicePath, ltspiceEXE]  = findLTspiceInstallDirectory(obj)
         readSpiceNetlist(obj,filename)
         readLTspiceSchematic(obj)
         evalSpiceParams(obj,param)
-        str = spiceNumFormat(obj,str)
-        component = parseSpiceComponent(obj, str, type)
+        [str] = spiceNumFormat(obj,str)
+        [component] = parseSpiceComponent(obj, str, type)
         [paramVal, embeddedParams, paramExpr] = parseTwoNetSpiceComponent(obj,str,component)
         [params] = parseSpiceParamList(obj, str, params)
         [components] = deEmbedSpiceParams(obj,component,embeddedParams)
@@ -162,8 +163,8 @@ classdef NetlistCircuitParser < circuitParser
         %Solving ss representation
         linearizeCircuitModel(obj)
         linearizeCircuitModel2(obj)
-        components = switchLinearSubcircuit(obj, component)
-        components = XFdependentSourceSubcircuit(obj, directive, components)
+        [components] = switchLinearSubcircuit(obj, component)
+        [components] = XFdependentSourceSubcircuit(obj, directive, components)
         setSwitchingState(obj, swvec)
         [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
         [H, tree, coTree, nNL] = hybrid(obj)
@@ -188,7 +189,22 @@ classdef NetlistCircuitParser < circuitParser
             end
             
             if ~exist(obj.LTSpiceFolder,'dir')
-                warning('Value of @LTSpiceCircuitParse.LTSpiceFolder is not the installation directory of LTSpice.  Library use may be limited')
+                [ltspicePath, ~]  = findLTspiceInstallDirectory(obj);
+                if ~isempty(ltspicePath)
+                    obj.LTSpiceFolder = ltspicePath;
+                else
+                    warning('Unable to locate LTSpice folder.  Library use will be limited.  ')
+                end
+                
+            end
+
+            if ~exist(obj.LTSpiceExe,'dir')
+                [~, LTSpiceExe]  = findLTspiceInstallDirectory(obj);
+                if ~isempty(LTSpiceExe)
+                    obj.LTSpiceExe = LTSpiceExe;
+                else
+                    warning('Unable to locate LTSpice EXE.  You will not be able to supply .asc files to this parser')
+                end
             end
         end
             
@@ -272,8 +288,8 @@ classdef NetlistCircuitParser < circuitParser
             % storedTopology.switches = obj.topology.switchLabels;
             % storedTopology.schemPositions = obj.schemPositions;
             % storedTopology.schemWires = obj.schemWires;
-            storedTop = storedTopology(name, description, obj);
-            tDB = topologyDB();
+            storedTop = smps.components.storedTopology(name, description, obj);
+            tDB = smps.databases.topologyDB();
             tDB.add(storedTop, overwrite);
             tDB.saveDB();
         end
@@ -292,6 +308,9 @@ classdef NetlistCircuitParser < circuitParser
             if exist(newpath,'dir') == 7
                 obj.LTSpiceFolder = newpath;
             else
+                if isempty(newpath)
+                    return
+                end
                 error(['Supplied path ' newpath ' does not exist'])
             end
             settingsPath = fullfile(userpath, 'SMPSToolbox', 'AURA', 'parsers', class(obj),'settings.mat');
@@ -303,6 +322,9 @@ classdef NetlistCircuitParser < circuitParser
             if exist(newpath,'file')
                 obj.LTSpiceExe = newpath;
             else
+                if isempty(newpath)
+                    return
+                end
                 error(['Supplied path ' newpath ' does not exist'])
             end
             settingsPath = fullfile(userpath, 'SMPSToolbox', 'AURA', 'parsers', class(obj),'settings.mat');

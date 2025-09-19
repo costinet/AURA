@@ -1,4 +1,4 @@
-classdef transistorDB < componentDB
+classdef transistorDB < smps.componentDB
     %transistorDB is a database of transistor objects
     
 %     Inherited properties:
@@ -12,7 +12,7 @@ classdef transistorDB < componentDB
     end
     
     properties (Hidden, Transient, Constant)
-        componentType = transistor();
+        componentType = smps.components.transistor();
     end
     
     % componentDB required methods

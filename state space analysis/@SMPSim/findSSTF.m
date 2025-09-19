@@ -15,19 +15,20 @@ function Gz = findSSTF(obj, tp, oi, tm, ut)
 %   switching interface, so that multiple simultaneous perturbations can be
 %   considered.  numel(Km) == numel(obj.ts).
 %
-%   Gz = findSSTF(___, oi) only outputs the state signals referenced by
-%   indices in oi.
+%   Gz = findSSTF(___, oi) only outputs the state signal(s) referenced by
+%   integer indices in oi.
 %
-%   Gz = findSSTF(__, tm) also includes a measurement interval tm
-%   at which all state outputs are measured.  If tm is ommitted,
-%   measurements are taken after the final interval, tm=length(obj.ts)
+%   Gz = findSSTF(__, tm) truncates the period after the period specific by 
+%   tm.  This can be used to generate transfer functions of converters
+%   exhibiting sub-period symmetric waveforms.  If tm is ommitted,
+%   probagation is continued to the final interval, tm=length(obj.ts)
 %
 %   see also SMPSim, ss   
 
     if ~exist('tm', 'var')
         tm = size(obj.converter.fullts,2);
     else
-         assert( isscalar(tm) && all(tm > tp) && tm<=size(obj.converter.fullts,2), 'tm must be an integer index into the controlled switch times after tp')
+         assert( isscalar(tm) && all(tm >= tp) && tm<=size(obj.converter.fullts,2), 'tm must be an integer index into the controlled switch times after tp')
     end
 
     if isempty(tp)
@@ -175,6 +176,9 @@ function Gz = findSSTF(obj, tp, oi, tm, ut)
     else
         GAMMA = zeros(ns,1);
     end
+
+    %% Account for symmetry in modeling
+    PHI = obj.IHC*PHI;
 
     Ts = sum(obj.ts(1:ActualStopTime));
 

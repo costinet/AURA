@@ -12,29 +12,39 @@ toolboxes = matlab.addons.toolbox.installedToolboxes;
 if isempty(toolboxes)
     thisToolbox = {};
 else
-    thisToolbox = toolboxes(strcmp(toolboxes.Name,"Switched Mode Power Supply Toolbox"));
+    thisToolbox = toolboxes(strcmp({toolboxes.Name},"Switched Mode Power Supply Toolbox"));
 end
 if isempty(thisToolbox)
     releaseURL = gitRelease.assets.browser_download_url;
-    outfn = websave(gitRelease.assets.name, releaseURL);
+    [~, defaultName, ext] = fileparts(gitRelease.assets.name);
+    outfn = fullfile(tempdir, [defaultName, ext]);
+    
     selection = questdlg(['Found no existing installation of the Switched Mode Power Supply Toolbox. ' ...
         'The latest release from github is ' latestVersion '. Would you like to install?'], ...
         "Confirm Install");
     if strcmp(selection, 'Yes')
+        websave(outfn, releaseURL);
         installedToolbox = matlab.addons.toolbox.installToolbox(outfn);
-        AURAdb(1).updateLibraries
+        delete(outfn);
+
+        % Update Component Libraries
+        AURAdb(1).updateLibraries;
     end
     return
 else
     installedVersion = thisToolbox.Version;
 end
 
-verDiff = cellfun(@str2num,split(latestVersion(2:end),'.')) - cellfun(@str2num,split(installedVersion,'.'));
-if ~isempty(find(verDiff > 0,1,'first') )
-    if isempty(find(verDiff < 0,1,'first')) || ...
-        find(verDiff > 0,1,'first') < find(verDiff < 0,1,'first')
+% verDiff = cellfun(@str2num,split(latestVersion(2:end),'.')) - cellfun(@str2num,split(installedVersion,'.'));
+% if ~isempty(find(verDiff > 0,1,'first') )
+%     if isempty(find(verDiff < 0,1,'first')) || ...
+%         find(verDiff > 0,1,'first') < find(verDiff < 0,1,'first')
+if verLessThan(installedVersion,latestVersion(2:end))
         releaseURL = gitRelease.assets.browser_download_url;
-        outfn = websave(gitRelease.assets.name, releaseURL);
+        [~, defaultName, ext] = fileparts(gitRelease.assets.name);
+        outfn = fullfile(tempdir, [defaultName, ext]);
+
+        websave(outfn, releaseURL);
 
          selection = questdlg(['Found version ' installedVersion ' of the Switched Mode Power Supply Toolbox installed. ' ...
         'The latest release from github is ' latestVersion '. Would you like to install the latest version?'], ...
@@ -42,8 +52,9 @@ if ~isempty(find(verDiff > 0,1,'first') )
         if strcmp(selection, 'Yes')
             matlab.addons.toolbox.uninstallToolbox(thisToolbox);
             installedToolbox = matlab.addons.toolbox.installToolbox(outfn);
+            delete(outfn);
         end
-    end
+%     end
 else
     disp('Toolbox is up to date')
 end

@@ -20,7 +20,7 @@ classdef ToolboxTestSuite < matlab.unittest.TestCase
         end
 
         function checkComponentAddParam(testCase)
-             t=transistor;
+             t=smps.components.transistor;
             % t.addParameter('Inductance', 5)
             try 
                 t.addParameter('Inductance', 5)
@@ -30,7 +30,7 @@ classdef ToolboxTestSuite < matlab.unittest.TestCase
             assert(err == 1, 'Failed Test 1');
             
             % Test 2: valid parameters
-            t=transistor;
+            t=smps.components.transistor;
             t.addParameter('Ron', 5);
             
             assert( strcmp(t.parameters(1).name, 'Rds') && ...
@@ -38,7 +38,7 @@ classdef ToolboxTestSuite < matlab.unittest.TestCase
                 all(strcmp(t.parameters(1).unit, {'m'  'Ohm'})), 'Failed Test 2')
             
             % Test 3: triple param
-            t=transistor;
+            t=smps.components.transistor;
             t.addParameter('Ron', [5 10 2]);
             
             assert( strcmp(t.parameters(1).name, 'Rds') && ...
@@ -48,13 +48,13 @@ classdef ToolboxTestSuite < matlab.unittest.TestCase
                 all(strcmp(t.parameters(1).unit, {'m'  'Ohm'})), 'Failed Test 3')
             
             % Test 4: test conditions
-            t=transistor;
+            t=smps.components.transistor;
             t.addParameter('Ron', [5 10 2], 'test = 15 V');
             
             assert( strcmp(t.parameters(1).conditions, 'test = 15 V') , 'Failed Test 4')
             
             % Test 5: direct set max min
-            t=transistor;
+            t=smps.components.transistor;
             t.addParameter('Ron', 5 , 'typ');
             t.addParameter('Coss', 5 , 'min');
             t.addParameter('Qg', 5 , 'max');
@@ -64,7 +64,7 @@ classdef ToolboxTestSuite < matlab.unittest.TestCase
                 t.parameters(3).max == 5e9 , 'Failed Test 5')
             
             % Test 6: EPC 8002
-            tDB = transistorDB;
+            tDB = smps.databases.transistorDB;
             fet = tDB(1);
             fet.addParameter('Vgs', [0 6 -4]);
             fet.addParameter('Ids', 2, 'max', {'Ta' '=' '25' '°C'});
@@ -73,18 +73,18 @@ classdef ToolboxTestSuite < matlab.unittest.TestCase
         end
 
         function checkComponentSubsref(testCase)
-            t=transistor('testTransistor');
+            t=smps.components.transistor('testTransistor');
             t.addParameter('Ron', 5 , 'typ');
             t.addParameter('Coss', 5 , 'min');
             t.addParameter('Qg', 5 , 'max'); 
             
-            tDB = transistorDB();
+            tDB = smps.databases.transistorDB();
             tDB.add(t);
 
             
             len = length(tDB.components);
             
-            assert(isa(tDB.componentType, 'transistor'), 'Failed 0')
+            assert(isa(tDB.componentType, 'transistor') || isa(tDB.componentType, 'smps.components.transistor'), 'Failed 0')
             
             testCase.verifyEqual(length(tDB(1:3)),3)
             testCase.verifyEqual(length({tDB(1:3).partNumber}),3)

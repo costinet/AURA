@@ -5,7 +5,7 @@ function [ts,swvec] = dutyMod(D,Ts, varargin)
 %
 %   [ts,swvec] = dutyMod(D,Ts, 'paramName', paramVal)
 %       paramNames include 'dt', 'phase', and 'phaseUnits'
-%       phaseUnits may be 'rad', 'deg', or 'time'
+%       phaseUnits may be 'rad' (default), 'deg', or 'time'
 
     p = inputParser;
     p.addRequired('D',@(x)isnumeric(x)&&x<=1&&x>=0);

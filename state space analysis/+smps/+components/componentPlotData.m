@@ -53,9 +53,17 @@ classdef componentPlotData
         function obj = componentPlotData(type, varargin)
             %componentPlotData Construct an instance of this class
             %   Detailed explanation goes here
+
+            if nargin == 1  && isa(type, 'componentPlotData') 
+                obj = obj.loadshim(type);
+                return
+            end
             
-            assert( isa(type, 'component'), 'input ''type'' must be a component class or subclass of component');
+            assert( isa(type, 'component') || isa(type, 'smps.component'), 'input ''type'' must be a component class or subclass of component');
             obj.componentType = type;
+
+
+
             
             if nargin == 2 && isa(varargin{1}, 'digitizedPlot')
 %                 obj = obj.copyDigitizedPlot(varargin{1});
@@ -83,7 +91,7 @@ classdef componentPlotData
                 obj.dataLabels  = dP.dataLabels;
                 obj.testConditions = dP.testConditions;
                 obj.title = dP.getPlotTitle('short');
-            elseif nargin == 2 && isa(varargin{1}, 'componentPlotData')
+            elseif nargin == 2 && isa(varargin{1}, 'componentPlotData') || isa(varargin{1}, 'smps.components.componentPlotData')
                 dP = varargin{1};
                 obj.plotData = dP.plotData;
                 obj.SIUnits  = dP.SIUnits;
@@ -199,11 +207,19 @@ classdef componentPlotData
         end
         
         function xs = get.xLabel(obj)
-            xs = obj.axisLabels{1};
+            if isempty(obj.axisLabels)
+                xs = '';
+            else
+                xs = obj.axisLabels{1};
+            end
         end
         
-        function ys = get.yLabel(obj)
-            ys = obj.axisLabels{2};
+        function ys = get.yLabel(obj) 
+            if isempty(obj.axisLabels)
+                ys = '';
+            else
+                ys = obj.axisLabels{2};
+            end
         end
 
         function zs = get.zLabel(obj)
@@ -379,7 +395,7 @@ classdef componentPlotData
             assert(isa(newGraph, class(obj)), ...
                 ['merge can only be used on objects of the same type'] );
             [exact, plotTF] = obj.eq(newGraph);
-            assert(any(plotTF), 'merge can only be used on two plots of the same type');
+            assert(any(plotTF) || mode == 1  , 'merge can only be used on two plots of the same type');
             if any(exact)
                 warning('Merge should not be called on two identical copies');
                 return
@@ -396,7 +412,7 @@ classdef componentPlotData
             
             %create a copy of the object for editing 
             %(NOT A HANDLE CLASS, so this was unecessary      
-            mergedGraph = componentPlotData(obj.componentType, obj);
+            mergedGraph = smps.components.componentPlotData(obj.componentType, obj);
             
             for i = find(newCurves)
                 sameLabel = find(strcmp(newGraph.dataLabels, obj.dataLabels(i)));
@@ -447,6 +463,24 @@ classdef componentPlotData
                 end
                 close(gcf);
             end
+        end
+    end
+
+    methods (Hidden)
+        function obj = loadshim(obj, orig)
+            % Shim method for loading outdated versions of the class by
+            % copying into all parameters.
+
+            obj.plotData = orig.plotData;
+            obj.testConditions = orig.testConditions;
+            obj.dataLabels  = orig.dataLabels;
+            obj.title = orig.title;
+   
+            obj.componentType = orig.componentType;
+   
+            obj.axisLabels = orig.axisLabels;
+            obj.axisType = orig.axisType;
+            obj.SIUnits = orig.SIUnits;
         end
     end
 end

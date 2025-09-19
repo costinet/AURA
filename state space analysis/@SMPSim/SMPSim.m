@@ -152,7 +152,7 @@ classdef SMPSim < handle
         [ avgXs, avgYs, Ints ] = ssAvgs(obj, Xss)
         niter = findValidSteadyState(obj)
         Gz = findSSTF(obj, tp, oi, tm, ut)
-        Gs = findAvgModelTF(obj, tp, oi)
+        [Gs, B] = findAvgModelTF(obj, tp, oi)
         [ xs, t, ys, xd ] = simTransient(obj, nPeriods, Xss, tsteps)
 
         %% Locally-defined methods
@@ -392,13 +392,13 @@ classdef SMPSim < handle
         %
         %   See Also SMPSim
             if nargin == 3
-                if strcmp(type, 'x') %state
+                if strcmpi(type, 'x') %state
                     loc = find(strcmp(obj.topology.stateLabels, name));
-                elseif strcmp(type, 'u') %input
+                elseif strcmpi(type, 'u') %input
                     loc = find(strcmp(obj.topology.inputLabels, name));
-                elseif strcmp(type, 'y') %output 
+                elseif strcmpi(type, 'y') %output 
                     loc = find(strcmp(obj.topology.outputLabels, name));
-                elseif strcmp(type, 'sw') %switch
+                elseif strcmpi(type, 'sw') %switch
                     loc = find(strcmp(obj.topology.switchLabels, name));
                 else
                    error('Incompatable type.  Variable type must be x, u, y, or s'); 

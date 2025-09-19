@@ -1,4 +1,4 @@
-classdef capacitorDB < componentDB
+classdef capacitorDB < smps.componentDB
     %capacitorDB is a database of capacitor objects
     
 %     Inherited properties:
@@ -12,7 +12,7 @@ classdef capacitorDB < componentDB
     end
     
     properties (Hidden, Transient, Constant)
-        componentType = capacitor();
+        componentType = smps.components.capacitor();
     end
     
     % componentDB required methods
