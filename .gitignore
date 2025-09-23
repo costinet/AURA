@@ -2,6 +2,8 @@ state space analysis/AURAdb/digitizers/plotDigitizer/appDesignerTempData_.*
 AURA-Jared/
 depricated/
 Depricated/
+**/depricated/
+**/Depricated/
 *.bak
 *.bak2
 slprj/
@@ -9,7 +11,29 @@ slprj/
 *.asv
 *slx.r2021a
 *.slx.original
-state space analysis/Releases/*.prj
+state space analysis/*.prj
 state space analysis/AURAdb/digitizers/plotDigitizer/temp/
 state space analysis/AURAdb/databases/@capacitorDB/capacitors.mat
 state space analysis/Toolbox/Switched Mode Power Supply Toolbox.mltbx
+state space analysis/parsers/@LTspiceCircuitParser/unknown
+Ideas/
+Test/
+AURAdb/digitizers/plotDigitizer/appDesignerTempData_.*
+AURAdb/digitizers/plotDigitizer/temp/
+depricated/
+*.bak
+*.bak2
+testConverters/PreviousApplications/
+testConverters/SPICECompare/
+slprj/
+*.autosave
+*.asv
+webserver/
+*slx.r2021a
+*.slx.original
+packageAURA.m
+AURA.prj
+dev/
+testConverters/PreviousApplications
+resources/
+state space analysis/parsers/@LTspiceCircuitParser/unknown/

@@ -1,5 +1,5 @@
 % Switched Mode Power Supply Toolbox
-% Version 0.2.4 28-Feb-2024 
+% Version 0.3.4 23-Sep-2025
 % 
 % Toolbox scripts
 %   updateToolbox - get and install latest release from github
@@ -13,3 +13,9 @@
 %   AURAdb          - contains device databases and functions
 %   parsers         - contains classes to implement circuit parsers
 %   testConverters  - contains example converters and test steady-state solution scripts
+%
+% For more information, see the <a href="matlab: 
+% web('https://github.com/costinet/AURA')">Github Repo</a>.
+
+
+

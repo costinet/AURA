@@ -291,8 +291,9 @@ classdef NetlistCircuitParser < circuitParser
             storedTop = smps.components.storedTopology(name, description, obj);
             tDB = smps.databases.topologyDB();
             tDB.add(storedTop, overwrite);
-            tDB.saveDB();
+            tDB.saveDB(overwrite);
         end
+        
         function loadTopology(obj,storedTop)
             obj.origComponents = storedTop.components;
             obj.netListDirectives = storedTop.props;

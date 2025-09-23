@@ -341,6 +341,10 @@ classdef component < handle
     end
     
     methods (Hidden)
+        function resetUpDated(obj)
+            obj.upDated = 0;
+        end
+
         function varargout = subsref(obj, s)
         %subsref overloads dot-indexing to give back parameters when
         %they are available.  Returns two paramters:

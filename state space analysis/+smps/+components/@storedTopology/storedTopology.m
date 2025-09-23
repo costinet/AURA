@@ -77,6 +77,10 @@ classdef storedTopology < handle
             obj.upDated = 0;
         end
 
+        function resetUpDated(obj)
+            obj.upDated = 0;
+        end
+
         function loadshim(obj,orig)
             obj.name = orig.name;
             obj.description = orig.description;

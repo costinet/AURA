@@ -4,12 +4,17 @@ classdef AURAdb < handle
     % See also SMPSim, @transistor, @capacitor
     
     properties (SetAccess = immutable, GetAccess = public)
-        transistors
-        capacitors
+        transistors = smps.databases.transistorDB(1)
+        capacitors = smps.databases.capacitorDB(1)
         % inductors
         % cores
         % wires
-        topologies
+        topologies = smps.databases.topologyDB(1)
+
+    end
+
+    properties (Dependent, Hidden)
+        allComponents
     end
     
     methods
@@ -46,6 +51,27 @@ classdef AURAdb < handle
             if isempty(obj.transistors) && isempty(obj.capacitors) && isempty(obj.topologies)
                 warning('AURAdb is empty.  Run AURAdb(1).updateLibraries() to sync the lates libraries from the repository')
             end
+        end
+
+        function add(obj, component)
+            if isscalar(component)
+                for i = 1:length(obj.allComponents)
+                    if isa(component, class(obj.allComponents{i}.componentType))
+                        add(obj.allComponents{i}, component);
+                        return
+                    end
+                end
+            else
+                for i = 1:length(obj.allComponents)
+                    if isa(component(1), class(obj.allComponents{i}.componentType))
+                        obj.allComponents{i}.addMult(component);
+                        return
+                    end
+                end
+            end
+            e = MException('AURAdb:InvalidComponent', 'Invalid object being added to AURAdb.  Inputs to the add() function must be components of the same class as one of the component datbases.');
+            throw(e);
+
         end
         
         % function sync(obj)
@@ -90,6 +116,34 @@ classdef AURAdb < handle
             end
             disp('AURAdb Sync completed');
         end
+
+        function comps = get.allComponents(obj)
+            comps = {obj.transistors, obj.capacitors, obj.topologies};
+       end
+    end
+
+   methods (Hidden)
+
+       function delete(obj)
+            % delete is overwritted for componentDB classes to check if
+            % anything has been modified and give the user a warning to
+            % prevent data loss.
+            % 
+            modified = cellfun(@(x) x.modified,obj.allComponents);
+            if any(modified)
+                selection = questdlg('AURAdb contains modified databases. Would you like to save the database before deleting?', ...
+                        "Confirm Deleting Unsaved Data");
+            else
+                return
+            end
+            if strcmp(selection, 'Yes')
+                for db = obj.allComponents
+                    if db.modified == 1
+                         db.saveDB(1);
+                    end
+                end
+            end
+        end
     end
     
     methods (Static, Hidden)
@@ -99,5 +153,7 @@ classdef AURAdb < handle
             hash = sprintf('%2.2x', typecast(md.digest(uint8(text)), 'uint8')');
         end
     end
+
+
 end
 

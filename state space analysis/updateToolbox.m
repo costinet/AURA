@@ -39,7 +39,9 @@ end
 % if ~isempty(find(verDiff > 0,1,'first') )
 %     if isempty(find(verDiff < 0,1,'first')) || ...
 %         find(verDiff > 0,1,'first') < find(verDiff < 0,1,'first')
-if verLessThan(installedVersion,latestVersion(2:end))
+% if verLessThan(installedVersion,latestVersion(2:end)) % ver() not working
+% in latest releases
+if compareReleases(latestVersion, installedVersion)
         releaseURL = gitRelease.assets.browser_download_url;
         [~, defaultName, ext] = fileparts(gitRelease.assets.name);
         outfn = fullfile(tempdir, [defaultName, ext]);
@@ -54,11 +56,32 @@ if verLessThan(installedVersion,latestVersion(2:end))
             installedToolbox = matlab.addons.toolbox.installToolbox(outfn);
             delete(outfn);
         end
-%     end
+    % end
 else
     disp('Toolbox is up to date')
 end
 
 %% update component libraries
 AURAdb(1).updateLibraries
+
+function result = compareReleases(latestVersion, installedVersion)
+    toolboxParts = getParts(installedVersion);
+    verParts = getParts(latestVersion);
+    if toolboxParts(1) ~= verParts(1)     % major version
+        result = toolboxParts(1) < verParts(1);
+    elseif toolboxParts(2) ~= verParts(2) % minor version
+        result = toolboxParts(2) < verParts(2);
+    else                                  % revision version
+        result = toolboxParts(3) < verParts(3);
+    end
+end
+
+function parts = getParts(V)
+    % parts = sscanf(V, '%d.%d.%d')';
+    tokens = str2double(regexp(V, 'v?(\d+)\.(\d+)\.(\d+)', 'tokens', 'once'));
+    if length(parts) < 3
+        parts(3) = 0; % zero-fills to 3 elements
+    end
+end
+
 

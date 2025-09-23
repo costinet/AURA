@@ -4,7 +4,7 @@ classdef (Hidden) capacitorDB < smps.databases.capacitorDB
     methods (Static)
         function obj = loadobj(A)
             warning('off', 'MATLAB:load:classDoesNotMatch');
-            obj = smps.databases.capacitorDB();
+            obj = smps.databases.capacitorDB(1);
             obj.addMult(A.components)
             warning('on', 'MATLAB:load:classDoesNotMatch');
         end

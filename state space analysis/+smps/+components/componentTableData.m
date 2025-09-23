@@ -174,6 +174,8 @@ classdef componentTableData
 
             obj.baseUnit = orig.baseUnit;
             obj.multiplier = orig.multiplier;
+
+            obj.componentType = orig.componentType;
         end
     end
 
