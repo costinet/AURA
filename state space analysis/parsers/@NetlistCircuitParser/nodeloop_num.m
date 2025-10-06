@@ -1,17 +1,19 @@
 % function [A,B,C,D,I,HtempAB,dependsAB,HtempCD,savedCD,StateNamesAB,StateNamesCD,OutputNames,DependentNames,SortedTree1,SortedCoTree1,ConstantNames,OrderedNamesnum,almost_H] = nodeloop_num(obj,NL,NLnets)
-function [almost_H] = nodeloop_num(obj,NL,NLnets)
+function [almost_H] = nodeloop_num(obj)
 % nodeloop creates the state matrices A,B,C,D from a specific node input
 % matrix
 %
-% Notes: Needs to be more general, broken up into a few more functions,
-%
-%
+% See E.g Chua 6-20
 
 %% Sort numeric index values 
 % This section matches the user given values to all variables from the
 % topology level to allow numerical solving through a lookup table
-[~,IA,IB] = intersect(NLnets(:,1),obj.Component_Values(:,1));
-obj.index = zeros(size(NLnets,1),1);
+% [~,IA,IB] = intersect(NLnets(:,1),obj.Component_Values(:,1));
+% obj.index = zeros(size(NLnets,1),1);
+% obj.index(IA) = IB;
+
+[~,IA,IB] = intersect({obj.components.Name}',obj.Component_Values(:,1));
+obj.index = zeros(size({obj.components.Name},2),1);
 obj.index(IA) = IB;
 
 

@@ -29,7 +29,7 @@ classdef digitizedPlot < handle
         
         img         % RGB data of full plot image
         
-        componentType = transistor();
+        componentType = smps.components.transistor();
 
         debug = 0;
     end
@@ -840,7 +840,7 @@ classdef digitizedPlot < handle
                 if ~isempty(bboxes)
                     cont = diag(rectint(rois(i,:), bboxes) > .5*diag(rectint(bboxes,bboxes)));
                     if isNumeric
-                        ocrResults = ocr(img,bboxes(cont,:),'CharacterSet','.0123456789','TextLayout','word');
+                        ocrResults = ocr(img,bboxes(cont,:),'CharacterSet','.0123456789','LayoutAnalysis ','word');
                     else
                         ocrResults = ocr(img,bboxes(cont,:),'TextLayout','word');
                     end

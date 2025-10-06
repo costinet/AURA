@@ -68,9 +68,12 @@ classdef componentTableData
         end
         
         function out = approx(obj)
-            %approx Summary of this method goes here
-            %   Detailed explanation goes here
-            unitScale = obj.componentType.SIprefixes(obj.unit{1});
+            %approx approximate nominal value using best-available data
+            if ~isempty(obj.componentType)
+                unitScale = obj.componentType.SIprefixes(obj.unit{1});
+            else
+                unitScale = smps.components.transistor().SIprefixes(obj.unit{1});
+            end
             if ~isempty(obj.typ)
                 out = obj.typ*unitScale;
             elseif ~isempty(obj.max)

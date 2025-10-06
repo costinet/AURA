@@ -1,11 +1,11 @@
-function [A,B,C,D,I,Htemp,depends,StateNames,OutputNames,DependentNames,ConstantNames,OrderedNamesnum] = loopfixAB_num(obj,H,s,NLnets,SortedTree,SortedCoTree)
+function [A,B,C,D,I,Htemp,depends,StateNames,OutputNames,DependentNames,ConstantNames,OrderedNamesnum] = loopfixAB_num(obj,H,s,SortedTree,SortedCoTree)
 %loopfixAB computes the ABCD matrix
 %   This function either computes symbolic Htemp matrix (obsolete) or the
 %   ABCD matrix from the hybrid matrix
 
 % if the number of state variables is greater than sym_comput, sym AB
 % matrix will not be computed
-    sym_comput = 250;  %% 250 or 1
+    sym_comput = 1000;  %% 250 or 1
     numE = 1;
     numEB = 2;
     numEM = 3;
@@ -54,7 +54,8 @@ function [A,B,C,D,I,Htemp,depends,StateNames,OutputNames,DependentNames,Constant
     end
     
     DependentNames = []; % Initallize dependent Names as a num
-    ConstantNames = NLnets(temps((temps(:,1)==numE | temps(:,1)==numJ),4),1); % Find Input names
+    % ConstantNames = NLnets(temps((temps(:,1)==numE | temps(:,1)==numJ),4),1); % Find Input names
+    ConstantNames = {obj.components(temps((temps(:,1)==numE | temps(:,1)==numJ),4)).Name}';
     
     OrderedNameselement = temps(cir_state,1);
     loop = length(OrderedNameselement)+1; % Set while loop index
@@ -71,12 +72,11 @@ function [A,B,C,D,I,Htemp,depends,StateNames,OutputNames,DependentNames,Constant
         end
     end
     
-    % Pluggs in all the C and L values to from M*x_dot = Ax+Bu equations
+    % Plugs in all the C and L values to from M*x_dot = Ax+Bu equations
     % If the number exits in the M matrix then the entire row gets
     % divided by that elements either L or C
     % The position for that element however does not since it forms either
     % di/dt or dv/dt
-    
     for i = 1:1:length(OrderedNameselement)
         for j = 1:1:length(OrderedNameselement)
             if Htemp(i,j)~=0
@@ -96,38 +96,45 @@ function [A,B,C,D,I,Htemp,depends,StateNames,OutputNames,DependentNames,Constant
         % need to switch if caps were in cotree or inductors in tree
         k = k+1;
         if OrderedNameselement(k)==numEL || OrderedNameselement(k)==numJC
-            
+
             DependentNames(j+1,:) = OutputNames(i); % Assigns name to dependent row status
             OutputNames(i) = []; % Deletes name from Output names list
-            
+
             % Correct the numerical reference from the state variables to net list
             OrderedNamesnum(end+1) = OrderedNamesnum(i);
             OrderedNamesnum(i) = [];
-            
+
             j = j+1; % J is number of dependent elements
-            
+
             % Set up so each depends row is a linear combination of the
             % independent state remaining:
             % depends does not include DC sources because dv/dt of DC source is
             % zero
             depends(j,:)=Htemp(i,H_row2+1:2*H_row2);
             depends(j,i) = 0;
-            
+
             % Any d /dt dependence based on this states gets added back to
             % the M Matrix
+            warning('Code for solving state space with dependent states is currently not working reliably.  Add a small resistance to decouple the states in any C-V loops or L-I nets')
             Htemp(1:H_row2,1:H_row2) = Htemp(1:H_row2,1:H_row2) + repmat(depends(j,:),H_row2,1).*repmat(Htemp(:,i),1,H_row2);
             Htemp(i,:)=[];
             Htemp(:,i+H_row2) = [];
             Htemp(:,i)=[];
             depends(:,i)=[];
-            
+
             i = i-1;
             loop = loop - 1;
             [H_row2,~] = size(Htemp);
-            
+
         end
         i= i+1;
     end
+
+
+
+
+
+
     
     % Need to format output how i want it
     [H_row2,~] = size(Htemp);
@@ -217,7 +224,7 @@ function [A,B,C,D,I,Htemp,depends,StateNames,OutputNames,DependentNames,Constant
             end
         end
     else
-        error('Greater than 250 independent circuit elements found; failing')
+        error('Greater than 1000 independent circuit elements found; failing')
     end
 end % That's all Folks
 

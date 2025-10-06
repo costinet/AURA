@@ -36,7 +36,7 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
 
     method = 1;
 
-    if method == 1
+    if ~all(diff(obj.Is,1,3),'all')%method == 1
         %Faster method relying on consistent depedent states
         In = eye(size(As,1) + 1, size(As,2) + 1);
         EA = In;
@@ -60,7 +60,7 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
         k = Zn(end,:)\1;
         Xss = zeros(ns,1);
         Xss(~depStates(1:end-1)) = Zn(1:end-1,:)*k;
-        Xss = obj.Is(:,:,1)*Xss;
+        Xss = obj.Is(:,:,1)*Xss + obj.topology.BIs(:,:,1)*u(:,:,1);
 
     else
         %Slower method using dependent states in each subinterval
@@ -105,7 +105,7 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
         Zn = null(In-IHC*EA);
     
         k = Zn(end,:)\1;
-        Xss= k*obj.Is(:,:,1)*Zn(1:end-1,:);
+        Xss= k*(obj.Is(:,:,1)*Zn(1:end-1,:) + obj.BIs(:,:,1)*u(:,:,1));
     end
 
 
@@ -147,7 +147,10 @@ function [ Xs] = AugmentedSteadyState(obj, dts)
     %% from steady-state solution, go through and find states at each subinterval
     Xs(:,1) = [Xss; 1];
     for i=1:n
-        Xs(:,i+1) = expAtil(:,:,i)*Xs(:,i);
+        I = obj.Is(:,:,i);
+        Bu = obj.BIs(:,:,i)*u(:,:,i);
+        Xs(:,i+1) =  expAtil(:,:,i)*Xs(:,i);
+        Xs(1:end-1,i+1) = I*Xs(1:end-1,i+1) + Bu;
         % Xs(1:end-1,i+1) = obj.Is(:,:,i)*Xs(1:end-1,i+1);
     end
     Xs=Xs(1:end-1,:);

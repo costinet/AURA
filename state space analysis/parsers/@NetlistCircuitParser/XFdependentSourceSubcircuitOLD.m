@@ -1,13 +1,8 @@
-function components = XFdependentSourceSubcircuit(obj, directive, components)
-%XFdependentSourceSubcircuit replaces coupled insductors with k=1 with a
-%dependent source equivalent subcircuit
-%   Replaces inductors coupled with k=1 with a combination of
-%   current-dependent current sources and voltage-dependent voltage
-%   sources, linked with scale factors equal to the turns ration.  For N
-%   coupled inductors, there are N-1 voltage sources, and one current
-%   source.
+function components = XFdependentSourceSubcircuitOLD(obj, directive, components)
+%UNTITLED6 Summary of this function goes here
+%   Detailed explanation goes here
 
-
+    
     for i = 1:length(directive.paramNames)
         coupledIndLocs(i) = find(strcmp({components.Name}, directive.paramNames{i}));
         coupledInductors(i) = components(coupledIndLocs(i));
@@ -76,14 +71,6 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
         isource.paramVals = {};
         isource.paramExpressions = {};
 
-        Imsource = {};
-        Imsource.Name = ['Vm_' coupledInductors(Vi).Name];
-        Imsource.Type = 'Im';
-        Imsource.Nodes = coupledInductors(Vi).Nodes;
-        Imsource.paramNames = {'A'};
-        Imsource.paramVals = 0;
-        Imsource.paramExpressions = {'0'};
-
         Lmin = 0;
 
         for i = setdiff(1:length(coupledInductors),Vi)
@@ -91,46 +78,32 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
             N(i) = sqrt(Li/LV);
             Nexpr{i} = ['sqrt(' coupledInductors(i).paramExpressions(strcmp(coupledInductors(i).paramNames,'L')) ...
                 '/' coupledInductors(Vi).paramExpressions(strcmp(coupledInductors(Vi).paramNames,'L')) ')'];
-
+            
             Vsource = {};
             Vsource.Name = ['E_' coupledInductors(i).Name];
             Vsource.Type = 'E';
-            Vsource.Nodes = {coupledInductors(i).Nodes{1}, [coupledInductors(i).Nodes{1} '_m']};
+            Vsource.Nodes = [coupledInductors(i).Nodes];
             Vsource.paramNames = {'Inam', 'gain'};   %This is not valid LTspice, but it is easier to make it a two-node component
-            Vsource.paramVals = {Imsource.Name, N(i)};
+            Vsource.paramVals = {isource.Name, N(i)};
             Vsource.paramExpressions = {isource.Name, Nexpr{i} };
-
-            Vmsource = {};
-            Vmsource.Name = ['Im_' coupledInductors(i).Name];
-            Vmsource.Type = 'Vm';
-            Vmsource.Nodes = {[coupledInductors(i).Nodes{1} '_m'] coupledInductors(i).Nodes{2}};
-            Vmsource.paramNames = {'V'};
-            Vmsource.paramVals = 0;
-            Vmsource.paramExpressions = {'0'};
 
             isource.paramNames = [isource.paramNames, ...
                 {['Vnam' num2str(i)], ['gain' num2str(i)]}];
             isource.paramVals = [isource.paramVals, ...
-                {Vmsource.Name, -N(i)}];
+                {Vsource.Name, -N(i)}];
             isource.paramExpressions = {isource.paramExpressions; {isource.Name, ['-' Nexpr{i}]} };
 
             if Lmin == 0
                 Lmin = 1;
-                %Leave one Lm in (save for later to not ruin indexing)
+                %Leave one Lm in (save for later to not ruin indexing
                 Lm = components(coupledIndLocs(i));  
             end
-            components = [components(1:coupledIndLocs(i)-1) Vsource Vmsource components(coupledIndLocs(i)+1:end)];    %Replace all secondaries
-            
-            %update indexing for any others to account for extra inserted
-            %component
-            if coupledIndLocs(Vi) > coupledIndLocs(i)
-                coupledIndLocs(Vi) = coupledIndLocs(Vi) + 1;
-            end
+            components(coupledIndLocs(i)) = Vsource;    %Replace all secondaries
+
         end
 
 
-        components = [components(1:coupledIndLocs(Vi)-1) isource Imsource components(coupledIndLocs(Vi)+1:end)];
-
+        components(coupledIndLocs(Vi)) = isource;
         if ~(k>1)
             components(end+1) = Lm;
             % components = [components(1:NVi-1) isource components(NVi+1:end)]; 
@@ -140,4 +113,3 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
     end
 
 end
-

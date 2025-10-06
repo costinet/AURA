@@ -49,7 +49,12 @@ classdef AURAdb < handle
             % obj.wires = 0;
 
             if isempty(obj.transistors) && isempty(obj.capacitors) && isempty(obj.topologies)
-                warning('AURAdb is empty.  Run AURAdb(1).updateLibraries() to sync the lates libraries from the repository')
+                % warning('AURAdb is empty.  Run AURAdb(1).updateLibraries() to sync the lates libraries from the repository')
+                selection = questdlg('AURAdb is empty.  Would you like to run AURAdb(1).updateLibraries() to sync the latest libraries from the repository?', ...
+                    "Update Database?");
+                if strcmp(selection, 'Yes')
+                    AURAdb(1).updateLibraries();
+                end
             end
         end
 
@@ -138,8 +143,8 @@ classdef AURAdb < handle
             end
             if strcmp(selection, 'Yes')
                 for db = obj.allComponents
-                    if db.modified == 1
-                         db.saveDB(1);
+                    if db{1}.modified == 1
+                         db{1}.saveDB(1);
                     end
                 end
             end

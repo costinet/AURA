@@ -183,25 +183,27 @@ classdef (Abstract) componentDB < handle
                 alreadyConfirmed = 1;
             end
             
-            for i = 1:length(obj.components)
-                obj.components(i).resetUpDated();
-                obj.modified = 0;
-                fn = fullfile(DBpath,[class(obj.componentType) 's.mat']);
-                if exist(fn,'file') && ~alreadyConfirmed
-                    selection = questdlg(['Are you sure you want to overwrite the ' class(obj.componentType) ' database?'], ...
-                        "Confirm Overwriting Database");
-                    if strcmp(selection, 'Yes')
-                        alreadyConfirmed = 1;
-                    else
-                        alreadyConfirmed = 0;
-                        return
-                    end
-                end
-
-                if alreadyConfirmed == 1
-                    save(fn,'obj');
+            
+            fn = fullfile(DBpath,[class(obj.componentType) 's.mat']);
+            if exist(fn,'file') && ~alreadyConfirmed
+                selection = questdlg(['Are you sure you want to overwrite the ' class(obj.componentType) ' database?'], ...
+                    "Confirm Overwriting Database");
+                if strcmp(selection, 'Yes')
+                    alreadyConfirmed = 1;
+                else
+                    alreadyConfirmed = 0;
+                    return
                 end
             end
+
+            if alreadyConfirmed == 1
+                for i = 1:length(obj.components)
+                    obj.components(i).resetUpDated();
+                    obj.modified = 0;
+                end
+                save(fn,'obj');
+            end
+            
             
         end
         
@@ -289,7 +291,7 @@ classdef (Abstract) componentDB < handle
                             warning(['Only one saved database should be present in ' DBpath '.  Possible duplication of data may occur']);
                         end
                     end
-                    if isempty(matfiles) || reload
+                    if isempty(matfiles) 
                         libfiles = dir(fullfile(DBpath,'lib','*.mat'));
                         if ~isempty(libfiles)
                             for i = 1:numel(libfiles)

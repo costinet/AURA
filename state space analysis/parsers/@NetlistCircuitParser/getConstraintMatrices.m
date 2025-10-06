@@ -92,7 +92,11 @@ for i = 1:length(switchNames)
             loc_ = strfind(outputs{findInds(j)}, '_');
             sameVolts = strcmp(switchNames, outputs{findInds(j)}(loc_(end)+1:end));
          end
-        switchInds(j) = find(sameVolts)';
+         if(any(sameVolts))
+            switchInds(j) = find(sameVolts)';
+         else
+             switchInds = [];
+         end
     end
     
     if obj.isDiode(i)

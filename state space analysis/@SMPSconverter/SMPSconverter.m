@@ -23,6 +23,7 @@ classdef SMPSconverter < handle
         Cs
         Ds
         Is
+        BIs
         swseq % as integer indexes
         swvec % as binary switch states
         
@@ -551,6 +552,10 @@ classdef SMPSconverter < handle
         
         function res = get.Is(obj)
             res = obj.topology.Is(:,:,obj.swseq);      
+        end
+
+        function res = get.BIs(obj)
+            res = obj.topology.BIs(:,:,obj.swseq);      
         end
         
         function res = get.ts(obj)

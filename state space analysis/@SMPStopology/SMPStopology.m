@@ -25,6 +25,7 @@ classdef SMPStopology < handle
         labels
         
         sourcefn
+        BIs
     end
     
     properties (Hidden)
@@ -250,6 +251,14 @@ classdef SMPStopology < handle
                     res(1:length(evs),:,i) = eigs(obj.As(:,:,i));
                  end
                 obj.eigAs = res;
+            end
+        end
+
+        function BIs = get.BIs(obj)
+            if isprop(obj.circuitParser, 'BInum') && ~isempty(obj.circuitParser.BInum)
+                BIs = obj.circuitParser.BInum;
+            else
+                BIs = zeros(size(obj.Bs));
             end
         end
 

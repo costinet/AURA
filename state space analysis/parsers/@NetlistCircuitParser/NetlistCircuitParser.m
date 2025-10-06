@@ -16,10 +16,6 @@ classdef NetlistCircuitParser < circuitParser
     %
     %   See also @PLECScircuitParser, @SMPSim, @circuitParser
 
-    properties (Hidden, Constant)
-        method = 'new'
-    end
-    
     properties (SetAccess = protected)
         sourceType
         sourcefn
@@ -48,6 +44,7 @@ classdef NetlistCircuitParser < circuitParser
         Cnum
         Dnum
         Inum % Only used for PLECS
+        BInum
 
         eigA % The eiganvalues of Anum
         
@@ -85,7 +82,9 @@ classdef NetlistCircuitParser < circuitParser
 
 
 	
-	 properties (Access = private)
+    properties (Access = private)
+        nodeMap 
+
         Cutset
         SortedTree_cutloop
         SortedCoTree_cutloop
@@ -137,7 +136,17 @@ classdef NetlistCircuitParser < circuitParser
 %         % Lists whether a FET or diode is on or off during a state
         ONorOFF
 
-     end
+        useForcedDependentStates = 0
+
+    end
+
+    properties (Hidden, Constant)
+        method = 'new'
+        typeMap = dictionary({'V','BV', 'MV','C','R','L','MI','BI','I', ...
+            'E', 'F', 'Vm', 'Im'}, [1:9, 2, 8, 3, 7]);      %Preferred Tree ranking for components
+        treeIDnumberMap = dictionary(1:9, [1:4 6 5 7:9]);   %Map from typeMap to differentiate Tree and CoTree elements
+        coTreeIDnumberMap = dictionary(1:9, [1:3 8 7 9 10 11 12]);
+    end
 
      properties (Hidden, Dependent)
         settings
@@ -159,6 +168,9 @@ classdef NetlistCircuitParser < circuitParser
         [paramVal, embeddedParams, paramExpr] = parseTwoNetSpiceComponent(obj,str,component)
         [params] = parseSpiceParamList(obj, str, params)
         [components] = deEmbedSpiceParams(obj,component,embeddedParams)
+        [components] = findShorts(obj, components)
+
+        [components] = XFdependentSourceSubcircuitOLD(obj, directive, components)
         
         %Solving ss representation
         linearizeCircuitModel(obj)
@@ -168,6 +180,11 @@ classdef NetlistCircuitParser < circuitParser
         setSwitchingState(obj, swvec)
         [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
         [H, tree, coTree, nNL] = hybrid(obj)
+
+        %% New
+        findNormalTree(obj)
+        [H, comps] = hybridMatrix(obj)
+        [A,B,C,D,I,names] = stateSpaceFromHybrid(obj, H, comps)
 
         %Graphical Representation
         plotSchematic(obj,fn)

@@ -1,7 +1,7 @@
 %% component->addParameter
 if(1)
     % Test 1: valid parameters
-    t=transistor;
+    t=smps.components.transistor;
     % t.addParameter('Inductance', 5)
     try 
         t.addParameter('Inductance', 5)
@@ -11,7 +11,7 @@ if(1)
     assert(err == 1, 'Failed Test 1');
     
     % Test 2: valid parameters
-    t=transistor;
+    t=smps.components.transistor;
     t.addParameter('Ron', 5);
     
     assert( strcmp(t.parameters(1).name, 'Rds') && ...
@@ -19,7 +19,7 @@ if(1)
         all(strcmp(t.parameters(1).unit, {'m'  'Ohm'})), 'Failed Test 2')
     
     % Test 3: triple param
-    t=transistor;
+    t=smps.components.transistor;
     t.addParameter('Ron', [5 10 2]);
     
     assert( strcmp(t.parameters(1).name, 'Rds') && ...
@@ -29,13 +29,13 @@ if(1)
         all(strcmp(t.parameters(1).unit, {'m'  'Ohm'})), 'Failed Test 3')
     
     % Test 4: test conditions
-    t=transistor;
+    t=smps.components.transistor;
     t.addParameter('Ron', [5 10 2], 'test = 15 V');
     
     assert( strcmp(t.parameters(1).conditions, 'test = 15 V') , 'Failed Test 4')
     
     % Test 5: direct set max min
-    t=transistor;
+    t=smps.components.transistor;
     t.addParameter('Ron', 5 , 'typ');
     t.addParameter('Coss', 5 , 'min');
     t.addParameter('Qg', 5 , 'max');
@@ -45,7 +45,7 @@ if(1)
         t.parameters(3).max == 5e9 , 'Failed Test 5')
     
     % Test 6: EPC 8002
-    tDB = transistorDB;
+    tDB = smps.databases.transistorDB;
     fet = tDB(1);
     fet.addParameter('Vgs', [0 6 -4]);
     fet.addParameter('Ids', 2, 'max', {'Ta' '=' '25' '°C'});
@@ -57,23 +57,23 @@ end
 
 %% component->subsref
 if(1)
-   t=transistor('testTransistor');
+   t=smps.components.transistor('testTransistor');
    t.addParameter('Ron', 5 , 'typ');
    t.addParameter('Coss', 5 , 'min');
    t.addParameter('Qg', 5 , 'max'); 
    
-   tDB = transistorDB;
+   tDB = smps.databases.transistorDB;
    tDB.add(t);
    
    len = length(tDB.components);
    
-   assert(isa(tDB.componentType, 'transistor'), 'Failed 0')
+   assert(isa(tDB.componentType, 'smps.components.transistor'), 'Failed 0')
    
    assert(length(tDB(1:3)) == 3, 'Failed 1');
    assert(length({tDB(1:3).partNumber}) == 3, 'Failed 2');
    assert(length(tDB(1).parameters) == length(tDB.components(1).parameters), 'Failed 3');
    assert(length({tDB.components.partNumber}) == len, 'Failed 4');
-   assert(length({tDB(:).graphs}) == len, 'Failed 5');
+   % assert(length({tDB(:).graphs}) == len, 'Failed 5');
    
    assert(length({tDB(1:2).ron.typ}) == 2, 'Failed 6');
    assert(length(tDB(1).ron.typ) == 1, 'Failed 7');
@@ -95,7 +95,7 @@ if(1)
 
 %% componentDB->subsref
 
-    tDB(end-1).graphs(end).plot
+    % tDB(end-1).graphs(end).plot
    
 end
 

@@ -24,6 +24,7 @@ classdef SMPSim < handle
         Cs % 3-dimensional matrix of values for Ci, where Cs(:,:,i) is the 2D square matrix Ci during the ith interval.  
         Ds % 3-dimensional matrix of values for Di, where Ds(:,:,i) is the 2D vector Di during the ith interval.
         Is % 3-dimensional matrix of values for Ii, where Is(:,:,i) is the 2D vector Ii during the ith interval.
+        BIs % 3-dimensional matrix of values for BIi, where BIs(:,:,i) is the 2D vector BIi during the ith interval.
       
         topology % link to a SMPStopology class object specifying the converter topology
         parser % link to a circuitParser class interfancing the topology description
@@ -152,7 +153,7 @@ classdef SMPSim < handle
         [ avgXs, avgYs, Ints ] = ssAvgs(obj, Xss)
         niter = findValidSteadyState(obj)
         Gz = findSSTF(obj, tp, oi, tm, ut)
-        [Gs, B] = findAvgModelTF(obj, tp, oi)
+        [Gs, B, Xp] = findAvgModelTF(obj, tp, oi)
         [ xs, t, ys, xd ] = simTransient(obj, nPeriods, Xss, tsteps)
 
         %% Locally-defined methods
@@ -498,6 +499,10 @@ classdef SMPSim < handle
         
         function res = get.Is(obj)
             res = obj.converter.Is;
+        end
+
+        function res = get.BIs(obj)
+            res = obj.converter.BIs;
         end
         
         function res = get.ts(obj)

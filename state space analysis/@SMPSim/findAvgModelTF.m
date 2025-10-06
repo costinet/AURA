@@ -1,24 +1,27 @@
-function [Gs, B] = findAvgModelTF(obj, tp, oi)
+function [Gs, B, XP] = findAvgModelTF(obj, tp, oi)
 %findAvgModelTF finds the small-signal transfer function from time interval tp to
 %all states using state space averaging.  
 % For discrete time transfer functions, use findSSTF()
 %
-%   Gz = findAvgModelTF(obj, tp) finds the z-domain transfer function from a time
+%   Gs = findAvgModelTF(obj, tp) finds the s-domain transfer function from a time
 %   interval specified by tp to all states of the system. obj is an object 
 %   of type SMPSim for which a steady-state solution has been previously
 %   found.  tp is an integer index into the originally-specified switching
 %   times of the converter.
 %   
-%   Gz is a average state space model containing ns s-domain transfer
+%   Gs is a average state space model containing ns s-domain transfer
 %   functions, where the ith transfer function is the small signal gain
 %   from time interval tp to state i.
 %
-%   Gz = findAvgModelTF(obj, Km) instead uses a vector Km of gains from each
-%   switching interface, so that multiple simultaneous perturbations can be
-%   considered.  numel(Km) == numel(obj.ts).
-%
-%   Gz = findAvgModelTF(___, oi) only outputs the state signals referenced by
+%   Gs = findAvgModelTF(___, oi) only outputs the state signals referenced by
 %   indices in oi.
+%
+%   [Gs, B] = findAvgModelTF(___) the second output, B, optionally outputs
+%   the matricx B of the average model for finding transfer functions from
+%   independent sources to the states
+%
+%   [Gs, B, Xp] = findAvgModelTF(___) Xp is the average-model reported
+%   steady-state state vector.
 %
 %   see also SMPSim, findSSTF, ss 
 
@@ -49,11 +52,6 @@ function [Gs, B] = findAvgModelTF(obj, tp, oi)
         obj.steadyState;
     end
 
-    if nargin <= 4
-        ut = 1;
-    else 
-        error('functionality for input transfer function not implemented')
-    end
 
     As = obj.As;
     Bs = obj.Bs;

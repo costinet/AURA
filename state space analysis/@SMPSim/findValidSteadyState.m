@@ -156,7 +156,7 @@ while(1)
             % in between discrete samples.
             finalRun = 1;
             if obj.finalRunMethod
-                finalCandidate = {obj.swvec, obj.ts};
+                finalCandidate = {obj.converter.fullswind, obj.converter.fullts};
                 obj.steadyState;
                 [~,ts,swinds] = obj.timeSteppingPeriod();
                 conv.setSwitchingPattern(swinds, ts);
@@ -165,7 +165,7 @@ while(1)
                     disp('**Attempting Final Run with timeSteppingPeriod');
                 end
             else
-                finalCandidate = {obj.swvec, obj.ts};
+                finalCandidate = {obj.converter.fullswind, obj.converter.fullts};
                 eigs2tis(conv);
 %                 obj.steadyState;
                 if obj.debug2 == 1

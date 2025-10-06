@@ -27,16 +27,18 @@ addpath([sdir '\LTspice NetLists'])
 modelfile{1} = 'BuckNoDiodes.net'; 
 modelfile{2} = 'BuckTest1.net'; 
 modelfile{3} = 'Buck_Vout_D.net'; 
-modelfile{4} = '3levelbuck.net'; 
-modelfile{5} = '3levelbuckDep.net'; 
-modelfile{6} = 'DAB.net'; 
-modelfile{7} = 'DAB_secLeakage.net'; 
-modelfile{8} = 'SeriesCapBuck.net'; 
+modelfile{4} = 'Buck_Vout_Dep.net'; 
+modelfile{5} = '3levelbuck.net'; 
+modelfile{6} = '3levelbuckDep.net'; 
+modelfile{7} = 'DAB.net'; 
+modelfile{8} = 'DAB_secLeakage.net'; 
+modelfile{9} = 'SeriesCapBuck.net'; 
 
 %% Most recent full run results:
 % Model BuckNoDiodes.net converged after 15 iterations in 0.27408 seconds
 % Model BuckTest1.net converged after 14 iterations in 0.14771 seconds
 % Model Buck_Vout_D.net converged after 11 iterations in 0.09945 seconds
+% Model Buck_Vout_Dep.net converged after 14 iterations in 0.080245 seconds
 % Model 3levelbuck.net converged after 8 iterations in 0.087732 seconds
 % Model 3levelbuckDep.net converged after 8 iterations in 0.080131 seconds
 % Model DAB.net DID NOT converge within 102 in 2.4063 seconds

@@ -3,7 +3,7 @@ function linearizeCircuitModel2(obj)
 %   Detailed explanation goes here
 
     components = obj.origComponents;
-    
+   
     %% Replace FETs with Linear equivalent circuit
     FETs = strcmp({components.Type} , 'M');
     diodes = strcmp({components.Type} , 'D');
@@ -34,6 +34,10 @@ function linearizeCircuitModel2(obj)
         end
     end
 
+
+    %% Check for degenerate components that can be removed
+    [components] = findShorts(obj, components);
+    
 %     %% Add measurement sources to everything else 
 %     % This can eventually be deleted, but is currently used to match old
 %     % implementation for comparison

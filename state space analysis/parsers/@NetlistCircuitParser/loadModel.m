@@ -181,13 +181,19 @@ if everythingDefined == 1
             D = D.*Diode_adjust_D;
         end
         
-        
+        if ~all(size(I) == size(A))
+            BI = I(1:size(A,1),size(A,2)+1:end);
+            I = I(1:size(A,1),1:size(A,1));
+        else
+            BI = zeros(size(B));
+        end
         
         obj.Anum(:,:,k+startLoc) = A;
         obj.Bnum(:,:,k+startLoc) = B;
         obj.Cnum(:,:,k+startLoc) = C;
         obj.Dnum(:,:,k+startLoc) = D;
         obj.Inum(:,:,k+startLoc) = I;
+        obj.BInum(:,:,k+startLoc) = BI;
         [obj.eigA(:,k+startLoc)] = eig(A);
     
         

@@ -1,0 +1,27 @@
+* C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters\LTspice NetLists\schematics\Boost_Async.asc
+M2 N004 NC_01 0 0 NMOS ron = {ron} Coss = {Coss}
+V1 N003 0 {Vg}
+L1 N004 N003 {Lf}
+C1 N002 0 {Co}
+R1 N002 0 {RL}
+D2 N004 N001 D Vf={Vf} Ron={rd} Cd={Cd}
+R2 N001 N002 {Rop}
+.model D D
+.lib C:\Users\dcostine\Documents\LTspiceXVII\lib\cmp\standard.dio
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\dcostine\Documents\LTspiceXVII\lib\cmp\standard.mos
+.param ts = [.45 .02 .25 .28]*.5u
+.param swvec = [1 0; 0 0; 0 1; 0 0]
+.param Vg = 48
+.param Lf = .5u
+.param Co = 1u
+.param RL = 100
+.param rd = 10m
+.param Cd = 1n
+.param Vf = 1
+.param Coss = 10n
+.param ron = 5m
+.param Rop = 1m
+.backanno
+.end

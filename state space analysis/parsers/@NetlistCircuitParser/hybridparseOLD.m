@@ -1,4 +1,4 @@
-function [H,s] = hybridparse(obj,preH,SortedTree,SortedCoTree)
+function [H,s] = hybridparseOLD(obj,preH,SortedTree,SortedCoTree)
 %hybridparse parses the hybrid matrix
 %   hybridparse takes an input of the Hybrid Matrix, Sorted Tree and Sorted
 %   CoTree variables and outputs the H and s matrix for the converter
@@ -24,8 +24,6 @@ function [H,s] = hybridparse(obj,preH,SortedTree,SortedCoTree)
 %
 % For now assume measurement and dependent states are the same
 % i.e. row 2 is row 3, W_2 = W_3, X_2 = X_3
-% 
-% See e.g. Chua 6-43
 
 % We assume that measure and dependent variables are the same. This can be
 % done iff there are no dependent sources in the circuit other than
@@ -202,7 +200,6 @@ H_32 = depent(size_state(2)+1:size_const(1)-size_const(2),:); % will need to alt
 %% Find coefficients of dependent souces
 depSources = find(strcmp({obj.components.Type}, 'E') | strcmp({obj.components.Type}, 'F') | ...
     strcmp({obj.components.Type}, 'G') | strcmp({obj.components.Type}, 'H'));
-% measSources = find(strcmp({obj.components.Type}, 'Vm') | strcmp({obj.components.Type}, 'Im'));
 % Change order to match tree/cotree
 ord = zeros(length(depSources),1);
 for i = 1:length(depSources)
@@ -215,16 +212,6 @@ K = zeros(length(depSources));
 for i = 1:length(depSources)
     if numel({obj.components(depSources(i)).paramVals{1:2:end}}) == 1
         refSource = find(strcmp({obj.components.Name}, obj.components(depSources(i)).paramVals{1}));
-        % updated to have referenced sources be measurement sources
-        % 10/2025.  To keep this code working, find the dependent source
-        % that is in serie/parallel with the measurement source
-        if strcmp({obj.components(refSource).Type}, 'Im')
-            compNodes = cat(1,obj.components.Nodes);
-            refSource = find(strcmp({obj.components.Type}, 'F')' &  strcmp(compNodes(:,1), obj.components(refSource).Nodes{1}) & strcmp(compNodes(:,2), obj.components(refSource).Nodes{2}));
-        elseif strcmp({obj.components(refSource).Type}, 'Vm')
-            compNodes = cat(1,obj.components.Nodes);
-            refSource = find(strcmp({obj.components.Type}, 'E')' &  strcmp(compNodes(:,2), obj.components(refSource).Nodes{1}));
-        end
         assert(~isempty(intersect(depSources,refSource)), 'Currently, only linked dependent sources are possible.  A dependent source must only be dependent on the voltage/current of another dependent source')
         [~,refIndex] = intersect(depSources,refSource);
         K(i,refIndex) = obj.components(depSources(i)).paramVals{2};
@@ -240,29 +227,7 @@ end
 
 F = K*H_32;
 
-    % K = zeros(length(depSources));
-    % depSourceComps = remainingComps(depSources);
-    % for i=1:numel(depSourceComps)
-    %     comp = depSourceComps(i);
-    %     if numel({comp.paramVals{1:2:end}}) == 1
-    %         refSource = strcmp({remainingComps.Name}, comp.paramVals{1});
-    %         assert(any(depSources | measSources & refSource), 'Currently, A dependent source must only be dependent on the voltage/current of a measurement source')
-    %         refIndex = find(find(depSources | measSources)==find(refSource));
-    %         K(i,refIndex) = comp.paramVals{2};
-    %     else
-    %         error('This has not beed updated, yet, after being copied from hybridparse.')
-    %         for j = 1:numel({obj.components(depSources(i)).paramVals{1:2:end}})
-    %             refSource = find(strcmp({obj.components.Name}, obj.components(depSources(i)).paramVals{1 + 2*(j-1)}));
-    %             assert(~isempty(intersect(depSources,refSource)), 'Currently, only linked dependent sources are possible.  A dependent source must only be dependent on the voltage/current of another dependent source')
-    %             [~,refIndex] = intersect(depSources,refSource);
-    %             K(i,refIndex) = obj.components(depSources(i)).paramVals{2*j};
-    %         end
-    %     end
-    % end
-    % 
-    % F = K*H_32;
-
-if cond(eye(size(F))-F) > 1e8
+if cond(eye(size(F))-F) > 1e6
     warning('Singular Matrix when trying to solve ideal transformer.  This is likely due to poor port assignment.  Try changing the ordering of winding inductors in the K (coupling) directive.')
 end
 

@@ -1,4 +1,4 @@
-function [C,D,Htemp,saved,OutNames] = loopfixCD_num(obj,A,B,C,D,H,s,NLnets,SortedTree,SortedCoTree)
+function [C,D,Htemp,saved,OutNames] = loopfixCD_num(obj,A,B,C,D,H,s,SortedTree,SortedCoTree)
 %loopfixCD_num corrects potential errors in the C and D matrix from the
 %state-space equation. This function should be run after loopfixAB_num.m
 
@@ -47,14 +47,16 @@ cir = temps(:,1)~=numR & temps(:,1)~=numG; % find position of elements in almost
 cir_state = find(temps(:,1)~=numR & temps(:,1)~=numG & temps(:,1)~=numE & temps(:,1)~=numJ & temps(:,1)~=numEB & temps(:,1)~=numJB); % find postitin of elements in H
 
 OrderedNamesnum = temps(cir_state,4); % Find the index for the output state names
-OutputNames = NLnets(OrderedNamesnum,1); % Find the list of output names
+% OutputNames = NLnets(OrderedNamesnum,1); % Find the list of output names
+OutputNames = {obj.components(OrderedNamesnum).Name}; % Find the list of output names
 DependentNames = {};
 
 OrderedNameselement = temps(cir_state,1);
 loop = length(OrderedNameselement)+1; % Set while loop index
 
 % Output String Names
-OutNames=NLnets(temps(((temps(:,1)==3)|(temps(:,1)==10)),4),1);
+% OutNames=NLnets(temps(((temps(:,1)==3)|(temps(:,1)==10)),4),1);
+OutNames={obj.components(temps(((temps(:,1)==3)|(temps(:,1)==10)),4)).Name}';
 
 
 % For loop to switch i and v in the hybrid matrix to ensure all caps have

@@ -183,7 +183,7 @@ function component = parseSpiceComponent(obj, str)
                     expr{4} = paramExpr;
                 elseif ~strcmpi(paramName, 'Roff') && strcmpi(paramName(1), 'R')
                     vals(1) = paramVal;
-                    expr{41} = paramExpr;
+                    expr{1} = paramExpr;
                 elseif strcmpi(paramName(1), 'C')
                     vals(3) = paramVal;
                     expr{3} = paramExpr;

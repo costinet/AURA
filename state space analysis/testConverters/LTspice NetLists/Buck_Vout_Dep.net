@@ -1,0 +1,19 @@
+* Buck_Vout_D.asc
+V1 N001 0 12
+M1 N001 NC_01 N002 N002 NMOS ron = 0.8m Coss = {Coss}
+M2 N002 NC_02 0 0 NMOS ron = 0.8m Coss = {Coss}
+L1 N003 N004 330n
+V2 N004 N006 4
+R2 N006 0 5m
+C1 N005 0 4.7µ
+R4 N004 N005 2m
+R1 N003 N002 0.0064
+C3 N001 0 4.7µ
+C4 N001 0 4.7µ
+.lib LTspiceXVII\lib\cmp\standard.mos
+.param Lf = 1u
+.param Coss = 0.67n
+.param Vf = 1
+.param ts = [1u 1n 1u 1n]
+.param swvec = [1 0 0 0; 0 0 0 0; 0 1 0 0; 0 0 0 0]
+.end

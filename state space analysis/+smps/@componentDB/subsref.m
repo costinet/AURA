@@ -94,67 +94,105 @@ function varargout = subsref(obj, s)
 %     end
 % end
 
+    try 
+        
+
+        % One case we don't want the standard behavior is if we index the
+        % first element
+        if strcmp(s(1).type, '()') && s(1).subs{1} == 1
+            if isscalar(s)
+                varargout = {obj.components(1)};
+            else
+                [varargout{1:nargout}] = builtin('subsref',obj.components(1),s(2:end));
+            end
+        elseif strcmp(s(1).type, '()') && strcmp(s(1).subs{1},':')
+            if isscalar(s)
+                varargout = {obj.components(:)};
+            else
+                [varargout{1:nargout}] = builtin('subsref',obj.components(:),s(2:end));
+            end
+        else
+            %prioritize standard behavior
+            [varargout{1:nargout}] = builtin('subsref',obj,s);
+        end
+        return
+    catch e
+        try
+             %numerical indexing is passed on to components list
+            if strcmp(s(1).type, '()')
+                if isscalar(s)
+                    if isnumeric(s(1).subs{:}) && numel(obj.components) >=  max(s(1).subs{:})
+                        varargout = {obj.components(s(1).subs{:})};
+                    elseif ischar(s(1).subs{:}) && strcmp(s(1).subs{:},':')
+                        varargout = {obj.components(:)};
+                    else
+                        try 
+                            varargout = {obj(s(1).subs{:})};
+                        catch e3
+                            if isempty(obj)
+                                ME = MException('componentDB:empty', ...
+                                    ['AURAdb databse ' class(obj) ' is empty.  Run updateToolbox from the command line to get the latest databases from the repository']);
+                                e3 = e3.addCause(ME);
+                            end
+                            rethrow(e3)
+                        end
+                    end
+                else 
+                    comps = obj.components(s(1).subs{:});
+                    varargout = {};
+                    if length(comps) == 1
+                        component = comps(1);
+                        varargout = {subsref(component,s(2:end))};
+                        % actNargout = numel(result);
+                        % [varargout{1:actNargout}] = result(:);
+                    else
+                        for i = 1:length(comps)
+            %                 [varargout{i}] = builtin('subsref',comps(i),s(2:end));
+                            component = comps(i);
+                            res = subsref(component,s(2:end));
+                            if ischar(res)
+                                res = cellstr(res);
+                            end
+                            if numel(res) > 1
+                                [compOut{1:nargout}] = subsref(component,s(2:end));
+                                [varargout{i,1:nargout}] = compOut{1:nargout};
+                            else
+                                [varargout{i}] = subsref(component,s(2:end));
+                            end
+                        end
+                        for i = 1:nargout
+                            varargout{i} = {varargout{:,i}};
+                        end
+                    end
+                end        
+            else
+                try
+                    %try applying it to the DB
+                    [varargout{1:nargout}] = builtin('subsref',obj,s);
+                catch e
+                    %If that fails, try applying it to the components in the DB
+                    try
+                        [varargout{1:nargout}] = arrayfun(@(x)builtin('subsref',x,s),obj.components,'UniformOutput',false); 
+                    catch e2
+                        % If that fails, throw the original error from trying to
+                        % apply it to the component
+                        throw(e);
+                    end
+                end
+            end
+
+
+
+        catch e2
+            e.addCause(e2)
+            rethrow(e)
+        end
+
+    end
 
 
 %     [varargout{1:nargout}] = builtin('subsref',obj,s);
-    %numerical indexing is passed on to components list
-    if strcmp(s(1).type, '()')
-        if isscalar(s)
-            if numel(obj.components) >=  max(s(1).subs{:})
-                varargout = {obj.components(s(1).subs{:})};
-            else
-                try 
-                    varargout = {obj(s(1).subs{:})};
-                catch e
-                    if isempty(obj)
-                        ME = MException('componentDB:empty', ...
-                            ['AURAdb databse ' class(obj) ' is empty.  Run updateToolbox from the command line to get the latest databases from the repository']);
-                        e = e.addCause(ME);
-                    end
-                    rethrow(e)
-                end
-            end
-        else 
-            comps = obj.components(s(1).subs{:});
-            varargout = {};
-            if length(comps) == 1
-                component = comps(1);
-                [varargout{1:nargout}] = subsref(component,s(2:end));
-            else
-                for i = 1:length(comps)
-    %                 [varargout{i}] = builtin('subsref',comps(i),s(2:end));
-                    component = comps(i);
-                    res = subsref(component,s(2:end));
-                    if ischar(res)
-                        res = cellstr(res);
-                    end
-                    if numel(res) > 1
-                        [compOut{1:nargout}] = subsref(component,s(2:end));
-                        [varargout{i,1:nargout}] = compOut{1:nargout};
-                    else
-                        [varargout{i}] = subsref(component,s(2:end));
-                    end
-                end
-                for i = 1:nargout
-                    varargout{i} = {varargout{:,i}};
-                end
-            end
-        end        
-    else
-        try
-            %try applying it to the DB
-            [varargout{1:nargout}] = builtin('subsref',obj,s);
-        catch e
-            %If that fails, try applying it to the components in the DB
-            try
-                [varargout{1:nargout}] = arrayfun(@(x)builtin('subsref',x,s),obj.components,'UniformOutput',false); 
-            catch e2
-                % If that fails, throw the original error from trying to
-                % apply it to the component
-                throw(e);
-            end
-        end
-    end
+   
 end
     
     %% MATLAB TEMPLATE

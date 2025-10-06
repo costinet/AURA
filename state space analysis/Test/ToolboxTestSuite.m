@@ -154,6 +154,11 @@ classdef ToolboxTestSuite < matlab.unittest.TestCase
             testCase.verifyEqual(Xss1,Xss4,1e-6);
         end
 
+        function checkExampleTopologies(testCase)
+            TestExampleTopologiesLTSpice;
+            evalin('base','TestExampleTopologiesPLECS'); %must be in base to see variables
+        end
+
     end
 
 end
