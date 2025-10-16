@@ -459,7 +459,7 @@ classdef SMPSconverter < handle
             for i = length(obj.ts):-1:1
                 eigA = obj.topology.eigAs(:,:,obj.swind(i));%eigs(obj.As(:,:,i));
                 fastestResFreq =  max([1; abs(eigA(imag(eigA)>0))]);
-                dt =  min( [2*pi./fastestResFreq/8, obj.ts(i)/2'], [],2);
+                dt =  min( [2*pi./fastestResFreq/8, obj.ts(i)'], [],2);
                 
                 ratio = ceil(obj.ts(i)/dt - eps);
                 
@@ -630,7 +630,7 @@ classdef SMPSconverter < handle
     methods (Hidden)
 
         function limitTimeIntervals(obj)
-            assert(sum((obj.fullts >0)+0,'all') <= obj.maximumTimeSteps, ...
+            assert(sum((obj.fullts >0)+0,'all') <= obj.maximumTimeSteps + 1, ...
                 'Number of timing subintervals greater than setting in SMPSconverter.maximumTimeSteps.')
         end
 

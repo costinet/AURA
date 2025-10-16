@@ -1,3 +1,9 @@
+### v0.3.4
+- Complete rewrite of NetlistCircuitParser state space parsing code
+- Continued namespace migration for databases
+- Improved save and load handling
+
+
 ### v0.3.3
 - Began migration to smps namespace.  Addresses conflicts with rftoolbox
 - Fixed issues with single-FET and single-interval converters

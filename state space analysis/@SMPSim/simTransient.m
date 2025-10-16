@@ -16,14 +16,15 @@ function [ xs, t, ys, xd ] = simTransient(obj, nPeriods, Xss, tsteps)
 % in the timing vector, t.
 
     if nargin < 3 || isempty(Xss) 
-        Xss = obj.Xs;
+        Xss = obj.Xs(:,1);
     else
         Xss_stored = obj.Xs;
         obj.Xs = Xss;
+        Xss = Xss(:,1);
     end
     
     if nargin < 4 
-        tsteps = min(max(sum(obj.ts)/min(obj.ts)*100, 10e3),100e3);
+        tsteps = min(max(sum(obj.ts)/min(obj.ts)*100, 1e2),10e3);
         tsteps = round(tsteps);
     end
     
@@ -41,7 +42,7 @@ function [ xs, t, ys, xd ] = simTransient(obj, nPeriods, Xss, tsteps)
     % Calculate discrete State Transition Matrix (Augmented)
     PHIaug = In;
     for i = n:-1:1
-       Atil = [obj.As(:,:,i), obj.Bs(:,:,i)*u(:,:,i); zeros(1, size(PHIaug,1))];
+        Atil = [obj.As(:,:,i), obj.Bs(:,:,i)*u(:,:,i); zeros(1, size(PHIaug,1))];
         expAtil = expm(Atil*obj.ts(i));
         PHIaug = PHIaug*expAtil;
     end
@@ -72,9 +73,7 @@ end
 function [ xs, t, ys ] = simSinglePeriod(obj, X0, tsteps)
 % waveform reconstruction for periodic switched systems
 
-
-
-    
+  
     As = obj.As;
     Bs = obj.Bs;
     ts = obj.ts;
@@ -100,7 +99,9 @@ function [ xs, t, ys ] = simSinglePeriod(obj, X0, tsteps)
         t = linspace(0,Ts,tsteps);
     
         xs = zeros(n, length(t));
-        xs(:,1) = X0;
+        xs(:,1) = X0; 
+
+        Xi = X0;
         
         ys = zeros(size(Cs,1), length(t));
     
@@ -134,7 +135,7 @@ function [ xs, t, ys ] = simSinglePeriod(obj, X0, tsteps)
             end
         end
     
-        xs = [X0 xs(:,1:end-1)];
+        xs = [Xi xs(:,1:end-1)];
         
         if sum(isnan(xs))
             ME = MException('resultisNaN:noSuchVariable', ...

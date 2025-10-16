@@ -120,6 +120,8 @@ function loadModel(obj, fn, swseq, force)
                 end
 
             end
+
+            
             
             obj.topology.K = eye(length(obj.topology.stateLabels));
             
@@ -145,5 +147,7 @@ function loadModel(obj, fn, swseq, force)
             else
                 obj.sourcefdate = file.date;
             end
+
+            obj.getConstraintMatrices;
 
         end

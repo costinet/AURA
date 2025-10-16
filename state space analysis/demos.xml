@@ -6,6 +6,15 @@
    <website/>
    <description>The Switched Mode Power Supply Toolbox provides capabilities for the steady-state and small-signal modeling of switched mode power supplies.  These capabilities facilitate design optimization in power electronics for a variety of applications.</description>
    <demosection>
+      <label>examples</label>
+      <demoitem>
+         <label>additionalExamples</label>
+         <type>other</type>
+         <source>additionalExamples</source>
+         <file>doc/examples/html/additionalExamples.html</file>
+      </demoitem>
+   </demosection>
+   <demosection>
       <label>SeriesCapBuck</label>
       <demoitem>
          <label>SweepSeriesCapBuck</label>

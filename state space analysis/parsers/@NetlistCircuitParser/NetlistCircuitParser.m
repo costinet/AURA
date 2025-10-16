@@ -39,92 +39,29 @@ classdef NetlistCircuitParser < circuitParser
     properties (SetAccess = private, Hidden)
 
         % Numerical Matrix of ABCD
-        Anum
-        Bnum
-        Cnum
-        Dnum
-        Inum % Only used for PLECS
+        % Anum
+        % Bnum
+        % Cnum
+        % Dnum
+        % Inum % Only used for PLECS
         BInum
 
-        eigA % The eiganvalues of Anum
+        % eigA % The eiganvalues of Anum
         
-        
-       
-
-        % Find Switch and Diode Position
-        Diodes
-        Switches
-        FETs
-        DMpos % In A matrix
-
-        % Names of State, Input, and Output Variables
-        StateNames % All state variables [OutputNames;DependentNames]
-        OutputNamesCD % Names of Measurements
-        OutputNames % Independent states in circuit
-        ConstantNames % Constant Inputs to the system such as Vg or the forward voltage of a diode
-
-        %%% Need to change OutputNamesCD to OutputNames
-        %%% Need to change OutputNames to MeasurementNames
-        %%% For clarity %%%
-
-        % Netlist files
-        NL % Numerical Representation of net list
-        NLnets % Cell Representation of net list
-
-       
-        Component_Values = {}
-        
-        index
-        
-        % Forward votlage values in order of A matrix
-        Fwd_Voltage
     end
 
 
 	
     properties (Access = private)
-        nodeMap 
-
-        Cutset
-        SortedTree_cutloop
-        SortedCoTree_cutloop
-%         NewNL
-%         NewNLnets
-        % Htemp for AB and CD matrix for large converters
-        % Store indexing values hear as well
-        % Diode placement from ABCD matrix
-        % Identify topology and converter from name of netlist file
-        % Create void fuction that when called takes Htemp and creates
-        % numerical ABCD matrix
-        % Have a public class and function to input measured states in cell
-        % format maybe place in converter class???
-        % etc...????
-
-        % Measurement Voltage and Current Nodes
-        Meas_Voltage = {}
-        Meas_Current = {}
-        filename
-        
-        
+        AL
+        tree
+        coTree
 
         %% Netlist things
         netlistLibraries
         netlistModels
 
-         % From Jared's Topology Class
-        order % Need right now becuase it breaks code if not here
-        Element_Properties = {}% 1st column is char of all element names 2nd column is the value of that element ** Resistor values for switches must be at the end
-        Switch_Resistors  % List of chars that represent the switch names plus '_R'
-        Switch_Resistor_Values % [SW_OFF; SW_ON; SW_ON] third one will eventually be diode resistance
-        Switch_Sequence % Set of binary on or off values that has the number of colums of swithces and the numer of rows of time intervals
-        Switch_Names % The names of the switch resistors
-
-        devType
-        isFET
-        isDiode
-        Vf
-
-        parsedU
+        % parsedU
      end
 
      properties (Hidden)
@@ -133,19 +70,15 @@ classdef NetlistCircuitParser < circuitParser
 
         defaultRoff = 10e6;
         undefinedExpressions = {}
-%         % Lists whether a FET or diode is on or off during a state
-        ONorOFF
-
         useForcedDependentStates = 0
-
     end
 
     properties (Hidden, Constant)
-        method = 'new'
+        % method = 'new'
         typeMap = dictionary({'V','BV', 'MV','C','R','L','MI','BI','I', ...
             'E', 'F', 'Vm', 'Im'}, [1:9, 2, 8, 3, 7]);      %Preferred Tree ranking for components
-        treeIDnumberMap = dictionary(1:9, [1:4 6 5 7:9]);   %Map from typeMap to differentiate Tree and CoTree elements
-        coTreeIDnumberMap = dictionary(1:9, [1:3 8 7 9 10 11 12]);
+        treeIDnumberMap = dictionary(1:9, [1:6 7:9]);   %Map from typeMap to differentiate Tree and CoTree elements
+        coTreeIDnumberMap = dictionary(1:9, [1:3 7 8 9 10 11 12]);
     end
 
      properties (Hidden, Dependent)
@@ -169,19 +102,17 @@ classdef NetlistCircuitParser < circuitParser
         [params] = parseSpiceParamList(obj, str, params)
         [components] = deEmbedSpiceParams(obj,component,embeddedParams)
         [components] = findShorts(obj, components)
-
         [components] = XFdependentSourceSubcircuitOLD(obj, directive, components)
-        
-        %Solving ss representation
+
+        %$Solving ss representation
         linearizeCircuitModel(obj)
-        linearizeCircuitModel2(obj)
+        % linearizeCircuitModel2(obj)
         [components] = switchLinearSubcircuit(obj, component)
         [components] = XFdependentSourceSubcircuit(obj, directive, components)
         setSwitchingState(obj, swvec)
-        [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
-        [H, tree, coTree, nNL] = hybrid(obj)
-
+        % [H, tree, coTree, nNL] = hybrid(obj)
         %% New
+        [A,B,C,D,I] = solveStateSpaceRepresentation(obj)
         findNormalTree(obj)
         [H, comps] = hybridMatrix(obj)
         [A,B,C,D,I,names] = stateSpaceFromHybrid(obj, H, comps)
@@ -386,8 +317,10 @@ classdef NetlistCircuitParser < circuitParser
         end
 
         function clearNumericalResults(obj)
-            obj.Anum = []; obj.Bnum =[]; obj.Cnum =[]; obj.Dnum = []; obj.Inum = []; obj.eigA = [];
+            % obj.Anum = []; obj.Bnum =[]; obj.Cnum =[]; obj.Dnum = []; obj.Inum = []; obj.eigA = [];
+            obj.topology.clearParsedData();
             obj.components = [];
+            obj.BInum = [];
         end
 
 

@@ -126,6 +126,10 @@ classdef SMPSim < handle
             %
             % See also circuitParser/updateComponentValues, NetlistCircuitParser/updateComponentValues
             obj.parser.updateComponentValues();
+
+            if ~all(size(obj.topology.As(:,:,1)) == size(obj.IHC))
+                obj.IHC = eye(size(obj.topology.As(:,:,1)));
+            end
         end
 
         function plotSchematic(obj,varargin)
@@ -235,10 +239,14 @@ classdef SMPSim < handle
             if ~isempty(us)
                 obj.u = us;
             else
-                try
-                    obj.u = evalin('base', 'us');
-                catch e
-                    return
+                if ~isempty(obj.converter.u)
+                    obj.u = obj.converter.u;
+                else
+                    try
+                        obj.u = evalin('base', 'us');
+                    catch e
+                        return
+                    end
                 end
             end
 

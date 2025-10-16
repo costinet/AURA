@@ -55,5 +55,10 @@ function components = diodeLinearSubcircuit(obj, component)
     Cpar.paramExpressions  = component.paramExpressions(strcmp(component.paramNames,'Coss') | strcmp(component.paramNames,'Cd'));
     Vf.paramExpressions = component.paramExpressions(strcmp(component.paramNames,'Vf'));
 
-    components = [Vmeas, Ameas, Req, Cpar, Vf];
+    % components = [Vmeas, Ameas, Req, Cpar, Vf];
+
+    components = [Vmeas, Ameas, Req, Vf]; 
+    if Cpar.paramVals > 0  
+        components = [components, Cpar];
+    end
 end

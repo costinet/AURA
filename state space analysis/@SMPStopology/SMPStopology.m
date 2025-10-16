@@ -146,7 +146,6 @@ classdef SMPStopology < handle
                 end
             end
             loadModel(obj.circuitParser, fn, swvec, force); 
-            obj.circuitParser.getConstraintMatrices;
             result = 1;
         end
         
@@ -278,6 +277,24 @@ classdef SMPStopology < handle
         function linkConverter(obj, conv)
             % for making link bidrectional when converter adds topology.
             obj.converter = conv;
+        end
+
+        function clearParsedData(obj)
+            obj.As = [];
+            obj.Bs = [];
+            obj.Cs = [];
+            obj.Ds = [];
+            obj.Is = [];
+
+            obj.stateLabels = {};
+            obj.inputLabels = {};
+            obj.outputLabels = {};
+            obj.switchLabels = {};
+
+            obj.Cbnd = [];
+            obj.Dbnd = [];
+            obj.bndHyst = [];
+            obj.switchRef = [];
         end
     end
     

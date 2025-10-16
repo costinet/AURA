@@ -1,10 +1,12 @@
 function [H,remainingComps] = hybridMatrix(obj)
-%UNTITLED Summary of this function goes here
+%hybridMatrix solves hybrid matrix for resistve N-port, including
+%dependent sources
 %   Detailed explanation goes here
-    DL = obj.Cutset;
+    
 
-    tree = obj.SortedTree_cutloop;
-    coTree = obj.SortedCoTree_cutloop;
+    DL = obj.AL;
+    tree = obj.tree;
+    coTree = obj.coTree;
 
     treeResistors = tree(:,1) == obj.treeIDnumberMap(obj.typeMap({'R'}));
     coTreeResistors = coTree(:,1) == obj.coTreeIDnumberMap(obj.typeMap({'R'}));
@@ -20,11 +22,6 @@ function [H,remainingComps] = hybridMatrix(obj)
     EJ = {~treeResistors, ~coTreeResistors};
     RG = {treeResistors, coTreeResistors};
     RJ = {treeResistors, ~coTreeResistors};
-
-    % DL(EG{:})
-    % DL(EJ{:})
-    % DL(RG{:})
-    % DL(RJ{:})
 
     %% Solve Z, Y, and H
     % See Eqs (6-19) & (6-20) in Chua [ISBN 0131654152]
@@ -43,8 +40,6 @@ function [H,remainingComps] = hybridMatrix(obj)
     remCompsTypes = {remainingComps.Type};
 
     %%
-
-
     states = strcmp(remCompsTypes,'C') | strcmp(remCompsTypes,'L');
     measSources = strcmp(remCompsTypes,'Vm') | strcmp(remCompsTypes,'Im');
     depSources = strcmp(remCompsTypes,'E') | strcmp(remCompsTypes,'F') | strcmp(remCompsTypes,'G') | strcmp(remCompsTypes,'H');
@@ -61,7 +56,7 @@ function [H,remainingComps] = hybridMatrix(obj)
     
     
         
-    %% Find coefficients of dependent souces 
+    %% Find coefficients of dependent sources 
     K = zeros(sum(depSources), sum(measSources));
     depSourceComps = remainingComps(depSources);
     for i=1:numel(depSourceComps)
@@ -73,12 +68,16 @@ function [H,remainingComps] = hybridMatrix(obj)
             K(i,refIndex) = comp.paramVals{2};
         else
             error('This has not been updated, yet, after being copied from hybridparse.')
-            for j = 1:numel({obj.components(depSources(i)).paramVals{1:2:end}})
-                refSource = find(strcmp({obj.components.Name}, obj.components(depSources(i)).paramVals{1 + 2*(j-1)}));
-                assert(~isempty(intersect(depSources,refSource)), 'Currently, only linked dependent sources are possible.  A dependent source must only be dependent on the voltage/current of another dependent source')
-                [~,refIndex] = intersect(depSources,refSource);
-                K(i,refIndex) = obj.components(depSources(i)).paramVals{2*j};
-            end
+            %We don't currently allow any components corresponding to this
+            %else condition, but the old code is left in case this comes up
+            %later.  It has not been updated to work with the current
+            %class.
+            % for j = 1:numel({obj.components(depSources(i)).paramVals{1:2:end}})
+            %     refSource = find(strcmp({obj.components.Name}, obj.components(depSources(i)).paramVals{1 + 2*(j-1)}));
+            %     assert(~isempty(intersect(depSources,refSource)), 'Currently, only linked dependent sources are possible.  A dependent source must only be dependent on the voltage/current of another dependent source')
+            %     [~,refIndex] = intersect(depSources,refSource);
+            %     K(i,refIndex) = obj.components(depSources(i)).paramVals{2*j};
+            % end
         end
     end
     
@@ -90,9 +89,8 @@ function [H,remainingComps] = hybridMatrix(obj)
         end
     end
 
-    % I32 = eye(size(H{3,2}*K));
-    % s = H{1,4} + H{1,2}*K*((I32-H{3,2}*K)\H{3,4});
-    % H = H{1,1} + H{1,2}*K*((I32-H{3,2}*K)\H{3,1});
+    %% Eliminate Dependent Sources
+    % See Eqs (6-49) & (6-50) in Chua [ISBN 0131654152]
 
     I22 = eye(size(H{3,2}*K));
     H{1,1} = H{1,1} + H{1,2}*K*((I22-H{3,2}*K)\H{3,1}); %(H)

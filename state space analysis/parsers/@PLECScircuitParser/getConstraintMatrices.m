@@ -1,5 +1,5 @@
 function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath, forceRefresh)
-%getPLECSConstraintMatrics get Cbnd and Dbnd from PLECs model
+%getConstraintMatrices get Cbnd and Dbnd from PLECs model
 %   Note that the PLECs model must have probes added to all switching
 %   device currents and voltages (double-click -> assertions -> (+))
 

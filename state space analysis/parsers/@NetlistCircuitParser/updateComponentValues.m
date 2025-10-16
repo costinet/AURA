@@ -37,8 +37,6 @@ function updateComponentValues(obj)
     obj.clearNumericalResults();
 
 
-
-
     if ~isempty(obj.undefinedExpressions)
         T = table(obj.undefinedExpressions(:,1), obj.undefinedExpressions(:,3), 'VariableNames',{'Component', 'Expression'});        
         warning(strjoin(["Parameter values undefined.  See table Below: ", newline,  formattedDisplayText(T)]));

@@ -5,13 +5,12 @@ function [A,B,C,D,I,names] = stateSpaceFromHybrid(obj, H, comps)
 %   Method adapted from L. O. Chua and P-M Lin, Compter Aided Analysis of
 %   Electronic Circuits: Algorithms & Computational Techniques", Chapter 8.
 
-    tree = obj.SortedTree_cutloop;
-    coTree =  obj.SortedCoTree_cutloop;
-
+    tree = obj.tree;
+    coTree =  obj.coTree;
 
     M = diag([comps{1}.paramVals]);
 
-    dependentStates = obj.components([tree(tree(:,1) == obj.treeIDnumberMap(obj.typeMap({'L'})),4)  ...
+    dependentStates = obj.components([tree(tree(:,1) == obj.treeIDnumberMap(obj.typeMap({'L'})),4);  ...
         coTree(coTree(:,1) == obj.coTreeIDnumberMap(obj.typeMap({'C'})),4)]);
 
     origIndex = zeros(numel(comps{1}),1);
@@ -105,25 +104,30 @@ function [A,B,C,D,I,names] = stateSpaceFromHybrid(obj, H, comps)
                -F{3,2}*CL*F{2,1}*ICJ, (eye(rc(3)) - F{3,4}*LJ*F{4,3}*ILL)];
         A0 = [F{1,1}, F{1,3};
             F{3,1},F{3,3}];
-        B0 = H{1,4}(treeCaps | coTreeInductors, :) + 0; % differentiation eleminintes impact of indep sources.
+        B0 = H{1,4}(treeCaps | coTreeInductors, :) + 0; % differentiation eliminates impact of indep sources.
 
         M = diag([comps{1}(treeCaps | coTreeInductors).paramVals]);
 
-        A = M\(M0\A0);
-        B = M\(M0\B0);
+        % A = M\(M0\A0);
+        % B = M\(M0\B0);
 
         %% Add back in dependent States
-        nDepSt = sum(coTreeCaps) + sum(treeInductors);
+        % nDepSt = sum(coTreeCaps) + sum(treeInductors);
 
         % I = eye(size(A));
         % I = [I, zeros(size(I,1),nDepSt);
         %         F{2,1}, zeros(rc(2),rc(3)), zeros(rc(2)), zeros(rc(2),rc(4));
         %         zeros(rc(4),rc(1)), F{4,3}, zeros(rc(4),rc(2)), zeros(rc(4))];
 
-        I = [eye(rc(1)), zeros(rc(1), sum(rc(2:end)));
-                F{2,1}, zeros(rc(2),rc(3)), zeros(rc(2)), zeros(rc(2),rc(4));
-                zeros(rc(3),sum(rc(1:2))), eye(rc(3)), zeros(rc(3),rc(4));
-                zeros(rc(4),rc(1)), F{4,3}, zeros(rc(4),rc(2)), zeros(rc(4))];
+        %This was incorrect because treeInductors actually come *first*
+        % I = [eye(rc(1)), zeros(rc(1), sum(rc(2:end)));
+        %         F{2,1}, zeros(rc(2),rc(3)), zeros(rc(2)), zeros(rc(2),rc(4));
+        %         zeros(rc(3),sum(rc(1:2))), eye(rc(3)), zeros(rc(3),rc(4));
+        %         zeros(rc(4),rc(1)), F{4,3}, zeros(rc(4),rc(2)), zeros(rc(4))];
+
+        I = double(diag(treeCaps | coTreeInductors));
+        I(coTreeCaps,treeCaps) = F{2,1};
+        I(treeInductors,coTreeInductors) = F{4,3};
 
         % If there is a C-V loop involving a V, we need a I-like matrix for
         % the sources as well
@@ -135,7 +139,7 @@ function [A,B,C,D,I,names] = stateSpaceFromHybrid(obj, H, comps)
         I = [I BI];
 
         if obj.useForcedDependentStates
-            % This uses a fictitious lossless resistor to force the
+            % This uses a fictitious resistor to force the
             % dependent states to their algebraic equations.  It should
             % generally lead to nicer plotted waveforms, but does add in
             % non-real dynamics to the system model
@@ -164,7 +168,7 @@ function [A,B,C,D,I,names] = stateSpaceFromHybrid(obj, H, comps)
             % This just copies the derivatives of the dependent states to match the
             % derivatives of other states according to the algebraic
             % constraint equations. This is correct dynamics, but the DC
-            % operating point is unconstrained, so they'll show up on plots
+            % operating point is unconstrained, so they may show up on plots
             % with random bias. 
 
             % A = [A, zeros(size(A,1),nDepSt);
@@ -175,7 +179,8 @@ function [A,B,C,D,I,names] = stateSpaceFromHybrid(obj, H, comps)
              A = zeros(sum(rc));
              A(treeCaps | coTreeInductors, treeCaps | coTreeInductors) = M\(M0\A0);
              A(coTreeCaps | treeInductors,:) = [
-                 F{2,1}*A(find(treeCaps), find(treeCaps)), zeros(rc(2),rc(3)), -eye(rc(2)), zeros(rc(2),rc(4))
+                 % F{2,1}*A(find(treeCaps), find(treeCaps)), zeros(rc(2),rc(3)), -eye(rc(2)), zeros(rc(2),rc(4)) %I thought the find was necessary due to a size mismatch, but may be wrong
+                 F{2,1}*A(treeCaps, treeCaps), zeros(rc(2),rc(3)), -eye(rc(2)), zeros(rc(2),rc(4)) 
                  zeros(rc(4),rc(1)), F{4,3}*A(find(coTreeInductors)-rc(2), find(coTreeInductors)-rc(1)), zeros(rc(4),rc(2)), -eye(rc(4))
                  ];
              B = zeros(sum(rc),size(H{4,4},1));
@@ -184,7 +189,7 @@ function [A,B,C,D,I,names] = stateSpaceFromHybrid(obj, H, comps)
 
         end
 
-        %% These need fixed and to be reordered consistent with the moved dependent states.
+        %% Output Equations
         C0 = H{3,1};
         C = zeros(size(C0));
         C(:, treeCaps | coTreeInductors) = C0(:, treeCaps | coTreeInductors);

@@ -18,7 +18,7 @@ R2 N001 N002 {Rop}
 .param Co = 1u
 .param RL = 100
 .param rd = 10m
-.param Cd = 3n
+.param Cd =  3n
 .param Vf = 1
 .param Coss = 3n
 .param ron = 5m

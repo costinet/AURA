@@ -77,7 +77,7 @@ function [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = che
                 (violateMarginStart(:,i) + deltaViolate*obj.converter.timingThreshold*1.05) > 0;
             if(any(negligibleError))
                 violateMarginStart(negligibleError,i) = 0;
-                warning('check this, it is untested')
+                % warning('check this, it is untested')
             end
 
         end
@@ -94,7 +94,7 @@ function [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = che
 
             if(any(negligibleError))
                 violateMarginEnd(negligibleError,i) = 0;
-                warning('check this, it is untested')
+                % warning('check this, it is untested')
             end
 
         end

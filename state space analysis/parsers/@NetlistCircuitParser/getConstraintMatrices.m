@@ -1,11 +1,7 @@
-function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath,forced_Refresh)
+function [Cbnd, Dbnd, hyst, switchRef] = getConstraintMatrices(obj,circuitPath,forceRefresh)
 %get ConstraintMatrics get Cbnd and Dbnd from LTSpice model
 %   Note that the PLECs model must have probes added to all switching
 %   device currents and voltages (double-click -> assertions -> (+))
-
-if nargin == 1
-    circuitPath = 'A cool circuit';
-end
 
 if nargin < 3
     forceRefresh = 0;
@@ -23,21 +19,24 @@ Dbnd = zeros(size(obj.topology.Ds));
 hyst = zeros(size(obj.topology.Ds,1), 2);
 switchRef = zeros(size(obj.topology.Ds,1), 2);
 
-if isempty(obj.devType) || forceRefresh
-    % Only re-run this once per file
-    obj.isFET = zeros(size(switchNames));
-    obj.isDiode = obj.isFET;
-    obj.Vf = obj.isFET;
-    for i = 1:length(switchNames)
-        Cell_to_extract = switchNames{i};
-        obj.devType{i} = Cell_to_extract(1);
-        obj.isFET(i) = strcmp(obj.devType(i), 'M');
-        obj.isDiode(i) = strcmp(obj.devType(i), 'D');
-        if obj.isFET(i)
-            obj.Vf(i) = 0; % Hard coded Vf for now
-        end
-    end
-end
+% if isempty(obj.devType) || forceRefresh
+%     % Only re-run this once per file
+%     obj.isFET = zeros(size(switchNames));
+%     obj.isDiode = obj.isFET;
+%     obj.Vf = obj.isFET;
+%     for i = 1:length(switchNames)
+%         Cell_to_extract = switchNames{i};
+%         obj.devType{i} = Cell_to_extract(1);
+%         obj.isFET(i) = strcmp(obj.devType(i), 'M');
+%         obj.isDiode(i) = strcmp(obj.devType(i), 'D');
+%         if obj.isFET(i)
+%             obj.Vf(i) = 0; % Hard coded Vf for now
+%         end
+%     end
+% end
+
+isFET = strncmp(switchNames,'M',1);
+isDiode = strncmp(switchNames,'D',1);
 
 % switchInputNames = [obj.Switch_Names repmat({'_C_VF'},length(obj.Switch_Names),1)];
 % for i = 1:length(obj.Switch_Names)
@@ -55,15 +54,10 @@ combCD3 = reshape(cat(2, obj.topology.Cs, obj.topology.Ds), size(obj.topology.Cs
 
 for i = 1:length(switchNames)
     
-    if strcmp(obj.method, 'old')
-        switchSignals = strncmp(pad(switchNames{i},length(switchNames{i})+1),outputs,length(switchNames{i})+1);
-        currents = endsWith(outputs,'A');
-        voltages = endsWith(outputs,'V');
-    elseif strcmp(obj.method, 'new')
-        switchSignals = strncmp(reverse(switchNames{i}), reverse(outputs), length(switchNames{i}));
-        currents = startsWith(outputs,'Im');
-        voltages = startsWith(outputs,'Vm');
-    end
+
+    switchSignals = strncmp(reverse(switchNames{i}), reverse(outputs), length(switchNames{i}));
+    currents = startsWith(outputs,'Im');
+    voltages = startsWith(outputs,'Vm');
 
     assert(sum(switchSignals) >= 2, ['Switching device ' switchNames{i} ' does not have probes attached to both device current and device voltage']);
     
@@ -86,12 +80,9 @@ for i = 1:length(switchNames)
     findInds = union(index_A1, index_A2);
     switchInds = zeros(size(findInds));
     for j = 1:length(findInds)
-         if strcmp(obj.method, 'old')
-            sameVolts = strcmp(switchNames, outputs{findInds(j)}(1:end-2));
-         elseif strcmp(obj.method, 'new')
-            loc_ = strfind(outputs{findInds(j)}, '_');
-            sameVolts = strcmp(switchNames, outputs{findInds(j)}(loc_(end)+1:end));
-         end
+
+        loc_ = strfind(outputs{findInds(j)}, '_');
+        sameVolts = strcmp(switchNames, outputs{findInds(j)}(loc_(end)+1:end));
          if(any(sameVolts))
             switchInds(j) = find(sameVolts)';
          else
@@ -99,7 +90,7 @@ for i = 1:length(switchNames)
          end
     end
     
-    if obj.isDiode(i)
+    if isDiode(i)
         %on-state current > 0
         Cbnd(devCurrent, :, swvec(:,i)==1) = obj.topology.Cs(devCurrent, :, swvec(:,i)==1);
         Dbnd(devCurrent, :, swvec(:,i)==1) = obj.topology.Ds(devCurrent, :, swvec(:,i)==1);
@@ -119,7 +110,7 @@ for i = 1:length(switchNames)
         switchRef(devVoltage,:) = [i, 0];
         
         
-    elseif obj.isFET(i) && ~(any(obj.isFET(switchInds)) && any(obj.isDiode(switchInds)))
+    elseif isFET(i) && ~(any(isFET(switchInds)) && any(isDiode(switchInds)))
         %off-state voltage > 0
         Cbnd(devVoltage, :, swvec(:,i)==0) = obj.topology.Cs(devVoltage, :, swvec(:,i)==0);
         Dbnd(devVoltage, :, swvec(:,i)==0) = obj.topology.Ds(devVoltage, :, swvec(:,i)==0);
@@ -156,8 +147,6 @@ obj.topology.Cbnd = Cbnd;
 obj.topology.Dbnd = Dbnd;
 obj.topology.bndHyst = hyst;
 obj.topology.switchRef = switchRef;
-
-assignin('base','us', obj.parsedU)
 
 end
 

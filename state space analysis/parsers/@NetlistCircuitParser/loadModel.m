@@ -57,7 +57,7 @@ if ~isempty(fn)
         end
     end
 
-    if isempty(obj.Anum) || force || ~strcmp(obj.sourcefn,fn)
+    if isempty(obj.topology.As) || force || ~strcmp(obj.sourcefn,fn)
         if ~strcmp(obj.sourcefn,fn) || isempty(obj.origComponents) || force
             obj.readSpiceNetlist(fn)       
         end
@@ -65,22 +65,9 @@ if ~isempty(fn)
 end
 
 
-if isempty(obj.Anum) || force || ~strcmp(obj.sourcefn,fn)
-    if(strcmp(obj.method, 'new'))
-        if ~strcmp(obj.sourcefn,fn) || isempty(obj.components) || force
-            obj.linearizeCircuitModel2()
-        end
-    elseif(strcmp(obj.method, 'old'))
+if isempty(obj.topology.As) || force || ~strcmp(obj.sourcefn,fn)
+    if ~strcmp(obj.sourcefn,fn) || isempty(obj.components) || force
         obj.linearizeCircuitModel()
-    
-        obj.read_file_num();
-        obj.addmeasure;
-        [switches]=obj.findDM;
-        obj.ON_States = cell(length(switches),1);
-        obj.OFF_States = cell(length(switches),1);
-        [obj.NL,obj.NLnets,~]=obj.Single_states_D(1,1,switches);
-        obj.cutset_loop_num();
-        obj.Component_Values = obj.Element_Properties;
     end
 end
 
@@ -95,24 +82,15 @@ if ~exist('swseq','var') || isempty(swseq)
     end       
 end
 
-if(strcmp(obj.method, 'old'))
-    if size(swseq,2) < length(obj.Switch_Resistors)
-        swseq = [swseq, zeros(size(swseq,1), length(obj.Switch_Resistors)-size(swseq,2))];
-    end
-elseif(strcmp(obj.method, 'new'))
-    numSw = sum(strcmp({obj.origComponents.Type}, 'M') + strcmp({obj.origComponents.Type}, 'D'));
-     if size(swseq,2) < numSw
-         warning('found a switching sequence with fewer switches than the topology contains.  Remaining switches will be set to OFF.')
-         swseq = [swseq, zeros(size(swseq,1), numSw-size(swseq,2))];
-     end
-end
 
-% What is this?  It seems errant -- length(Diodes_POS) is always
-% length(Switch_Resistors)
-if(strcmp(obj.method, 'old'))
-    Diodes_POS = contains(obj.Switch_Resistors,'D')';
-    Switch_L = length(Diodes_POS);
-end
+numSw = sum(strcmp({obj.origComponents.Type}, 'M') + strcmp({obj.origComponents.Type}, 'D'));
+ if size(swseq,2) < numSw
+     warning('found a switching sequence with fewer switches than the topology contains.  Remaining switches will be set to OFF.')
+     swseq = [swseq, zeros(size(swseq,1), numSw-size(swseq,2))];
+ end
+
+
+
 
 
 if ~force
@@ -122,7 +100,7 @@ if ~force
         else
             %% only new swseqs, just add those
             newSwSeq = setdiff(swseq, obj.topology.swseq, 'rows');
-            startLoc = size(obj.Anum,3);
+            startLoc = size(obj.topology.As,3);
             obj.topology.swseq  = [obj.topology.swseq; newSwSeq];
         end
     elseif nargin <= 2
@@ -156,79 +134,60 @@ if everythingDefined == 1
 
 
     for k = 1:1:size(newSwSeq,1)
-        if(strcmp(obj.method, 'new'))
-            obj.setSwitchingState(newSwSeq(k,:));
-            [A,B,C,D,I] = solveStateSpaceRepresentation(obj);
-        elseif(strcmp(obj.method, 'old'))
-            [A,B,C,D,I] = obj.ABCD_num(obj.Switch_Resistors,obj.Switch_Resistor_Values,newSwSeq(k,:));
-        end
-        
-        if(strcmp(obj.method, 'old'))
-            % Only allows diodes that are on to have non zeros in Bs and
-            % Ds
-            B_R = size(B,1);
-            B_C = size(B,2);
-            Diode_adjust_B = ones(B_R,B_C);
-            D_Key = newSwSeq(k,:).* Diodes_POS;
-            Diode_adjust_B(:,B_C-Switch_L+1:end) = repmat(D_Key,[B_R,1]);
-            B = B.*Diode_adjust_B;
-            
-            D_R = size(D,1);
-            D_C = size(D,2);
-            Diode_adjust_D = ones(D_R,D_C);
-            D_Key = swseq(k,:).* Diodes_POS;
-            Diode_adjust_D(:,D_C-Switch_L+1:end) = repmat(D_Key,[D_R,1]);
-            D = D.*Diode_adjust_D;
-        end
-        
+
+        obj.setSwitchingState(newSwSeq(k,:));
+        [A,B,C,D,I] = solveStateSpaceRepresentation(obj);
+
         if ~all(size(I) == size(A))
+            % when there is a state-source dependence, the above function
+            % will return I and ns x (ns+ni) to capture the source
+            % dependence.  Split that up into state dependence I and source
+            % dependence BI
             BI = I(1:size(A,1),size(A,2)+1:end);
             I = I(1:size(A,1),1:size(A,1));
         else
             BI = zeros(size(B));
         end
         
-        obj.Anum(:,:,k+startLoc) = A;
-        obj.Bnum(:,:,k+startLoc) = B;
-        obj.Cnum(:,:,k+startLoc) = C;
-        obj.Dnum(:,:,k+startLoc) = D;
-        obj.Inum(:,:,k+startLoc) = I;
-        obj.BInum(:,:,k+startLoc) = BI;
-        [obj.eigA(:,k+startLoc)] = eig(A);
-    
-        
-        
+        if k+startLoc == 1 && isempty(obj.topology.As)
+            obj.topology.As = A;
+            obj.topology.Bs = B;
+            obj.topology.Cs = C;
+            obj.topology.Ds = D;
+            obj.topology.Is = I; 
+            obj.BInum = BI; %BIs stays here for now.  
+            % Should eventually move to topology, but will have to address
+            % PLECs compatability.
+        else
+            obj.topology.As(:,:,k+startLoc) = A;
+            obj.topology.Bs(:,:,k+startLoc) = B;
+            obj.topology.Cs(:,:,k+startLoc) = C;
+            obj.topology.Ds(:,:,k+startLoc) = D;
+            obj.topology.Is(:,:,k+startLoc) = I; 
+            obj.BInum(:,:,k+startLoc) = BI; %BIs stays here for now.  
+            % Should eventually move to topology, but will have to address
+            % PLECs compatability.
+        end
+
     end
 
-    
-
-
-    %%% This to account for there being to diodes on at the beginning of
-    %%% the run
-    B = obj.Bnum;
-    B(:,contains(obj.ConstantNames,'C'),:)=0;
-    obj.Bnum = B;
-    D = obj.Dnum;
-    D(:,contains(obj.ConstantNames,'C'),:)=0;
-    obj.Dnum = D;
-    
-    
-    obj.topology.As = obj.Anum;
-    obj.topology.Bs = obj.Bnum;
-    obj.topology.Cs = obj.Cnum;
-    obj.topology.Ds = obj.Dnum;
-    obj.topology.Is = obj.Inum; %repmat(eye(size(obj.Anum,1)),[1 1 size(obj.Anum,3)]);
+    obj.getConstraintMatrices;
 end
 
-obj.topology.switchLabels = obj.Switch_Names;
-obj.topology.stateLabels = obj.StateNames;
-obj.topology.outputLabels = obj.OutputNamesCD;
-obj.topology.inputLabels = obj.ConstantNames;
 
-obj.parsedU = zeros(length(obj.topology.inputLabels),1);
-[~,IA, IB] = intersect(obj.topology.inputLabels,{obj.components.Name});
-obj.parsedU(IA) = [obj.components(IB).paramVals];
-%Note, this won't find Vfs, only the sources
+try
+    if isempty(obj.topology.converter.u)
+        parsedU = zeros(length(obj.topology.inputLabels),1);
+        [~,IA, IB] = intersect(obj.topology.inputLabels,{obj.components.Name});
+        parsedU(IA) = [obj.components(IB).paramVals];
+
+        % assignin('base','us', parsedU);   %Gradually moving away from base assignment.
+        obj.topology.converter.u = parsedU;
+    end
+    %Note, this won't find Vfs, only the sources
+catch e
+    %If we can't, the input isn't defined (ok).
+end
 
 end
 

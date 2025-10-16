@@ -26,6 +26,7 @@ if ~isempty(obj.Is)
 else
     Is = rempat(eye(size(As(:,:,1))),[1 1 size(As,3)]);
 end
+BIs = obj.BIs;
 u = obj.fullu;
 
 try
@@ -66,9 +67,13 @@ try
             ti = find(t<=tmax & t>=tmin);
         end
 
-        SS = ss(Is(:,:,i)*As(:,:,i), Is(:,:,1)*Bs(:,:,i), Cs(:,:,i), Ds(:,:,i));
+        SS = ss(Is(:,:,i)*As(:,:,i), Is(:,:,i)*Bs(:,:,i), Cs(:,:,i), Ds(:,:,i));
         if length(ti) > 1
             [y, ~, x] = lsim(SS, u(:,:,i)*ones(size(ti)), t(ti)-t(ti(1)), Xss(:,i));
+
+            % for jj = 1:size(x,1)
+            %     x(jj,:) = Is(:,:,i)*x(jj,:)' + BIs(:,:,i)*u(:,:,i);
+            % end
 
             xs(:,ti) = x';
             ys(:,ti) = y';
