@@ -1,4 +1,4 @@
-function components = XFdependentSourceSubcircuit(obj, directive, components)
+function components = XFdependentSourceSubcircuit(obj, directive, components, noResistors)
 %XFdependentSourceSubcircuit replaces coupled insductors with k=1 with a
 %dependent source equivalent subcircuit
 %   Replaces inductors coupled with k=1 with a combination of
@@ -7,6 +7,12 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
 %   coupled inductors, there are N-1 voltage sources, and one current
 %   source.
 
+    if ~exist('noResistors','var')
+        % eliminate thevenin/norton resistors.  These help convergence if
+        % the circuit ends up in a case where the current source is in
+        % series with a inductor, or voltage in parallel with a cap.
+        noResistors = ~obj.useXFtheveninResistors;
+    end
 
     for i = 1:length(directive.paramNames)
         coupledIndLocs(i) = find(strcmp({components.Name}, directive.paramNames{i}));
@@ -84,6 +90,19 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
         Imsource.paramVals = 0;
         Imsource.paramExpressions = {'0'};
 
+        if ~noResistors
+            RN = {};
+            RN.Name = ['RN_' coupledInductors(Vi).Name];
+            RN.Type = 'R';
+            RN.Nodes = coupledInductors(Vi).Nodes;
+            RN.paramNames = {'R'};
+            RN.paramVals = obj.defaultRoff;
+            RN.paramExpressions = {num2str(obj.defaultRoff)};
+        else
+            RN = [];
+        end
+
+
         Lmin = 0;
 
         for i = setdiff(1:length(coupledInductors),Vi)
@@ -108,6 +127,21 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
             Vmsource.paramVals = 0;
             Vmsource.paramExpressions = {'0'};
 
+            if ~noResistors 
+                Rth = {};
+                Rth.Name = ['RTH_' coupledInductors(Vi).Name];
+                Rth.Type = 'R';
+                Rth.Nodes = {[coupledInductors(i).Nodes{1} '_m'] [coupledInductors(i).Nodes{1} '_m2']};
+                Rth.paramNames = {'R'};
+                Rth.paramVals = 1/obj.defaultRoff;
+                Rth.paramExpressions = {num2str(1/obj.defaultRoff)};
+
+                Vmsource.Nodes = {[coupledInductors(i).Nodes{1} '_m2'] coupledInductors(i).Nodes{2}};
+            else
+                Rth = [];
+            end
+
+
             isource.paramNames = [isource.paramNames, ...
                 {['Vnam' num2str(i)], ['gain' num2str(i)]}];
             isource.paramVals = [isource.paramVals, ...
@@ -119,7 +153,7 @@ function components = XFdependentSourceSubcircuit(obj, directive, components)
                 %Leave one Lm in (save for later to not ruin indexing)
                 Lm = components(coupledIndLocs(i));  
             end
-            components = [components(1:coupledIndLocs(i)-1) Vsource Vmsource components(coupledIndLocs(i)+1:end)];    %Replace all secondaries
+            components = [components(1:coupledIndLocs(i)-1) Vsource Rth RN Vmsource components(coupledIndLocs(i)+1:end)];    %Replace all secondaries
             
             %update indexing for any others to account for extra inserted
             %component

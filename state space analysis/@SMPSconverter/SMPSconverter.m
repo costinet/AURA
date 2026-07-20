@@ -518,10 +518,16 @@ classdef SMPSconverter < handle
                     end
                 end
             end
+
+            if isempty(swind)
+                %If swind is empty, to accomodate zero-switch circuits
+                %(modulated using u), make swind a vector of ones.
+                swind = ones(1,numel(ts));
+            end
+                
             
             assert(~any(sum(ts,1)==0), 'Cannot have zero-time intervals');
-            
-            assert(all(size(swind) == size(ts)), 'Dimensions of swind and ts must be the same');
+            assert(isempty(swind) || all(size(swind) == size(ts)), 'Dimensions of swind and ts must be the same');
             assert(all(ts>=0, 'all'), 'times in vector ts must all be positive');
             assert(all(swind >= 0 & swind <= size(obj.topology.As,3), 'all'), 'swind must be a vector of values indexing topology state matrices');          
 

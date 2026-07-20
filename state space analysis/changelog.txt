@@ -1,3 +1,7 @@
+### v0.3.6
+- Minor updates
+- Validation of parsing rewrite
+
 ### v0.3.4
 - Complete rewrite of NetlistCircuitParser state space parsing code
 - Continued namespace migration for databases

@@ -62,7 +62,7 @@ function [ xs, t, ys, xd ] = simTransient(obj, nPeriods, Xss, tsteps)
         % Calculate discrete per-period sample points explicitly to
         % minimize cumulative error across subinterval transitions/periods.
         Xss = PHIaug*[Xss; 1];
-        Xss = Xss(1:end-1);
+        Xss = obj.IHC*Xss(1:end-1);
     end
 
     if exist('Xss_stored', 'var')

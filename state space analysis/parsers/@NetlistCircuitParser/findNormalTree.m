@@ -100,11 +100,11 @@ function findNormalTree(obj)
         % These are inaccessible.  These loops/cutsets are now handled,
         % including state-source dependence, so the warning may not be
         % necessary (though could still be informative).
-        if any(tree(:,1) == 5)
-            warning(['L-I net present.  ' strjoin({obj.components(coTree(tree(:,1) == 5,4)).Name}, ', ') ' will be dependent state(s)'])
+        if any(tree(:,1) == 6)
+            warning(['L-I net present.  ' strjoin({obj.components(tree(tree(:,1) == 6,4)).Name}, ', ') ' will be dependent state(s)'])
         end
-        if any(coTree(:,1) == 8)
-            warning(['C-V loop present.  ' strjoin({obj.components(coTree(coTree(:,1) == 8,4)).Name}, ', ') ' will be dependent state(s)']);
+        if any(coTree(:,1) == 7)
+            warning(['C-V loop present.  ' strjoin({obj.components(coTree(coTree(:,1) == 7,4)).Name}, ', ') ' will be dependent state(s)']);
         end
     end
     

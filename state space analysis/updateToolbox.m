@@ -78,7 +78,7 @@ end
 
 function parts = getParts(V)
     % parts = sscanf(V, '%d.%d.%d')';
-    tokens = str2double(regexp(V, 'v?(\d+)\.(\d+)\.(\d+)', 'tokens', 'once'));
+    parts = str2double(regexp(V, 'v?(\d+)\.(\d+)\.(\d+)', 'tokens', 'once'));
     if length(parts) < 3
         parts(3) = 0; % zero-fills to 3 elements
     end

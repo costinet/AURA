@@ -85,7 +85,7 @@ function [H,remainingComps] = hybridMatrix(obj)
         F = K*H{3,2};
 
         if cond(eye(size(F))-F) > 1e8
-            warning('Singular Matrix when trying to solve for dependent sources. This is likely due to poor port assignment.  Try changing the ordering of winding inductors in the K (coupling) directive.')
+            warning('Singular Matrix when trying to solve for dependent sources. This is likely due to poor port assignment.  Try changing the ordering of winding inductors in the K (coupling) directive or adding seres/parallel resistance to windings.')
         end
     end
 

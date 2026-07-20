@@ -51,4 +51,26 @@ function [ts,swvec] = combineMods(ts1,swvec1,switchCol1,ts2,swvec2,switchCol2, v
     ts(zeroints) = [];
     swvec(zeroints,:) = [];
 
+    if any(all(diff(swvec,1)==0,2))% some intervals where nothing switched
+        for i = (flip(find(all(diff(swvec,1)==0,2)))+1)'
+            swvec(i,:) = [];
+            ts(i-1) = ts(i-1) + ts(i);
+            ts(i) = [];
+        end
+    end
+
+    %  if any(all(diff([swvec;swvec(1,:)],1)==0,2))% some intervals where nothing switched
+    %     for i = (flip(find(all(diff([swvec;swvec(1,:)],1)==0,2)))+1)'
+    %         if i == size(swvec,1)+1
+    %             swvec(i-1,:) = [];
+    %             ts(1) = ts(1) + ts(i-1);
+    %             ts(i-1) = [];
+    %         else
+    %             swvec(i,:) = [];
+    %             ts(i-1) = ts(i-1) + ts(i);
+    %             ts(i) = [];
+    %         end
+    %     end
+    % end
+
 end

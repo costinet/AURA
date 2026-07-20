@@ -71,6 +71,8 @@ classdef NetlistCircuitParser < circuitParser
         defaultRoff = 10e6;
         undefinedExpressions = {}
         useForcedDependentStates = 0
+
+        useXFtheveninResistors = 1; %Adds negligible resistors in parallel/series with XF equivalent circuit to aid convergence.
     end
 
     properties (Hidden, Constant)

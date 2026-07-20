@@ -150,7 +150,8 @@ classdef digitizedPlot < handle
                 data = eval(['handle.savedVars.' traces{i}]);
                 obj.plotData{i} = data;      
 
-%                 obj.imgData{i} = handle.ImDat;
+                %% This was commented out, but somehting is necessary here.  If this doesn't work, need alternate method to store imgData for later use.
+                obj.imgData{i} = handle.ImDat;
             end
             obj.dataLabels = traces;
             obj.loadAppData();
@@ -245,6 +246,8 @@ classdef digitizedPlot < handle
             hold(axes, 'off');
             imshow(obj.img, 'Parent', axes);
             hold(axes, 'on');
+
+            lines = [];
             
             for i = 1:length(obj.imgData)
                 if size(obj.traceColors,1) >= i
@@ -254,8 +257,9 @@ classdef digitizedPlot < handle
                     rowInd = round(i/length(obj.imgData)*size(colorWheel,1));
                     traceColor = colorWheel(rowInd,:);
                 end
-
-                lines(i) = plot(axes, obj.imgData{i}(:,1), obj.imgData{i}(:,2), ':', 'LineWidth', 3, 'Color', traceColor); 
+                if ~isempty(obj.imgData{i})
+                    lines(i) = plot(axes, obj.imgData{i}(:,1), obj.imgData{i}(:,2), ':', 'LineWidth', 3, 'Color', traceColor); 
+                end
             end
             
             plot(axes, [obj.imgAxes.colLeft obj.imgAxes.colLeft], [obj.imgAxes.rowBottom obj.imgAxes.rowTop],'-r', 'LineWidth', 3);

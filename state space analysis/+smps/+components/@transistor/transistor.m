@@ -171,7 +171,7 @@ classdef transistor < smps.component
     
                 if ~any(VthLoc)
                     Vth = 2;
-                    warning('No Vth value given or available, guessing Vth=2V')
+                    warning('SMPS:AuraDB:QgNoVth','No Vth value given or available, guessing Vth=2V')
                 else
                     Vth = params(VthLoc).approx();
                 end

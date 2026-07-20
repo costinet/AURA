@@ -4,7 +4,7 @@ function [Pov, TurnOffCurrent, TurnOnVoltage]  = overlapLoss(sim,switchNames,swi
     arguments
         sim SMPSim
         switchNames {mustBeText(switchNames)}
-        switchModel {mustBeA(switchModel,'transistor'), ...
+        switchModel {mustBeA(switchModel,'smps.components.transistor'), ...
                 mustMatchSize(switchNames,switchModel)}
         Ig {isnumeric, mustMatchSize(switchNames,Ig)}
     end
@@ -59,7 +59,7 @@ function [Pov, TurnOffCurrent, TurnOnVoltage]  = overlapLoss(sim,switchNames,swi
         [~, ~, ~, ~, Qsw] = gateCharge(trans, 7);
 
         Pov(i) = Qsw/ig*TurnOnVoltage(i)*TurnOffCurrent(i)*1/2*1/sum(sim.ts);
-        warning('This is currently incorrect, but is left for demonstration')
+        warning('SMPS:testing','This is currently incorrect, but is left for demonstration')
         % Need to know what the forced current is.
     end
 end

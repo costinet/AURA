@@ -19,7 +19,8 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
         names = obj.stateNames;
 
         if ~all(obj.IHC == eye(size(obj.IHC)),'all')
-            sigs = [sigs, sigs.*repmat(diag(obj.IHC),[1,size(sigs,2)])];
+            % sigs = [sigs, sigs.*repmat(diag(obj.IHC),[1,size(sigs,2)])];
+            sigs = [sigs,squeeze(pagemtimes(repmat(obj.IHC,[1,1,size(sigs,2)]), permute(sigs,[1 3 2])))];
             t = [t, t+t(end)];
         end
     elseif type == 2
@@ -31,6 +32,7 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
 %             t = [t, t+t(end)];
 %         end
     end 
+    
     fig = figure(fn);
 
     ns = size(sigs,1);
