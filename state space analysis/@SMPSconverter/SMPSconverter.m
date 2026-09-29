@@ -50,7 +50,9 @@ classdef SMPSconverter < handle
         caching = 0
         timingThreshold = 1e-15;
 
-        maximumTimeSteps = 150;
+        % Simulation Parameters
+        maximumTimeSteps = 2000;
+        switchingFrequency;
         
     end
     
@@ -105,6 +107,10 @@ classdef SMPSconverter < handle
             obj.previousts = obj.fullts;    %Save old times in case an undo is needed.
             prevDT = dt;
             recurs = 0;
+            
+            if isempty(ti) || all(dt == 0)
+                return;
+            end
 
             if numel(ti) == length(obj.ts)
                 [tps] = obj.validateTimePerturbations2(dt);
@@ -303,6 +309,7 @@ classdef SMPSconverter < handle
 %             [r,c] = find(obj.fullts == 0 & obj.fullswind ~= 0);
             [r,c] = find(obj.fullts < obj.timingThreshold*0.9 & obj.fullswind ~= 0);
             orig = obj.fullts;
+            [r_all, c_all] = find(orig ~= 0);
             
             for i = length(r):-1:1
                 if r(i) > size(obj.fullts,1) || c(i) > size(obj.fullts,2)
@@ -312,9 +319,13 @@ classdef SMPSconverter < handle
                     if obj.fullts(r(i),c(i)) > eps/100
                         % if it isn't actually zero, set it to zero and keep
                         % from altering the overall controlled interval length.
-                        obj.adjustUncontrolledTiming(find(obj.ts == obj.fullts(r(i),c(i))), -obj.fullts(r(i),c(i)));
-                        %NOTE: adjustUncontrolledTiming will re-call this
-                        %function, so we can end here.
+                        old_val = obj.fullts(r(i),c(i));
+                        [~, temp_ints, temp_subInts] = getIntervalts(obj);
+                        exact_ti = find(temp_ints == c(i) & temp_subInts == r(i), 1, 'first');
+                        obj.adjustUncontrolledTiming(exact_ti, -old_val);
+                        if r(i) > size(obj.fullts,1) || c(i) > size(obj.fullts,2) || obj.fullts(r(i),c(i)) ~= old_val
+                            return;
+                        end
                     else
                         obj.fullts(r(i),c(i)) = 0;
                         obj.fullswind(r(i),c(i)) = 0;
@@ -462,6 +473,7 @@ classdef SMPSconverter < handle
                 dt =  min( [2*pi./fastestResFreq/8, obj.ts(i)'], [],2);
                 
                 ratio = ceil(obj.ts(i)/dt - eps);
+                ratio = min(ratio, 10);
                 
                 for j = 1:1:ratio-1
                     obj.addUncontrolledSwitching(i, 1, dt, [], [], 1);
@@ -485,12 +497,17 @@ classdef SMPSconverter < handle
 %             end
 %         end
         
-        function setSwitchingPattern(obj, swind, ts)  
+        function setSwitchingPattern(obj, swind, ts, us)  
         % SETSWITCHINGPATTERN set switching pattern and controlled timing
         %
         %   setSwitchingPattern(obj, swvec, ts)  
         %
         %
+            if nargin < 4 || isempty(us)
+                us = obj.u;
+            end
+            
+
             if size(ts,2) == 1
                 ts = ts';
             end
@@ -503,7 +520,9 @@ classdef SMPSconverter < handle
             end
             if all(swind == 1 | swind == 0, 'all') && (any(swind == 0, 'all') || isscalar(ts))
                 %2D swind, assume swseq
+                
                 swseqIn = swind;
+                assert(size(swseqIn,2) == numel(obj.topology.switchLabels), 'Number of columns in swvec must be equal to the number of switches in the topology')
                 swind = zeros(1,size(swseqIn,1));
                 for i = 1:size(swseqIn,1)
                     [~, idx] = intersect(obj.topology.swseq, swseqIn(i,:), 'rows');
@@ -517,6 +536,8 @@ classdef SMPSconverter < handle
                         swind(i) = idx;
                     end
                 end
+            else
+                assert(all(swind <= size(obj.As,3), 'all'), 'Attempting to index a state space description that has not been parsed and does not have an associated swvec')
             end
 
             if isempty(swind)
@@ -525,17 +546,45 @@ classdef SMPSconverter < handle
                 swind = ones(1,numel(ts));
             end
                 
-            
-            assert(~any(sum(ts,1)==0), 'Cannot have zero-time intervals');
-            assert(isempty(swind) || all(size(swind) == size(ts)), 'Dimensions of swind and ts must be the same');
-            assert(all(ts>=0, 'all'), 'times in vector ts must all be positive');
-            assert(all(swind >= 0 & swind <= size(obj.topology.As,3), 'all'), 'swind must be a vector of values indexing topology state matrices');          
+            obj.validateInputSizes(swind, ts, us);
+
+            if isempty(obj.ts)
+                % This reshapes the vector to make initial guesses on diode
+                % conduction look like uncontrolled switching actions rather
+                % than appearing to be "forced"
+                [swind, ts] = obj.findControlledTimings(swind, ts, us);
+            end
 
             obj.controlledts = sum(ts,1);
             obj.fullts = ts;
             obj.fullswind = swind;
+            obj.u = us;
 
             obj.limitTimeIntervals();
+        end
+
+        function [newFullSwind, newFullts] = findControlledTimings(obj, swind, ts, us)
+            
+            swvec = obj.topology.swseq(swind(swind~=0),:);
+            fetInds = startsWith(obj.topology.switchLabels, obj.topology.circuitParser.activeSwitchNameTemplate);
+            fetSw = swvec(:,fetInds);
+            uniqueInts = [1; any(diff(fetSw,1,1) ~= 0,2)];
+            if size(us,3) > 1
+                uniqueInts = uniqueInts | [1;  squeeze(any(diff(us,1,3) ~= 0,1))];
+            end
+            % newFullts(1,:) = ts(uniqueInts==1);
+            % newFullSwind(1,:) = swind(uniqueInts==1);
+            c = cumsum(uniqueInts); 
+            r = ones(size(uniqueInts));
+            for i = 1:length(r)
+                if i > 1
+                    if c(i) == c(i-1)
+                        r(i) = r(i-1)+1;
+                    end
+                end
+                newFullts(r(i),c(i)) = ts(i);
+                newFullSwind(r(i),c(i)) = swind(i);
+            end
         end
         
 
@@ -601,6 +650,7 @@ classdef SMPSconverter < handle
 %             obj.swind = newSeq;
             [~, index]=ismember(newSeq,obj.topology.swseq,'rows');
             obj.swind = index;
+
 %             obj.refreshCache();
         end
         
@@ -617,8 +667,7 @@ classdef SMPSconverter < handle
                     newU = reshape(newU,[size(obj.Bs,2), 1, size(newU,3)]);
                 end
             end
-            assert(size(newU,1) == size(obj.Bs,2) && size(newU,2) ==1, 'invalid dimensions for u.  The input vector must be either (Ni x 1 x Nt) or (Ni x 1 x Nt) for Nt time intervals and Ni independent inputs');
-
+            obj.validateInputSizes([], [], newU);
             obj.u = newU;%reshape(newU,max(size(newU,1:2)),1, size(newU,3));
         end
 
@@ -629,6 +678,33 @@ classdef SMPSconverter < handle
             end
             obj.topology = top;
             top.linkConverter(obj);
+        end
+
+        function validateInputSizes(obj, swind, ts, us)
+            if nargin < 4 || isempty(us)
+                us = obj.u;
+            end
+            if nargin < 3 || isempty(ts)
+                ts = obj.fullts;
+            end
+            if nargin < 2 || isempty(swind)
+                swind = obj.fullswind;
+            end
+
+            assert(size(ts,2) == size(swind,2), 'Size of switching sequence and number of time intervals must match')
+
+            assert(~any(sum(ts,1)==0), 'Cannot have zero-time intervals');
+            assert(all(ts>=0, 'all'), 'times in vector ts must all be positive');
+
+            assert(isempty(swind) || all(size(swind) == size(ts)), 'Dimensions of swind and ts must be the same');
+            assert(all(swind >= 0 & swind <= size(obj.topology.As,3), 'all'), 'swind must be a vector of values indexing topology state matrices');  
+
+            if ~(isempty(us) && isempty(obj.u))
+                assert(size(us,1) == size(obj.Bs,2), 'Input vector must have a number of rows equal to the number of circuit inputs.')
+                assert(size(us,3) == 1 || size(us,3) == size(ts,2), 'Input vector must either be 2D or have a size in the third dimension equal to the number of time intervals.')
+                assert(size(us,1) == size(obj.Bs,2) && size(us,2) ==1, 'invalid dimensions for u.  The input vector must be either (Ni x 1 x Nt) or (Ni x 1 x Nt) for Nt time intervals and Ni independent inputs');
+            end
+
         end
         
     end

@@ -19,6 +19,11 @@ function loadSimulinkOutputsToBase(modelfile,PLECsBlock)
     for i = 1:length(simout.properties)
         assignin('base',simout.properties{i},eval(['simout.' simout.properties{i}]));
     end
+
+    us = evalin('base','us');
+    if size(us,1) == 1 && size(us,2) > 1
+        assignin('base','us',us');
+    end
     
     set_param(circuitPath,'Commented','off');
 end

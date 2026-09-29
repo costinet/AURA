@@ -313,9 +313,13 @@ classdef (Abstract) componentDB < handle
                     warning(['Unable to access user documents path at ' userpath]);
                 end
 
-                addpath(rfToolboxFolders{:});
+                if ~isempty(rfToolboxFolders)
+                    addpath(rfToolboxFolders{:});
+                end
             catch e
-                addpath(rfToolboxFolders{:});
+                if ~isempty(rfToolboxFolders)
+                    addpath(rfToolboxFolders{:});
+                end
                 rethrow(e);
             end
 

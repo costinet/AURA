@@ -1,8 +1,10 @@
 state space analysis/AURAdb/digitizers/plotDigitizer/appDesignerTempData_.*
 AURA-Jared/
+deprecated/
 depricated/
 Depricated/
 **/depricated/
+**/deprecated/
 **/Depricated/
 *.bak
 *.bak2
@@ -20,7 +22,6 @@ Ideas/
 Test/
 AURAdb/digitizers/plotDigitizer/appDesignerTempData_.*
 AURAdb/digitizers/plotDigitizer/temp/
-depricated/
 *.bak
 *.bak2
 testConverters/PreviousApplications/
@@ -37,3 +38,4 @@ dev/
 testConverters/PreviousApplications
 resources/
 state space analysis/parsers/@LTspiceCircuitParser/unknown/
+**/LTspice NetLists/unformatted/

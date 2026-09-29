@@ -30,7 +30,7 @@ function readSpiceNetlist(obj,filename)
     libs = [cellfun(ind4, lines(startsWith(lines,'.lib')))];
     params = [cellfun(ind6, lines(startsWith(lines,'.param')))];
     models = [cellfun(ind6, lines(startsWith(lines,'.model')))];
-    componentsLines = lines(~startsWith(lines,'.') & ~startsWith(lines,'*') & ~cellfun(@isempty,lines));
+    componentsLines = lines(~startsWith(lines,'.') & ~startsWith(lines,'*') & ~startsWith(lines,';') & ~cellfun(@isempty,lines));
     
     %% Parameters
     % Handle params first so if anything is needed later, it will be available

@@ -22,7 +22,7 @@ function component = parseSpiceComponent(obj, str)
     switch type 
         case 'M'
             %Need ron, roff, Coss
-            vals = [0 obj.defaultRoff 0];
+            vals = [obj.defaultRon obj.defaultRoff 0];
 
             [nodes,~,~] = regexp(str, NodeRegStr, 'match', 'tokens');
             component.Nodes = nodes([1 3]); % only drain and source used.
@@ -132,8 +132,8 @@ function component = parseSpiceComponent(obj, str)
             component = deEmbedSpiceParams(obj,component,embeddedParams);
         case 'D'
              %Need ron, roff, Cd, Vf
-            vals = [0 obj.defaultRoff 0 0];
-            expr = {'0', num2str(obj.defaultRoff), '0', '0'};
+            vals = [obj.defaultRd obj.defaultRoff 0 0];
+            expr = {num2str(obj.defaultRoff), num2str(obj.defaultRoff), '0', '0'};
 
             [nodes,~,~] = regexp(str, NodeRegStr, 'match', 'tokens');
             component.Nodes = nodes([1 2]); 

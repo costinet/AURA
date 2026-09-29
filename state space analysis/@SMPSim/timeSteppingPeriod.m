@@ -192,6 +192,14 @@ function [Xf,ts,swinds,us] = timeSteppingPeriod(obj, Xs, ts, origSwind, us)
                             firstViolationCondition = violateMarginEnd < 0;
                             firstViolationTime = deltaT;
                         end
+                        
+                        t_safe = 0;
+                        t_violation = deltaT;
+                        if any(violateMarginCross(violateMarginEnd < 0) < 0)
+                            t_violation = tcross;
+                        else
+                            t_safe = tcross;
+                        end
 
                         while ~(...
                                 any(abs(targetValCross(violateMarginEnd < 0)) < obj.converter.topology.bndHyst((violateMarginEnd < 0),2)) ...
@@ -199,26 +207,26 @@ function [Xf,ts,swinds,us] = timeSteppingPeriod(obj, Xs, ts, origSwind, us)
                                 all((violateMarginCross(violateMarginEnd < 0)) > 0) ...
                                 )
                             tcrossOld = tcross;
-                            tcross = tcross + 1./crossSlope.*(targetValCross);
                             
-                            tcross = tcross(firstViolationCondition);
+                            t_proposed = tcrossOld + 1./crossSlope.*(targetValCross);
+                            t_proposed = t_proposed(firstViolationCondition);
+                            t_proposed = min(t_proposed);
 
-%                             if any(violateMarginCross < 0)
-%                                 tcross = tcross(violateMarginCross < 0 & violateMarginEnd < 0);
-%                             else
-%                                 tcross = tcross(violateMarginEnd < 0);
-%                             end
-                            tcross(tcross > deltaT) = deltaT;
-                            tcross(tcross<0) = 0;
-                            tcross = min(tcross(tcross <= deltaT & tcross >= 0));
-
-                            if tcross == deltaT && tcrossOld == deltaT
-                                tcross = 0;
+                            if isempty(t_proposed) || isnan(t_proposed) || t_proposed <= t_safe || t_proposed >= t_violation || abs(t_proposed - tcrossOld) < 1e-15
+                                tcross = (t_safe + t_violation) / 2;
+                            else
+                                tcross = t_proposed;
                             end
 
                             crossXs = expm(M*tcross)*oldXs;
                             violateMarginCrossOld = violateMarginCross;
                             [violateMarginCross,targetValCross] = obj.checkStateValidity(crossXs(1:end-1), u, subInts(i));
+
+                            if any(violateMarginCross(violateMarginEnd < 0) < 0)
+                                t_violation = min(t_violation, tcross);
+                            else
+                                t_safe = max(t_safe, tcross);
+                            end
 
                             if tcross < firstViolationTime && any(violateMarginCross < 0 & violateMarginEnd < 0)
                                 firstViolationCondition = violateMarginCross < 0 & violateMarginEnd < 0;
@@ -228,6 +236,12 @@ function [Xf,ts,swinds,us] = timeSteppingPeriod(obj, Xs, ts, origSwind, us)
                                 crossSlope = -(violateMarginCross-violateMarginCrossOld)./(tcross-tcrossOld).*(violateMarginEnd < 0);
                             end
                             k=k+1;
+                            
+                            % Break if interval collapses to numerical precision
+                            if abs(t_violation - t_safe) <= 10*eps(max(abs(t_safe), abs(t_violation)))
+                                break;
+                            end
+                            
                             if k>100
                                 error('Exceeded max number of iterations in solving for zero crossing');
                                 
@@ -301,6 +315,7 @@ function [Xf,ts,swinds,us] = timeSteppingPeriod(obj, Xs, ts, origSwind, us)
     zeroLocs = (ts == 0);
     ts(zeroLocs) = [];
     swinds(zeroLocs) = [];
+    us(:,:,zeroLocs) = [];
     
     if debug == 1
         NS = size(states,1)-1;

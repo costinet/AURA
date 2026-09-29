@@ -1,3 +1,7 @@
+### v0.3.8
+- Added ssRMS and ssAvgsAndRMS to find waveform RMS values without timestepping expansion
+- Initial prototyping in createNetlist to validate against LTspice
+
 ### v0.3.6
 - Minor updates
 - Validation of parsing rewrite

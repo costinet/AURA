@@ -24,13 +24,27 @@ function [ts,swvec] = dutyMod(D,Ts, varargin)
     phi = p.Results.phase;
     dt = p.Results.dt;
 
-    if dt > 0
-        swvec = [0 0
+    if dt > 0 && D > 0 && D < 1
+        if D*Ts>=dt && (1-D)*Ts >= dt
+            swvec = [0 0
                  1 0 
                  0 0; 
                  0 1;
                  0 0];
-        ts = [dt/2 (D*Ts-dt), dt,  ((1-D)*Ts-dt), dt/2];
+            ts = [dt/2 (D*Ts-dt), dt,  ((1-D)*Ts-dt), dt/2];
+        elseif D*Ts>=2*dt
+            swvec = [0 0
+                1 0 
+                0 0];
+            ts = [dt, (D*Ts-2*dt), dt];
+        elseif (1-D)*Ts >= 2*dt
+            swvec = [0 0
+                0 1 
+                0 0];
+            ts = [dt, ((1-D)*Ts-2*dt), dt];
+        else
+            error('dead time is too large.  Dead time must be less than Ts/2')
+        end
     else
         swvec = [1 0; 
                  0 1];

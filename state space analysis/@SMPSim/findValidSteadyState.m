@@ -58,8 +58,12 @@ function niter = findValidSteadyState(obj)
         Xsims = zeros(size(Xf,1),numPeriods);
         for i = 1:numPeriods
             conv.setSwitchingPattern(swinds, ts);
-            conv.u = us;
-            Xsims(:,i) = Xf;
+            if all(us == us(:,:,1), 'all')
+                conv.u = us(:,:,1);
+            else
+                conv.u = us;
+            end
+            Xsims(:,i) = [obj.Is(:,:,1)*Xf(1:end-1); 1];
             [Xf,ts,swinds,us] = obj.timeSteppingPeriod(Xf, ts, swinds, us);
             if obj.debug == 1
                 disp([Xsims(:,i) Xf]);
@@ -67,13 +71,18 @@ function niter = findValidSteadyState(obj)
         end
     
         [newts,newswinds] = obj.format1DtimingVector(ts,swinds); 
-        conv.u = us;
+        if all(us == us(:,:,1), 'all')
+            conv.u = us(:,:,1);
+        else
+            conv.u = us;
+        end
         conv.setSwitchingPattern(newswinds, newts)
         clear newts;
 %         X0 = obj.Xs(:,1);
     end
 
-
+ts_hist = cell(10,1);
+ts_hist_idx = 1;
 
 while(1)
     obj.steadyState;
@@ -133,7 +142,10 @@ while(1)
 
 
 
-    obj.steadyState;
+    if altered || (size(obj.Xs,2)-1 ~= length(conv.ts))
+        altered = 1;
+        obj.steadyState;
+    end
     if(obj.debug)
         if ~exist('H','var')
             H = figure(obj.debugFigNo);
@@ -165,7 +177,7 @@ while(1)
                     disp('**Attempting Final Run with timeSteppingPeriod');
                 end
             else
-                finalCandidate = {obj.converter.fullswind, obj.converter.fullts};
+                finalCandidate = {obj.converter.fullswind, obj.converter.fullts, obj.converter.u};
                 eigs2tis(conv);
 %                 obj.steadyState;
                 if obj.debug2 == 1
@@ -177,7 +189,7 @@ while(1)
             % If no errors and we've done the above, we're finished
             % set timing back to final without extra
             % eigenvalue/timestepping interfaces
-            obj.setModulation(finalCandidate{1}, finalCandidate{2})
+            obj.setModulation(finalCandidate{1}, finalCandidate{2}, finalCandidate{3})
             obj.steadyState;
             break;
         else
@@ -194,9 +206,12 @@ while(1)
             finalRun = 0;
             
         end
+
+        % %% Correct based on discrete jacobian
+        % [JoutStart,JoutEnd] = obj.discreteJacobianConstraint;
         
-        %% Correct based on discrete jacobian
-        [JoutStart,JoutEnd] = obj.discreteJacobianConstraint;
+        %% Correct based on analytical jacobian
+        [JoutStart,JoutEnd] = obj.analyticalJacobianConstraint;
         
         [i1,j1] = find(errBefore);
         [i2,j2] = find(errAfter);
@@ -235,123 +250,60 @@ while(1)
 
        
 
-        %% Add zero net perturbation to controlled time intervals
-        scaleF = norm(A(:,~unChangeable))/numel(A);
+        %% Null-space projection for exact controlled time intervals
+        % This guarantees the sum of perturbations in any controlled interval is exactly 0
         [~, timeInts, ~] = conv.getIntervalts;
-        A = [A; zeros(max(timeInts), size(A,2))];
-        b = [b; zeros(max(timeInts), 1)];
-        e = [e; conv.timingThreshold*ones(max(timeInts), 1)];
+        
+        A_err = A;
+        b_err = b;
+        
+        A_eq = zeros(max(timeInts), size(A_err,2));
         for i = 1:max(timeInts)
             if ~any(timeInts'==i & unChangeable)
-                A(end-max(timeInts)+i,timeInts==i) = scaleF;
+                A_eq(i,timeInts==i) = 1;
             end
         end
         
-        A(:,unChangeable) = [];
-        emptyRows = all(A==0,2);
-        b(emptyRows) = [];
-        e(emptyRows) = [];
-        A(emptyRows,:) = [];
-
-        orig_state = warning;
-        warning('off','MATLAB:singularMatrix')
-        warning('off','MATLAB:nearlySingularMatrix')
-        warning('off','MATLAB:rankDeficientMatrix')
-        %         [msgstr, msgid] = lastwarn;
-
-        tsolve = zeros(size(conv.ts));
-        tsolve(~unChangeable) = -(A\b);
-
-
-        %% Check for competing constraints
-        % Speeds up DAB_Rload, as an example, but may be unnecessary
-        % overall
-        try
-            numTimeRows = numel(unique(timeInts));
-            nontimeRows = ones(length(emptyRows)-numTimeRows,1);
-            nontimeRows(length(emptyRows),1) = 0;
-    
-            numTimeRows = sum(~nontimeRows&~emptyRows);
-    
-            constrDir = sign(A(1:end-numTimeRows,:));
-            errTimeLocs = timeInts([j1;j2]);
-            errTimeLocs = errTimeLocs(nontimeRows&~emptyRows);
-            timeLocs = timeInts(~unChangeable);
-    
-            targets = [constrDir errTimeLocs];
-            if any(targets(:,1:end-1) ==1,1) & any(targets(:,1:end-1) ==-1,1) 
-                % There are competing constraints
-                [X,Y] =  meshgrid(timeLocs,errTimeLocs);
-                localChanges = (X==Y);
-                localChanges(end+1:end+numTimeRows,:) = 1;
-    
-                localDir = sign(A.*localChanges);
-                localDir = localDir(1:end-numTimeRows,:);
-                [~,IA,IC] = unique(errTimeLocs);
-                limLocalDir = localDir(IA,:);
-                for i=2:numel(IC)
-                    if IC(i)==IC(i-1)
-                        limLocalDir(IC(i),:) = limLocalDir(IC(i),:)  .* (localDir(i,:) == localDir(i-1,:) );
-                    end
-                end
-                localDir = limLocalDir(limLocalDir~=0)';
-    
-                solvedDir = sign(tsolve(~unChangeable));
-                if numel(localDir) == numel(solvedDir)
-                    if all(localDir ~= solvedDir)
-                        A(~localChanges) = 0;
-                        tsolve(~unChangeable) = -(A\b);
-                    end
-                end
-            end
-        catch
-            1; %Do nothing.  set breakpoint for debug
+        A_err(:,unChangeable) = [];
+        A_eq(:,unChangeable) = [];
+        
+        A_eq(all(A_eq==0,2),:) = [];
+        
+        emptyErrRows = all(A_err==0,2);
+        A_err(emptyErrRows,:) = [];
+        b_err(emptyErrRows) = [];
+        
+        if isempty(A_eq)
+            Z = eye(size(A_err,2));
+        else
+            Z = null(A_eq);
         end
+
+        % orig_state = warning;
+        % warning('off','MATLAB:singularMatrix')
+        % warning('off','MATLAB:nearlySingularMatrix')
+        % warning('off','MATLAB:rankDeficientMatrix')
+
+        % Damped least squares in the null space
+        AZ = A_err * Z;
+        ATA = AZ'*AZ;
+        lambda = 1e-4 * max(diag(ATA));
+        if isempty(lambda) || lambda == 0
+            lambda = 1e-10;
+        end
+        
+        y = -(ATA + lambda*eye(size(AZ,2))) \ (AZ'*b_err);
+        
+        tsolve = zeros(size(conv.ts));
+        tsolve(~unChangeable) = Z * y;
 
         %% Backup for unsuccessful solve
         if any(isnan(tsolve))
-            tsolve(~unChangeable) = -pinv(A)*b;
-%             warning('Sometimes this goes awry')            
+            y = -pinv(AZ)*b_err;
+            tsolve(~unChangeable) = Z * y;
         end
 
-        
-
-        %% Check whether solution is valid for local approximation
-        solveWorked = abs(b+A*tsolve(~unChangeable)') < abs(e);
-        solveErr = any(~solveWorked(e ~= conv.timingThreshold));
-        while solveErr
-            %Simultaneously satisfying all constraints is not possible
-            %(see twoPhaseBuck for an example)
-            err = abs(b+A*tsolve(~unChangeable)') - abs(e);
-            [~,I] = max(err);
-            I = find(err > .9*err(I));
-            if length(I) >= sum(~unChangeable)
-                I = I(1:sum(~unChangeable)-1);
-            end
-
-            if isempty(I)
-                error('failed to solve iteration in timing');
-                break
-            end
-
-            A(I,:) = [];
-            b(I,:) = [];
-            e(I,:) = [];
-
-            tsolve = zeros(size(conv.ts));
-            tsolve(~unChangeable) = -(A\b);
-
-            if any(isnan(tsolve))
-                tsolve(~unChangeable) = -pinv(A)*b;
-%                 warning('Sometimes this goes awry')            
-            end
-
-            solveWorked = abs(b+A*tsolve(~unChangeable)') < abs(e);
-            solveErr = any(~solveWorked(e ~= conv.timingThreshold));
-            
-        end
-
-        warning(orig_state);
+        % warning(orig_state);
         
         
 
@@ -371,31 +323,45 @@ while(1)
             obj.converter.eliminateRedundtantTimeIntervals;
         end    
         
-
+        is_oscillating = false;
         if exist('newts','var')
             if numel(newts) == numel(conv.ts)
                 if max(abs(newts - conv.ts)) < 10*conv.timingThreshold
-                    % If the code gets in here, it looks like we're
-                    % oscillating, so try to break out
-                        if obj.finalRunMethod
-                            obj.steadyState;
-                            [~,ts,swinds] = obj.timeSteppingPeriod();
-                            conv.setSwitchingPattern(swinds, ts);
-                            obj.steadyState;
-                            if obj.debug2 == 1
-                                disp('Attempting to break oscilation with timeSteppingPeriod');
-                            end
-                        else
-                            eigs2tis(conv);
-                            obj.steadyState;
-                            if obj.debug2 == 1
-                                disp('Attempting to break oscilationwith eigs2tis');
-                            end
-                        end
+                    is_oscillating = true;
+                end
+            end
+        end
+        for hist_i = 1:10
+            if ~isempty(ts_hist{hist_i}) && numel(ts_hist{hist_i}) == numel(conv.ts)
+                if max(abs(ts_hist{hist_i} - conv.ts)) < 10*conv.timingThreshold
+                    is_oscillating = true;
                 end
             end
         end
 
+        if is_oscillating
+            % If the code gets in here, it looks like we're
+            % oscillating, so try to break out
+            if obj.finalRunMethod
+                obj.steadyState;
+                [~,ts,swinds] = obj.timeSteppingPeriod();
+                conv.setSwitchingPattern(swinds, ts);
+                obj.steadyState;
+                if obj.debug2 == 1
+                    disp('Attempting to break oscilation with timeSteppingPeriod');
+                end
+            else
+                eigs2tis(conv);
+                obj.steadyState;
+                if obj.debug2 == 1
+                    disp('Attempting to break oscilation with eigs2tis');
+                end
+            end
+        end
+
+        ts_hist{ts_hist_idx} = conv.ts;
+        ts_hist_idx = mod(ts_hist_idx, 10) + 1;
+        
         newts = conv.ts;
 
         

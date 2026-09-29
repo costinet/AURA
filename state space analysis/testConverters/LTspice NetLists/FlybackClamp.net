@@ -1,0 +1,25 @@
+* C:\Users\dcostine\Dropbox\UTK\Research\AURA\testConverters\LTspice NetLists\schematics\FlybackClamp.asc
+M1 N006 NC_01 0 0 ron={ron} Coss={Coss}
+L1 N001 N002 {Lk}
+L2 N002 N006 {Lmp}
+L3 0 N003 {Lms}
+D3 N003 N004 Vf={Vf} Cd={Cd}
+C1 N004 0 {Co}
+I1 N004 0 {Iload}
+V1 N001 0 {Vg}
+C2 N001 N005 {Cclamp}
+R1 N001 N005 {Rclamp}
+D1 N006 N005 Vf={Vf} Cd={Cd}
+D2 0 N006 Vf={Vf} Cd={Cd}
+.model D D
+.lib C:\Users\dcostine\Documents\LTspiceXVII\lib\cmp\standard.dio
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\dcostine\Documents\LTspiceXVII\lib\cmp\standard.mos
+.param Vg=48 Iload=1 Lmp=10u Lms=100n Co=10u Lk=5u ron=100m Cclamp=5u Coss=100p Vf=0.7 Cd=100p Rclamp=1k
+.param ts = 1e-6*[0.3311    0.6689]
+.param swvec = [1 0 0 0; 0 1 0 0]
+K L3 L2 1
+.backanno
+.end
+

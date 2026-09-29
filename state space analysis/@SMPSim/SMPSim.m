@@ -74,8 +74,10 @@ classdef SMPSim < handle
         [ Xs] = AugmentedSteadyState(obj, dts)
 
         [J, J2, XssF, XssB, X0, dt] = discreteJacobian(obj, order)
+        [J, dt] = analyticalJacobian(obj)
         [ dXs ] = StateSensitivity(obj, varToPerturb, pI, dX, cI)
         [JoutStart,JoutEnd] = discreteJacobianConstraint(obj)
+        [JoutStart,JoutEnd] = analyticalJacobianConstraint(obj)
 
         [violateMargin,targetVal] = checkStateValidity(obj, X, u, swind)
         [violateMarginStart,violateMarginEnd,targetValStart,targetValEnd] = checkDiscreteErr(obj)
@@ -101,7 +103,7 @@ classdef SMPSim < handle
 
     methods %% Forwarding to child objects
         %% converter
-        function setModulation(obj, swvec, ts)
+        function setModulation(obj, swvec, ts, us)
             %setModulation set switching converter modulation pattern
             %
             % setModulation(obj, swvec, ts)
@@ -112,7 +114,10 @@ classdef SMPSim < handle
             %
             % See also SMPSconverter/setSwitchingPattern, dutyMod
             %
-            obj.converter.setSwitchingPattern(swvec, ts);
+            if nargin < 4
+                us = [];
+            end
+            obj.converter.setSwitchingPattern(swvec, ts, us);
         end
 
         %% parser
@@ -125,7 +130,9 @@ classdef SMPSim < handle
             % this function call is passed on to the parser child object
             %
             % See also circuitParser/updateComponentValues, NetlistCircuitParser/updateComponentValues
+            oldSizes = [size(obj.As,1), size(obj.Bs,2), size(obj.Cs,1)];
             obj.parser.updateComponentValues();
+            % if size()
 
             if ~all(size(obj.topology.As(:,:,1)) == size(obj.IHC))
                 obj.IHC = eye(size(obj.topology.As(:,:,1)));
@@ -155,6 +162,9 @@ classdef SMPSim < handle
         %% Methods from external files
         [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
         [ avgXs, avgYs, Ints ] = ssAvgs(obj, Xss)
+        [rmsXs, rmsYs] = ssRMS(obj, Xss)
+        [ avgXs, avgYs, rmsXs, rmsYs, Ints ] = ssAvgsAndRMS(vsi, Xss)
+        
         niter = findValidSteadyState(obj)
         Gz = findSSTF(obj, tp, oi, tm, ut)
         [Gs, B, Xp] = findAvgModelTF(obj, tp, oi)
@@ -162,7 +172,7 @@ classdef SMPSim < handle
 
         %% Locally-defined methods
 
-         %% Constructors
+        %% Constructors
         function obj = SMPSim(circuitPath, swvec, us, ts)
         %construct a new object of class SMPSim
         % 
@@ -236,30 +246,40 @@ classdef SMPSim < handle
                 end
             end
 
+            inputU = [];
+
             if ~isempty(us)
-                obj.u = us;
+                inputU = us;
             else
                 if ~isempty(obj.converter.u)
-                    obj.u = obj.converter.u;
+                    inputU = obj.converter.u;
                 else
                     try
-                        obj.u = evalin('base', 'us');
+                        inputU = assembleInputVector(obj.parser);
                     catch e
-                        return
+                        try
+                            inputU = evalin('base', 'us');
+                        catch e
+                            try 
+                               inputU = evalin('base', 'u');
+                            catch
+                                return
+                            end
+                        end
                     end
                 end
             end
 
-            if size(obj.u,1) ~= size(obj.Bs,2)
-                if(size(obj.u,2) ~= size(obj.Bs,2)) && size(obj.u,1) == 1
-                    obj.u = reshape(obj.u, [size(obj.Bs,2), 1, size(obj.u,3)]);
+            if size(inputU,1) ~= size(obj.Bs,2)
+                if(size(inputU,2) ~= size(obj.Bs,2)) && size(inputU,1) == 1
+                    inputU = reshape(inputU, [size(obj.Bs,2), 1, size(inputU,3)]);
                 else
                     error('Invalid size of u specified.')
                 end
             end
             
              if ~isempty(ts)
-                conv.setSwitchingPattern(swvec, ts);
+                conv.setSwitchingPattern(swvec, ts, inputU);
              else
                 try
                     ts = evalin('base','ts');
@@ -267,7 +287,7 @@ classdef SMPSim < handle
                     return
                 end
                 try
-                    conv.setSwitchingPattern(swvec, ts);
+                    conv.setSwitchingPattern(swvec, ts, inputU);
                 catch e
                     if nargin < 5
                         % They didn't supply all parameters, and finding
@@ -297,7 +317,17 @@ classdef SMPSim < handle
         %
         %   See Also SMPSim, SMPSim.FindValidSteadyState,
         %   SMPSim.AugmentedSteadyState, SMPSim.SS_Soln
-            assert(~isempty(obj.u), 'No input vector u specified.')
+            try
+                assert(~isempty(obj.u), 'No input vector u specified.')
+            catch e
+                try
+                    baseU = evalin('base','u');
+                    warning('No input vector u specified.  Using variable u from base workspace');
+                    obj.u = baseU;
+                catch e2
+                    throw(e)
+                end
+            end
             assert(~isempty(obj.ts), 'No timing vector ts specified.')
             assert(size(obj.Bs,2) == size(obj.u,1), 'Invalid input vector u specificed')
 

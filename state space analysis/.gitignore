@@ -1,22 +1,40 @@
-Ideas/
-Test/
-AURAdb/digitizers/plotDigitizer/appDesignerTempData_.*
-AURAdb/digitizers/plotDigitizer/temp/
-depricated/
-*.bak
-*.bak2
-testConverters/PreviousApplications/
-testConverters/SPICECompare/
-slprj/
-*.autosave
+# Autosave files
 *.asv
-webserver/
-*slx.r2021a
-*.slx.original
-packageAURA.m
-AURA.prj
-dev/
-testConverters/PreviousApplications
-**/depricated/
-resources/
-state space analysis/parsers/@LTspiceCircuitParser/unknown/
+*.m~
+*.autosave
+*.slx.r*
+*.mdl.r*
+
+# Derived content-obscured files
+*.p
+
+# Compiled MEX files
+*.mex*
+
+# Packaged app and toolbox files
+*.mlappinstall
+*.mltbx
+
+# Deployable archives
+*.ctf
+
+# Generated helpsearch folders
+helpsearch*/
+
+# Code generation folders
+slprj/
+sccprj/
+codegen/
+
+# Cache files
+*.slxc
+
+# Cloud based storage dotfile
+.MATLABDriveTag
+
+# buildtool cache folder
+.buildtool/
+
+# SimBiology backup files
+*.sbproj.backup
+*.sbproj.bak

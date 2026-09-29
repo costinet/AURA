@@ -78,6 +78,7 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
                         sigName = ['I_{' sigName '}'];
                     end
                     ylabel(sigName);
+                    ax.Tag = sigName;
                 catch
                     warning('State Names not set in topology subclass');
                 end

@@ -24,7 +24,7 @@ Ds = obj.Ds;
 if ~isempty(obj.Is)
     Is = obj.Is;
 else
-    Is = rempat(eye(size(As(:,:,1))),[1 1 size(As,3)]);
+    Is = repmat(eye(size(As(:,:,1))),[1 1 size(As,3)]);
 end
 BIs = obj.BIs;
 u = obj.fullu;

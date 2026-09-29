@@ -1,0 +1,40 @@
+* C:\Users\dcostine\Desktop\AURAgravity\testConverters\LTspice NetLists\schematics\WPT_VaryingU.asc
+V1 N011 0 {Vg}
+Vig N011 N002 0
+Ivinv N002 0 0
+R1 N003 N002 {Rp}
+Cts N004 N003 {Cp}
+L1 N005 0 {Lm}
+L2 N012 N006 {Lm}
+R2 N008 N007 {Rs}
+Crs N009 N008 {Cs}
+Crp N012 N009 {Csp}
+L3 N004 N005 {Lp}
+L4 N006 N007 {Ls}
+M1 N001 NC_01 N009 N009 ron={ron} Coss = {Coss}
+M2 N009 NC_02 0 0 ron={ron} Coss = {Coss}
+M3 N001 NC_03 N012 N012 ron={ron} Coss = {Coss}
+M4 N012 NC_04 0 0 ron={ron} Coss = {Coss}
+V3 N010 0 {Vo}
+Vio N010 N001 0
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\dcostine\Documents\LTspiceXVII\lib\cmp\standard.mos
+K L2 L1 1
+.param ron  =1m
+.param Vg = 48
+.param Vo = 24
+.param Lm = 2.5u
+.param Lp = 9.37u
+.param Ls = 2.15u
+.param Rp = 25m
+.param Rs = 15m
+.param Cp = {47n*3}
+.param Cs = 10u
+.param Csp = 94n
+.param ts = [1.663 .600  1.090 .350 1.663 .600  1.090 .350]*1e-6
+.param us = cat(3, [48; 24], [48; 24], [48; 24], [0;24], [-48; 24] , [-48; 24], [-48; 24], [0;24])
+.param swvec = [ 1     0     0     1;      0     0     0     0;     0     1     1     0;     0     1     1     0;     0     1     1     0 ;    0     0     0     0 ;    1     0     0     1 ;    1     0     0     1]
+.param Coss = 100p
+.backanno
+.end

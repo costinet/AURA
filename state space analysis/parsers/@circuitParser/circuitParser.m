@@ -8,6 +8,8 @@ classdef circuitParser < handle
         sourcefdate
         
         topology 
+		
+		activeSwitchNameTemplate
     end
     
     methods (Abstract)

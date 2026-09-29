@@ -1,4 +1,4 @@
-classdef component < handle
+classdef  component < handle
     %Component is a template for individual components
     
     properties (SetAccess=protected)

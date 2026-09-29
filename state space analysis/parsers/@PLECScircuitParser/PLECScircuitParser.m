@@ -12,6 +12,8 @@ classdef PLECScircuitParser < circuitParser
         sourcefn
         sourcefdate
         topology
+		
+		activeSwitchNameTemplate = {'FET'}
    end
    
    properties (Hidden, SetAccess = private)

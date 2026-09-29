@@ -175,19 +175,30 @@ if everythingDefined == 1
 end
 
 
-try
-    if isempty(obj.topology.converter.u)
-        parsedU = zeros(length(obj.topology.inputLabels),1);
-        [~,IA, IB] = intersect(obj.topology.inputLabels,{obj.components.Name});
-        parsedU(IA) = [obj.components(IB).paramVals];
-
-        % assignin('base','us', parsedU);   %Gradually moving away from base assignment.
-        obj.topology.converter.u = parsedU;
-    end
-    %Note, this won't find Vfs, only the sources
-catch e
-    %If we can't, the input isn't defined (ok).
-end
+% % try
+% %     if isempty(obj.topology.converter.u)
+% %         parsedU = zeros(length(obj.topology.inputLabels),1);
+% %         [~,IA, IB] = intersect(obj.topology.inputLabels,{obj.components.Name});
+% %         parsedU(IA) = [obj.components(IB).paramVals];
+% % 
+% %         %Gradually moving away from base assignment.
+% %         % assignin('base','us', parsedU);  
+% % 
+% %         try 
+% %             baseU = evalin('base','us');
+% %             if size(baseU,3) > 1 ...% Only do this for 3-dim us
+% %                 && size(baseU,1) == size(obj.topology.Bs,2) ...
+% %                 obj.topology.converter.u = baseU;
+% %                 return
+% %             end
+% %         catch e
+% %         end
+% %         obj.topology.converter.u = parsedU;
+% %     end
+% %     %Note, this won't find Vfs, only the sources
+% % catch e
+% %     %If we can't, the input isn't defined (ok).
+% % end
 
 end
 

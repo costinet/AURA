@@ -52,7 +52,7 @@ function [tLocs,insertAt,adjType] = findRequiredUncontrolledSwitching(obj,violat
         %         it is a controlled switching action
         %   (2b) but the before and after subinterval are the same (w.r.t.
         %   the error)
-        % (3) There is *an* error before and *and* error after, but not on
+        % (3) There is *an* error before *and* error after, but not on
         % the same constraint/device
     tLocs = errLocs | unadjustableLocs | adjustableButSameInterval | competingErrors;
     

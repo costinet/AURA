@@ -15,5 +15,5 @@ C4 N001 0 4.7µ
 .param Coss = 0.67n
 .param Vf = 1
 .param ts = [1u 1n 1u 1n]
-.param swvec = [1 0 0 0; 0 0 0 0; 0 1 0 0; 0 0 0 0]
+.param swvec = [1 0 ; 0 0 ; 0 1; 0 0 ]
 .end

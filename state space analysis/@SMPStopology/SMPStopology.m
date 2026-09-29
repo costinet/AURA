@@ -107,7 +107,8 @@ classdef SMPStopology < handle
                         e = MException('LOADCIRCUIT:plecsNotInstalled','supplied file appears to be a PLECS circuit but plecs is not installed or is not on the path ');
                         % e2 = addCause(e,addlInfo);
 						throw(e)
-                    elseif startsWith(e.message, 'Error evaluating parameter') 
+                    elseif startsWith(e.message, 'Error evaluating parameter') || ...
+                        startsWith(e.message, 'Error in component')
                         obj.circuitParser = PLECScircuitParser(obj);
                         obj.circuitParser.readOnLoadError(e.message, fn);
                         obj.circuitParser.inspect();

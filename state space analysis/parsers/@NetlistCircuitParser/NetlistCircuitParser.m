@@ -27,10 +27,12 @@ classdef NetlistCircuitParser < circuitParser
         netListDirectives
 
         components
+
+        activeSwitchNameTemplate = {'M'}
 		
     end
 
-    properties (SetAccess = protected, Hidden)
+    properties (Hidden) %SetAccess = protected
         %% Properties for schematic display
         schemPositions
         schemWires
@@ -69,6 +71,8 @@ classdef NetlistCircuitParser < circuitParser
         LTSpiceExe = ''%['C:\Program Files\LTC\LTspiceXVII\' 'XVIIx64.exe'];
 
         defaultRoff = 10e6;
+        defaultRd = .1e-3;
+        defaultRon = .1e-3;
         undefinedExpressions = {}
         useForcedDependentStates = 0
 
@@ -105,6 +109,9 @@ classdef NetlistCircuitParser < circuitParser
         [components] = deEmbedSpiceParams(obj,component,embeddedParams)
         [components] = findShorts(obj, components)
         [components] = XFdependentSourceSubcircuitOLD(obj, directive, components)
+        
+        [nodeNameO] = makeNodeNameUnique(obj,nodeName)
+        [nodeName] = newIntNodeName(obj,component,node, num)
 
         %$Solving ss representation
         linearizeCircuitModel(obj)
@@ -121,6 +128,9 @@ classdef NetlistCircuitParser < circuitParser
 
         %Graphical Representation
         plotSchematic(obj,fn)
+
+        % Netlist Generation
+        nl = createNetlist(obj, simObj)
 
         function obj = NetlistCircuitParser(topology)
             if nargin ==1 && ~isempty(topology)
@@ -156,6 +166,12 @@ classdef NetlistCircuitParser < circuitParser
                     warning('Unable to locate LTSpice EXE.  You will not be able to supply .asc files to this parser')
                 end
             end
+        end
+
+        function parsedU = assembleInputVector(obj)
+            parsedU = zeros(length(obj.topology.inputLabels),1);
+            [~,IA, IB] = intersect(obj.topology.inputLabels,{obj.components.Name});
+            parsedU(IA) = [obj.components(IB).paramVals]; 
         end
             
             

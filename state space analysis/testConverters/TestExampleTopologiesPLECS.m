@@ -38,31 +38,29 @@ modelfile{10} = 'TwoPhaseBuck'; PLECsModel{10} = 'TwoAsymmBuck';
 modelfile{11} = 'SCBuckHybridBuck_COMPEL23'; PLECsModel{11} = 'BuckBuck';
 modelfile{12} = 'DAB_R'; PLECsModel{12} = 'DAB_Rload';
 modelfile{13} = 'WPT_varyingU'; PLECsModel{13} = 'WPT_SSP';
+modelfile{14} = 'DABFullNoDiodes'; PLECsModel{14} = 'DAB_8Cap';
+modelfile{15} = 'SCFibb2S'; PLECsModel{length(PLECsModel)+1} = 'Q-FibonacciESRCoss';
+% modelfile{16} = 'Flyback'; PLECsModel{length(PLECsModel)+1} = 'PC_Flyback';
 
+PLECsModel(cellfun(@isempty,modelfile)) = [];
+modelfile(cellfun(@isempty,modelfile)) = [];
 
-% modelfile{length(modelfile)+1} = 'DABFullNoDiodes'; PLECsModel{length(PLECsModel)+1} = 'DAB_8Cap';
-% modelfile{length(modelfile)+1} = 'SCFibb2S'; PLECsModel{length(PLECsModel)+1} = 'Q-FibonacciESRCoss';
-% modelfile{length(modelfile)+1} = 'Flyback'; PLECsModel{length(PLECsModel)+1} = 'PC_Flyback';
-
-%% Most recent full run results:
-% Model Boost_Async converged after 43 iterations in 0.39162 seconds
-% Model MRBuck converged after 11 iterations in 0.088323 seconds
-% Model HDSC converged after 6 iterations in 0.13764 seconds
-% Model DAB_oneCap converged after 37 iterations in 0.74975 seconds
-% Model DAB_8Cap DID NOT converge within 102 in 1.7696 seconds
-% Model HDSC_withDiodes converged after 2 iterations in 0.0043238 seconds
-% Model BuckBuck converged after 9 iterations in 0.79623 seconds
-% Model Q-FibonacciESRCossDiodes converged after 8 iterations in 0.48962 seconds
-% Model Q-FibonacciESRCossDiodes converged after 2 iterations in 0.0027774 seconds
-% Model TwoAsymmBuck converged after 24 iterations in 0.222 seconds
-% Model BuckBuck converged after 15 iterations in 5.0886 seconds
-% Model DAB_Rload converged after 41 iterations in 0.931 seconds
-% Model WPT_SSP converged after 11 iterations in 0.14177 seconds
-%
-% Model DAB_8Cap DID NOT converge within 102 iterations
-% Model Q-FibonacciESRCoss converged after 8 iterations
-
-
+%% Most recent full run results
+% Model Boost_Async converged after 9 iterations in 0.2073 seconds
+% Model MRBuck converged after 6 iterations in 0.090763 seconds
+% Model HDSC converged after 5 iterations in 0.13818 seconds
+% Model DAB_oneCap converged after 11 iterations in 0.44536 seconds
+% Model DAB_8Cap converged after 11 iterations in 0.50455 seconds
+% Model HDSC_withDiodes converged after 2 iterations in 0.0065841 seconds
+% Model BuckBuck converged after 6 iterations in 0.76778 seconds
+% Model Q-FibonacciESRCossDiodes converged after 6 iterations in 0.43399 seconds
+% Model Q-FibonacciESRCossDiodes converged after 2 iterations in 0.0051789 seconds
+% Model TwoAsymmBuck converged after 13 iterations in 0.13213 seconds
+% Model BuckBuck converged after 11 iterations in 4.0419 seconds
+% Model DAB_Rload converged after 31 iterations in 0.73716 seconds
+% Model WPT_SSP converged after 9 iterations in 0.08405 seconds
+% Model DAB_8Cap converged after 9 iterations in 0.038211 seconds
+% Model Q-FibonacciESRCoss DID NOT converge within 102 in 1.0637 seconds
 
 if allAssess
     warning('off','all');

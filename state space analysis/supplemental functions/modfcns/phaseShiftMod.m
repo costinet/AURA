@@ -1,4 +1,4 @@
-function [ts,swvec] = phaseShiftMod(ts,swvec, phase, propName, propVal)
+function [tso,swveco] = phaseShiftMod(ts,swvec, phase, propName, propVal)
 %PHASESHIFTMOD shift modulation signals
 %
 %   [ts,swvec] = phaseShiftMod(ts,swvec, phase) uses phase in radians
@@ -8,7 +8,7 @@ function [ts,swvec] = phaseShiftMod(ts,swvec, phase, propName, propVal)
 %       'deg', or 'time'
 
     arguments
-        ts (1,:) {mustBeNumeric,mustBeReal}
+        ts (1,:) {mustBeNumeric,mustBeReal,mustBeNonnegative}
         swvec {mustBeNumeric,mustBeReal,mustMatchts(ts,swvec)}
         phase {mustBeNumeric,mustBeReal}
     end
@@ -33,25 +33,35 @@ function [ts,swvec] = phaseShiftMod(ts,swvec, phase, propName, propVal)
         tphi = mod(phase,Ts);
     end
 
-    cumts = [cumsum(ts)] + tphi;
-    rshift = 0;
+    if tphi == 0
+        return
+    end
 
-    if tphi > 0
+    cumts = cumsum(ts) + tphi;
+
+    if tphi >= 0
         brk = find(cumts > Ts, 1);
         rshift = sum(cumts > Ts);
 
         if ~isempty(brk)
-            cumts = [cumts(1:brk-1), Ts, cumts(brk:end) - Ts];
-            swvec = [swvec(1:brk-1,:); swvec(brk,:); swvec(brk:end,:)];
+            if ~any(cumts == Ts)
+                cumts = [cumts(1:brk-1), Ts, cumts(brk:end) - Ts];
+                swveco = [swvec(1:brk-1,:); swvec(brk,:); swvec(brk:end,:)];
+            else
+                error('Untested')
+            end
 
-            swvec = circshift(swvec,rshift,1);    
-            ts = diff([0 circshift(cumts,rshift)]); 
+            swveco = circshift(swveco,rshift,1);    
+            tso = diff([0 circshift(cumts,rshift)]); 
         end
+    else
+        %This shouldn't be reachable.
+        error('negative values should be wrapped')
     end
 
-    zeroints = ts <= 10*max(eps(ts));
-    ts(zeroints) = [];
-    swvec(zeroints,:) = [];
+    zeroints = tso <= 10*max(eps(tso));
+    tso(zeroints) = [];
+    swveco(zeroints,:) = [];
 end
 
 function mustMatchts(ts,swvec)

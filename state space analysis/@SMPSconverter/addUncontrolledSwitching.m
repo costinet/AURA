@@ -161,6 +161,10 @@ function [altered, newSwInd] = addUncontrolledSwitching(obj, interval, beforeAft
         error('input variable beforeAfter must be +1 or -1');
     end
     
+    if size(obj.u, 3) > size(obj.fullts, 2)
+        obj.u = cat(3, obj.u(:,:,1:interval), obj.u(:,:,interval:end));
+    end
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
 

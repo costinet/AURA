@@ -15,9 +15,9 @@ classdef ToolboxTestSuite < matlab.unittest.TestCase
         %     testCase.verifyFail("Unimplemented test");
         % end
 
-        function checkPLECS(testCase)
-            plecs()
-        end
+        % function checkPLECS(testCase)
+        %     plecs()
+        % end
 
         function checkComponentAddParam(testCase)
              t=smps.components.transistor;
@@ -156,7 +156,7 @@ classdef ToolboxTestSuite < matlab.unittest.TestCase
 
         function checkExampleTopologies(testCase)
             TestExampleTopologiesLTSpice;
-            evalin('base','TestExampleTopologiesPLECS'); %must be in base to see variables
+            % evalin('base','TestExampleTopologiesPLECS'); %must be in base to see variables
         end
 
     end

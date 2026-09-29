@@ -1,0 +1,701 @@
+% TOOLBOX IGNORE FILE
+% Specify the files/folder to exclude from packaging.
+% Paths are relative to the toolbox root folder.
+% List only one exclusion per line.
+
+% EXAMPLES
+% folder/                - Exclude folder and all of its content
+% folder/*               - Exclude contents of folder 
+% folder/**              - Exclude all contents of folder and subfolders
+% *.extension            - Exclude files with extension in folder
+% **/*.extension         - Exclude all files with extension in folder and all subfolders
+% file.extension         - Exclude specific file
+% folder/file.extension  - Exclude specific file in a subfolder
+% **/file.extension      - Exclude specific file in all subfolders  
+
+% Notes:
+% - If a path starts with '%', include '\' before '%', for example, "\%examplefile.svn".
+% - This file, 'toolbox.ignore', is always excluded from the toolbox and including it is not supported.
+
+%% Recommended Exclusions (remove lines to re-include files):
+
+% Exclude source control files
+**/.git*
+**/.git/
+**/*.svn
+
+% Toolbox files and project files
+**/*.mltbx
+**/*.prj
+
+% Backup files
+**/*.asv
+**/*.m~
+**/*.prj.bak
+
+% Local MATLAB/Simulink tool caches
+**/slprj
+**/.buildtool/
+
+% Project resources folder
+resources/
+% List files contained in your toolbox folder that you would like to exclude
+% from packaging.  Excludes should be listed relative to the toolbox folder.
+% Some examples of how to specify excludes are provided below:
+%
+% A single file in the toolbox folder:
+% .svn
+%
+% A single file in a subfolder of the toolbox folder:
+% example\.svn
+%
+% All files in a subfolder of the toolbox folder:
+% example\*
+%
+% All files of a certain name in all subfolders of the toolbox folder:
+% **\.svn
+%
+% All files matching a pattern in all subfolders of the toolbox folder:
+% **\*.bak
+%
+resources\project\*
+.SimulinkProject\*
+_SimulinkProject\*
+resources\.Project\*
+resources\_Project\*
+**\*.prj
++smps\+databases\depricated
++smps\+databases\depricated\sync.m
+@SMPSim\averageCurrentControl.slxc
+@SMPSim\depricated
+@SMPSim\depricated\adjustDiodeConduction.m
+@SMPSim\depricated\AugmentedSteadyStateIndep.asv
+@SMPSim\depricated\AugmentedSteadyStateIndep.m
+@SMPSim\depricated\perturbedSteadyState.m
+@SMPSim\depricated\plotAllOutputs.m
+@SMPSim\depricated\plotAllStates.m
+@SMPSim\depricated\regulate.m
+@SMPSim\depricated\SS_Soln2.m
+@SMPSim\depricated\stateValue_at_t.m
+@SMPSim\depricated\validByInterval.m
+@SMPSim\slprj
+@SMPSim\slprj\sim
+@SMPSim\slprj\sim\varcache
+@SMPSim\slprj\sim\varcache\averageCurrentControl
+@SMPSim\slprj\sim\varcache\averageCurrentControl\checksumOfCache.mat
+@SMPSim\slprj\sim\varcache\averageCurrentControl\tmwinternal
+@SMPSim\slprj\sim\varcache\averageCurrentControl\tmwinternal\simulink_cache.xml
+@SMPSim\slprj\sim\varcache\averageCurrentControl\varInfo.mat
+@SMPStopology\Depricated
+@SMPStopology\Depricated\Buck.mat
+@SMPStopology\Depricated\getPLECSConstraintMatrices.m
+@SMPStopology\Depricated\HybridDickson.mat
+AURAdb\digitizers\depricated\plotDigitizer-Test\appDesignerTempData_239952525664
+AURAdb\digitizers\depricated\settings
+AURAdb\digitizers\depricated\temp
+AURAdb\digitizers\plotDigitizer\temp
+depricated
+depricated\@AURAdb.zip
+depricated\@netConnect
+depricated\@netConnect\netConnect.m
+depricated\@netConnect\transistor_table.sql
+depricated\@netConnect\webServer
+depricated\@netConnect\webServer\CreateTransistorTable.m
+depricated\@netConnect\webServer\index.php
+depricated\@netConnect\webServer\library.php
+depricated\@netConnect\webServer\matlabInterface.php
+depricated\@netConnect\webServer\Swaggest
+depricated\@netConnect\webServer\Swaggest\JsonDiff
+depricated\@netConnect\webServer\Swaggest\JsonDiff\Exception.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\InvalidFieldTypeException.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonDiff.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonHash.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonMergePatch.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPatch
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPatch.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPatch\Add.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPatch\Copy.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPatch\Move.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPatch\OpPath.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPatch\OpPathFrom.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPatch\OpPathValue.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPatch\Remove.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPatch\Replace.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPatch\Test.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPointer.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonPointerException.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\JsonValueReplace.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\MissingFieldException.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\ModifiedPathDiff.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\PatchTestOperationFailedException.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\PathException.php
+depricated\@netConnect\webServer\Swaggest\JsonDiff\UnknownOperationException.php
+depricated\@netConnect\webSettings.mat
+depricated\AURAdb_backup.zip
+depricated\PLECSTestConverter.m
+depricated\PLECSTestConverterStates.m
+depricated\PLECSTestConverterTiming.m
+depricated\RunDAB.m
+depricated\RunTestConverter.m
+dev
+dev\AURA.prj
+dev\packageAURA.m
+dev\updateContentsFile.asv
+dev\updateContentsFile.m
+Ideas
+Ideas\Calculate_Averaged.m
+Ideas\circuitDiagrams
+Ideas\circuitDiagrams\circuitElementImage.m
+Ideas\circuitDiagrams\DrawMOSFET.m
+Ideas\circuitDiagrams\plotCircuitElement.m
+Ideas\circuitDiagrams\plotNMOS.m
+Ideas\circuitDiagrams\referenceSymbols
+Ideas\circuitDiagrams\referenceSymbols\CapSymbol.svg
+Ideas\circuitDiagrams\referenceSymbols\Diode.svg
+Ideas\circuitDiagrams\referenceSymbols\FETsymbol.svg
+Ideas\circuitDiagrams\referenceSymbols\InductorSymbol.svg
+Ideas\circuitDiagrams\referenceSymbols\IsrcSymbol.svg
+Ideas\circuitDiagrams\referenceSymbols\ResistorSymbol.svg
+Ideas\circuitDiagrams\referenceSymbols\VsrcSymbol.svg
+Ideas\COMPEL tutorial
+Ideas\COMPEL tutorial\BB_4sw.asc
+Ideas\COMPEL tutorial\BB_4sw_metered.asc
+Ideas\COMPEL tutorial\BB_4sw_metered.net
+Ideas\COMPEL tutorial\BB_6sw.asc
+Ideas\COMPEL tutorial\BB_6sw.net
+Ideas\COMPEL tutorial\BBavgModel.m
+Ideas\COMPEL tutorial\Draft1.log
+Ideas\COMPEL tutorial\Draft1.op.raw
+Ideas\COMPEL tutorial\Draft1.raw
+Ideas\COMPEL tutorial\exampleBuckBoost.m
+Ideas\COMPEL tutorial\exampleBuckBoost_AURA.m
+Ideas\COMPEL tutorial\NonInverting_BuckBoost.asc
+Ideas\COMPEL tutorial\NonInverting_BuckBoost.net
+Ideas\COMPEL tutorial\SeriesCapBuck.net
+Ideas\COMPEL tutorial\StateSpaceParse.m
+Ideas\Component Model Parsing
+Ideas\Component Model Parsing\CapPlot.png
+Ideas\Component Model Parsing\createTransistorFromLTSpiceSims.m
+Ideas\Component Model Parsing\createTransistorFromXML.asv
+Ideas\Component Model Parsing\createTransistorFromXML.m
+Ideas\Component Model Parsing\CreateTransistorsFromModels.m
+Ideas\Component Model Parsing\DemoDatabase.m
+Ideas\Component Model Parsing\EPCGaNLibrary
+Ideas\Component Model Parsing\EPCGaNLibrary\EPCGaN.asy
+Ideas\Component Model Parsing\EPCGaNLibrary\EPCGaNLibrary.lib
+Ideas\Component Model Parsing\EPCGaNLibrary\EPCmodels.xlsx
+Ideas\Component Model Parsing\EPCGaNLibrary\Example EPC2619.asc
+Ideas\Component Model Parsing\EPCGaNLibrary\Example EPC2619.log
+Ideas\Component Model Parsing\EPCGaNLibrary\Example EPC2619.plt
+Ideas\Component Model Parsing\EPCGaNLibrary\modTestCoss.log
+Ideas\Component Model Parsing\EPCGaNLibrary\modTestCoss.net
+Ideas\Component Model Parsing\EPCGaNLibrary\modTestCoss.op.raw
+Ideas\Component Model Parsing\EPCGaNLibrary\modTestCoss.raw
+Ideas\Component Model Parsing\EPCGaNLibrary\modTestIdVgs.log
+Ideas\Component Model Parsing\EPCGaNLibrary\modTestIdVgs.net
+Ideas\Component Model Parsing\EPCGaNLibrary\modTestIdVgs.raw
+Ideas\Component Model Parsing\EPCGaNLibrary\modTestQg.log
+Ideas\Component Model Parsing\EPCGaNLibrary\modTestQg.net
+Ideas\Component Model Parsing\EPCGaNLibrary\modTestQg.op.raw
+Ideas\Component Model Parsing\EPCGaNLibrary\modTestQg.raw
+Ideas\Component Model Parsing\EPCGaNLibrary\TestCoss.asc
+Ideas\Component Model Parsing\EPCGaNLibrary\TestCoss.net
+Ideas\Component Model Parsing\EPCGaNLibrary\TestCoss.op.raw
+Ideas\Component Model Parsing\EPCGaNLibrary\TestCoss.raw
+Ideas\Component Model Parsing\EPCGaNLibrary\TestIdVgs.asc
+Ideas\Component Model Parsing\EPCGaNLibrary\TestIdVgs.log
+Ideas\Component Model Parsing\EPCGaNLibrary\TestIdVgs.net
+Ideas\Component Model Parsing\EPCGaNLibrary\TestIdVgs.raw
+Ideas\Component Model Parsing\EPCGaNLibrary\TestQg.asc
+Ideas\Component Model Parsing\EPCGaNLibrary\TestQg.log
+Ideas\Component Model Parsing\EPCGaNLibrary\TestQg.net
+Ideas\Component Model Parsing\EPCGaNLibrary\TestQg.op.raw
+Ideas\Component Model Parsing\EPCGaNLibrary\TestQg.raw
+Ideas\Component Model Parsing\GaN PLECS xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2024.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2036.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2045.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2050.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2052.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2054.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2059.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2065.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2066.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2067.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2071.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2088.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2204.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2206.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2207.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2215.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2218.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2302.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2304.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2305.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2306.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2307.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2308.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC2619.xml
+Ideas\Component Model Parsing\GaN PLECS xml\EPC7018.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS-065-004-1-L.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS-065-008-1-L.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS-065-011-1-L.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS-065-018-2-L.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS-065-030-2-L.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS-065-060.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS-065-150-1.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS61004.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS61008.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS66502.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS66504.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS66506.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS66508.xml
+Ideas\Component Model Parsing\GaN PLECS xml\GS66516.xml
+Ideas\Component Model Parsing\HighesDensity400VCap.m
+Ideas\Component Model Parsing\HighesDensity44VCap.m
+Ideas\Component Model Parsing\LTspice2Matlab.m
+Ideas\Component Model Parsing\Murata Caps
+Ideas\Component Model Parsing\Murata Caps\Failed
+Ideas\Component Model Parsing\Murata Caps\getMurataCapData.m
+Ideas\Component Model Parsing\Murata Caps\getSimSurfingData.m
+Ideas\Component Model Parsing\Murata Caps\murataCaps.mat
+Ideas\Component Model Parsing\Murata Caps\MurataProdList-MLCCs.csv
+Ideas\Component Model Parsing\Murata Caps\MurataProdList-Power Inductors.csv
+Ideas\Component Model Parsing\Murata Caps\prepSImSurfingURL.m
+Ideas\Component Model Parsing\Murata Caps\simSurfingDebug.txt
+Ideas\Component Model Parsing\Murata Caps\XCheckCapDataIntegrityMurata.m
+Ideas\Component Model Parsing\TDK Caps
+Ideas\Component Model Parsing\TDK Caps\CVcurve.asc
+Ideas\Component Model Parsing\TDK Caps\CVcurve2.asc
+Ideas\Component Model Parsing\TDK Caps\Failed
+Ideas\Component Model Parsing\TDK Caps\FixIncorrectDimensionsOfAllCaps.m
+Ideas\Component Model Parsing\TDK Caps\FreqSweep.asc
+Ideas\Component Model Parsing\TDK Caps\GetCapModels.m
+Ideas\Component Model Parsing\TDK Caps\LTspice2Matlab.m
+Ideas\Component Model Parsing\TDK Caps\modCVcurve.asc
+Ideas\Component Model Parsing\TDK Caps\Processed
+Ideas\Component Model Parsing\TDK Caps\TDKpartNoDecode.m
+Ideas\Component Model Parsing\TDK Caps\XCheckCapDataIntegrity.m
+Ideas\DERIVESTsuite
+Ideas\DERIVESTsuite\demo
+Ideas\DERIVESTsuite\demo\derivest_demo.m
+Ideas\DERIVESTsuite\demo\html
+Ideas\DERIVESTsuite\demo\html\derivest_demo.html
+Ideas\DERIVESTsuite\demo\html\derivest_demo.png
+Ideas\DERIVESTsuite\demo\html\derivest_demo_01.png
+Ideas\DERIVESTsuite\demo\html\multivariable_calc_demo.html
+Ideas\DERIVESTsuite\demo\multivariable_calc_demo.m
+Ideas\DERIVESTsuite\derivest.m
+Ideas\DERIVESTsuite\directionaldiff.m
+Ideas\DERIVESTsuite\doc
+Ideas\DERIVESTsuite\doc\DERIVEST.pdf
+Ideas\DERIVESTsuite\doc\DERIVEST.tex
+Ideas\DERIVESTsuite\gradest.m
+Ideas\DERIVESTsuite\hessdiag.m
+Ideas\DERIVESTsuite\hessian.m
+Ideas\DERIVESTsuite\jacobianest.m
+Ideas\DERIVESTsuite\ReadMe.rtf
+Ideas\Dickson_solution_partials.m
+Ideas\discreteParamDescent.asv
+Ideas\discreteParamDescent.m
+Ideas\discreteParamDescentJacobian.m
+Ideas\discreteParamDescentJacobianBuckBuck.m
+Ideas\Documentation Files
+Ideas\Documentation Files\PNG
+Ideas\Documentation Files\PNG\Artboard 1@4x.png
+Ideas\Documentation Files\ToolboxBlockDiagram.ai
+Ideas\findThresholdTime.m
+Ideas\modularTopologies
+Ideas\modularTopologies\MLbuck
+Ideas\modularTopologies\MLbuck\5lvlExample.asc
+Ideas\modularTopologies\MLbuck\5lvlExample.net
+Ideas\modularTopologies\MLbuck\Base.asc
+Ideas\modularTopologies\MLbuck\Module.asc
+Ideas\modularTopologies\ModularBuck_Test.asv
+Ideas\modularTopologies\ModularBuck_Test.m
+Ideas\modularTopologies\newFormat
+Ideas\modularTopologies\newFormat\SCbuck
+Ideas\modularTopologies\newFormat\SCbuck\3lvlExample.asc
+Ideas\modularTopologies\newFormat\SCbuck\8lvlExample.asc
+Ideas\modularTopologies\newFormat\SCbuck\8LvlExample.net
+Ideas\modularTopologies\newFormat\SCbuck\Base.asc
+Ideas\modularTopologies\newFormat\SCbuck\Module.asc
+Ideas\modularTopologies\newFormat\SCbuck\Module.net
+Ideas\modularTopologies\newFormat\SCbuck\Module1.asc
+Ideas\modularTopologies\SCbuck
+Ideas\modularTopologies\SCbuck\3lvlExample.asc
+Ideas\modularTopologies\SCbuck\3lvlExample.net
+Ideas\modularTopologies\SCbuck\Base.asc
+Ideas\modularTopologies\SCbuck\Base.net
+Ideas\modularTopologies\SCbuck\Module.asc
+Ideas\modularTopologies\SCbuck\Module.net
+Ideas\modularTopologies\SDIH
+Ideas\modularTopologies\SDIH\3lvlExample.asc
+Ideas\modularTopologies\SDIH\3lvlExample.net
+Ideas\modularTopologies\SDIH\Base.asc
+Ideas\modularTopologies\SDIH\Base.net
+Ideas\modularTopologies\SDIH\Module.asc
+Ideas\modularTopologies\SDIH\Module.net
+Ideas\modularTopologies\SeriesParallelSC
+Ideas\modularTopologies\SeriesParallelSC\4lvlExample.asc
+Ideas\modularTopologies\SeriesParallelSC\Base - Copy.asc
+Ideas\modularTopologies\SeriesParallelSC\Base.asc
+Ideas\modularTopologies\SeriesParallelSC\Draft1.log
+Ideas\modularTopologies\SeriesParallelSC\Draft1.op.raw
+Ideas\modularTopologies\SeriesParallelSC\Draft1.raw
+Ideas\modularTopologies\SeriesParallelSC\Module - Copy.asc
+Ideas\modularTopologies\SeriesParallelSC\Module.asc
+Ideas\Past Database Attempts
+Ideas\Past Database Attempts\components
+Ideas\Past Database Attempts\components\@componentDB
+Ideas\Past Database Attempts\components\@componentDB\componentDB.m
+Ideas\Past Database Attempts\components\@transistor
+Ideas\Past Database Attempts\components\@transistor\datasheetHead.html
+Ideas\Past Database Attempts\components\@transistor\EPC2034C.xlsx
+Ideas\Past Database Attempts\components\@transistor\transistor.m
+Ideas\Past Database Attempts\components\@transistorDB
+Ideas\Past Database Attempts\components\@transistorDB\InitializeTable.txt
+Ideas\Past Database Attempts\components\@transistorDB\transistorDB.m
+Ideas\Past Database Attempts\Database
+Ideas\Past Database Attempts\Database\Components
+Ideas\Past Database Attempts\Database\Components\Component.m
+Ideas\Past Database Attempts\Database\Components\Transistor
+Ideas\Past Database Attempts\Database\Components\Transistor\Transistor.m
+Ideas\Past Database Attempts\Database\Components\Transistor\Transistor_conditionFields.txt
+Ideas\Past Database Attempts\Database\Components\Transistor\Transistor_graphFields.txt
+Ideas\Past Database Attempts\Database\Components\Transistor\Transistor_materials.txt
+Ideas\Past Database Attempts\Database\Components\Transistor\Transistor_tableFields.txt
+Ideas\Past Database Attempts\Database\Components\Transistor\Transistor_types.txt
+Ideas\Past Database Attempts\Database\Components\Transistor\TransistorDB
+Ideas\Past Database Attempts\Database\Components\Transistor\TransistorDB\Transistor_AdditionalTable.json
+Ideas\Past Database Attempts\Database\Components\Transistor\TransistorDB\Transistor_Graph.json
+Ideas\Past Database Attempts\Database\Components\Transistor\TransistorDB\Transistor_StandardTable.db
+Ideas\Past Database Attempts\Database\DatabaseTest.m
+Ideas\Past Database Attempts\Database\Resources
+Ideas\Past Database Attempts\Database\Resources\EditDist.m
+Ideas\Past Database Attempts\Database\UploadTest.m
+Ideas\Past Database Attempts\Database\Using the Power Electronic Database System.pdf
+Ideas\Past Database Attempts\Database_old
+Ideas\Past Database Attempts\Database_old\DatabaseTest.m
+Ideas\Past Database Attempts\Database_old\datasheet.html
+Ideas\Past Database Attempts\Database_old\DatasheetGUI.mlapp
+Ideas\Past Database Attempts\Database_old\transistors.db
+Ideas\Past Database Attempts\Database_old\transistors.json
+Ideas\Past Database Attempts\Database_old\transistors2.db
+Ideas\Past Database Attempts\Database_old\transistors2.json
+Ideas\PlotDigitizer
+Ideas\PlotDigitizer\appDesignerTempData_528533135506
+Ideas\PlotDigitizer\appDesignerTempData_792207329559
+Ideas\PlotDigitizer\oldVersions
+Ideas\PlotDigitizer\oldVersions\plotDigitizer-73120.mlapp
+Ideas\PlotDigitizer\oldVersions\plotDigitizer-82520.mlapp
+Ideas\PlotDigitizer\oldVersions\PlotDigitizer_v0.1.zip
+Ideas\PlotDigitizer\oldVersions\PlotDigitizer_v0.2.zip
+Ideas\PlotDigitizer\oldVersions\plotDigitizerMessedUp.mlapp
+Ideas\PlotDigitizer\PlotDigitizer_v0.21.zip
+Ideas\PlotDigitizer\plotDigitizer_v0.22.mlapp
+Ideas\PlotDigitizer\settings
+Ideas\PlotDigitizer\src
+Ideas\PlotDigitizer\src\appDesignerTempData_421761282626
+Ideas\PlotDigitizer\src\pdfRead
+Ideas\PlotDigitizer\temp
+Ideas\ReducedOrder
+Ideas\ReducedOrder\DAB_RedOrder.asc
+Ideas\ReducedOrder\DABReducedOrder.m
+Ideas\ReducedOrder\multiWindingTest.asc
+Ideas\ShowConvergeBuck.m
+Ideas\slprj
+Ideas\slprj\_sfprj
+Ideas\slprj\_sfprj\EMLReport
+Ideas\slprj\_sfprj\EMLReport\WPLl2EsfNyHoMjCo9vKiFG
+Ideas\slprj\_sfprj\EMLReport\WPLl2EsfNyHoMjCo9vKiFG.mat
+Ideas\slprj\_sfprj\EMLReport\WPLl2EsfNyHoMjCo9vKiFG\report.mldatx
+Ideas\SS_Soln_Test.m
+Ideas\SS_WF_Reconstruct_OLD.m
+Ideas\StateSensitivity.m
+Ideas\sweeps061623.mat
+Ideas\sweepsWithJacobian_06192023.mat
+Ideas\sweepsWithJacobian_06202023.mat
+Ideas\SwLoss
+Ideas\SwLoss\SwTestCirc.slx
+Ideas\SwLoss\Turn-off.asc
+Ideas\SwLoss\Turn-off.plt
+Ideas\SwLoss\Turn-on.asc
+Ideas\Symmetry Test
+Ideas\Symmetry Test\DAB.net
+Ideas\Symmetry Test\testSymm.m
+Ideas\Symmetry Test\ThreePhaseInverter.asc
+Ideas\TestDiodeCond.asv
+Ideas\TestDiodeCond.m
+Ideas\testSyncBuck.mat
+Ideas\topology storage
+Ideas\topology storage\testTopologyStorage.m
+Ideas\UncontrolledSwithingErrorTypes.pptx
+Ideas\WPTsyncSampling
+Ideas\WPTsyncSampling\slprj
+Ideas\WPTsyncSampling\slprj\sim
+Ideas\WPTsyncSampling\slprj\sim\varcache
+Ideas\WPTsyncSampling\slprj\sim\varcache\SSwptControl
+Ideas\WPTsyncSampling\slprj\sim\varcache\SSwptControl\checksumOfCache.mat
+Ideas\WPTsyncSampling\slprj\sim\varcache\SSwptControl\tmwinternal
+Ideas\WPTsyncSampling\slprj\sim\varcache\SSwptControl\tmwinternal\simulink_cache.xml
+Ideas\WPTsyncSampling\slprj\sim\varcache\SSwptControl\varInfo.mat
+Ideas\WPTsyncSampling\slprj\sim\varcache\TestDTmodel
+Ideas\WPTsyncSampling\slprj\sim\varcache\TestDTmodel\checksumOfCache.mat
+Ideas\WPTsyncSampling\slprj\sim\varcache\TestDTmodel\tmwinternal
+Ideas\WPTsyncSampling\slprj\sim\varcache\TestDTmodel\tmwinternal\simulink_cache.xml
+Ideas\WPTsyncSampling\slprj\sim\varcache\TestDTmodel\varInfo.mat
+Ideas\WPTsyncSampling\SpencerFileDir.txt
+Ideas\WPTsyncSampling\SStank.asc
+Ideas\WPTsyncSampling\SSwptControl.slxc
+Ideas\WPTsyncSampling\TestDTmodel.slx
+Ideas\WPTsyncSampling\TestDTmodel.slxc
+Ideas\WPTsyncSampling\TestSampling.m
+parsers\@LTspiceCircuitParser\depricated
+parsers\@LTspiceCircuitParser\old
+parsers\@LTspiceCircuitParser\old\ABCD_num.m
+parsers\@LTspiceCircuitParser\old\addmeasure.m
+parsers\@LTspiceCircuitParser\old\cutset_loop_num.m
+parsers\@LTspiceCircuitParser\old\findDM.m
+parsers\@LTspiceCircuitParser\old\hybridparse.m
+parsers\@LTspiceCircuitParser\old\loopfixAB_num.m
+parsers\@LTspiceCircuitParser\old\loopfixCD_num.m
+parsers\@LTspiceCircuitParser\old\nodeloop_num.m
+parsers\@LTspiceCircuitParser\old\read_file_num.m
+parsers\@LTspiceCircuitParser\old\Single_states_D.m
+parsers\@LTspiceCircuitParser\unknown
+parsers\@LTspiceCircuitParser\unknown\ABCD.m
+parsers\@LTspiceCircuitParser\unknown\ABCD_num.m
+parsers\@LTspiceCircuitParser\unknown\addmeasure.m
+parsers\@LTspiceCircuitParser\unknown\BDCheck.m
+parsers\@LTspiceCircuitParser\unknown\bodydiode_correction.m
+parsers\@LTspiceCircuitParser\unknown\cutset_loop_num.m
+parsers\@LTspiceCircuitParser\unknown\find_diode.m
+parsers\@LTspiceCircuitParser\unknown\find_diode_new.m
+parsers\@LTspiceCircuitParser\unknown\findDM.m
+parsers\@LTspiceCircuitParser\unknown\loopfixAB.m
+parsers\@LTspiceCircuitParser\unknown\loopfixAB_large.m
+parsers\@LTspiceCircuitParser\unknown\loopfixCD.m
+parsers\@LTspiceCircuitParser\unknown\loopfixCD_large.m
+parsers\@LTspiceCircuitParser\unknown\NetListParse.m
+parsers\@LTspiceCircuitParser\unknown\nodeloop.m
+parsers\@LTspiceCircuitParser\unknown\nodeloop_num.m
+parsers\@LTspiceCircuitParser\unknown\old
+parsers\@LTspiceCircuitParser\unknown\old\ABCD_num.m
+parsers\@LTspiceCircuitParser\unknown\old\addmeasure.m
+parsers\@LTspiceCircuitParser\unknown\old\cutset_loop_num.m
+parsers\@LTspiceCircuitParser\unknown\old\findDM.m
+parsers\@LTspiceCircuitParser\unknown\old\hybridparse.m
+parsers\@LTspiceCircuitParser\unknown\old\loopfixAB_num.m
+parsers\@LTspiceCircuitParser\unknown\old\loopfixCD_num.m
+parsers\@LTspiceCircuitParser\unknown\old\nodeloop_num.m
+parsers\@LTspiceCircuitParser\unknown\old\read_file_num.m
+parsers\@LTspiceCircuitParser\unknown\old\Single_states_D.m
+parsers\@LTspiceCircuitParser\unknown\PLECS_extract.m
+parsers\@LTspiceCircuitParser\unknown\Properties_Check.m
+parsers\@LTspiceCircuitParser\unknown\read_file.m
+parsers\@LTspiceCircuitParser\unknown\read_file_num.m
+parsers\@LTspiceCircuitParser\unknown\real_circuit.m
+parsers\@LTspiceCircuitParser\unknown\Single_states.m
+parsers\@LTspiceCircuitParser\unknown\Single_states_D.m
+parsers\@LTspiceCircuitParser\unknown\sip2num.m
+parsers\@LTspiceCircuitParser\unknown\states.m
+parsers\@LTspiceCircuitParser\unknown\states_find.m
+parsers\@LTspiceCircuitParser\unknown\StateVarIndex.m
+parsers\@LTspiceCircuitParser\unknown\transformers.m
+parsers\@LTspiceCircuitParser\unknown\transformers_num.m
+parsers\@LTspiceCircuitParser\unknown\unknown
+parsers\@LTspiceCircuitParser\unknown\unknown\ABCD.m
+parsers\@LTspiceCircuitParser\unknown\unknown\ABCD_num.m
+parsers\@LTspiceCircuitParser\unknown\unknown\addmeasure.m
+parsers\@LTspiceCircuitParser\unknown\unknown\BDCheck.m
+parsers\@LTspiceCircuitParser\unknown\unknown\bodydiode_correction.m
+parsers\@LTspiceCircuitParser\unknown\unknown\cutset_loop_num.m
+parsers\@LTspiceCircuitParser\unknown\unknown\find_diode.m
+parsers\@LTspiceCircuitParser\unknown\unknown\find_diode_new.m
+parsers\@LTspiceCircuitParser\unknown\unknown\findDM.m
+parsers\@LTspiceCircuitParser\unknown\unknown\loopfixAB.m
+parsers\@LTspiceCircuitParser\unknown\unknown\loopfixAB_large.m
+parsers\@LTspiceCircuitParser\unknown\unknown\loopfixCD.m
+parsers\@LTspiceCircuitParser\unknown\unknown\loopfixCD_large.m
+parsers\@LTspiceCircuitParser\unknown\unknown\NetListParse.m
+parsers\@LTspiceCircuitParser\unknown\unknown\nodeloop.m
+parsers\@LTspiceCircuitParser\unknown\unknown\nodeloop_num.m
+parsers\@LTspiceCircuitParser\unknown\unknown\old
+parsers\@LTspiceCircuitParser\unknown\unknown\old\ABCD_num.m
+parsers\@LTspiceCircuitParser\unknown\unknown\old\addmeasure.m
+parsers\@LTspiceCircuitParser\unknown\unknown\old\cutset_loop_num.m
+parsers\@LTspiceCircuitParser\unknown\unknown\old\findDM.m
+parsers\@LTspiceCircuitParser\unknown\unknown\old\hybridparse.m
+parsers\@LTspiceCircuitParser\unknown\unknown\old\loopfixAB_num.m
+parsers\@LTspiceCircuitParser\unknown\unknown\old\loopfixCD_num.m
+parsers\@LTspiceCircuitParser\unknown\unknown\old\nodeloop_num.m
+parsers\@LTspiceCircuitParser\unknown\unknown\old\read_file_num.m
+parsers\@LTspiceCircuitParser\unknown\unknown\old\Single_states_D.m
+parsers\@LTspiceCircuitParser\unknown\unknown\PLECS_extract.m
+parsers\@LTspiceCircuitParser\unknown\unknown\Properties_Check.m
+parsers\@LTspiceCircuitParser\unknown\unknown\read_file.m
+parsers\@LTspiceCircuitParser\unknown\unknown\read_file_num.m
+parsers\@LTspiceCircuitParser\unknown\unknown\real_circuit.m
+parsers\@LTspiceCircuitParser\unknown\unknown\Single_states.m
+parsers\@LTspiceCircuitParser\unknown\unknown\Single_states_D.m
+parsers\@LTspiceCircuitParser\unknown\unknown\sip2num.m
+parsers\@LTspiceCircuitParser\unknown\unknown\states.m
+parsers\@LTspiceCircuitParser\unknown\unknown\states_find.m
+parsers\@LTspiceCircuitParser\unknown\unknown\StateVarIndex.m
+parsers\@LTspiceCircuitParser\unknown\unknown\transformers.m
+parsers\@LTspiceCircuitParser\unknown\unknown\transformers_num.m
+parsers\@NetlistCircuitParser\depricated
+parsers\@NetlistCircuitParser\depricated\plotCircuitGraph.asv
+parsers\@NetlistCircuitParser\depricated\plotCircuitGraph.m
+parsers\@NetlistCircuitParser\depricated\plotCircuitGraph2.m
+testConverters\depricated
+testConverters\depricated\AsyncBoost.slx.bak
+testConverters\depricated\AsyncBoost.slx.r2021a
+testConverters\depricated\Buck.m
+testConverters\depricated\Buck.mat
+testConverters\depricated\Buck_nonSingular.m
+testConverters\depricated\codeExamples.m
+testConverters\depricated\codeExamples.mlx
+testConverters\depricated\DAB.slx.bak
+testConverters\depricated\DAB.slx.original
+testConverters\depricated\DAB.slx.r2021a
+testConverters\depricated\DABFullNoDiodes.slx.autosave
+testConverters\depricated\DABFullNoDiodes.slx.r2021a
+testConverters\depricated\DSC4to1.slx.r2021a
+testConverters\depricated\DSC4to1Diodes.slx.bak
+testConverters\depricated\DSC4to1Diodes.slx.bak2
+testConverters\depricated\Flyback.slx.autosave
+testConverters\depricated\flyBackTimeStepping.mat
+testConverters\depricated\html
+testConverters\depricated\html\codeExamples.html
+testConverters\depricated\html\codeExamples.png
+testConverters\depricated\html\codeExamples_01.png
+testConverters\depricated\html\codeExamples_02.png
+testConverters\depricated\html\codeExamples_03.png
+testConverters\depricated\html\codeExamples_04.png
+testConverters\depricated\html\codeExamples_05.png
+testConverters\depricated\html\codeExamples_06.png
+testConverters\depricated\html\TestExampleTopologies.html
+testConverters\depricated\html\TestExampleTopologiesLTSpice.html
+testConverters\depricated\HybridDickson.m
+testConverters\depricated\HybridDickson.mat
+testConverters\depricated\license5.bak
+testConverters\depricated\MRBuck.slx.bak
+testConverters\depricated\MRBuck.slx.r2021a
+testConverters\depricated\MRBuckDiodes.slx.bak
+testConverters\depricated\resources
+testConverters\depricated\resources\EPC2023_datasheet.pdf
+testConverters\depricated\SCFibb2S.slx.autosave
+testConverters\depricated\SCFibb2S.slx.bak
+testConverters\depricated\SCFibb2S.slx.r2021a
+testConverters\depricated\SPICECompare
+testConverters\depricated\SPICECompare\Flyback.asc
+testConverters\depricated\SPICECompare\Flyback.plt
+testConverters\depricated\SPICECompare\MRBuck.asc
+testConverters\depricated\TestExampleTopologies-preSuppFunctions.m
+testConverters\depricated\TestStructure.asv
+testConverters\depricated\TestStructure_04212022.m
+testConverters\depricated\VcflyControlBlockandPlant2021a.slxc
+testConverters\depricated\Voutcontrol3Levelboost21a.slxc
+testConverters\PreviousApplications
+testConverters\PreviousApplications\DicksonSweep
+testConverters\PreviousApplications\DicksonSweep\ConverterWaveforms.m
+testConverters\PreviousApplications\DicksonSweep\Dickson_solution_partials.m
+testConverters\PreviousApplications\InverterLoadPull
+testConverters\PreviousApplications\InverterLoadPull\FBInverter_DT.m
+testConverters\PreviousApplications\InverterLoadPull\FBInverter_DT_EPC112V.m
+testConverters\PreviousApplications\InverterLoadPull\FBInverter_DT_EPC112V_50D.m
+testConverters\PreviousApplications\InverterLoadPull\FBInverter_DT_EPC112V_50D_CAREER2017.m
+testConverters\PreviousApplications\InverterLoadPull\FBInverter_phasecontrol.m
+testConverters\PreviousApplications\InverterLoadPull\FBInverter_wFilter_DT.m
+testConverters\PreviousApplications\InverterLoadPull\FBInverter_wFilter_phase.m
+testConverters\PreviousApplications\InverterLoadPull\MOSFET.m
+testConverters\PreviousApplications\InverterLoadPull\NV6131.m
+testConverters\PreviousApplications\InverterLoadPull\plotInvWFs.m
+testConverters\PreviousApplications\InverterLoadPull\SS_Soln.m
+testConverters\PreviousApplications\InverterLoadPull\SS_WF_Reconstruct_OLDer.m
+testConverters\PreviousApplications\InverterLoadPull\StateSensitivity.m
+testConverters\PreviousApplications\LossExtraction
+testConverters\PreviousApplications\LossExtraction\BuckConverter.m
+testConverters\PreviousApplications\LossExtraction\Diode.m
+testConverters\PreviousApplications\LossExtraction\DLFS2100_Digitized.m
+testConverters\PreviousApplications\LossExtraction\EPC9118_Digitized.m
+testConverters\PreviousApplications\LossExtraction\EPC9118WhiteBox.m
+testConverters\PreviousApplications\LossExtraction\EPC9118WhiteBox_DPT.m
+testConverters\PreviousApplications\LossExtraction\EPC9118WhiteBox_Ploss.m
+testConverters\PreviousApplications\LossExtraction\Model_GS66508T.m
+testConverters\PreviousApplications\LossExtraction\MOSFET.m
+testConverters\PreviousApplications\LossExtraction\PlotData.m
+testConverters\PreviousApplications\LossExtraction\SS_Soln.m
+testConverters\PreviousApplications\LossExtraction\SS_WF_Reconstruct.m
+testConverters\PreviousApplications\LossExtraction\StateSensitivity.m
+testConverters\PreviousApplications\VRMoptimization
+testConverters\PreviousApplications\VRMoptimization\adjustDiodeConduction.m
+testConverters\PreviousApplications\VRMoptimization\BuckModel.m
+testConverters\PreviousApplications\VRMoptimization\BuckOptimization.m
+testConverters\PreviousApplications\VRMoptimization\BuckOptimization_fmin.m
+testConverters\PreviousApplications\VRMoptimization\BuckOptimization_Io.m
+testConverters\PreviousApplications\VRMoptimization\BuckSimulation.m
+testConverters\PreviousApplications\VRMoptimization\fminconHistory.m
+testConverters\PreviousApplications\VRMoptimization\fminHistory.m
+testConverters\PreviousApplications\VRMoptimization\SS_Soln.m
+testConverters\PreviousApplications\VRMoptimization\SS_WF_Reconstruct.m
+testConverters\PreviousApplications\VRMoptimization\StateSensitivity.m
+testConverters\slprj
+testConverters\slprj\sim
+testConverters\slprj\sim\varcache
+testConverters\slprj\sim\varcache\VcflyControlBlockandPlant2021a
+testConverters\slprj\sim\varcache\VcflyControlBlockandPlant2021a\checksumOfCache.mat
+testConverters\slprj\sim\varcache\VcflyControlBlockandPlant2021a\tmwinternal
+testConverters\slprj\sim\varcache\VcflyControlBlockandPlant2021a\tmwinternal\simulink_cache.xml
+testConverters\slprj\sim\varcache\VcflyControlBlockandPlant2021a\varInfo.mat
+testConverters\slprj\sim\varcache\Voutcontrol3Levelboost21a
+testConverters\slprj\sim\varcache\Voutcontrol3Levelboost21a\checksumOfCache.mat
+testConverters\slprj\sim\varcache\Voutcontrol3Levelboost21a\tmwinternal
+testConverters\slprj\sim\varcache\Voutcontrol3Levelboost21a\tmwinternal\simulink_cache.xml
+testConverters\slprj\sim\varcache\Voutcontrol3Levelboost21a\varInfo.mat
+ToolboxPackagingConfiguration.prj
+
+Ideas/
+deprecated/
+depricated/
+Depricated/
+**/depricated/
+**/deprecated/
+**/Depricated/
+
+state space analysis/AURAdb/digitizers/plotDigitizer/appDesignerTempData_.*
+AURA-Jared/
+*.bak
+*.bak2
+slprj/
+*.autosave
+*.asv
+*slx.r2021a
+*.slx.original
+state space analysis/*.prj
+state space analysis/AURAdb/digitizers/plotDigitizer/temp/
+state space analysis/AURAdb/databases/@capacitorDB/capacitors.mat
+state space analysis/Toolbox/Switched Mode Power Supply Toolbox.mltbx
+state space analysis/parsers/@LTspiceCircuitParser/unknown
+Ideas/
+Test/
+AURAdb/digitizers/plotDigitizer/appDesignerTempData_.*
+AURAdb/digitizers/plotDigitizer/temp/
+*.bak
+*.bak2
+testConverters/PreviousApplications/
+testConverters/SPICECompare/
+slprj/
+*.autosave
+*.asv
+webserver/
+*slx.r2021a
+*.slx.original
+packageAURA.m
+AURA.prj
+dev/
+testConverters/PreviousApplications
+resources/
+state space analysis/parsers/@LTspiceCircuitParser/unknown/
