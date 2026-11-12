@@ -155,6 +155,8 @@ classdef SMPSim < handle
         describeAlteredTimes(obj,oldts)
 
         [ avgXs, avgYs ] = ssAvgsInvert(obj, Xss)
+
+        Err = compareJacobians(obj)
     end
 
     
@@ -169,6 +171,9 @@ classdef SMPSim < handle
         Gz = findSSTF(obj, tp, oi, tm, ut)
         [Gs, B, Xp] = findAvgModelTF(obj, tp, oi)
         [ xs, t, ys, xd ] = simTransient(obj, nPeriods, Xss, tsteps)
+        % [eta, Pout, Pin] = powerEff(obj,inComp,outComp) % In development
+
+        compareResultToLTSpice(sim, figNo, options)
 
         %% Locally-defined methods
 

@@ -115,12 +115,16 @@ classdef componentPlotData
                      
            xM = obj.componentType.defaultMultipliers(strcmpi(isParamOf(obj.componentType,obj.xSignal), obj.componentType.knownParams));
            xMn = obj.componentType.SIprefixes(xM{1});
-           yM = obj.componentType.defaultMultipliers(strcmpi(isParamOf(obj.componentType,obj.ySignal),obj.componentType.knownParams));
-           if isempty(yM)
-               yM = obj.componentType.defaultMultipliers(strcmpi(obj.dataLabels{1}, obj.componentType.knownParams));
+           try
+               yM = obj.componentType.defaultMultipliers(strcmpi(isParamOf(obj.componentType,obj.ySignal),obj.componentType.knownParams));
+               if isempty(yM)
+                   yM = obj.componentType.defaultMultipliers(strcmpi(obj.dataLabels{1}, obj.componentType.knownParams));
+               end
+               yMn = obj.componentType.SIprefixes(yM{1});
+           catch
+               yMn=1;
+               yM = {''};
            end
-           yMn = obj.componentType.SIprefixes(yM{1});
-           
            for i=1:obj.nTraces
 
                if strcmp(obj.axisType{1}, 'log')

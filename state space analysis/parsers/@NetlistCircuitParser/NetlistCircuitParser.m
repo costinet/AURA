@@ -8,8 +8,6 @@ classdef NetlistCircuitParser < circuitParser
     %   definitions of variables which are available in the MATLAB base
     %   workspace are supported.
     %
-    %   Contributed by J. Baxter
-    %
     %   Methods replicated from L. Chua and P-M Lin, *Computer Aided
     %   Analysis of Electronic Circuits: Algorithms and Computational
     %   Techniques* and referenced works
@@ -22,14 +20,15 @@ classdef NetlistCircuitParser < circuitParser
         sourcefdate
         ascfn
         
+        components
+    end
+
+    properties (SetAccess = protected, Hidden)
         topology 
-		origComponents
+        origComponents
         netListDirectives
 
-        components
-
         activeSwitchNameTemplate = {'M'}
-		
     end
 
     properties (Hidden) %SetAccess = protected
@@ -125,12 +124,13 @@ classdef NetlistCircuitParser < circuitParser
         findNormalTree(obj)
         [H, comps] = hybridMatrix(obj)
         [A,B,C,D,I,names] = stateSpaceFromHybrid(obj, H, comps)
+        C = getNewOutputVector(obj,sig);
 
         %Graphical Representation
         plotSchematic(obj,fn)
 
         % Netlist Generation
-        nl = createNetlist(obj, simObj)
+        nl = createSimulateableNetlist(obj, simObj)
 
         function obj = NetlistCircuitParser(topology)
             if nargin ==1 && ~isempty(topology)

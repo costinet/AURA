@@ -5,7 +5,7 @@ function [tso,swveco] = phaseShiftMod(ts,swvec, phase, propName, propVal)
 %
 %   [ts,swvec] = phaseShiftMod(ts,swvec, phase, 'propertyNAme', propertyVal)
 %       properties include 'phaseUnits' which can be 'rad' (default),
-%       'deg', or 'time'
+%       'deg', or 's'
 
     arguments
         ts (1,:) {mustBeNumeric,mustBeReal,mustBeNonnegative}
@@ -14,7 +14,7 @@ function [tso,swveco] = phaseShiftMod(ts,swvec, phase, propName, propVal)
     end
     arguments (Repeating)
         propName {mustBeMember(propName,["phaseUnits"])}
-        propVal {mustBeMember(propVal,["rad","deg", "time"])}
+        propVal {mustBeMember(propVal,["rad","deg", "time", "s"])}
     end
 
     if isempty(propVal)
@@ -29,7 +29,7 @@ function [tso,swveco] = phaseShiftMod(ts,swvec, phase, propName, propVal)
         tphi = mod(phase/(2*pi)*Ts,Ts);
     elseif strcmp(phaseUnits, 'deg')
         tphi = mod(phase/(360)*Ts,Ts);
-    elseif strcmp(phaseUnits, 'time')
+    elseif strcmp(phaseUnits, 'time') || strcmp(phaseUnits, 's')
         tphi = mod(phase,Ts);
     end
 
@@ -48,7 +48,10 @@ function [tso,swveco] = phaseShiftMod(ts,swvec, phase, propName, propVal)
                 cumts = [cumts(1:brk-1), Ts, cumts(brk:end) - Ts];
                 swveco = [swvec(1:brk-1,:); swvec(brk,:); swvec(brk:end,:)];
             else
-                error('Untested')
+                % one interface falls exactly on wrap point
+                cumts = [cumts(1:brk-1), cumts(brk:end) - Ts];
+                swveco = [swvec(1:brk-1,:); swvec(brk:end,:)];
+                % error('This phase shift puts a switching action exactly at the end of the period')
             end
 
             swveco = circshift(swveco,rshift,1);    

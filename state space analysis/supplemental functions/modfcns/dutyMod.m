@@ -5,24 +5,40 @@ function [ts,swvec] = dutyMod(D,Ts, varargin)
 %
 %   [ts,swvec] = dutyMod(D,Ts, 'paramName', paramVal)
 %       paramNames include 'dt', 'phase', and 'phaseUnits'
-%       phaseUnits may be 'rad' (default), 'deg', or 'time'
+%       phaseUnits may be 'rad' (default), 'deg', or 's'
 
     p = inputParser;
-    p.addRequired('D',@(x)isnumeric(x)&&x<=1&&x>=0);
+    p.addRequired('D',@(x)isnumeric(x)&&all(x<=1)&&all(x>=0));
     p.addRequired('Ts',@(x)isnumeric(x));
     
     p.addParameter('dt',0)
     p.addParameter('phase',0)
     p.addParameter('phaseUnits','rad', ...
-        @(x)strcmp(x,'rad') || strcmp(x,'deg') || strcmp(x,'time'));
+        @(x)strcmp(x,'rad') || strcmp(x,'deg') || strcmp(x,'time') || strcmp(x,'s'));
     
     
     parse(p,D,Ts,varargin{:});
+
+
 
     D = p.Results.D;
     Ts = p.Results.Ts;
     phi = p.Results.phase;
     dt = p.Results.dt;
+
+    if numel(D) > 1
+        assert(numel(Ts) == numel(D) || isscalar(Ts), 'If multiple duty cycles are given, Ts must be scalar or numel(Ts) must be the same as numel(D)')
+        if isscalar(Ts) 
+            Ts = Ts*ones(size(D));
+        end
+        [ts, swvec] = dutyMod(D(1), Ts(1), varargin{:});
+
+        for i = 2:length(D)
+            [tsN, swvecN] = dutyMod(D(i), Ts(i), varargin{:});
+            [ts, swvec] = concatMods(ts, swvec, tsN, swvecN);
+        end
+        return
+    end
 
     if dt > 0 && D > 0 && D < 1
         if D*Ts>=dt && (1-D)*Ts >= dt

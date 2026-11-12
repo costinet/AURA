@@ -19,9 +19,41 @@ function plotWaveforms(obj, type, fn, oSelect, subplots)
         names = obj.stateNames;
 
         if ~all(obj.IHC == eye(size(obj.IHC)),'all')
-            % sigs = [sigs, sigs.*repmat(diag(obj.IHC),[1,size(sigs,2)])];
-            sigs = [sigs,squeeze(pagemtimes(repmat(obj.IHC,[1,1,size(sigs,2)]), permute(sigs,[1 3 2])))];
-            t = [t, t+t(end)];
+            %find symmetric time
+            N=0;
+            for i = 2:100
+                if all(obj.IHC^i == eye(size(obj.IHC)),'all') || all(obj.IHC^i == obj.Is(:,:,1),'all') || all(obj.IHC^i*obj.Is(:,:,1) == obj.Is(:,:,1),'all')
+                    N = i;
+                    break
+                end
+            end
+            N=0
+            sigsTot = obj.Is(:,:,1) * sigs;
+            tTot =t;
+            % for i = 1:N-1
+            %     sigsTot = [sigsTot,squeeze(pagemtimes(permute(sigs,[3 1 2]), repmat(obj.IHC^i,[1,1,size(sigs,2)])))];
+            %     tTot = [tTot, t+tTot(end)];
+            % end
+            % sigsTot = squeeze(pagemtimes(repmat(obj.Is(:,:,1),[1,1,size(sigsTot,2)]), permute(sigsTot,[1 3 2])));
+
+
+            dep = any(obj.Is(:,:,1) - eye(size(obj.Is(:,:,1))) ~= 0, 2);
+
+            IHCm(~dep, ~dep) = obj.IHC(~dep,~dep)^-1;
+            % IHCm(dep,dep) = obj.Is(dep,dep,1);
+
+            x = sigs;
+            for k = 1:N-1
+                    
+                x =  IHCm * x    ;
+                x =  obj.Is(:,:,1) * x; 
+                sigsTot = [sigsTot, x];
+                tTot = [tTot, t+tTot(end)];
+            end
+
+
+            sigs= sigsTot;
+            t = tTot;
         end
     elseif type == 2
         [ ~, t, sigs] = obj.SS_WF_Reconstruct;

@@ -155,11 +155,14 @@ function components = XFdependentSourceSubcircuit(obj, directive, components, no
             end
             components = [components(1:coupledIndLocs(i)-1) Vsource Rth RN Vmsource components(coupledIndLocs(i)+1:end)];    %Replace all secondaries
             
+
+
             %update indexing for any others to account for extra inserted
-            %component
-            if coupledIndLocs(Vi) > coupledIndLocs(i)
-                coupledIndLocs(Vi) = coupledIndLocs(Vi) + 1;
+            %component(s)
+            if coupledIndLocs(i) < coupledIndLocs(Vi)
+                coupledIndLocs(Vi) = coupledIndLocs(Vi) + numel([Vsource Rth RN Vmsource ])-1;
             end
+
         end
 
 

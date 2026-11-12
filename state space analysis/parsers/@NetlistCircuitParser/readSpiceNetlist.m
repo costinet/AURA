@@ -51,6 +51,7 @@ function readSpiceNetlist(obj,filename)
     switches = [];
     coupling = [];
     meters = [];
+    
     for i = 1:length(componentsLines)
         newComponent = obj.parseSpiceComponent(componentsLines{i});
         for j = 1:length(newComponent) % second loop in case parsing dembedded parameters

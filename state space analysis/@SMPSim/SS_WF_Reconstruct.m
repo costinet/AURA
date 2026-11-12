@@ -6,7 +6,7 @@ function [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps)
 % switched system described by the SMPSim object obj
 %
 % [ xs, t, ys ] = SS_WF_Reconstruct(obj, tsteps) the additional tsteps
-% argument allows the user to specify the number of linearl-spaced points 
+% argument allows the user to specify the number of linearly-spaced points 
 % in the timing vector, t.
 
 

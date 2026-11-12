@@ -11,7 +11,8 @@ arguments (Output)
 end
 
 nodeNameO = nodeName;
-origNodes = [obj.origComponents.Nodes];
+
+% origNodes = [obj.origComponents.Nodes];
 if ~isempty(obj.origComponents)
     origNodes = [obj.origComponents.Nodes];
 else

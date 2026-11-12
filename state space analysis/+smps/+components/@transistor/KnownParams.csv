@@ -3,5 +3,5 @@ Vds,Vsd,Vgs,Vth,Ids,Isd,Ig,Idpulse,Ispulse,Igss,Idss,Rds,Rg,Qg,Qgs,Qgd,Qoss,Qrr,
 V,V,V,V,A,A,A,A,A,A,A,Ohm,Ohm,C,C,C,C,C,s,A,F,F,F,F,F,F,J,J,J,[char(176)]C/W,[char(176)]C/W,[char(176)]C/W,W,A/V,s,s,s,s,[char(176)]C,[char(176)]C,m,m,m
 1,1,1,1,1,1,m,1,1,[char(181)],[char(181)],m,m,n,n,n,n,n,[char(181)],1,p,p,p,p,p,p,[char(181)],[char(181)],[char(181)],1,1,1,1,1,n,n,n,n,1,1,m,m,m
 Bv,Vd,,Vgsth,,,,Idspulse,Isdpulse,,Ileak,Ron,Rgint,Qgate,,Qm,Qds,,,Irrm,Cjo,,,,,,,,,,,,,,,,,,,,W,L,Z
-Bvdss,Vf,,,,,,,,,Idsleak,Rdson,,,,,,,,Irrmax,,,,,,,,,,,,,,,,,,,,,,,H
+Bvdss,Vf,,,,,,,,,Idsleak,Rdson,,,,,,,,Irrmax,Capacitance,,,,,,,,,,,,,,,,,,,,,,H
 Vdsmax,,,,,,,,,,Idleak,,,,,,,,,Irrpk,,,,,,,,,,,,,,,,,,,,,,,

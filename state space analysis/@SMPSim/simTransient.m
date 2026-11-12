@@ -9,10 +9,10 @@ function [ xs, t, ys, xd ] = simTransient(obj, nPeriods, Xss, tsteps)
 % used.
 %
 % simTransient(obj, nPeriods, Xss) Specifying Xss initializes the states to
-% vector Xss, rather than the interally-stores state vector.  
+% vector Xss, rather than the internally-stores state vector.  
 % 
 % simTransient(obj, nPeriods, Xss, tsteps) the additional tsteps
-% argument allows the user to specify the number of linearl-spaced points 
+% argument allows the user to specify the number of linearly-spaced points 
 % in the timing vector, t.
 
     if nargin < 3 || isempty(Xss) 

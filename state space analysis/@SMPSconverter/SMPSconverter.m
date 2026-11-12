@@ -537,7 +537,7 @@ classdef SMPSconverter < handle
                     end
                 end
             else
-                assert(all(swind <= size(obj.As,3), 'all'), 'Attempting to index a state space description that has not been parsed and does not have an associated swvec')
+                assert(all(swind <= size(obj.topology.As,3), 'all'), 'Attempting to index a state space description that has not been parsed and does not have an associated swvec')
             end
 
             if isempty(swind)

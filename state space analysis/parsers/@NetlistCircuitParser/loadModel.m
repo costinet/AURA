@@ -109,8 +109,10 @@ if ~force
         startLoc = 0;
     end
 else
-    obj.topology.swseq = swseq;
-    newSwSeq = swseq;
+    obj.topology.swseq = unique(swseq, 'rows');
+    newSwSeq = unique(swseq, 'rows');
+    %% RECENTLY CHANGED: to only parse unique items in the swseq.  Not fully established that this 
+    %% won't lose track of indexing somewhere, yet.
     startLoc = 0;
 end
 
